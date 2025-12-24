@@ -15,14 +15,14 @@
 
 **图1** 伴随设备认证流程
 <p>
-  <img src="./figures/认证流程.png" alt="可信持有物认证流程图" style="zoom:65%;" />
+  <img src="./figures/认证流程.png" alt="伴随设备认证流程图" style="zoom:65%;" />
 </p>
 
 ### 伴随设备认证前提：机主在主设备上将指定伴随设备添加为自己的身份认证凭据
 
 ### 伴随设备认证流程:
-### 1. 持有物确认当前佩戴/持有自己的用户是机主本人；
-### 2. 主设备确认操作意图来自机主本人。确认方式有两种，一种是通过确认机主在主设备附近，确保操作在机主本人监督下进行；一种是在持有物侧实时做一次机主身份鉴别，或者在已经确认用户身份的持有物侧做一次操作确认。
+### 1. 伴随设备确认当前佩戴/持有自己的用户是机主本人；
+### 2. 主设备确认操作意图来自机主本人。确认方式有两种，一种是通过确认机主在主设备附近，确保操作在机主本人监督下进行；一种是在伴随设备侧实时做一次机主身份鉴别，或者在已经确认用户身份的伴随设备侧做一次操作确认。
 
 **表1** 伴随设备认证阶段
 
@@ -30,7 +30,7 @@
 | ------ | ----- |----- | ------ |
 | 伴随设备添加阶段 | 设备间可信关系的确定 | 持有设备与主设备必须有用户显示建立的可信关系，一方面证明两个设备共机主，另一方面该可信关系可用于两个设备间在认证阶段可信地交换伴随设备认证报文|若两个设备间不存在可信关系，那伴随设备认证的信任基础便不存在，伴随设备确认了自己机主的身份并不能证明该用户同时是主设备的机主 |
 | 伴随设备认证阶段 | 伴随设备确认用户身份 | 伴随设备进入认证生效状态前，需先确认当前持有自己的用户身份。如手表佩戴后要先解锁，才能作为伴随设备认证通过解锁用户手机 | 如果伴随设备进入可信状态前没有对用户身份进行确认，那任何捡到伴随设备的人都可以冒充机主身份 |
-| 伴随设备认证阶段 | 证明操作意图来自机主本人 | 方式一（主设备确认机主在附近）：例如手机通过手表佩戴检测+手机对手表的测距证明佩戴者手表的机主在手机附近 | 如果没有确认操作意图来自机主，则仿冒用户可能在机主视线范围外通过持有物无感认证，对认证设备进行越权操作 |
+| 伴随设备认证阶段 | 证明操作意图来自机主本人 | 方式一（主设备确认机主在附近）：例如手机通过手表佩戴检测+手机对手表的测距证明佩戴者手表的机主在手机附近 | 如果没有确认操作意图来自机主，则仿冒用户可能在机主视线范围外通过伴随设备无感认证，对认证设备进行越权操作 |
 | 伴随设备认证阶段 | 证明操作意图来自机主本人 | 方式二（伴随设备确认用户操作意图）：例如：1. 让用户在伴随设备侧立即做一次身份认证，如U盾密码认证 2.机主在已经认证生效的伴随设备侧点击确认，如用户在已经解锁的手表界面确认操作信息 | 如果没有确认操作意图来自机主，则仿冒用户可能在机主视线范围外通过伴随设备无感认证，对认证设备进行越权操作 |
 
 ### 伴随设备认证是OpenHarmony支持的一种用户认证执行器，按照统一用户认证定义的资源注册接口，将伴随设备认证相关资源信息注册到统一用户认证框架，并根据框架调完成可信设备的注册、删除和认证。
@@ -127,11 +127,11 @@
 | StatusMonitor.offTemplateChange(callback?: TemplateStatusCallback): void | 注销监听已添加的可信设备的状态变化 |
 | StatusMonitor.onAvailableDeviceChange(callback: AvailableDeviceStatusCallback): void | 注册监听在线可添加的设备状态变化 |
 | StatusMonitor.offAvailableDeviceChange(callback?: AvailableDeviceStatusCallback): void | 注销监听在线可添加的设备状态变化，主要用于手表、耳机等有佩戴检测的穿戴设备，可持续认证用户身份 |
-| StatusMonitor.onContinuousAuthChange(param: ContinuousAuthParam, callback: ContinuousAuthStatusCallback): void | 注册监听可信持有物的持续身份认证情况 |
-| StatusMonitor.offContinuousAuthChange(callback?: ContinuousAuthStatusCallback): void | 注销监听可信持有物的持续身份认证情况 |
+| StatusMonitor.onContinuousAuthChange(param: ContinuousAuthParam, callback: ContinuousAuthStatusCallback): void | 注册监听伴随设备的持续身份认证情况 |
+| StatusMonitor.offContinuousAuthChange(callback?: ContinuousAuthStatusCallback): void | 注销监听伴随设备的持续身份认证情况 |
 
 ### 使用说明
-- 需在尽可能安全的环境中实现头文件services/singleton/inc/security_agent/security_agent.h中定义的接口，确保可信持有物认证结果的安全性。
+- 需在尽可能安全的环境中实现头文件services/singleton/inc/security_agent/security_agent.h中定义的接口，确保伴随设备认证结果的安全性。
 
 ## 相关仓
 
