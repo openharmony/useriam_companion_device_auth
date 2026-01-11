@@ -20,6 +20,7 @@ use core::ops;
 
 pub const PUBLIC_KEY_LEN: usize = 32;
 pub const CHALLENGE_LEN: usize = 8;
+pub const AUTH_TOKEN_CHALLENGE_LEN: usize = 32;
 pub const UDID_LEN: usize = 64;
 pub const UUID_LEN: usize = 16;
 pub const ROOT_SECRET_LEN: usize = 32;
