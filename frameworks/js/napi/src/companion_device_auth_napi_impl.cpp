@@ -137,7 +137,8 @@ napi_value CompanionDeviceAuthNapiImpl::UpdateEnabledBusinessIds(napi_env env, n
         napi_reject_deferred(env, promiseDeferred, CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ret));
         return voidPromise;
     }
-    DoPromise(env, promiseDeferred, voidPromise, ret);
+    napi_value voidPromise2 = nullptr;
+    DoPromise(env, promiseDeferred, voidPromise2, ret);
     IAM_LOGI("success");
     return voidPromise;
 }
