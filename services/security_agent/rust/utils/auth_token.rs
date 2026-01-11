@@ -68,7 +68,7 @@ impl UserAuthToken {
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TokenDataPlain {
-    pub challenge: [u8; CHALLENGE_LEN],
+    pub challenge: [u8; AUTH_TOKEN_CHALLENGE_LEN],
     pub time: u64,
     pub auth_trust_level: AuthTrustLevel,
     pub auth_type: AuthType,
