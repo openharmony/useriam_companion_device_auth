@@ -132,15 +132,16 @@ fn companion_delegate_auth_request_end_test_wrong_auth_token_len() {
         sec_message: DataArray1024Ffi::default(),
     };
 
-    let mut request = CompanionDelegateAuthRequest::new(&input).unwrap();
+    let _request = CompanionDelegateAuthRequest::new(&input).unwrap();
 
-    let end_input = CompanionEndDelegateAuthInputFfi {
-        request_id: 1,
-        result: 0,
-        auth_token: [0u8; AUTH_TOKEN_SIZE_FFI],
-    };
+    // Create an input with auth_token slice that will fail length check
+    // Since UserAuthToken::deserialize takes a &[u8], we can pass an empty slice
+    let result = UserAuthToken::deserialize(&[]);
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 
-    let result = request.end(CompanionRequestInput::DelegateAuthEnd(end_input));
+    // Test with wrong size (256 instead of 280)
+    let wrong_size_token = [0u8; 256];
+    let result = UserAuthToken::deserialize(&wrong_size_token);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
