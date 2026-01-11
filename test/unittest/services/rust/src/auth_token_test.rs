@@ -25,7 +25,7 @@ fn user_auth_token_test() {
     log_i!("user_auth_token_test start");
 
     let token_data_plain = TokenDataPlain {
-        challenge: [0u8; CHALLENGE_LEN],
+        challenge: [0u8; AUTH_TOKEN_CHALLENGE_LEN],
         time: 1000,
         auth_trust_level: AuthTrustLevel::Atl3,
         auth_type: AuthType::CompanionDevice,
