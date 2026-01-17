@@ -196,7 +196,7 @@ int32_t StatusMonitor::OnContinuousAuthChange(companionDeviceAuth::ContinuousAut
             std::in_place_t {}, callback });
         continuousAuthStatusCallbacks_.push_back(continuousAuthStatusCallback);
         ret = CompanionDeviceAuthClient::GetInstance().SubscribeContinuousAuthStatusChange(localUserId_,
-            continuousAuthStatusCallback);
+            continuousAuthStatusCallback, templateId);
         if (ret != SUCCESS) {
             IAM_LOGE("SubscribeContinuousAuthStatusChange fail");
             continuousAuthStatusCallback->ClearCallback();
