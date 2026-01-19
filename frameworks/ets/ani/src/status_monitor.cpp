@@ -70,7 +70,6 @@ int32_t StatusMonitor::OnTemplateChange(::taihe::callback_view<void(
         int32_t ret = templateStatusCallback_->SetCallback(::taihe::optional<::taihe::callback<void(
                 ::taihe::array_view<::ohos::userIAM::companionDeviceAuth::TemplateStatus> templateStatusList)>> {
             std::in_place_t {}, callback });
-        IAM_LOGI("lihuayue SubscribeTemplateStatusChange");
         ret = CompanionDeviceAuthClient::GetInstance().SubscribeTemplateStatusChange(localUserId_,
             templateStatusCallback_);
         if (ret != SUCCESS) {
@@ -81,7 +80,6 @@ int32_t StatusMonitor::OnTemplateChange(::taihe::callback_view<void(
         return SUCCESS;
     }
 
-    IAM_LOGI("lihuayue do not need to subscribe");
     return templateStatusCallback_->SetCallback(::taihe::optional<::taihe::callback<void(
             ::taihe::array_view<::ohos::userIAM::companionDeviceAuth::TemplateStatus> templateStatusList)>> {
         std::in_place_t {}, callback });
@@ -129,7 +127,6 @@ int32_t StatusMonitor::OnAvailableDeviceChange(::taihe::callback_view<void(
         int32_t ret = availableDeviceStatusCallback_->SetCallback(::taihe::optional<::taihe::callback<void(
                 ::taihe::array_view<::ohos::userIAM::companionDeviceAuth::DeviceStatus> deviceStatusList)>> {
             std::in_place_t {}, callback });
-        IAM_LOGI("lihuayue SubscribeAvailableDeviceStatus");
         ret = CompanionDeviceAuthClient::GetInstance().SubscribeAvailableDeviceStatus(localUserId_,
             availableDeviceStatusCallback_);
         if (ret != SUCCESS) {
@@ -140,7 +137,6 @@ int32_t StatusMonitor::OnAvailableDeviceChange(::taihe::callback_view<void(
         return SUCCESS;
     }
 
-    IAM_LOGI("lihuayue do not need to subscribe");
     return availableDeviceStatusCallback_->SetCallback(::taihe::optional<::taihe::callback<void(
             ::taihe::array_view<::ohos::userIAM::companionDeviceAuth::DeviceStatus> deviceStatusList)>> {
         std::in_place_t {}, callback });
