@@ -28,12 +28,11 @@ ohos_rust_shared_ffi("companiondeviceauthservice_rs") {
   include_dirs = [ "include" ]
 
   external_deps = companion_device_auth_rust_service_external_deps
-  deps = companion_device_auth_rust_service_deps
 
   rustenv = []
 
-  rustc_lints = "none"
-  clippy_lints = "none"
+  rustc_lints = "default"
+  clippy_lints = "default"
 
   subsystem_name = companion_device_auth_subsystem_name
   part_name = companion_device_auth_part_name

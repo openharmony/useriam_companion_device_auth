@@ -32,6 +32,15 @@ pub mod test_utils {
         time_keeper::{MockTimeKeeper, TimeKeeper, TimeKeeperRegistry},
     };
     use crate::{Box, Vec};
+    use std::sync::Mutex;
+
+    // Global test serialization mutex to ensure single-threaded test execution
+    // Direct initialization avoids OnceLock overhead and potential blocking
+    static GLOBAL_TEST_LOCK: Mutex<()> = Mutex::new(());
+
+    fn get_global_test_lock() -> &'static Mutex<()> {
+        &GLOBAL_TEST_LOCK
+    }
 
     // Test Logger implementation
     pub struct TestLogger;
@@ -60,10 +69,18 @@ pub mod test_utils {
         }
     }
 
-    pub struct UtRegistryGuard {}
+    pub struct UtRegistryGuard {
+    _lock_guard: Option<std::sync::MutexGuard<'static, ()>>,
+}
 
     impl UtRegistryGuard {
         pub fn new() -> Self {
+            // Handle poisoned mutex: if a previous thread panicked while holding the lock,
+            // we can still recover by using into_inner()
+            let _lock_guard = Some(get_global_test_lock().lock().unwrap_or_else(|poisoned| {
+                poisoned.into_inner()
+            }));
+
             let mock_logger = TestLogger::new();
             LoggerRegistry::set(Box::new(mock_logger));
 
@@ -83,7 +100,7 @@ pub mod test_utils {
             CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
             let mock_request_manager = MockRequestManager::new();
             RequestManagerRegistry::set(Box::new(mock_request_manager));
-            Self {}
+            Self { _lock_guard }
         }
     }
 

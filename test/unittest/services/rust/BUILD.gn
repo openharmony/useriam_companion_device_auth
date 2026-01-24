@@ -78,7 +78,7 @@ ohos_rust_unittest("companion_device_auth_services_rust_test") {
 
   external_deps = companion_device_auth_rust_service_external_deps
 
-  deps = companion_device_auth_rust_service_deps
+  deps = []
 
   rustflags = [
     "--cfg",
@@ -89,8 +89,8 @@ ohos_rust_unittest("companion_device_auth_services_rust_test") {
 
   rustenv = []
 
-  rustc_lints = "none"
-  clippy_lints = "none"
+  rustc_lints = "default"
+  clippy_lints = "default"
 
   subsystem_name = companion_device_auth_subsystem_name
   part_name = companion_device_auth_part_name
