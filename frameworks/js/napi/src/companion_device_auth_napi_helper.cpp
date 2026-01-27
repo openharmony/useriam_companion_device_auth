@@ -23,8 +23,8 @@
 #include "securec.h"
 #include <uv.h>
 
+#include "iam_check.h"
 #include "iam_logger.h"
-#include "iam_ptr.h"
 
 #include "common_defines.h"
 
@@ -81,11 +81,8 @@ JsRefHolder::~JsRefHolder()
         IAM_LOGE("napi_get_uv_event_loop fail");
         return;
     }
-    std::shared_ptr<DeleteRefHolder> deleteRefHolder = MakeShared<DeleteRefHolder>();
-    if (deleteRefHolder == nullptr) {
-        IAM_LOGE("deleteRefHolder is null");
-        return;
-    }
+    std::shared_ptr<DeleteRefHolder> deleteRefHolder = std::make_shared<DeleteRefHolder>();
+    ENSURE_OR_RETURN(deleteRefHolder != nullptr);
     deleteRefHolder->env = env_;
     deleteRefHolder->ref = ref_;
     auto task = [deleteRefHolder]() {
@@ -184,7 +181,6 @@ napi_status CompanionDeviceAuthNapiHelper::GetInt32Array(napi_env env, napi_valu
         int32_t getValue {};
         NAPI_CALL_BASE(env, napi_get_element(env, obj, index, &value), napi_generic_failure);
         NAPI_CALL_BASE(env, napi_get_value_int32(env, value, &getValue), napi_generic_failure);
-        IAM_LOGI("vec[%{public}d]: %{public}d", index, getValue);
         vec.emplace_back(getValue);
     }
     return napi_ok;

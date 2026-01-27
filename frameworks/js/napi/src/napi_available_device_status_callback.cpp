@@ -20,7 +20,6 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
-#include "iam_ptr.h"
 #include "scope_guard.h"
 
 #include "companion_device_auth_napi_helper.h"
@@ -141,11 +140,8 @@ void NapiAvailableDeviceStatusCallback::OnAvailableDeviceStatusChange(
         return;
     }
     std::shared_ptr<AvailableDeviceStatusCallbackHolder> availableDeviceStatusCallbackHolder =
-        MakeShared<AvailableDeviceStatusCallbackHolder>();
-    if (availableDeviceStatusCallbackHolder == nullptr) {
-        IAM_LOGE("availableDeviceStatusCallbackHolder is null");
-        return;
-    }
+        std::make_shared<AvailableDeviceStatusCallbackHolder>();
+    ENSURE_OR_RETURN(availableDeviceStatusCallbackHolder != nullptr);
     availableDeviceStatusCallbackHolder->callback = shared_from_this();
     availableDeviceStatusCallbackHolder->deviceStatusList = deviceStatusList;
     availableDeviceStatusCallbackHolder->env = env_;
