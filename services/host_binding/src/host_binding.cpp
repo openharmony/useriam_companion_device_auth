@@ -84,8 +84,8 @@ bool HostBinding::Initialize()
         return false;
     }
 
-    auto devcieStatusList = GetCrossDeviceCommManager().GetAllDeviceStatus();
-    HandleDeviceStatusChanged(devcieStatusList);
+    auto deviceStatusList = GetCrossDeviceCommManager().GetAllDeviceStatus();
+    HandleDeviceStatusChanged(deviceStatusList);
 
     localDeviceStatusSubscription_ =
         GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {

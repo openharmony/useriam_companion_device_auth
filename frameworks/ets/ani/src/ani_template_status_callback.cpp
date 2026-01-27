@@ -23,6 +23,7 @@
 #include "common_defines.h"
 #include "companion_device_auth_ani_helper.h"
 #include "ohos.userIAM.companionDeviceAuth.proj.hpp"
+#include "scope_guard.h"
 
 #define LOG_TAG "CDA_ANI"
 
@@ -75,6 +76,9 @@ void AniTemplateStatusCallback::DoCallback(const std::vector<ClientTemplateStatu
         IAM_LOGE("get ani env fail");
         return;
     }
+
+    ScopeGuard detachGuard([vm = vm_]() { vm->DetachCurrentThread(); });
+
     for (size_t i = 0; i < templateStatusList.size(); ++i) {
         companionDeviceAuth::TemplateStatus templateStatus =
             CompanionDeviceAuthAniHelper::ConvertTemplateStatus(templateStatusList[i], env);
@@ -83,7 +87,6 @@ void AniTemplateStatusCallback::DoCallback(const std::vector<ClientTemplateStatu
     taihe::array<companionDeviceAuth::TemplateStatus> result =
         taihe::array<companionDeviceAuth::TemplateStatus>(taihe::copy_data_t {}, temp.data(), temp.size());
     (**callback)(result);
-    vm_->DetachCurrentThread();
     IAM_LOGI("success");
 }
 
