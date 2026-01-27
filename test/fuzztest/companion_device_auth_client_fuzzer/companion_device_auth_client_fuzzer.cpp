@@ -15,6 +15,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <mutex>
 
 #include "fuzzer/FuzzedDataProvider.h"
 
@@ -24,8 +25,13 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
+static std::mutex g_fuzzMutex;
+
 extern "C" int32_t LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+    // Acquire mutex to ensure single-threaded fuzzing execution
+    std::lock_guard<std::mutex> lock(g_fuzzMutex);
+
     if (data == nullptr || size == 0) {
         return 0;
     }
