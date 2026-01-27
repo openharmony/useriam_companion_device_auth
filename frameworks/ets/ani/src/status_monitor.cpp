@@ -224,7 +224,7 @@ int32_t StatusMonitor::UpdateContinuousAuthStatusCallback(companionDeviceAuth::C
 {
     std::lock_guard<std::recursive_mutex> guard(mutex_);
     bool hasSameCallback = false;
-    int32_t ret;
+    int32_t ret = GENERAL_ERROR;
     if (!param.templateId.has_value()) {
         for (auto &continuousAuthStatusCallback : continuousAuthStatusCallbacks_) {
             if (continuousAuthStatusCallback->GetTemplateId().has_value()) {
@@ -241,7 +241,7 @@ int32_t StatusMonitor::UpdateContinuousAuthStatusCallback(companionDeviceAuth::C
         }
     } else {
         uint64_t templateId = CompanionDeviceAuthAniHelper::ConvertAniTemplateId(param.templateId.value());
-        uint64_t callbackTemplateId;
+        uint64_t callbackTemplateId {};
         for (auto &continuousAuthStatusCallback : continuousAuthStatusCallbacks_) {
             if (!continuousAuthStatusCallback->GetTemplateId().has_value()) {
                 continue;

@@ -51,7 +51,7 @@ int32_t StatusMonitor::SetLocalUserId(napi_env env, napi_callback_info info)
         return GENERAL_ERROR;
     }
 
-    int32_t userId;
+    int32_t userId {};
     status = CompanionDeviceAuthNapiHelper::GetInt32Value(env, argv[PARAM0], userId);
     if (status != napi_ok) {
         IAM_LOGE("GetInt32Value fail, ret:%{public}d", status);
@@ -492,7 +492,7 @@ int32_t StatusMonitor::SetContinuousAuthStatusCallback(napi_env env, napi_value 
         return SetContinuousAuthStatusCallbackWithoutTemplateId(env, callbackRef);
     }
 
-    uint64_t templateId;
+    uint64_t templateId {};
     napi_status status = CompanionDeviceAuthNapiHelper::ConvertNapiUint8ArrayToUint64(env, paramValue, templateId);
     if (status != napi_ok) {
         IAM_LOGE("ConvertNapiUint8ArrayToUint64 fail, ret:%{public}d", status);
@@ -566,7 +566,7 @@ int32_t StatusMonitor::UpdateContinuousAuthStatusCallback(const std::shared_ptr<
     IAM_LOGI("start");
     std::lock_guard<std::recursive_mutex> guard(mutex_);
     bool hasSameCallback = false;
-    int32_t ret;
+    int32_t ret {};
     if (!templateId.has_value()) {
         for (auto &callback : continuousAuthStatusCallbacks_) {
             if (callback->GetTemplateId().has_value()) {

@@ -24,6 +24,7 @@
 #include "iam_ptr.h"
 
 #include "companion_device_auth_client.h"
+#include "scope_guard.h"
 
 #define LOG_TAG "CDA_NAPI"
 
@@ -93,19 +94,21 @@ napi_value CompanionDeviceAuthNapiImpl::UpdateEnabledBusinessIds(napi_env env, n
     napi_value voidPromise, napi_deferred promiseDeferred)
 {
     IAM_LOGI("start");
+    int32_t errorCode = ResultCode::GENERAL_ERROR;
+    ScopeGuard guard([&]() {
+        napi_reject_deferred(env, promiseDeferred,
+            CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, errorCode));
+    });
+
     napi_value argv[ARGS_TWO];
     size_t argc = ARGS_TWO;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (status != napi_ok) {
         IAM_LOGE("napi_get_cb_info fail, ret:%{public}d", status);
-        napi_reject_deferred(env, promiseDeferred,
-            CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ResultCode::GENERAL_ERROR));
         return voidPromise;
     }
     if (argc != ARGS_TWO) {
         IAM_LOGE("invalid param, argc:%{public}zu", argc);
-        napi_reject_deferred(env, promiseDeferred,
-            CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ResultCode::GENERAL_ERROR));
         return voidPromise;
     }
 
@@ -113,20 +116,25 @@ napi_value CompanionDeviceAuthNapiImpl::UpdateEnabledBusinessIds(napi_env env, n
     status = CompanionDeviceAuthNapiHelper::GetUint8ArrayValue(env, argv[PARAM0], templateIdArray);
     if (status != napi_ok) {
         IAM_LOGE("GetUint8ArrayValue fail, ret:%{public}d", status);
-        napi_reject_deferred(env, promiseDeferred,
-            CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ResultCode::GENERAL_ERROR));
         return voidPromise;
     }
 
-    uint64_t templateId;
-    memcpy_s(&templateId, sizeof(templateId), templateIdArray.data(), sizeof(uint64_t));
+    if (templateIdArray.size() < sizeof(uint64_t)) {
+        IAM_LOGE("Invalid array size: %{public}zu, expected at least %{public}zu", templateIdArray.size(),
+            sizeof(uint64_t));
+        return voidPromise;
+    }
+
+    uint64_t templateId {};
+    if (memcpy_s(&templateId, sizeof(templateId), templateIdArray.data(), sizeof(uint64_t)) != EOK) {
+        IAM_LOGE("memcpy_s failed for templateId");
+        return voidPromise;
+    }
 
     std::vector<int32_t> enabledBusinessIds = {};
     status = CompanionDeviceAuthNapiHelper::GetInt32Array(env, argv[PARAM1], enabledBusinessIds);
     if (status != napi_ok) {
         IAM_LOGE("GetInt32Array fail, ret:%{public}d", status);
-        napi_reject_deferred(env, promiseDeferred,
-            CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ResultCode::GENERAL_ERROR));
         return voidPromise;
     }
 
@@ -134,10 +142,11 @@ napi_value CompanionDeviceAuthNapiImpl::UpdateEnabledBusinessIds(napi_env env, n
         CompanionDeviceAuthClient::GetInstance().UpdateTemplateEnabledBusinessIds(templateId, enabledBusinessIds);
     if (ret != SUCCESS) {
         IAM_LOGE("UpdateTemplateEnabledBusinessIds fail, ret:%{public}d", static_cast<int32_t>(ret));
-        napi_reject_deferred(env, promiseDeferred, CompanionDeviceAuthNapiHelper::GenerateBusinessError(env, ret));
+        errorCode = ret;
         return voidPromise;
     }
 
+    guard.Cancel();
     napi_value returnVoid = nullptr;
     DoPromise(env, promiseDeferred, returnVoid, ret);
     IAM_LOGI("success");

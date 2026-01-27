@@ -17,6 +17,7 @@
 
 #include <memory>
 
+#include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_ptr.h"
 
@@ -40,10 +41,7 @@ int32_t IpcContinuousAuthStatusCallbackService::OnContinuousAuthStatusChange(con
         static_cast<int32_t>(status.isAuthPassed), static_cast<int32_t>(status.hasAuthTrustLevel),
         status.authTrustLevel);
     std::lock_guard<std::recursive_mutex> guard(mutex_);
-    if (callback_ == nullptr) {
-        IAM_LOGE("callback is nullptr");
-        return GENERAL_ERROR;
-    }
+    ENSURE_OR_RETURN_VAL(callback_ != nullptr, GENERAL_ERROR);
     if (!status.hasAuthTrustLevel) {
         callback_->OnContinuousAuthStatusChange(status.isAuthPassed);
         return SUCCESS;
@@ -55,6 +53,7 @@ int32_t IpcContinuousAuthStatusCallbackService::OnContinuousAuthStatusChange(con
 
 std::shared_ptr<IContinuousAuthStatusCallback> IpcContinuousAuthStatusCallbackService::GetCallback()
 {
+    std::lock_guard<std::recursive_mutex> guard(mutex_);
     return callback_;
 }
 

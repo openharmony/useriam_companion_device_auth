@@ -31,7 +31,7 @@ namespace CompanionDeviceAuth {
 namespace {
 struct DeviceSelectCallbackHolder {
     std::shared_ptr<NapiDeviceSelectCallback> callback { nullptr };
-    int32_t selectPurpose;
+    int32_t selectPurpose {};
     std::shared_ptr<SetDeviceSelectResultCallback> setCallback;
     napi_env env { nullptr };
 };
