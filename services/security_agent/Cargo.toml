@@ -22,18 +22,15 @@ path = "rust/lib.rs"
 crate-type = ["rlib"]
 
 [dependencies]
-libc = { version = "0.2", default-features = false }
-openssl = { version = "0.10", features = ["vendored"] }
-cxx = { version = "1.0", features = ["c++14"], optional = true }
+libc = { version = "=0.2.153", default-features = false }
+openssl = { version = "=0.10.73", features = ["vendored"] }
+cxx = { version = "=1.0.130", features = ["c++14"], optional = true }
 hilog_rust = { git = "https://gitcode.com/openharmony/hiviewdfx_hilog.git" }
 
 [features]
 default = []
 cxxbridge = ["cxx"]
 test-utils = []
-
-[dev-dependencies]
-serde = { version = "1.0", features = ["derive"] }
 
 [profile.dev]
 panic = "abort"

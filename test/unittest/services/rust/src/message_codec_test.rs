@@ -34,8 +34,6 @@ fn serialize_attribute_test() {
     let message_codec_no_sign = MessageCodec::new(MessageSignParam::NoSign);
     assert!(message_codec_no_sign.serialize_attribute(&attr).is_ok());
 
-    let _ = ut_registry_guard!();
-
     let message_codec_executor =
         MessageCodec::new(MessageSignParam::Executor(KeyPair { pub_key: Vec::<u8>::new(), pri_key: Vec::<u8>::new() }));
 
@@ -75,8 +73,6 @@ fn deserialize_attribute_test() {
     data_and_sign_attr.set_u8_slice(AttributeKey::AttrData, &[0u8; 32]);
     attr.set_u8_slice(AttributeKey::AttrRoot, &data_and_sign_attr.to_bytes().unwrap());
     assert!(message_codec_nosign.deserialize_attribute(&attr.to_bytes().unwrap()).is_ok());
-
-    let _ = ut_registry_guard!();
 
     let message_codec_executor =
         MessageCodec::new(MessageSignParam::Executor(KeyPair { pub_key: Vec::<u8>::new(), pri_key: Vec::<u8>::new() }));

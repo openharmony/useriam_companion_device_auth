@@ -18,6 +18,7 @@ companion_device_auth_test_cflags = [
   "-DENABLE_TEST",
   "-Dprivate=public",
   "-Dprotected=public",
+  "-DGTEST_HAS_CLONE=0",
 ]
 
 companion_device_auth_fuzzer_cflags = [

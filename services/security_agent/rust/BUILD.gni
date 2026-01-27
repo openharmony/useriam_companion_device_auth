@@ -105,6 +105,3 @@ companion_device_auth_rust_service_external_deps = [
   "rust_libc:lib",
   "rust_rust-openssl:lib",
 ]
-
-companion_device_auth_rust_service_deps =
-    [ "//third_party/rust/crates/serde/serde:lib" ]

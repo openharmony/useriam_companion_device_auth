@@ -71,6 +71,9 @@ fn default_storage_io_read_test_not_exist() {
 
     let storage = DefaultStorageIo::new();
 
+    // Clean up environment: ensure file doesn't exist before testing
+    let _ = storage.delete("non_existence_file.txt");
+
     let result = storage.read("non_existence_file.txt");
     assert!(result.is_ok());
     assert_eq!(result.unwrap().len(), 0);
@@ -82,6 +85,9 @@ fn default_storage_io_delete_test_not_exist() {
     log_i!("default_storage_io_delete_test_not_exist start");
 
     let storage = DefaultStorageIo::new();
+
+    // Clean up environment: ensure file doesn't exist before testing
+    let _ = storage.delete("non_existence_file.txt");
 
     let result = storage.delete("non_existence_file.txt");
     assert!(result.is_ok());
