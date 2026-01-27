@@ -18,7 +18,6 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
-#include "iam_ptr.h"
 
 #include "sa_status_listener.h"
 #include "service_common.h"

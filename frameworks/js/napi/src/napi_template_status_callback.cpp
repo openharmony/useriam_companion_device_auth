@@ -20,7 +20,6 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
-#include "iam_ptr.h"
 #include "scope_guard.h"
 
 #include "companion_device_auth_napi_helper.h"
@@ -141,24 +140,20 @@ void NapiTemplateStatusCallback::OnTemplateStatusChange(const std::vector<Client
         return;
     }
     std::shared_ptr<TemplateStatusCallbackHolder> templateStatusCallbackHolder =
-        MakeShared<TemplateStatusCallbackHolder>();
-    if (templateStatusCallbackHolder == nullptr) {
-        IAM_LOGE("templateStatusCallbackHolder is null");
-        return;
-    }
+        std::make_shared<TemplateStatusCallbackHolder>();
+    ENSURE_OR_RETURN(templateStatusCallbackHolder != nullptr);
     templateStatusCallbackHolder->callback = shared_from_this();
     templateStatusCallbackHolder->templateStatusList = templateStatusList;
     templateStatusCallbackHolder->env = env_;
     auto task = [templateStatusCallbackHolder]() {
-        if (templateStatusCallbackHolder == nullptr || templateStatusCallbackHolder->callback == nullptr) {
-            IAM_LOGE("templateStatusCallbackHolder is invalid");
-            return;
-        }
+        ENSURE_OR_RETURN(templateStatusCallbackHolder != nullptr);
+        ENSURE_OR_RETURN(templateStatusCallbackHolder->callback != nullptr);
         napi_handle_scope scope = nullptr;
         napi_status status = napi_open_handle_scope(templateStatusCallbackHolder->env, &scope);
         ENSURE_OR_RETURN(status == napi_ok);
         ENSURE_OR_RETURN(scope != nullptr);
         ScopeGuard scopeGuard([&]() { napi_close_handle_scope(templateStatusCallbackHolder->env, scope); });
+        ENSURE_OR_RETURN(templateStatusCallbackHolder->callback != nullptr);
         napi_status ret =
             templateStatusCallbackHolder->callback->DoCallback(templateStatusCallbackHolder->templateStatusList);
         if (ret != napi_ok) {

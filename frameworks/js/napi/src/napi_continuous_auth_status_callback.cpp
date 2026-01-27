@@ -20,7 +20,6 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
-#include "iam_ptr.h"
 #include "scope_guard.h"
 
 #include "companion_device_auth_napi_helper.h"
@@ -137,11 +136,8 @@ void NapiContinuousAuthStatusCallback::OnContinuousAuthStatusChange(const bool i
         return;
     }
     std::shared_ptr<ContinuousAuthStatusCallbackHolder> continuousAuthStatusCallbackHolder =
-        MakeShared<ContinuousAuthStatusCallbackHolder>();
-    if (continuousAuthStatusCallbackHolder == nullptr) {
-        IAM_LOGE("continuousAuthStatusCallbackHolder is null");
-        return;
-    }
+        std::make_shared<ContinuousAuthStatusCallbackHolder>();
+    ENSURE_OR_RETURN(continuousAuthStatusCallbackHolder != nullptr);
     continuousAuthStatusCallbackHolder->callback = shared_from_this();
     continuousAuthStatusCallbackHolder->isAuthPassed = isAuthPassed;
     continuousAuthStatusCallbackHolder->authTrustLevel = authTrustLevel;
@@ -156,6 +152,7 @@ void NapiContinuousAuthStatusCallback::OnContinuousAuthStatusChange(const bool i
         ENSURE_OR_RETURN(status == napi_ok);
         ENSURE_OR_RETURN(scope != nullptr);
         ScopeGuard scopeGuard([&]() { napi_close_handle_scope(continuousAuthStatusCallbackHolder->env, scope); });
+        ENSURE_OR_RETURN(continuousAuthStatusCallbackHolder->callback != nullptr);
         napi_status ret = continuousAuthStatusCallbackHolder->callback->DoCallback(
             continuousAuthStatusCallbackHolder->isAuthPassed, continuousAuthStatusCallbackHolder->authTrustLevel);
         if (ret != napi_ok) {
