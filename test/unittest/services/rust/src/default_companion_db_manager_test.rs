@@ -809,8 +809,7 @@ fn default_companion_db_manager_read_device_token_test_success() {
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
-    parcel.write_i32(4);
-    parcel.write_bytes(&[1, 2, 3, 4]);
+    parcel.write_bytes(&[0u8; TOKEN_KEY_LEN]);
     parcel.write_i32(AuthTrustLevel::Atl3 as i32);
 
     let serialized_data = parcel.as_slice().to_vec();
@@ -955,8 +954,7 @@ fn default_companion_db_manager_read_device_token_test_atl_try_from_fail() {
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
-    parcel.write_i32(4);
-    parcel.write_bytes(&[1, 2, 3, 4]);
+    parcel.write_bytes(&[0u8; TOKEN_KEY_LEN]);
     parcel.write_i32(99999);
 
     let serialized_data = parcel.as_slice().to_vec();
@@ -1080,8 +1078,7 @@ fn default_companion_db_manager_read_device_sk_test_success() {
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
-    parcel.write_i32(3);
-    parcel.write_bytes(&[1, 2, 3]);
+    parcel.write_bytes(&[0u8; SHARE_KEY_LEN]);
 
     let serialized_data = parcel.as_slice().to_vec();
 
