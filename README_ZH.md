@@ -111,12 +111,10 @@ OpenHarmony开源架构内提供了伴随设备认证的纯软件实现，供开
 
 ## 相关仓
 
-**[useriam_user_auth_framework](https://gitee.com/openharmony/useriam_user_auth_framework)**
+**[useriam_user_auth_framework](https://gitcode.com/openharmony/useriam_user_auth_framework)**
 
-**[useriam_pin_auth](https://gitee.com/openharmony/useriam_pin_auth)**
+**[useriam_pin_auth](https://gitcode.com/openharmony/useriam_pin_auth)**
 
-**[useriam_face_auth](https://gitee.com/openharmony/useriam_face_auth)**
+**[useriam_face_auth](https://gitcode.com/openharmony/useriam_face_auth)**
 
-**[drivers_peripheral](https://gitee.com/openharmony/drivers_peripheral)**
-
-**[drivers_interface](https://gitee.com/openharmony/drivers_interface)**
+**[useriam_fingerprint_auth](https://gitcode.com/openharmony/useriam_fingerprint_auth)**
