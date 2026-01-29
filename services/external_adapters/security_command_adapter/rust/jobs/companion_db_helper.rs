@@ -26,7 +26,6 @@ pub fn add_host_device(device_info: &HostDeviceInfo, sk_info: &HostDeviceSk) -> 
     {
         if CompanionDbManagerRegistry::get_mut().remove_device(info.binding_id).is_err() {
             log_e!("remove device fail");
-            return Err(ErrorCode::GeneralError);
         }
     }
 

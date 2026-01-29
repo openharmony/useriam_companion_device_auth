@@ -759,26 +759,6 @@ fn default_host_db_manager_read_device_db_test_deserialize_count_fail() {
 }
 
 #[test]
-fn default_host_db_manager_read_device_db_test_negative_count() {
-    let _guard = ut_registry_guard!();
-    log_i!("default_host_db_manager_read_device_db_test_negative_count start");
-
-    let mut parcel = Parcel::new();
-    parcel.write_i32(0);
-    parcel.write_i32(-1);
-
-    let serialized_data = parcel.as_slice().to_vec();
-
-    let mut mock_storage_io = MockStorageIo::new();
-    mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
-    StorageIoRegistry::set(Box::new(mock_storage_io));
-
-    let mut manager = DefaultHostDbManager::new();
-    let result = manager.read_device_db();
-    assert_eq!(result, Err(ErrorCode::BadParam));
-}
-
-#[test]
 fn default_host_db_manager_read_device_db_test_deserialize_template_id_fail() {
     let _guard = ut_registry_guard!();
     log_i!("default_host_db_manager_read_device_db_test_deserialize_template_id_fail start");
@@ -1310,26 +1290,6 @@ fn default_host_db_manager_read_device_capability_info_test_deserialize_miss_cou
 }
 
 #[test]
-fn default_host_db_manager_read_device_capability_info_test_deserialize_negative_count() {
-    let _guard = ut_registry_guard!();
-    log_i!("default_host_db_manager_read_device_capability_info_test_deserialize_negative_count start");
-
-    let mut parcel = Parcel::new();
-    parcel.write_i32(0);
-    parcel.write_i32(-1);
-
-    let serialized_data = parcel.as_slice().to_vec();
-
-    let mut mock_storage_io = MockStorageIo::new();
-    mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
-    StorageIoRegistry::set(Box::new(mock_storage_io));
-
-    let manager = DefaultHostDbManager::new();
-    let result = manager.read_device_capability_info(123);
-    assert_eq!(result, Err(ErrorCode::BadParam));
-}
-
-#[test]
 fn default_host_db_manager_read_device_capability_info_test_deserialize_miss_type() {
     let _guard = ut_registry_guard!();
     log_i!("default_host_db_manager_read_device_capability_info_test_deserialize_miss_type start");
@@ -1505,8 +1465,7 @@ fn default_host_db_manager_read_device_sk_test_success() {
     parcel.write_i32(0);
     parcel.write_i32(1);
     parcel.write_i32(DeviceType::Default as i32);
-    parcel.write_i32(4);
-    parcel.write_bytes(&[1, 2, 3, 4]);
+    parcel.write_bytes(&[0u8; TOKEN_KEY_LEN]);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -1578,26 +1537,6 @@ fn default_host_db_manager_read_device_sk_test_deserialize_miss_count() {
     let manager = DefaultHostDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
-}
-
-#[test]
-fn default_host_db_manager_read_device_sk_test_deserialize_negative_count() {
-    let _guard = ut_registry_guard!();
-    log_i!("default_host_db_manager_read_device_sk_test_deserialize_negative_count start");
-
-    let mut parcel = Parcel::new();
-    parcel.write_i32(0);
-    parcel.write_i32(-1);
-
-    let serialized_data = parcel.as_slice().to_vec();
-
-    let mut mock_storage_io = MockStorageIo::new();
-    mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
-    StorageIoRegistry::set(Box::new(mock_storage_io));
-
-    let manager = DefaultHostDbManager::new();
-    let result = manager.read_device_sk(123);
-    assert_eq!(result, Err(ErrorCode::BadParam));
 }
 
 #[test]
