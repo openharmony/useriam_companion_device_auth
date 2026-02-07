@@ -129,9 +129,9 @@ bool HostTokenAuthRequest::SendTokenAuthRequest(const std::vector<uint8_t> &toke
     EncodeTokenAuthRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::TOKEN_AUTH, request,
-        [weakSelf = weak_from_this()](const Attributes &reply) {
+        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleTokenAuthReply(reply);
         });
     if (!sendRet) {

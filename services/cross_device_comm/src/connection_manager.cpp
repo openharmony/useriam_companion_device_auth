@@ -120,6 +120,7 @@ bool ConnectionManager::OpenConnection(const PhysicalDeviceKey &physicalDeviceKe
     IAM_LOGI("opening connection to physical device: type=%{public}d id=%{public}s on channel: %{public}d",
         static_cast<int32_t>(physicalDeviceKey.idType), GetMaskedString(physicalDeviceKey.deviceId).c_str(), channelId);
 
+    ENSURE_OR_RETURN_VAL(channelManager_ != nullptr, false);
     ENSURE_OR_RETURN_VAL(CheckResourceLimits(physicalDeviceKey), false);
 
     auto channel = channelManager_->GetChannelById(channelId);
@@ -161,6 +162,7 @@ bool ConnectionManager::OpenConnection(const PhysicalDeviceKey &physicalDeviceKe
 void ConnectionManager::CloseConnection(const std::string &connectionName, const std::string &reason)
 {
     IAM_LOGI("closing connection: %{public}s, reason: %{public}s", connectionName.c_str(), reason.c_str());
+    ENSURE_OR_RETURN(channelManager_ != nullptr);
 
     auto it = connectionMap_.find(connectionName);
     if (it == connectionMap_.end()) {
@@ -212,6 +214,7 @@ bool ConnectionManager::HandleIncomingConnection(const std::string &connectionNa
 {
     IAM_LOGI("handling incoming connection: %{public}s, deviceId=%{public}s", connectionName.c_str(),
         GET_MASKED_STR_CSTR(physicalDeviceKey.deviceId));
+    ENSURE_OR_RETURN_VAL(channelManager_ != nullptr, false);
 
     if (connectionMap_.find(connectionName) != connectionMap_.end()) {
         IAM_LOGW("connection already exists: %{public}s", connectionName.c_str());

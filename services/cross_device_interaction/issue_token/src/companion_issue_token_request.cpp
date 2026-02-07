@@ -51,10 +51,10 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
-    localDeviceStatusSubscription_ =
-        GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {
+    localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
+        [weakSelf = weak_from_this(), description = GetDescription()](bool isActive) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleAuthMaintainActiveChanged(isActive);
         });
     if (localDeviceStatusSubscription_ == nullptr) {
@@ -74,9 +74,10 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     issueTokenSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::ISSUE_TOKEN,
-            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
+                OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleIssueTokenMessage(request, onMessageReply);
             });
     if (issueTokenSubscription_ == nullptr) {

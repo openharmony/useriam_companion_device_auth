@@ -39,7 +39,6 @@
 #include "misc_manager.h"
 #include "singleton_manager.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

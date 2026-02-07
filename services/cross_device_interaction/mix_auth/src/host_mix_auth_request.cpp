@@ -66,9 +66,10 @@ void HostMixAuthRequest::Start()
     for (auto templateId : templateIdList_) {
         auto hostSingleMixAuthRequest =
             GetRequestFactory().CreateHostSingleMixAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId,
-                [weakSelf = weak_from_this(), templateId](ResultCode result, const std::vector<uint8_t> &extraInfo) {
+                [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
+                    const std::vector<uint8_t> &extraInfo) {
                     auto self = weakSelf.lock();
-                    ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                    ENSURE_OR_RETURN_DESC(description, self != nullptr);
                     self->HandleAuthResult(templateId, result, extraInfo);
                 });
         if (hostSingleMixAuthRequest == nullptr) {

@@ -4,3 +4,4 @@ build
 .cursor
 .cache
 tmp
+.DS_Store

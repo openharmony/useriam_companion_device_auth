@@ -42,7 +42,6 @@
         "c_utils",
         "device_manager",
         "dsoftbus",
-        "hiappevent",
         "hicollie",
         "hilog",
         "init",

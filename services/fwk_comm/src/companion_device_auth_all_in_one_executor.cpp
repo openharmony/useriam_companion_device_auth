@@ -151,6 +151,7 @@ FwkResultCode Inner::Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
 
     IAM_LOGI("scheduleId:%{public}s", GET_TRUNCATED_CSTR(scheduleId));
     auto callback = std::make_shared<CompanionDeviceAuthExecutorCallback>(callbackObj);
+    ENSURE_OR_RETURN_VAL(callback != nullptr, FwkResultCode::GENERAL_ERROR);
     FwkResultCallback requestCallback = [callback](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (*callback)(result, extraInfo);
     };
@@ -190,6 +191,7 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
 
     IAM_LOGI("scheduleId:%{public}s", GET_TRUNCATED_CSTR(scheduleId));
     auto callback = std::make_shared<CompanionDeviceAuthExecutorCallback>(callbackObj);
+    ENSURE_OR_RETURN_VAL(callback != nullptr, FwkResultCode::GENERAL_ERROR);
     FwkResultCallback requestCallback = [callback](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (*callback)(result, extraInfo);
     };
@@ -339,6 +341,7 @@ CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutor()
 {
     IAM_LOGI("start");
     inner_ = std::make_shared<CompanionDeviceAuthAllInOneExecutorInner>();
+    ENSURE_OR_RETURN(inner_ != nullptr);
 }
 
 std::shared_ptr<CompanionDeviceAuthAllInOneExecutor> CompanionDeviceAuthAllInOneExecutor::Create()
@@ -358,6 +361,7 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::GetExecutorInfo(FwkExecutorIn
     auto inner = inner_;
     ENSURE_OR_RETURN_VAL(inner != nullptr, FwkResultCode::GENERAL_ERROR);
     auto infoBox = std::make_shared<FwkExecutorInfo>();
+    ENSURE_OR_RETURN_VAL(infoBox != nullptr, FwkResultCode::GENERAL_ERROR);
     FwkResultCode ret = RunOnResidentSync([inner, infoBox]() { return inner->GetExecutorInfo(*infoBox); });
     info = *infoBox;
     return ret;

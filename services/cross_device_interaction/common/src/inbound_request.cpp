@@ -44,10 +44,11 @@ void InboundRequest::Start()
 
     ENSURE_OR_RETURN_DESC(GetDescription(), !connectionName_.empty());
     connectionStatusSubscription_ = GetCrossDeviceCommManager().SubscribeConnectionStatus(connectionName_,
-        [weakSelf = GetWeakPtr()](const std::string &connName, ConnectionStatus status, const std::string &reason) {
+        [weakSelf = GetWeakPtr(), description = GetDescription()](const std::string &connName, ConnectionStatus status,
+            const std::string &reason) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self->connectionName_ == connName);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self->connectionName_ == connName);
 
             self->HandleConnectionStatus(connName, status, reason);
         });
