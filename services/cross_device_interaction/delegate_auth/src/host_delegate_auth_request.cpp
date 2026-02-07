@@ -88,9 +88,10 @@ bool HostDelegateAuthRequest::InitDelegateResultSubscription()
     }
     delegateResultSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::SEND_DELEGATE_AUTH_RESULT,
-            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
+                OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleSendDelegateAuthRequestMsg(request, onMessageReply);
             });
     if (delegateResultSubscription_ == nullptr) {
@@ -138,9 +139,9 @@ void HostDelegateAuthRequest::HostBeginDelegateAuth()
     EncodeStartDelegateAuthRequest(startRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::START_DELEGATE_AUTH,
-        request, [weakSelf = weak_from_this()](const Attributes &message) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleStartDelegateAuthReply(message);
         });
     if (!sendRet) {

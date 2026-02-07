@@ -105,10 +105,10 @@ bool OutboundRequest::OpenConnection()
     UpdateDescription(GenerateDescription(requestType_, requestId_, connectionName_));
 
     connectionStatusSubscription_ = GetCrossDeviceCommManager().SubscribeConnectionStatus(connectionName_,
-        [weakSelf = GetWeakPtr()](const std::string &connectionName, ConnectionStatus status,
-            const std::string &reason) {
+        [weakSelf = GetWeakPtr(), description = GetDescription()](const std::string &connectionName,
+            ConnectionStatus status, const std::string &reason) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             if (self->connectionName_ != connectionName) {
                 return;
             }
@@ -119,9 +119,10 @@ bool OutboundRequest::OpenConnection()
 
     requestAbortedSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(connectionName_, MessageType::REQUEST_ABORTED,
-            [weakSelf = GetWeakPtr()](const Attributes &request, std::function<void(const Attributes &)> onReply) {
+            [weakSelf = GetWeakPtr(), description = GetDescription()](const Attributes &request,
+                std::function<void(const Attributes &)> onReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleRequestAborted(request, onReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), requestAbortedSubscription_ != nullptr, false);

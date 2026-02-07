@@ -23,7 +23,6 @@
 #include "iam_logger.h"
 #include "iam_safe_arithmetic.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

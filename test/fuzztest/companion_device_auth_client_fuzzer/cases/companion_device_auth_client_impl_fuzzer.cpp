@@ -42,7 +42,6 @@ constexpr uint32_t BASE_LOOP_COUNT = 20;
 constexpr uint32_t LOOP_PER_OPERATION = 5;
 constexpr uint32_t MINIMUM_REMAINING_BYTES = 10;
 
-// Forward declarations for IPC types (from IDL)
 struct IpcTemplateStatus;
 struct IpcSubscribeContinuousAuthStatusParam;
 

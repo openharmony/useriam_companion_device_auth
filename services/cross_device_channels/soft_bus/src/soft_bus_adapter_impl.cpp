@@ -27,7 +27,6 @@
 #include "task_runner_manager.h"
 #include "xcollie_helper.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

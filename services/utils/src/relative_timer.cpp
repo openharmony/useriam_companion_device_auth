@@ -23,11 +23,11 @@
 #include "subscription.h"
 #include "timer.h"
 
+#define LOG_TAG "CDA_SA"
+
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-
-#define LOG_TAG "CDA_SA"
 
 RelativeTimer::RelativeTimer() : timer_("companion_device_auth_relative_timer")
 {

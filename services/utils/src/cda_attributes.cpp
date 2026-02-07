@@ -26,11 +26,11 @@
 #include "iam_safe_arithmetic.h"
 #include "service_common.h"
 
+#define LOG_TAG "CDA_SA"
+
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-
-#define LOG_TAG "CDA_SA"
 
 namespace {
 template <typename T>

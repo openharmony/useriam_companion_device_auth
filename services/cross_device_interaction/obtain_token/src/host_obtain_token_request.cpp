@@ -99,9 +99,10 @@ bool HostObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     obtainTokenSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::OBTAIN_TOKEN,
-            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
+                OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleObtainTokenMessage(request, onMessageReply);
             });
     if (obtainTokenSubscription_ == nullptr) {
@@ -285,9 +286,10 @@ bool HostObtainTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &
         return false;
     }
     deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey,
-        [weakSelf = weak_from_this()](const std::vector<DeviceStatus> &deviceStatusList) {
+        [weakSelf = weak_from_this(), description = GetDescription()](
+            const std::vector<DeviceStatus> &deviceStatusList) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandlePeerDeviceStatusChanged(deviceStatusList);
         });
     if (deviceStatusSubscription_ == nullptr) {

@@ -30,12 +30,12 @@
 #include "callback_death_recipient.h"
 #include "task_runner_manager.h"
 
-#undef LOG_TAG
-#define LOG_TAG "CDA_SA"
-
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+
+#undef LOG_TAG
+#define LOG_TAG "CDA_SA"
 
 template <typename CallbackType, typename DerivedType>
 class CallbackSubscriptionBase : public std::enable_shared_from_this<DerivedType>, public NoCopyable {
@@ -123,4 +123,5 @@ protected:
 } // namespace UserIam
 } // namespace OHOS
 
+#undef LOG_TAG
 #endif // COMPANION_DEVICE_AUTH_CALLBACK_SUBSCRIPTION_BASE_H

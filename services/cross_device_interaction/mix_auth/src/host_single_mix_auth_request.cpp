@@ -49,12 +49,14 @@ void HostSingleMixAuthRequest::Start()
         return;
     }
 
-    tokenAuthRequest_ = GetRequestFactory().CreateHostTokenAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_,
-        templateId_, [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
-            auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
-            self->HandleTokenAuthResult(result, extraInfo);
-        });
+    tokenAuthRequest_ =
+        GetRequestFactory().CreateHostTokenAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId_,
+            [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
+                const std::vector<uint8_t> &extraInfo) {
+                auto self = weakSelf.lock();
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                self->HandleTokenAuthResult(result, extraInfo);
+            });
     if (tokenAuthRequest_ == nullptr) {
         IAM_LOGE("%{public}s CreateHostTokenAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
@@ -101,12 +103,14 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
-    delegateAuthRequest_ = GetRequestFactory().CreateHostDelegateAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_,
-        templateId_, [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
-            auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
-            self->HandleDelegateAuthResult(result, extraInfo);
-        });
+    delegateAuthRequest_ =
+        GetRequestFactory().CreateHostDelegateAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId_,
+            [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
+                const std::vector<uint8_t> &extraInfo) {
+                auto self = weakSelf.lock();
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                self->HandleDelegateAuthResult(result, extraInfo);
+            });
     if (delegateAuthRequest_ == nullptr) {
         IAM_LOGE("%{public}s CreateHostDelegateAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);

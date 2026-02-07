@@ -44,7 +44,7 @@ std::shared_ptr<Companion> Companion::Create(const PersistedCompanionStatus &per
 {
     auto companion =
         std::shared_ptr<Companion>(new (std::nothrow) Companion(persistedStatus, addedToIdm, managerWeakPtr));
-    ENSURE_OR_RETURN_DESC_VAL(companion->GetDescription(), companion != nullptr, nullptr);
+    ENSURE_OR_RETURN_VAL(companion != nullptr, nullptr);
 
     if (!companion->Initialize()) {
         IAM_LOGE("%{public}s failed to initialize", companion->GetDescription());
@@ -78,9 +78,10 @@ bool Companion::Initialize()
 {
     deviceStatusSubscription_ =
         GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.companionDeviceStatus.deviceKey,
-            [weakSelf = weak_from_this()](const std::vector<DeviceStatus> &deviceStatusList) {
+            [weakSelf = weak_from_this(), description = GetDescription()](
+                const std::vector<DeviceStatus> &deviceStatusList) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleDeviceStatusChanged(deviceStatusList);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), deviceStatusSubscription_ != nullptr, false);
@@ -170,10 +171,10 @@ void Companion::SetCompanionTokenAtl(std::optional<Atl> tokenAtl)
         (void)GetSecurityAgent().HostRevokeToken(input);
     } else if (tokenAtl.has_value()) {
         tokenTimeoutSubscription_ = RelativeTimer::GetInstance().Register(
-            [weakSelf = weak_from_this()]() {
+            [weakSelf = weak_from_this(), description = GetDescription()]() {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
-                IAM_LOGI("%{public}s token timeout, revoking token", self->GetDescription());
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                IAM_LOGI("%{public}s token timeout, revoking token", description);
                 self->SetCompanionTokenAtl(std::nullopt);
             },
             TOKEN_TIMEOUT_MS);
@@ -195,10 +196,10 @@ void Companion::RefreshTokenTimer()
 
     tokenTimeoutSubscription_.reset();
     tokenTimeoutSubscription_ = RelativeTimer::GetInstance().Register(
-        [weakSelf = weak_from_this()]() {
+        [weakSelf = weak_from_this(), description = GetDescription()]() {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
-            IAM_LOGI("%{public}s token timeout, revoking token", self->GetDescription());
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            IAM_LOGI("%{public}s token timeout, revoking token", description);
             self->SetCompanionTokenAtl(std::nullopt);
         },
         TOKEN_TIMEOUT_MS);
@@ -246,17 +247,19 @@ void Companion::StartTemplateAddToIdmTimer()
         return;
     }
 
-    ScopeGuard guard([this]() {
-        IAM_LOGE("%{public}s failed to start timer, triggering timeout handler", GetDescription());
-        HandleTemplateAddToIdmTimeout();
+    ScopeGuard guard([weakSelf = weak_from_this(), description = GetDescription()]() {
+        auto self = weakSelf.lock();
+        ENSURE_OR_RETURN_DESC(description, self != nullptr);
+        IAM_LOGE("%{public}s failed to start timer, triggering timeout handler", description);
+        self->HandleTemplateAddToIdmTimeout();
     });
 
     IAM_LOGI("%{public}s starting template add timer, timeout: %{public}u ms", GetDescription(),
         IDM_ADD_TEMPLATE_TIMEOUT_MS);
     templateAddToIdmTimer_ = RelativeTimer::GetInstance().Register(
-        [weakSelf = weak_from_this()]() {
+        [weakSelf = weak_from_this(), description = GetDescription()]() {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleTemplateAddToIdmTimeout();
         },
         IDM_ADD_TEMPLATE_TIMEOUT_MS);

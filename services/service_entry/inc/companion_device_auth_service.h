@@ -30,6 +30,8 @@
 #include "system_ability.h"
 
 #include "adapter_manager.h"
+#include "base_service_core.h"
+#include "base_service_initializer.h"
 #include "common_defines.h"
 #include "companion_device_auth_stub.h"
 #include "service_common.h"
@@ -37,13 +39,20 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+
+class SubscriptionManager;
+
+// Function pointer types for Creater methods
+using BaseServiceInitializerCreater = std::function<std::shared_ptr<BaseServiceInitializer>()>;
+using BaseServiceCoreCreater = std::function<std::shared_ptr<BaseServiceCore>(
+    const std::shared_ptr<SubscriptionManager> &, const std::vector<BusinessId> &)>;
+
 class CompanionDeviceAuthService : public SystemAbility, public CompanionDeviceAuthStub, public NoCopyable {
     DECLARE_SYSTEM_ABILITY(CompanionDeviceAuthService);
 
 public:
-    CompanionDeviceAuthService();
+    CompanionDeviceAuthService(BaseServiceInitializerCreater initializerCreater, BaseServiceCoreCreater coreCreater);
     ~CompanionDeviceAuthService() override = default;
-    static sptr<CompanionDeviceAuthService> GetInstance();
 
     ErrCode SubscribeAvailableDeviceStatus(int32_t localUserId,
         const sptr<IIpcAvailableDeviceStatusCallback> &deviceStatusCallback,
@@ -73,8 +82,6 @@ public:
     int32_t CallbackEnter(uint32_t code) override;
     int32_t CallbackExit(uint32_t code, int32_t result) override;
 
-    class CompanionDeviceAuthServiceInner;
-
 protected:
     void OnStart() override;
     void OnStop() override;
@@ -86,8 +93,13 @@ private:
     std::optional<typename std::invoke_result<Func>::type> RunOnResidentSync(Func &&func,
         uint32_t timeoutSec = MAX_SYNC_WAIT_TIME_SEC);
 
-    std::shared_ptr<CompanionDeviceAuthServiceInner> inner_;
+    std::shared_ptr<BaseServiceCore> inner_;
+    std::shared_ptr<BaseServiceInitializer> baseServiceInitializer_;
     std::mutex innerMutex_;
+
+    // Function pointers for Creater methods (for dependency injection)
+    BaseServiceInitializerCreater initializerCreater_;
+    BaseServiceCoreCreater coreCreater_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

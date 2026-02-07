@@ -23,13 +23,11 @@
 #include "if_system_ability_manager.h"
 #include "xcollie_helper.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-
 bool SaManagerAdapterImpl::SubscribeSystemAbility(int32_t systemAbilityId,
     const sptr<SystemAbilityStatusChangeStub> &listener)
 {

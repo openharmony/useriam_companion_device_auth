@@ -24,7 +24,6 @@
 #include "companion_device_auth_ffi.h"
 #include "companion_device_auth_ffi_util.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {
