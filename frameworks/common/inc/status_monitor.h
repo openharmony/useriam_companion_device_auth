@@ -30,7 +30,7 @@
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "CDA_FRAMEWORK"
+#define LOG_TAG "CDA_SDK"
 
 namespace OHOS {
 namespace UserIam {

@@ -46,7 +46,6 @@ namespace CompanionDeviceAuth {
         }                                                 \
     } while (0)
 
-// these macros are used to check condition with description for better debugging
 #define ENSURE_OR_RETURN_DESC(desc, cond)                                  \
     do {                                                                   \
         if (!(cond)) {                                                     \

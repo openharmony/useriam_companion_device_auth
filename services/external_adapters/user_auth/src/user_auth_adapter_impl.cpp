@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 
+#include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
 #include "ipc_skeleton.h"
@@ -29,7 +30,6 @@
 #include "user_auth_client.h"
 #include "user_auth_client_callback.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {
@@ -113,6 +113,7 @@ uint64_t UserAuthAdapterImpl::BeginDelegateAuth(uint32_t userId, const std::vect
 
     // Create bridge callback
     auto authCallback = std::make_shared<AuthCallbackBridge>(std::move(callback));
+    ENSURE_OR_RETURN_VAL(authCallback != nullptr, 0);
     XCollieHelper xcollie("UserAuthAdapterImpl-BeginDelegateAuth", API_CALL_TIMEOUT);
 
     SetFirstCallerTokenID(IPCSkeleton::GetCallingTokenID());

@@ -52,18 +52,20 @@ bool CompanionAddCompanionRequest::OnStart(ErrorGuard &errorGuard)
 
     beginAddHostBindingSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::BEGIN_ADD_HOST_BINDING,
-            [weakSelf = weak_from_this()](const Attributes &msg, OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &msg,
+                OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleBeginAddCompanion(msg, onMessageReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), beginAddHostBindingSubscription_ != nullptr, false);
 
     endAddHostBindingSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::END_ADD_HOST_BINDING,
-            [weakSelf = weak_from_this()](const Attributes &msg, OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &msg,
+                OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 self->HandleEndAddCompanion(msg, onMessageReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), endAddHostBindingSubscription_ != nullptr, false);

@@ -54,7 +54,6 @@ ohos_shared_library("companiondeviceauth") {
     "access_token:libtokenid_sdk",
     "ace_engine:ace_uicontent",
     "c_utils:utils",
-    "hiappevent:hiappevent_innerapi",
     "hilog:libhilog",
     "ipc:ipc_single",
     "jsoncpp:jsoncpp",

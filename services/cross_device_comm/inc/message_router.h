@@ -63,12 +63,6 @@ private:
 
     bool Initialize();
 
-    struct SubscriptionKey {
-        MessageType msgType { MessageType::INVALID };
-        std::string connectionName { "" };
-        bool operator<(const SubscriptionKey &other) const;
-    };
-
     struct PendingReplyMessage {
         std::string connectionName;
         uint32_t messageSeq;
@@ -90,8 +84,10 @@ private:
     void HandleRequest(const MessageHeader &header, const Attributes &payload, ChannelId channelId);
     void HandleReply(const MessageHeader &header, const Attributes &payload);
 
-    void RegisterSubscription(const SubscriptionKey &key, OnMessage &&onMessage, const std::string &logMsg);
-    void UnregisterSubscription(const SubscriptionKey &key);
+    void RegisterSubscription(const std::string &key, OnMessage &&onMessage, const std::string &logMsg);
+    void UnregisterSubscription(const std::string &key);
+
+    static std::string BuildSubscriptionKey(const std::string &connectionName, MessageType msgType);
 
     void RefreshConnectionStatusSubscription(const std::string &connectionName);
     void RefreshTimeOutSubscription();
@@ -102,7 +98,7 @@ private:
     void SendErrorReply(const MessageHeader &requestHeader, ChannelId channelId);
     void SendReply(const MessageHeader &requestHeader, ChannelId channelId, const Attributes &reply);
 
-    std::map<SubscriptionKey, OnMessage> subscriptions_;
+    std::map<std::string, OnMessage> subscriptions_;
     std::map<uint32_t, PendingReplyMessage> pendingReplyMessages_;
     std::map<ChannelId, std::unique_ptr<Subscription>> channelSubscriptions_;
     std::map<std::string, std::unique_ptr<Subscription>> connectionStatusSubscriptions_;

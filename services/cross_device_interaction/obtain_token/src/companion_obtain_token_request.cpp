@@ -46,10 +46,10 @@ bool CompanionObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
-    localDeviceStatusSubscription_ =
-        GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {
+    localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
+        [weakSelf = weak_from_this(), description = GetDescription()](bool isActive) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleAuthMaintainActiveChanged(isActive);
         });
     if (localDeviceStatusSubscription_ == nullptr) {
@@ -97,9 +97,9 @@ bool CompanionObtainTokenRequest::SendPreObtainTokenRequest()
     EncodePreObtainTokenRequest(preObtainTokenRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::PRE_OBTAIN_TOKEN, request,
-        [weakSelf = weak_from_this()](const Attributes &reply) {
+        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandlePreObtainTokenReply(reply);
         });
     if (!sendRet) {
@@ -174,9 +174,9 @@ bool CompanionObtainTokenRequest::SendObtainTokenRequest(const std::vector<uint8
     EncodeObtainTokenRequest(obtainRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::OBTAIN_TOKEN, request,
-        [weakSelf = weak_from_this()](const Attributes &reply) {
+        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleObtainTokenReply(reply);
         });
     if (!sendRet) {
