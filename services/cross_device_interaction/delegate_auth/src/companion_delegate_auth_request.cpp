@@ -77,9 +77,10 @@ bool CompanionDelegateAuthRequest::CompanionBeginDelegateAuth()
     auto localDeviceKey = GetCrossDeviceCommManager().GetLocalDeviceKeyByConnectionName(GetConnectionName());
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), localDeviceKey.has_value(), false);
 
-    AuthResultCallback callback = [weakSelf = weak_from_this()](int32_t result, const std::vector<uint8_t> &token) {
+    AuthResultCallback callback = [weakSelf = weak_from_this(), description = GetDescription()](int32_t result,
+                                      const std::vector<uint8_t> &token) {
         auto self = weakSelf.lock();
-        ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+        ENSURE_OR_RETURN_DESC(description, self != nullptr);
         ResultCode resultCode = (result == ResultCode::SUCCESS) ? ResultCode::SUCCESS : ResultCode::GENERAL_ERROR;
         self->HandleDelegateAuthResult(resultCode, token);
     };
@@ -143,9 +144,9 @@ bool CompanionDelegateAuthRequest::SendDelegateAuthResult(ResultCode resultCode,
     EncodeSendDelegateAuthResultRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::SEND_DELEGATE_AUTH_RESULT,
-        request, [weakSelf = weak_from_this()](const Attributes &message) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleSendDelegateAuthResultReply(message);
         });
     if (!sendRet) {

@@ -24,9 +24,6 @@
 #include "security_agent.h"
 #include "service_common.h"
 
-#undef LOG_TAG
-#define LOG_TAG "CDA_SA"
-
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {

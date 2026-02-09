@@ -24,7 +24,6 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-constexpr int32_t COMPANION_DEVICE_AUTH_SA_ID = 945;
 enum ResultCode : int32_t {
     SUCCESS = 0,
     FAIL = 1,

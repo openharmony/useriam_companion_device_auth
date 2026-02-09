@@ -46,9 +46,9 @@ HostAddCompanionRequest::HostAddCompanionRequest(ScheduleId scheduleId, const st
 bool HostAddCompanionRequest::OnStart([[maybe_unused]] ErrorGuard &errorGuard)
 {
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_, SelectPurpose::SELECT_ADD_DEVICE,
-        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices) {
+        [weakSelf = weak_from_this(), description = GetDescription()](const std::vector<DeviceKey> &selectedDevices) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleDeviceSelectResult(selectedDevices);
         });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), selectorSet, false);
@@ -111,9 +111,9 @@ void HostAddCompanionRequest::OnConnected()
     EncodeInitKeyNegotiationRequest(initRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::INIT_KEY_NEGOTIATION,
-        request, [weakSelf = weak_from_this()](const Attributes &reply) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleInitKeyNegotiationReply(reply);
         });
     if (!sendRet) {
@@ -158,9 +158,9 @@ void HostAddCompanionRequest::HandleInitKeyNegotiationReply(const Attributes &re
     EncodeBeginAddHostBindingRequest(beginRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::BEGIN_ADD_HOST_BINDING,
-        request, [weakSelf = weak_from_this()](const Attributes &message) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleBeginAddHostBindingReply(message);
         });
     if (!sendRet) {
@@ -277,9 +277,9 @@ bool HostAddCompanionRequest::SendEndAddHostBindingMsg(ResultCode result)
     EncodeEndAddHostBindingRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::END_ADD_HOST_BINDING,
-        request, [weakSelf = weak_from_this()](const Attributes &message) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleEndAddHostBindingReply(message);
         });
     if (!sendRet) {

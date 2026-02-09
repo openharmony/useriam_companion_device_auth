@@ -64,6 +64,9 @@ ohos_static_library("companion_device_auth_service_static") {
     "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
   ]
 
+  # Add flag for static library compilation
+  cflags = [ "-DSTATIC_LIBRARY" ]
+
   deps = companion_device_auth_service_deps
   external_deps = companion_device_auth_service_external_deps
 

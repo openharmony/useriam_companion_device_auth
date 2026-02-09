@@ -75,9 +75,9 @@ void HostRemoveHostBindingRequest::SendRemoveHostBindingRequest()
     EncodeRemoveHostBindingRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::REMOVE_HOST_BINDING,
-        request, [weakSelf = weak_from_this()](const Attributes &message) {
+        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(self->GetDescription(), self != nullptr);
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleRemoveHostBindingReply(message);
         });
     if (!sendRet) {

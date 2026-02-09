@@ -427,6 +427,7 @@ void DeviceStatusManager::RefreshDeviceList(bool resync)
 std::map<PhysicalDeviceKey, PhysicalDeviceStatus> DeviceStatusManager::CollectFilteredDevices()
 {
     std::map<PhysicalDeviceKey, PhysicalDeviceStatus> filteredDevicesMap;
+    ENSURE_OR_RETURN_VAL(channelMgr_ != nullptr, filteredDevicesMap);
 
     for (const auto &channel : channelMgr_->GetAllChannels()) {
         ENSURE_OR_CONTINUE(channel != nullptr);

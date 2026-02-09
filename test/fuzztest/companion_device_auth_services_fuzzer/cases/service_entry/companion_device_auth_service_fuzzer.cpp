@@ -19,6 +19,8 @@
 
 #include "fuzzer/FuzzedDataProvider.h"
 
+#include "base_service_core.h"
+#include "base_service_initializer.h"
 #include "companion_device_auth_service.h"
 #include "fuzz_constants.h"
 #include "fuzz_data_generator.h"
@@ -27,6 +29,8 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+
+class SubscriptionManager;
 
 using CompanionDeviceAuthServiceFuzzFunction = void (*)(sptr<CompanionDeviceAuthService> &service,
     FuzzedDataProvider &);
@@ -178,7 +182,12 @@ constexpr uint8_t NUM_FUZZ_OPERATIONS = sizeof(g_fuzzFuncs) / sizeof(CompanionDe
 
 void FuzzCompanionDeviceAuthService(FuzzedDataProvider &fuzzData)
 {
-    auto service = CompanionDeviceAuthService::GetInstance();
+    static sptr<CompanionDeviceAuthService> service = sptr<CompanionDeviceAuthService>::MakeSptr(
+        []() -> std::shared_ptr<BaseServiceInitializer> { return BaseServiceInitializer::Create(); },
+        [](const std::shared_ptr<SubscriptionManager> &subscriptionManager,
+            const std::vector<BusinessId> &supportedBusinessIds) -> std::shared_ptr<BaseServiceCore> {
+            return BaseServiceCore::Create(subscriptionManager, supportedBusinessIds);
+        });
     if (service == nullptr) {
         return;
     }

@@ -39,13 +39,11 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-bool MessageRouter::SubscriptionKey::operator<(const SubscriptionKey &other) const
+std::string MessageRouter::BuildSubscriptionKey(const std::string &connectionName, MessageType msgType)
 {
-    if (connectionName != other.connectionName) {
-        return connectionName < other.connectionName;
-    }
-
-    return msgType < other.msgType;
+    std::ostringstream oss;
+    oss << connectionName << "_" << static_cast<uint16_t>(msgType);
+    return oss.str();
 }
 
 std::shared_ptr<MessageRouter> MessageRouter::Create(std::shared_ptr<ConnectionManager> connectionMgr,
@@ -93,9 +91,7 @@ bool MessageRouter::Initialize()
 
 std::unique_ptr<Subscription> MessageRouter::SubscribeIncomingConnection(MessageType msgType, OnMessage &&onMessage)
 {
-    SubscriptionKey key {};
-    key.connectionName = "";
-    key.msgType = msgType;
+    std::string key = BuildSubscriptionKey("", msgType);
 
     IAM_LOGD("incoming connection subscription added: type=0x%{public}04x", static_cast<uint16_t>(msgType));
     std::ostringstream oss1;
@@ -113,9 +109,7 @@ std::unique_ptr<Subscription> MessageRouter::SubscribeIncomingConnection(Message
 std::unique_ptr<Subscription> MessageRouter::SubscribeMessage(const std::string &connectionName, MessageType msgType,
     OnMessage &&onMessage)
 {
-    SubscriptionKey key {};
-    key.connectionName = connectionName;
-    key.msgType = msgType;
+    std::string key = BuildSubscriptionKey(connectionName, msgType);
 
     IAM_LOGD("message subscription added: conn=%{public}s, type=0x%{public}04x", connectionName.c_str(),
         static_cast<uint16_t>(msgType));
@@ -131,7 +125,7 @@ std::unique_ptr<Subscription> MessageRouter::SubscribeMessage(const std::string 
     });
 }
 
-void MessageRouter::RegisterSubscription(const SubscriptionKey &key, OnMessage &&onMessage, const std::string &logMsg)
+void MessageRouter::RegisterSubscription(const std::string &key, OnMessage &&onMessage, const std::string &logMsg)
 {
     if (subscriptions_.find(key) != subscriptions_.end()) {
         IAM_LOGE("subscription already exists, will be overwritten: %{public}s", logMsg.c_str());
@@ -140,31 +134,25 @@ void MessageRouter::RegisterSubscription(const SubscriptionKey &key, OnMessage &
     IAM_LOGI("%{public}s success", logMsg.c_str());
 }
 
-void MessageRouter::UnregisterSubscription(const SubscriptionKey &key)
+void MessageRouter::UnregisterSubscription(const std::string &key)
 {
     subscriptions_.erase(key);
-    IAM_LOGD("subscription removed");
+    IAM_LOGD("subscription removed: %{public}s", key.c_str());
 }
 
 // connectionName is never empty
 OnMessage MessageRouter::FindMessageSubscriber(const std::string &connectionName, MessageType msgType)
 {
     if (!connectionName.empty()) {
-        SubscriptionKey connectionKey {};
-        connectionKey.connectionName = connectionName;
-        connectionKey.msgType = msgType;
-
-        auto it = subscriptions_.find(connectionKey);
+        std::string key = BuildSubscriptionKey(connectionName, msgType);
+        auto it = subscriptions_.find(key);
         if (it != subscriptions_.end()) {
             return it->second;
         }
     }
 
-    SubscriptionKey incomingConnectionKey {};
-    incomingConnectionKey.connectionName = "";
-    incomingConnectionKey.msgType = msgType;
-
-    auto it = subscriptions_.find(incomingConnectionKey);
+    std::string key = BuildSubscriptionKey("", msgType);
+    auto it = subscriptions_.find(key);
     if (it != subscriptions_.end()) {
         return it->second;
     }

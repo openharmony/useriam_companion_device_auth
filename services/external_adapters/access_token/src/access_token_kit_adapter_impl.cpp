@@ -24,7 +24,6 @@
 #include "tokenid_kit.h"
 #include "xcollie_helper.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

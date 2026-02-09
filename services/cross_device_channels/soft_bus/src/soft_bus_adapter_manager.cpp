@@ -24,7 +24,6 @@
 
 #include "soft_bus_adapter_impl.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

@@ -24,7 +24,6 @@
 
 #include "mock_remote_object.h"
 
-// Forward declarations for IPC types used in the interface
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {

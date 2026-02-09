@@ -40,7 +40,6 @@
 #include "subscription.h"
 #include "user_auth_adapter.h"
 
-#undef LOG_TAG
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

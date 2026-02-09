@@ -992,8 +992,7 @@ HWTEST_F(CompanionManagerImplTest, StartIssueTokenRequests_004, TestSize.Level0)
     deviceStatus.isOnline = true;
     deviceStatus.isAuthMaintainActive = true;
     deviceStatus.capabilities = { Capability::TOKEN_AUTH };
-    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_))
-        .WillByDefault(Return(deviceStatus));
+    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(deviceStatus));
 
     std::vector<PersistedCompanionStatus> persistedList { persistedStatus };
     std::vector<TemplateId> activeTemplateIds = { TEMPLATE_ID_12345 };
@@ -1023,8 +1022,7 @@ HWTEST_F(CompanionManagerImplTest, StartIssueTokenRequests_005, TestSize.Level0)
     deviceStatus.isOnline = true;
     deviceStatus.isAuthMaintainActive = true;
     deviceStatus.capabilities = { Capability::TOKEN_AUTH };
-    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_))
-        .WillByDefault(Return(deviceStatus));
+    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(deviceStatus));
 
     std::vector<PersistedCompanionStatus> persistedList { persistedStatus };
     std::vector<TemplateId> activeTemplateIds = { TEMPLATE_ID_12345 };
@@ -1058,8 +1056,7 @@ HWTEST_F(CompanionManagerImplTest, StartIssueTokenRequests_006, TestSize.Level0)
     deviceStatus.isOnline = true;
     deviceStatus.isAuthMaintainActive = true;
     deviceStatus.capabilities = { Capability::TOKEN_AUTH };
-    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_))
-        .WillByDefault(Return(deviceStatus));
+    ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(deviceStatus));
 
     std::vector<PersistedCompanionStatus> persistedList { persistedStatus };
     std::vector<TemplateId> activeTemplateIds = { TEMPLATE_ID_12345 };

@@ -6,7 +6,7 @@
 
 **图1** 伴随设备认证流程
 <p>
-  <img src="./figures/认证交互流程.png" alt="伴随设备认证流程图" style="zoom:65%;" />
+  <img src="./figures/authentication_flow.png" alt="伴随设备认证流程图" style="zoom:65%;" />
 </p>
 
 伴随设备认证前提：机主在主设备上将指定设备添加为机主本人的伴随设备。
@@ -30,7 +30,7 @@
 
 **图2** 伴随设备认证架构图
 <p>
-<img src="figures/伴随设备认证全局架构图.png" alt="伴随设备认证架构图" style="zoom:65%;" />
+<img src="figures/companion_device_auth_architecture.png" alt="伴随设备认证架构图" style="zoom:65%;" />
 </p>
 
 主设备添加伴随设备过程中，主设备和伴随设备会交换各自的认证相关信息，该凭据主要用于保护认证阶段主设备与伴随设备之间交互信息的安全性。因此，主设备侧和伴随设备侧都需要在可信执行环境内保存和使用该凭据信息。
