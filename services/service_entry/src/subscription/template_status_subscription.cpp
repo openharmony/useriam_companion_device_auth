@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-#include "subscription/template_status_subscription.h"
-
+#include "template_status_subscription.h"
 #include <new>
 #include <vector>
 
@@ -26,8 +25,8 @@
 #include "companion_manager.h"
 #include "cross_device_comm_manager.h"
 #include "singleton_manager.h"
-#include "subscription/subscription_manager.h"
-#include "subscription/subscription_util.h"
+#include "subscription_manager.h"
+#include "subscription_util.h"
 #include "task_runner_manager.h"
 
 #define LOG_TAG "CDA_SA"

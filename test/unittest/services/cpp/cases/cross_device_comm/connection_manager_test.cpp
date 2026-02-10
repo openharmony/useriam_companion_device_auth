@@ -15,14 +15,14 @@
 
 #include <gtest/gtest.h>
 
+#include "mock_cross_device_channel.h"
+#include "mock_guard.h"
+
 #include "channel_manager.h"
 #include "connection_manager.h"
 #include "local_device_status_manager.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
-
-#include "mock_cross_device_channel.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

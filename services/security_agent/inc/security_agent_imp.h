@@ -131,7 +131,6 @@ public:
 private:
     SecurityAgentImpl();
     bool Initialize();
-    ResultCode Init();
     std::unique_ptr<Subscription> activeUserSubscription_;
 };
 } // namespace CompanionDeviceAuth

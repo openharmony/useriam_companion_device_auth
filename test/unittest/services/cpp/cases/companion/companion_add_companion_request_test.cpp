@@ -16,9 +16,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "add_companion_message.h"
 #include "companion_add_companion_request.h"
-#include "mock_guard.h"
 #include "task_runner_manager.h"
 
 using namespace testing;

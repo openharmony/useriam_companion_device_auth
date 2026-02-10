@@ -16,12 +16,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "host_sync_device_status_request.h"
-#include "relative_timer.h"
-#include "singleton_manager.h"
-#include "task_runner_manager.h"
-
-#include "adapter_manager.h"
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
 #include "mock_misc_manager.h"
@@ -29,6 +23,12 @@
 #include "mock_security_agent.h"
 #include "mock_time_keeper.h"
 #include "mock_user_id_manager.h"
+
+#include "adapter_manager.h"
+#include "host_sync_device_status_request.h"
+#include "relative_timer.h"
+#include "singleton_manager.h"
+#include "task_runner_manager.h"
 
 using namespace testing;
 using namespace testing::ext;

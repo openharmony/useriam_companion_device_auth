@@ -18,6 +18,7 @@
 
 #include "mock_device_manager_adapter.h"
 #include "mock_guard.h"
+
 #include "soft_bus_adapter_manager.h"
 #include "soft_bus_device_status_manager.h"
 #include "task_runner_manager.h"

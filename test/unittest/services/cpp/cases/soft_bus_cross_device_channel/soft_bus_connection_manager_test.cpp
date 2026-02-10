@@ -17,12 +17,12 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+#include "mock_soft_bus_adapter.h"
+
 #include "soft_bus_adapter.h"
 #include "soft_bus_adapter_manager.h"
 #include "soft_bus_connection.h"
 #include "soft_bus_connection_manager.h"
-
-#include "mock_soft_bus_adapter.h"
 #include "task_runner_manager.h"
 
 using namespace testing;

@@ -20,12 +20,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_callback.h"
+
 #include "companion_device_auth_client.h"
 #include "companion_device_auth_client_impl.h"
 #include "companion_device_auth_common_defines.h"
 #include "fake_companion_device_auth.h"
-
-#include "mock_callback.h"
 
 using namespace testing;
 using namespace testing::ext;

@@ -16,8 +16,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "common_message.h"
 #include "mock_guard.h"
+
+#include "common_message.h"
 #include "token_auth_message.h"
 
 using namespace testing;

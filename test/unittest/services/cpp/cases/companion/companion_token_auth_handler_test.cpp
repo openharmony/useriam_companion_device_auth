@@ -16,8 +16,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "companion_token_auth_handler.h"
 #include "mock_guard.h"
+
+#include "companion_token_auth_handler.h"
 #include "token_auth_message.h"
 
 using namespace testing;

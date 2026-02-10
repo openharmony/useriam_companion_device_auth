@@ -18,10 +18,11 @@
 
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "adapter_manager.h"
 #include "companion_device_auth_driver.h"
 #include "fwk_common.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

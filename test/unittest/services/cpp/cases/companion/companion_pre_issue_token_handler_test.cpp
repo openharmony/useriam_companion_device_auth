@@ -16,12 +16,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "common_message.h"
 #include "companion_issue_token_request.h"
 #include "companion_pre_issue_token_handler.h"
 #include "issue_token_message.h"
-
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

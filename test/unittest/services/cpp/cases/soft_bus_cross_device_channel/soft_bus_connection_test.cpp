@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+
 #include "soft_bus_connection.h"
 #include "soft_bus_connection_manager.h"
 #include "task_runner_manager.h"
