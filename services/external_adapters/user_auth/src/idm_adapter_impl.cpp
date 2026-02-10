@@ -19,25 +19,23 @@
 #include <new>
 #include <set>
 
+#include "ipc_skeleton.h"
+#include "iremote_object.h"
+#include "system_ability_definition.h"
+
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
-#include "ipc_skeleton.h"
-#include "token_setproc.h"
-
-#include "user_idm_client.h"
-
-#include "user_idm_client_defines.h"
 
 #include "event_listener_callback_stub.h"
-#include "iremote_object.h"
-#include "sa_status_listener.h"
-#include "system_ability_definition.h"
-#include "task_runner_manager.h"
-#include "user_auth_types.h"
-
 #include "misc_manager.h"
+#include "sa_status_listener.h"
 #include "singleton_manager.h"
+#include "task_runner_manager.h"
+#include "token_setproc.h"
+#include "user_auth_types.h"
+#include "user_idm_client.h"
+#include "user_idm_client_defines.h"
 
 #define LOG_TAG "CDA_SA"
 

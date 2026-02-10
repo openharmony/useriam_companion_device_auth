@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "subscription/continuous_auth_subscription.h"
+#include "continuous_auth_subscription.h"
 
 #include <vector>
 
@@ -23,7 +23,8 @@
 
 #include "companion_manager.h"
 #include "singleton_manager.h"
-#include "subscription/subscription_manager.h"
+
+#include "subscription_manager.h"
 #include "task_runner_manager.h"
 
 #define LOG_TAG "CDA_SA"

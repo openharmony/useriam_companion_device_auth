@@ -21,10 +21,9 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
-
-#include "adapter_manager.h"
 #include "iam_safe_arithmetic.h"
 
+#include "adapter_manager.h"
 #include "companion_manager_impl.h"
 #include "relative_timer.h"
 #include "scope_guard.h"

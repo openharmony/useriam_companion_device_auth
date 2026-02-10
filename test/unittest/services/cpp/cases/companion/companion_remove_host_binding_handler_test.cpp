@@ -16,11 +16,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "companion_remove_host_binding_handler.h"
 #include "error_guard.h"
 #include "remove_host_binding_message.h"
-
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

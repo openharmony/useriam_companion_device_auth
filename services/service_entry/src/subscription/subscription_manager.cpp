@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-#include "subscription/subscription_manager.h"
-
+#include "subscription_manager.h"
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -23,12 +22,12 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "available_device_subscription.h"
+#include "continuous_auth_subscription.h"
 #include "cross_device_comm_manager.h"
 #include "cross_device_common.h"
 #include "singleton_manager.h"
-#include "subscription/available_device_subscription.h"
-#include "subscription/continuous_auth_subscription.h"
-#include "subscription/template_status_subscription.h"
+#include "template_status_subscription.h"
 
 #define LOG_TAG "CDA_SA"
 

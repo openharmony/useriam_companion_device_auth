@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+
 #include "task_runner_manager.h"
 #include "user_id_manager.h"
 

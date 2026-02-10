@@ -19,9 +19,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "common_defines.h"
 #include "misc_manager_impl.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

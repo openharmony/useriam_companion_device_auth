@@ -16,8 +16,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "fwk_comm_manager.h"
 #include "mock_guard.h"
+
+#include "fwk_comm_manager.h"
 
 using namespace testing;
 using namespace testing::ext;

@@ -19,8 +19,9 @@
 #include <functional>
 #include <memory>
 
-#include "icompanion_device_auth.h"
 #include "iremote_object.h"
+
+#include "icompanion_device_auth.h"
 
 namespace OHOS {
 namespace UserIam {

@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
-#include "mock_guard.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include "mock_guard.h"
 
 #include "add_companion_message.h"
 #include "common_message.h"

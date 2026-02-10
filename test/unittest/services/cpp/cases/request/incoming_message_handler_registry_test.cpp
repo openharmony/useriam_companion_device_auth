@@ -16,9 +16,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "incoming_message_handler.h"
 #include "incoming_message_handler_registry.h"
-#include "mock_guard.h"
 #include "service_common.h"
 
 using namespace testing;

@@ -16,10 +16,9 @@
 #ifndef AVAILABLE_DEVICE_STATUS_CALLBACK_HOLDER_H
 #define AVAILABLE_DEVICE_STATUS_CALLBACK_HOLDER_H
 
-#include "iavailable_device_status_callback.h"
-
 #include "available_device_status_callback_wrapper.h"
 #include "callback_holder.h"
+#include "iavailable_device_status_callback.h"
 
 namespace OHOS {
 namespace UserIam {

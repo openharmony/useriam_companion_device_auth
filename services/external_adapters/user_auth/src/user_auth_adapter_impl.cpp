@@ -18,17 +18,17 @@
 #include <memory>
 #include <vector>
 
+#include "ipc_skeleton.h"
+
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
-#include "ipc_skeleton.h"
-#include "token_setproc.h"
-
-#include "xcollie_helper.h"
 
 #include "task_runner_manager.h"
+#include "token_setproc.h"
 #include "user_auth_client.h"
 #include "user_auth_client_callback.h"
+#include "xcollie_helper.h"
 
 #define LOG_TAG "CDA_SA"
 

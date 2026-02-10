@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-#include "subscription/subscription_util.h"
-
+#include "subscription_util.h"
 #include "iam_logger.h"
 
 #define LOG_TAG "CDA_SA"

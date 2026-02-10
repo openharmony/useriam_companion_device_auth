@@ -16,13 +16,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "companion_manager_impl.h"
 #include "host_issue_token_request.h"
 #include "host_remove_host_binding_request.h"
 #include "host_sync_device_status_request.h"
 #include "service_common.h"
-
-#include "mock_guard.h"
 #include "task_runner_manager.h"
 
 using namespace testing;

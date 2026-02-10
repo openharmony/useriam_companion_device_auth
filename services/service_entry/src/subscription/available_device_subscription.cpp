@@ -13,8 +13,7 @@
  * limitations under the License.
  */
 
-#include "subscription/available_device_subscription.h"
-
+#include "available_device_subscription.h"
 #include <new>
 
 #include "iam_check.h"
@@ -24,8 +23,8 @@
 #include "companion_manager.h"
 #include "cross_device_comm_manager.h"
 #include "singleton_manager.h"
-#include "subscription/subscription_manager.h"
-#include "subscription/subscription_util.h"
+#include "subscription_manager.h"
+#include "subscription_util.h"
 #include "task_runner_manager.h"
 #include "user_id_manager.h"
 

@@ -17,13 +17,14 @@
 
 #include <map>
 
+#include "ipc_skeleton.h"
+
 #include "iam_check.h"
 #include "iam_executor_idriver_manager.h"
 #include "iam_logger.h"
-#include "ipc_skeleton.h"
-#include "token_setproc.h"
 
 #include "companion_device_auth_driver.h"
+#include "token_setproc.h"
 #include "xcollie_helper.h"
 
 #define LOG_TAG "CDA_SA"

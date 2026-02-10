@@ -117,6 +117,17 @@ ResultCode SecurityCommandAdapterImpl::Initialize()
         IAM_LOGE("init_rust_env failed, ret=%{public}d", ret);
         return ResultCode::GENERAL_ERROR;
     }
+
+    auto ffiInput = std::make_unique<InitInputFfi>();
+    ENSURE_OR_RETURN_VAL(ffiInput != nullptr, GENERAL_ERROR);
+
+    auto ffiOutput = std::make_unique<InitOutputFfi>();
+    ENSURE_OR_RETURN_VAL(ffiOutput != nullptr, GENERAL_ERROR);
+
+    ResultCode invokeResult = InvokeCommand(CommandId::INIT, reinterpret_cast<uint8_t *>(ffiInput.get()),
+        sizeof(InitInputFfi), reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(InitOutputFfi));
+    ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
+
     inited_ = true;
     IAM_LOGI("initialize security command adapter success");
     return ResultCode::SUCCESS;
@@ -128,7 +139,7 @@ ResultCode SecurityCommandAdapterImpl::InvokeCommand(int32_t commandId, const ui
     ENSURE_OR_RETURN_VAL(inputData != nullptr && inputDataLen != 0, ResultCode::GENERAL_ERROR);
     ENSURE_OR_RETURN_VAL(outputData != nullptr && outputDataLen != 0, ResultCode::GENERAL_ERROR);
 
-    if (!inited_) {
+    if (!inited_ && commandId != CommandId::INIT) {
         IAM_LOGE("SecurityCommandAdapter is not inited");
         return ResultCode::GENERAL_ERROR;
     }

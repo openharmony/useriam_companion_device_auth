@@ -16,14 +16,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
+#include "adapter_manager.h"
 #include "host_remove_host_binding_request.h"
 #include "relative_timer.h"
 #include "remove_host_binding_message.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
-
-#include "adapter_manager.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

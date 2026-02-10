@@ -15,9 +15,8 @@
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
-#include "tokenid_kit.h"
-
 #include "taihe/runtime.hpp"
+#include "tokenid_kit.h"
 
 #include "iam_check.h"
 #include "iam_logger.h"

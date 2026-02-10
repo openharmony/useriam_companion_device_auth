@@ -14,8 +14,9 @@
  */
 
 #include <chrono>
-#include <gtest/gtest.h>
 #include <thread>
+
+#include <gtest/gtest.h>
 
 #include "backoff_retry_timer.h"
 

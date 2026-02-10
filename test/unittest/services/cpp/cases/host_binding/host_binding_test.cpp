@@ -16,9 +16,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "companion_revoke_token_request.h"
 #include "host_binding.h"
-#include "mock_guard.h"
 #include "relative_timer.h"
 #include "service_common.h"
 

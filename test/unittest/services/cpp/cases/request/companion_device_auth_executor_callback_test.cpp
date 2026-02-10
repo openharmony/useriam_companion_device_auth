@@ -19,8 +19,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "companion_device_auth_executor_callback.h"
 #include "mock_guard.h"
+
+#include "companion_device_auth_executor_callback.h"
 #include "service_common.h"
 
 using namespace testing;
