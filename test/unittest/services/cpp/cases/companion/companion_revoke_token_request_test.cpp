@@ -16,8 +16,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "companion_revoke_token_request.h"
 #include "mock_guard.h"
+
+#include "companion_revoke_token_request.h"
 #include "revoke_token_message.h"
 
 using namespace testing;

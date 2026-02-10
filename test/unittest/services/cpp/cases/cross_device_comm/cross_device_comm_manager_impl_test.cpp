@@ -15,10 +15,10 @@
 
 #include <gtest/gtest.h>
 
-#include "cross_device_comm_manager_impl.h"
-
 #include "mock_cross_device_channel.h"
 #include "mock_guard.h"
+
+#include "cross_device_comm_manager_impl.h"
 
 using namespace testing;
 using namespace testing::ext;

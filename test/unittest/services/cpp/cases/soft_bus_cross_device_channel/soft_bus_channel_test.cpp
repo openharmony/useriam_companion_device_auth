@@ -16,15 +16,15 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_misc_manager.h"
+#include "mock_system_param_manager.h"
+#include "mock_time_keeper.h"
+
+#include "adapter_manager.h"
 #include "relative_timer.h"
 #include "singleton_manager.h"
 #include "soft_bus_channel.h"
 #include "task_runner_manager.h"
-
-#include "adapter_manager.h"
-#include "mock_misc_manager.h"
-#include "mock_system_param_manager.h"
-#include "mock_time_keeper.h"
 
 using namespace testing;
 using namespace testing::ext;

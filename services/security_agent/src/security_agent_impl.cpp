@@ -22,13 +22,12 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "common_defines.h"
 #include "companion_device_auth_ffi.h"
 #include "companion_device_auth_ffi_util.h"
 #include "security_agent_imp.h"
 #include "singleton_manager.h"
-
-#include "adapter_manager.h"
 
 #define LOG_TAG "CDA_SA"
 
@@ -44,7 +43,6 @@ std::shared_ptr<ISecurityAgent> SecurityAgentImpl::Create()
     auto impl = std::shared_ptr<SecurityAgentImpl>(new (std::nothrow) SecurityAgentImpl());
     ENSURE_OR_RETURN_VAL(impl != nullptr, nullptr);
     impl->Initialize();
-    impl->Init();
     return impl;
 }
 
@@ -63,23 +61,6 @@ bool SecurityAgentImpl::Initialize()
     ENSURE_OR_RETURN_VAL(result == SUCCESS, false);
 
     return true;
-}
-
-ResultCode SecurityAgentImpl::Init()
-{
-    auto ffiInput = std::make_unique<InitInputFfi>();
-    ENSURE_OR_RETURN_VAL(ffiInput != nullptr, GENERAL_ERROR);
-
-    auto ffiOutput = std::make_unique<InitOutputFfi>();
-    ENSURE_OR_RETURN_VAL(ffiOutput != nullptr, GENERAL_ERROR);
-
-    int32_t invokeResult =
-        GetSecurityCommandAdapter().InvokeCommand(CommandId::INIT, reinterpret_cast<uint8_t *>(ffiInput.get()),
-            sizeof(InitInputFfi), reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(InitOutputFfi));
-    ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
-
-    IAM_LOGI("success");
-    return SUCCESS;
 }
 
 ResultCode SecurityAgentImpl::SetActiveUser(const SetActiveUserInput &input)

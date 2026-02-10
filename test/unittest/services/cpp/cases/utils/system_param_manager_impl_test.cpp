@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+
 #include "system_param_manager_impl.h"
 #include "task_runner_manager.h"
 

@@ -16,8 +16,9 @@
 #ifndef COMPANION_DEVICE_AUTH_FRAMEWORK_CALLBACK_HOLDER_H
 #define COMPANION_DEVICE_AUTH_FRAMEWORK_CALLBACK_HOLDER_H
 
-#include "common_defines.h"
 #include "iam_logger.h"
+
+#include "common_defines.h"
 
 #ifdef LOG_TAG
 #undef LOG_TAG

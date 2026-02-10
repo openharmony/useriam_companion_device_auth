@@ -16,10 +16,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "common_message.h"
 #include "host_obtain_token_request.h"
 #include "host_pre_obtain_token_handler.h"
-#include "mock_guard.h"
 #include "obtain_token_message.h"
 
 using namespace testing;

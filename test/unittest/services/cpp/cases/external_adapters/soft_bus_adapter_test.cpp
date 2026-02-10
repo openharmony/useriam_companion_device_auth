@@ -22,12 +22,12 @@
 
 #include "iam_logger.h"
 
+#include "mock_soft_bus_adapter.h"
+
 #include "adapter_manager.h"
 #include "soft_bus_adapter.h"
 #include "soft_bus_adapter_impl.h"
 #include "soft_bus_adapter_manager.h"
-
-#include "mock_soft_bus_adapter.h"
 
 #define LOG_TAG "CDA_SA"
 

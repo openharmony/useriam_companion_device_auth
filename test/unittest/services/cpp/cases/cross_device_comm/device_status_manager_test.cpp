@@ -16,11 +16,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_cross_device_channel.h"
+#include "mock_guard.h"
+
 #include "channel_manager.h"
 #include "connection_manager.h"
 #include "device_status_manager.h"
-#include "mock_cross_device_channel.h"
-#include "mock_guard.h"
 #include "service_common.h"
 
 using namespace testing;

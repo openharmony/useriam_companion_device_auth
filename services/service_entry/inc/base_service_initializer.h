@@ -19,8 +19,9 @@
 #include <memory>
 #include <vector>
 
-#include "common_defines.h"
 #include "nocopyable.h"
+
+#include "common_defines.h"
 #include "service_common.h"
 
 namespace OHOS {

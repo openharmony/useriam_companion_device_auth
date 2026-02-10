@@ -15,10 +15,10 @@
 
 #include <gtest/gtest.h>
 
-#include "channel_manager.h"
-
 #include "mock_cross_device_channel.h"
 #include "mock_guard.h"
+
+#include "channel_manager.h"
 
 using namespace testing;
 using namespace testing::ext;

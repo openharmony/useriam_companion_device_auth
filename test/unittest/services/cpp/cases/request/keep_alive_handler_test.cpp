@@ -15,8 +15,9 @@
 
 #include <gtest/gtest.h>
 
-#include "keep_alive_handler.h"
 #include "mock_guard.h"
+
+#include "keep_alive_handler.h"
 
 using namespace testing;
 using namespace testing::ext;

@@ -16,10 +16,9 @@
 #ifndef CONTINUOUS_AUTH_STATUS_CALLBACK_HOLDER_H
 #define CONTINUOUS_AUTH_STATUS_CALLBACK_HOLDER_H
 
-#include "icontinuous_auth_status_callback.h"
-
 #include "callback_holder.h"
 #include "continuous_auth_status_callback_wrapper.h"
+#include "icontinuous_auth_status_callback.h"
 
 namespace OHOS {
 namespace UserIam {

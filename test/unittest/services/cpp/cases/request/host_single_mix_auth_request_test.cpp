@@ -16,18 +16,18 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "host_mix_auth_request.h"
-#include "host_single_mix_auth_request.h"
-#include "singleton_manager.h"
-#include "task_runner_manager.h"
-
-#include "adapter_manager.h"
 #include "mock_companion_manager.h"
 #include "mock_misc_manager.h"
 #include "mock_request_factory.h"
 #include "mock_request_manager.h"
 #include "mock_time_keeper.h"
 #include "mock_user_id_manager.h"
+
+#include "adapter_manager.h"
+#include "host_mix_auth_request.h"
+#include "host_single_mix_auth_request.h"
+#include "singleton_manager.h"
+#include "task_runner_manager.h"
 
 using namespace testing;
 using namespace testing::ext;

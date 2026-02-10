@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+
 #include "service_common.h"
 #include "sync_incoming_message_handler.h"
 

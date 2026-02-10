@@ -20,6 +20,8 @@
 
 #include <gtest/gtest.h>
 
+#include "mock_time_keeper.h"
+
 #include "adapter_manager.h"
 #include "channel_manager.h"
 #include "common_defines.h"
@@ -29,7 +31,6 @@
 #include "local_device_status_manager.h"
 #include "message_router.h"
 #include "misc/misc_manager.h"
-#include "mock_time_keeper.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
 #include "time_keeper.h"

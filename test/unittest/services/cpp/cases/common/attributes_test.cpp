@@ -24,8 +24,9 @@
 
 #include "iam_logger.h"
 
-#include "cda_attributes.h"
 #include "mock_guard.h"
+
+#include "cda_attributes.h"
 
 #define LOG_TAG "CDA_SA"
 

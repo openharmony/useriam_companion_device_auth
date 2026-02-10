@@ -16,13 +16,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
+#include "adapter_manager.h"
 #include "host_token_auth_request.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
 #include "token_auth_message.h"
-
-#include "adapter_manager.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

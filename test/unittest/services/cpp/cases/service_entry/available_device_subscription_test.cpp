@@ -18,8 +18,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "available_device_subscription.h"
 #include "mock_guard.h"
+
+#include "available_device_subscription.h"
 #include "subscription.h"
 #include "subscription_manager.h"
 
