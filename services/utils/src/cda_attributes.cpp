@@ -24,6 +24,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_safe_arithmetic.h"
+
 #include "service_common.h"
 
 #define LOG_TAG "CDA_SA"

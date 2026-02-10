@@ -16,17 +16,17 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_cross_device_comm_manager.h"
+#include "mock_security_agent.h"
+#include "mock_time_keeper.h"
+
+#include "adapter_manager.h"
 #include "companion.h"
 #include "companion_manager_impl.h"
 #include "relative_timer.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
-
-#include "adapter_manager.h"
-#include "mock_cross_device_comm_manager.h"
-#include "mock_security_agent.h"
-#include "mock_time_keeper.h"
 
 using namespace testing;
 using namespace testing::ext;

@@ -16,9 +16,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "companion_sync_device_status_handler.h"
 #include "error_guard.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

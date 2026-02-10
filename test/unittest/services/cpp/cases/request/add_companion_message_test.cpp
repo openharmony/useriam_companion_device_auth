@@ -15,10 +15,11 @@
 
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "add_companion_message.h"
 #include "attributes.h"
 #include "common_message.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

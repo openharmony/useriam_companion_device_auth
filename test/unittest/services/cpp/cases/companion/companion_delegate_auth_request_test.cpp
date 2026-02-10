@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
-#include "mock_guard.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include "mock_guard.h"
 
 #include "companion_delegate_auth_request.h"
 #include "delegate_auth_message.h"

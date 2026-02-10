@@ -16,11 +16,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_guard.h"
+
 #include "adapter_manager.h"
 #include "companion_delegate_auth_request.h"
 #include "companion_start_delegate_auth_handler.h"
 #include "delegate_auth_message.h"
-#include "mock_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

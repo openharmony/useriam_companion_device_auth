@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "nocopyable.h"
+
 #include "subscription.h"
 
 namespace OHOS {

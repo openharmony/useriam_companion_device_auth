@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+
 #include "subscription.h"
 #include "subscription_manager.h"
 #include "template_status_subscription.h"

@@ -16,10 +16,10 @@
 #include "napi/native_node_api.h"
 
 #include "iam_logger.h"
-#include "scope_guard.h"
 
 #include "available_device_status_callback_wrapper.h"
 #include "companion_device_auth_napi_helper.h"
+#include "scope_guard.h"
 
 #define LOG_TAG "CDA_NAPI"
 

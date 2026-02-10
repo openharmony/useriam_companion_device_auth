@@ -22,13 +22,12 @@
 
 #include "fuzzer/FuzzedDataProvider.h"
 
-#include "fuzz_constants.h"
-
 #include "device_manager_adapter.h"
+
+#include "fuzz_constants.h"
+#include "fuzz_data_generator.h"
 #include "soft_bus_adapter.h"
 #include "soft_bus_adapter_manager.h"
-
-#include "fuzz_data_generator.h"
 
 namespace OHOS {
 namespace UserIam {

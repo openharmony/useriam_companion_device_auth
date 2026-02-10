@@ -21,8 +21,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "companion_device_auth_ffi_util.h"
 #include "mock_guard.h"
+
+#include "companion_device_auth_ffi_util.h"
 #include "security_agent.h"
 
 namespace OHOS {

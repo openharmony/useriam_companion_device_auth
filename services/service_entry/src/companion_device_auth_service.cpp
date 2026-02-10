@@ -15,9 +15,6 @@
 
 #include "companion_device_auth_service.h"
 
-#include "base_service_core.h"
-#include "base_service_initializer.h"
-
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -37,6 +34,8 @@
 
 #include "access_token_kit_adapter_impl.h"
 #include "adapter_manager.h"
+#include "base_service_core.h"
+#include "base_service_initializer.h"
 #include "common_defines.h"
 #include "companion_manager_impl.h"
 #include "cross_device_comm_manager_impl.h"

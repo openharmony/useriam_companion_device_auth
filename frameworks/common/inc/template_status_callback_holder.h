@@ -16,9 +16,8 @@
 #ifndef TEMPLATE_STATUS_CALLBACK_HOLDER_H
 #define TEMPLATE_STATUS_CALLBACK_HOLDER_H
 
-#include "itemplate_status_callback.h"
-
 #include "callback_holder.h"
+#include "itemplate_status_callback.h"
 #include "template_status_callback_wrapper.h"
 
 namespace OHOS {

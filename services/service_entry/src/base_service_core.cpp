@@ -18,11 +18,11 @@
 #include <memory>
 #include <new>
 
-#include "adapter_manager.h"
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
 
+#include "adapter_manager.h"
 #include "companion_manager_impl.h"
 #include "cross_device_comm_manager_impl.h"
 #include "security_command_adapter_impl.h"

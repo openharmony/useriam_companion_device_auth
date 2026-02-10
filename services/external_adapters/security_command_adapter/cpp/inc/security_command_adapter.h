@@ -18,8 +18,9 @@
 
 #include <cstdint>
 
-#include "common_defines.h"
 #include "nocopyable.h"
+
+#include "common_defines.h"
 
 namespace OHOS {
 namespace UserIam {

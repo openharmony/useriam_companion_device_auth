@@ -22,12 +22,12 @@
 #include <memory>
 #include <vector>
 
-#include "user_idm_client_callback.h"
+#include "iremote_object.h"
 
 #include "idm_adapter.h"
-#include "iremote_object.h"
 #include "sa_status_listener.h"
 #include "subscription.h"
+#include "user_idm_client_callback.h"
 
 namespace OHOS {
 namespace UserIam {
