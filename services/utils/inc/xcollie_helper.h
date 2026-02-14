@@ -21,8 +21,6 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-constexpr unsigned int API_CALL_TIMEOUT = 20; // 20s
-
 class XCollieHelper {
 public:
     XCollieHelper(const std::string &name, unsigned int timeout);

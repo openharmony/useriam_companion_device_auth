@@ -16,6 +16,7 @@
 #include "adapter_initializer.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "fuzzer/FuzzedDataProvider.h"
@@ -338,9 +339,9 @@ public:
         return 0;
     }
 
-    std::string GetActiveUserName() const override
+    std::optional<std::string> GetActiveUserName() const override
     {
-        return "";
+        return std::nullopt;
     }
 
     std::unique_ptr<Subscription> SubscribeActiveUserId(ActiveUserIdCallback &&callback) override

@@ -49,7 +49,6 @@ DeviceStatusEntry::DeviceStatusEntry(DeviceStatusEntry &&other) noexcept
       deviceUserName(std::move(other.deviceUserName)),
       deviceName(std::move(other.deviceName)),
       protocolId(other.protocolId),
-      secureProtocolId(other.secureProtocolId),
       capabilities(std::move(other.capabilities)),
       supportedBusinessIds(std::move(other.supportedBusinessIds)),
       isAuthMaintainActive(other.isAuthMaintainActive),
@@ -100,6 +99,7 @@ DeviceStatus DeviceStatusEntry::BuildDeviceStatus(UserId userId) const
     status.deviceKey.deviceUserId = userId;
     status.channelId = channelId;
     status.deviceName = deviceName;
+    status.deviceUserName = deviceUserName;
     status.deviceModelInfo = deviceModelInfo;
     status.protocolId = protocolId;
     status.secureProtocolId = secureProtocolId;

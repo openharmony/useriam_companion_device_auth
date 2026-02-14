@@ -178,7 +178,8 @@ bool EncodeNumericArrayValue(const std::vector<T> &src, std::vector<uint8_t> &ds
         temp[i] = Traits::ToLE(src[i]);
     }
 
-    if (memcpy_s(out.data(), out.size(), temp.data(), src.size() * sizeof(LeType)) != EOK) {
+    // Use pre-calculated safe size instead of re-computing multiplication
+    if (memcpy_s(out.data(), outSize.value(), temp.data(), outSize.value()) != EOK) {
         IAM_LOGE("EncodeNumericArrayValue memcpy_s failed, count: %{public}zu, element_size: %{public}zu", src.size(),
             sizeof(LeType));
         return false;

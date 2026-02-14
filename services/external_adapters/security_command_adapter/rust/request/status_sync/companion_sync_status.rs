@@ -40,13 +40,34 @@ impl CompanionDeviceSyncStatusRequest {
             return Err(ErrorCode::GeneralError);
         }
 
+        let protocol_list: Vec<u16> = input.protocol_list.try_into().map_err(|e| {
+            log_e!("protocol_list try_into fail: {:?}", e);
+            ErrorCode::GeneralError
+        })?;
+        let capability_list = input.capability_list.try_into().map_err(|e| {
+            log_e!("capability_list try_into fail: {:?}", e);
+            ErrorCode::GeneralError
+        })?;
+
+        // Validate that SA's protocol_list is a subset of TA's SUPPORTED_PROTOCOL_VERSIONS
+        for protocol in &protocol_list {
+            if !SUPPORTED_PROTOCOL_VERSIONS.contains(protocol) {
+                log_e!(
+                    "protocol {} is not supported by TA, supported: {:?}",
+                    protocol,
+                    SUPPORTED_PROTOCOL_VERSIONS
+                );
+                return Err(ErrorCode::GeneralError);
+            }
+        }
+
         Ok(CompanionDeviceSyncStatusRequest {
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
             challenge: input.challenge,
             salt: input.salt.data[..input.salt.len as usize].to_vec(),
-            expected_protocol_list: PROTOCOL_VERSION.to_vec(),
-            expected_capability_list: input.capability_list.try_into().map_err(|e| p!(e))?,
+            expected_protocol_list: protocol_list,
+            expected_capability_list: capability_list,
         })
     }
 

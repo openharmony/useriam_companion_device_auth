@@ -50,6 +50,11 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
     }
     const auto &tokenRequest = *tokenRequestOpt;
 
+    if (!GetCrossDeviceCommManager().IsAuthMaintainActive()) {
+        IAM_LOGE("local auth maintain inactive");
+        return;
+    }
+
     auto hostBindingStatus =
         GetHostBindingManager().GetHostBindingStatus(tokenRequest.companionUserId, tokenRequest.hostDeviceKey);
     ENSURE_OR_RETURN(hostBindingStatus.has_value());

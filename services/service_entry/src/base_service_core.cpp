@@ -59,12 +59,8 @@ BaseServiceCore::BaseServiceCore(std::shared_ptr<SubscriptionManager> subscripti
 
 bool BaseServiceCore::IsValidBusinessId(BusinessId businessId) const
 {
-    for (const auto &supportedId : supportedBusinessIds_) {
-        if (businessId == supportedId) {
-            return true;
-        }
-    }
-    return false;
+    return std::find(supportedBusinessIds_.begin(), supportedBusinessIds_.end(), businessId) !=
+        supportedBusinessIds_.end();
 }
 
 ResultCode BaseServiceCore::SubscribeAvailableDeviceStatus(int32_t localUserId,

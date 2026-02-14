@@ -655,8 +655,8 @@ fn host_enroll_request_end_test_hkdf_fail() {
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -695,8 +695,8 @@ fn host_enroll_request_end_test_decrypt_sec_message_fail() {
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -730,8 +730,8 @@ fn host_enroll_request_end_test_device_id_mismatch() {
     let sec_message = create_valid_binding_reply(
         "wrong_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -765,8 +765,8 @@ fn host_enroll_request_end_test_user_id_mismatch() {
     let sec_message = create_valid_binding_reply(
         "companion_device",
         -1,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -801,7 +801,7 @@ fn host_enroll_request_end_test_protocol_list_mismatch() {
         "companion_device",
         100,
         &[],
-        SUPPORT_CAPABILITY,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -833,7 +833,7 @@ fn host_enroll_request_end_test_capability_list_mismatch() {
     request.key_negotial_param.push(create_key_negotial_param());
 
     let sec_message =
-        create_valid_binding_reply("companion_device", 100, PROTOCOL_VERSION, &[], ExecutorSecurityLevel::Esl2 as i32);
+        create_valid_binding_reply("companion_device", 100, SUPPORTED_PROTOCOL_VERSIONS, &[], ExecutorSecurityLevel::Esl2 as i32);
     let end_input = HostEndAddCompanionInputFfi {
         request_id: 1,
         companion_status: PersistedCompanionStatusFfi::default(),
@@ -877,8 +877,8 @@ fn host_enroll_request_end_test_secure_random_fail() {
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -919,14 +919,14 @@ fn host_enroll_request_end_test_get_rtc_time_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl0;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -965,14 +965,14 @@ fn host_enroll_request_end_test_add_device_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl2;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -1012,14 +1012,14 @@ fn host_enroll_request_end_test_add_token_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl2;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -1063,14 +1063,14 @@ fn host_enroll_request_end_test_fwk_message_encode_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl2;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {
@@ -1112,18 +1112,18 @@ fn host_enroll_request_end_test_get_session_key_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl2;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
-    let capability_list = Uint16Array64Ffi::try_from(SUPPORT_CAPABILITY.to_vec()).unwrap();
-    let protocol_list = Uint16Array64Ffi::try_from(PROTOCOL_VERSION.to_vec()).unwrap();
+    let capability_list = Uint16Array64Ffi::try_from(SUPPORT_CAPABILITIES.to_vec()).unwrap();
+    let protocol_list = Uint16Array64Ffi::try_from(SUPPORTED_PROTOCOL_VERSIONS.to_vec()).unwrap();
     let end_input = HostEndAddCompanionInputFfi {
         request_id: 1,
         companion_status: PersistedCompanionStatusFfi::default(),
@@ -1176,14 +1176,14 @@ fn host_enroll_request_end_test_encrypt_issue_token_fail() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
     request.acl = AuthCapabilityLevel::Acl2;
-    request.expected_protocol_list = PROTOCOL_VERSION.to_vec();
-    request.expected_capability_list = SUPPORT_CAPABILITY.to_vec();
+    request.expected_protocol_list = SUPPORTED_PROTOCOL_VERSIONS.to_vec();
+    request.expected_capability_list = SUPPORT_CAPABILITIES.to_vec();
 
     let sec_message = create_valid_binding_reply(
         "companion_device",
         100,
-        PROTOCOL_VERSION,
-        SUPPORT_CAPABILITY,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        SUPPORT_CAPABILITIES,
         ExecutorSecurityLevel::Esl2 as i32,
     );
     let end_input = HostEndAddCompanionInputFfi {

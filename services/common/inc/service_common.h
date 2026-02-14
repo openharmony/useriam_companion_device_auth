@@ -65,8 +65,6 @@ enum class ProtocolId : uint16_t {
 enum class SecureProtocolId : uint16_t {
     INVALID = 0,
     DEFAULT = 1,
-    MCU = 2,
-    MCU_AP = 3,
 };
 
 constexpr int32_t INVALID_USER_ID = -1;
@@ -192,7 +190,6 @@ struct PersistedCompanionStatus {
     bool isValid { false };
     std::vector<BusinessId> enabledBusinessIds {};
     int64_t addedTime { 0 };
-    SecureProtocolId secureProtocolId { SecureProtocolId::INVALID };
     std::string deviceModelInfo {};
     std::string deviceUserName {};
     std::string deviceName {};
@@ -209,7 +206,6 @@ struct CompanionStatus {
         enabledBusinessIds = persistedStatus.enabledBusinessIds;
         addedTime = persistedStatus.addedTime;
         companionDeviceStatus.deviceKey = persistedStatus.companionDeviceKey;
-        companionDeviceStatus.secureProtocolId = persistedStatus.secureProtocolId;
         companionDeviceStatus.deviceModelInfo = persistedStatus.deviceModelInfo;
         companionDeviceStatus.deviceUserName = persistedStatus.deviceUserName;
         companionDeviceStatus.deviceName = persistedStatus.deviceName;
@@ -226,7 +222,6 @@ struct CompanionStatus {
         persistedStatus.enabledBusinessIds = enabledBusinessIds;
         persistedStatus.addedTime = addedTime;
         persistedStatus.companionDeviceKey = companionDeviceStatus.deviceKey;
-        persistedStatus.secureProtocolId = companionDeviceStatus.secureProtocolId;
         persistedStatus.deviceModelInfo = companionDeviceStatus.deviceModelInfo;
         persistedStatus.deviceUserName = companionDeviceStatus.deviceUserName;
         persistedStatus.deviceName = companionDeviceStatus.deviceName;
@@ -284,6 +279,7 @@ constexpr size_t MAX_MESSAGE_SIZE = 20000;
 constexpr int32_t MS_PER_SEC = 1000;
 constexpr int32_t NS_PER_MS = 1000 * 1000;
 constexpr int32_t BYTE_NUM_4 = 4;
+constexpr unsigned int API_CALL_TIMEOUT = 20; // 20s
 
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

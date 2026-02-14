@@ -260,7 +260,6 @@ HWTEST_F(FfiUtilTest, EncodePersistedCompanionStatusLenValidation, TestSize.Leve
         PersistedCompanionStatus status;
         status.templateId = INT32_999;
         status.hostUserId = INT32_321;
-        status.secureProtocolId = SecureProtocolId::DEFAULT;
         status.isValid = true;
         status.enabledBusinessIds = { static_cast<BusinessId>(1), static_cast<BusinessId>(3),
             static_cast<BusinessId>(5) };
@@ -277,7 +276,6 @@ HWTEST_F(FfiUtilTest, EncodePersistedCompanionStatusLenValidation, TestSize.Leve
         PersistedCompanionStatus status;
         status.templateId = 1;
         status.hostUserId = 1;
-        status.secureProtocolId = SecureProtocolId::DEFAULT;
 
         for (int i = 0; i < 100; ++i) {
             status.enabledBusinessIds.push_back(static_cast<BusinessId>(i));
@@ -293,7 +291,6 @@ HWTEST_F(FfiUtilTest, EncodePersistedCompanionStatusLenValidation, TestSize.Leve
         PersistedCompanionStatus status;
         status.templateId = 1;
         status.hostUserId = 1;
-        status.secureProtocolId = SecureProtocolId::DEFAULT;
         status.deviceModelInfo = std::string(MAX_DATA_LEN_1024 + 1, 'A');
 
         PersistedCompanionStatusFfi ffi = {};
@@ -629,7 +626,6 @@ HWTEST_F(FfiUtilTest, RoundTripCompanionStatus, TestSize.Level1)
     originalStatus.templateId = INT32_555;
     originalStatus.hostUserId = 10;
     originalStatus.addedTime = 1000;
-    originalStatus.secureProtocolId = SecureProtocolId::DEFAULT;
     originalStatus.isValid = true;
     originalStatus.enabledBusinessIds = { static_cast<BusinessId>(1), static_cast<BusinessId>(2) };
     originalStatus.deviceModelInfo = "Test Device";
@@ -763,7 +759,6 @@ HWTEST_F(FfiUtilTest, EncodeHostEndAddCompanionInput_001, TestSize.Level0)
     input.secureProtocolId = SecureProtocolId::DEFAULT;
     input.companionStatus.templateId = INT32_555;
     input.companionStatus.hostUserId = INT32_666;
-    input.companionStatus.secureProtocolId = SecureProtocolId::DEFAULT;
     input.addHostBindingReply = { UINT8_0X55, UINT8_0X66 };
 
     HostEndAddCompanionInputFfi ffi = {};
@@ -872,6 +867,7 @@ HWTEST_F(FfiUtilTest, EncodeHostBeginTokenAuthInput_001, TestSize.Level0)
     input.requestId = INT32_2222;
     input.scheduleId = INT32_3333;
     input.templateId = INT32_4444;
+    input.secureProtocolId = SecureProtocolId::DEFAULT;
     input.fwkMsg = { UINT8_0X56, UINT8_0X78 };
 
     HostBeginTokenAuthInputFfi ffi = {};
@@ -879,6 +875,7 @@ HWTEST_F(FfiUtilTest, EncodeHostBeginTokenAuthInput_001, TestSize.Level0)
     EXPECT_EQ(ffi.requestId, 2222U);
     EXPECT_EQ(ffi.scheduleId, 3333U);
     EXPECT_EQ(ffi.templateId, 4444U);
+    EXPECT_EQ(ffi.secureProtocolId, static_cast<uint16_t>(SecureProtocolId::DEFAULT));
 }
 
 HWTEST_F(FfiUtilTest, DecodeHostBeginTokenAuthOutput_001, TestSize.Level0)
@@ -1100,6 +1097,8 @@ HWTEST_F(FfiUtilTest, EncodeCompanionInitKeyNegotiationInput_001, TestSize.Level
     CompanionInitKeyNegotiationInput input;
     input.requestId = 17000;
     input.secureProtocolId = SecureProtocolId::DEFAULT;
+    input.protocolList = { 1 };
+    input.capabilityList = { 1, 2, 3 };
     input.hostDeviceKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
     input.hostDeviceKey.deviceUserId = 100;
     input.hostDeviceKey.deviceId = "host";
@@ -1111,6 +1110,8 @@ HWTEST_F(FfiUtilTest, EncodeCompanionInitKeyNegotiationInput_001, TestSize.Level
     CompanionInitKeyNegotiationInputFfi ffi = {};
     EncodeCompanionInitKeyNegotiationInput(input, ffi);
     EXPECT_EQ(ffi.requestId, 17000U);
+    EXPECT_EQ(ffi.protocolList.len, 1U);
+    EXPECT_EQ(ffi.capabilityList.len, 3U);
 }
 
 HWTEST_F(FfiUtilTest, DecodeCompanionInitKeyNegotiationOutput_001, TestSize.Level0)
