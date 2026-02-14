@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "nocopyable.h"
@@ -39,7 +40,7 @@ public:
     static std::shared_ptr<IUserIdManager> Create();
 
     virtual UserId GetActiveUserId() const = 0;
-    virtual std::string GetActiveUserName() const = 0;
+    virtual std::optional<std::string> GetActiveUserName() const = 0;
     virtual std::unique_ptr<Subscription> SubscribeActiveUserId(ActiveUserIdCallback &&callback) = 0;
     virtual bool IsUserIdValid(int32_t userId) = 0;
 

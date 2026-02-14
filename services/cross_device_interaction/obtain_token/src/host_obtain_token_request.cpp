@@ -182,7 +182,6 @@ void HostObtainTokenRequest::HandleObtainTokenMessage(const Attributes &request,
     std::vector<uint8_t> obtainTokenReply = {};
     bool ret = HandleHostProcessObtainToken(obtainTokenRequest, obtainTokenReply);
     if (!ret) {
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return;
     }
 
@@ -277,12 +276,10 @@ bool HostObtainTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &
     auto deviceStatus = GetCrossDeviceCommManager().GetDeviceStatus(deviceKey);
     if (!deviceStatus.has_value()) {
         IAM_LOGE("%{public}s failed to get device status", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     if (!deviceStatus->isAuthMaintainActive) {
         IAM_LOGE("%{public}s device not in auth maintain active state", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey,
@@ -294,7 +291,6 @@ bool HostObtainTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &
         });
     if (deviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe device status", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     return true;

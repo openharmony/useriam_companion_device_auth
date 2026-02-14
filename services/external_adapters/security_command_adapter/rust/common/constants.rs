@@ -386,6 +386,6 @@ impl TryFrom<u16> for Capability {
     }
 }
 
-pub const PROTOCOL_VERSION: &[u16] = &[1];
-pub const SUPPORT_CAPABILITY: &[u16] =
+pub const SUPPORTED_PROTOCOL_VERSIONS: &[u16] = &[1];
+pub const SUPPORT_CAPABILITIES: &[u16] =
     &[Capability::DelegateAuth as u16, Capability::TokenAuth as u16, Capability::ObtainToken as u16];

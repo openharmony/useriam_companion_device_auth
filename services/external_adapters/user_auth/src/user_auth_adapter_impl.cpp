@@ -24,6 +24,7 @@
 #include "iam_logger.h"
 #include "iam_para2str.h"
 
+#include "service_common.h"
 #include "task_runner_manager.h"
 #include "token_setproc.h"
 #include "user_auth_client.h"

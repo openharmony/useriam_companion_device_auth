@@ -55,6 +55,8 @@ pub struct TokenInfo {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CompanionDeviceEnrollRequest {
     pub secure_protocol_id: u16,
+    pub protocol_list: Vec<u16>,
+    pub capability_list: Vec<u16>,
     pub key_nego_param: KeyNegoParam,
     pub binding_param: BindingParam,
     pub session_key: Vec<u8>,
@@ -68,6 +70,27 @@ impl CompanionDeviceEnrollRequest {
         let host_device_key = DeviceKey::try_from(&input.host_device_key)?;
         let companion_device_key = DeviceKey::try_from(&input.companion_device_key)?;
 
+        let protocol_list: Vec<u16> = input.protocol_list.try_into().map_err(|e| {
+            log_e!("protocol_list try_into fail: {:?}", e);
+            ErrorCode::GeneralError
+        })?;
+        let capability_list = input.capability_list.try_into().map_err(|e| {
+            log_e!("capability_list try_into fail: {:?}", e);
+            ErrorCode::GeneralError
+        })?;
+
+        // Validate that SA's protocol_list is a subset of TA's SUPPORTED_PROTOCOL_VERSIONS
+        for protocol in &protocol_list {
+            if !SUPPORTED_PROTOCOL_VERSIONS.contains(protocol) {
+                log_e!(
+                    "protocol {} is not supported by TA, supported: {:?}",
+                    protocol,
+                    SUPPORTED_PROTOCOL_VERSIONS
+                );
+                return Err(ErrorCode::GeneralError);
+            }
+        }
+
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
             log_e!("secure_random fail");
@@ -75,6 +98,8 @@ impl CompanionDeviceEnrollRequest {
         })?;
         Ok(Self {
             secure_protocol_id: input.secure_protocol_id,
+            protocol_list,
+            capability_list,
             key_nego_param: KeyNegoParam {
                 request_id: input.request_id,
                 companion_device_key,
@@ -234,8 +259,8 @@ impl CompanionDeviceEnrollRequest {
             esl: ExecutorSecurityLevel::Esl3 as i32,
             track_ability_level: TrackAbilityLevel::Tal4 as i32,
             challenge: self.get_challenge(),
-            protocol_list: PROTOCOL_VERSION.to_vec(),
-            capability_list: SUPPORT_CAPABILITY.to_vec(),
+            protocol_list: self.protocol_list.clone(),
+            capability_list: self.capability_list.clone(),
         });
         let (encrypt_data, tag, iv) =
             message_crypto::encrypt_sec_message(&reply_info.encode()?, &self.session_key).map_err(|e| p!(e))?;

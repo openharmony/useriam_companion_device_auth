@@ -48,7 +48,6 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
     if (!GetCrossDeviceCommManager().IsAuthMaintainActive()) {
         IAM_LOGE("%{public}s local auth maintain inactive", GetDescription());
         SendPreIssueTokenReply(ResultCode::GENERAL_ERROR, {});
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
@@ -60,7 +59,6 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
     if (localDeviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe auth maintain active", GetDescription());
         SendPreIssueTokenReply(ResultCode::GENERAL_ERROR, {});
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
 

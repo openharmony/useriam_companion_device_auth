@@ -64,6 +64,7 @@ void SoftBusAdapterOnBind(int32_t socket, PeerSocketInfo info)
 
 void SoftBusAdapterOnBytes(int32_t socket, const void *data, uint32_t dataLen)
 {
+    ENSURE_OR_RETURN(data != nullptr);
     IAM_LOGI("SoftBusAdapterOnBytes enter, socket=%{public}d, dataLen=%{public}u", socket, dataLen);
     std::vector<uint8_t> dataCopy(static_cast<const uint8_t *>(data), static_cast<const uint8_t *>(data) + dataLen);
 

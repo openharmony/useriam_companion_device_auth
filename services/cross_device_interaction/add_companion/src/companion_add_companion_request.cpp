@@ -24,6 +24,7 @@
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "security_agent.h"
+#include "service_common.h"
 #include "singleton_manager.h"
 
 #define LOG_TAG "CDA_SA"
@@ -100,9 +101,13 @@ bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNego
 {
     IAM_LOGI("%{public}s start", GetDescription());
 
+    auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
+
     CompanionInitKeyNegotiationInput input = {};
     input.requestId = GetRequestId();
     input.secureProtocolId = secureProtocolId_;
+    input.protocolList = ProtocolIdConverter::ToUnderlyingVec(profile.protocols);
+    input.capabilityList = CapabilityConverter::ToUnderlyingVec(profile.capabilities);
     input.companionDeviceKey = companionDeviceKey_;
     input.hostDeviceKey = PeerDeviceKey();
     input.initKeyNegotiationRequest = request.extraInfo;

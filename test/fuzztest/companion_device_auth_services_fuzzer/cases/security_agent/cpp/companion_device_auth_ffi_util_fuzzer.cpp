@@ -102,7 +102,6 @@ static void FuzzEncodePersistedCompanionStatus(FuzzedDataProvider &fuzzData)
     status.templateId = fuzzData.ConsumeIntegral<uint64_t>();
     status.hostUserId = fuzzData.ConsumeIntegral<int32_t>();
     status.addedTime = fuzzData.ConsumeIntegral<uint64_t>();
-    status.secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint16_t>());
     status.isValid = fuzzData.ConsumeBool();
     status.companionDeviceKey = GenerateFuzzDeviceKey(fuzzData);
     status.deviceModelInfo = GenerateFuzzString(fuzzData, TEST_VAL64);

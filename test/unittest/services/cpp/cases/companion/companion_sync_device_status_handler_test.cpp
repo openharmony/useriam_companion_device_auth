@@ -72,7 +72,7 @@ HWTEST_F(CompanionSyncDeviceStatusHandlerTest, HandleRequest_001, TestSize.Level
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, syncDeviceStatusRequest.hostDeviceKey.deviceId);
 
     EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillOnce(Return(INT32_100));
-    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return("TestUser"));
+    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return(std::optional<std::string>("TestUser")));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceProfile())
         .WillOnce(Return(profile_))
         .WillOnce(Return(profile_));
@@ -155,7 +155,7 @@ HWTEST_F(CompanionSyncDeviceStatusHandlerTest, HandleRequest_004, TestSize.Level
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, syncDeviceStatusRequest.hostDeviceKey.deviceId);
 
     EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillOnce(Return(INT32_100));
-    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return("TestUser"));
+    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return(std::optional<std::string>("TestUser")));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceProfile()).WillOnce(Return(profile_));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
@@ -186,7 +186,7 @@ HWTEST_F(CompanionSyncDeviceStatusHandlerTest, HandleRequest_005, TestSize.Level
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, syncDeviceStatusRequest.hostDeviceKey.deviceId);
 
     EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillOnce(Return(INT32_100));
-    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return("TestUser"));
+    EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserName()).WillOnce(Return(std::optional<std::string>("TestUser")));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceProfile())
         .WillOnce(Return(profile_))
         .WillOnce(Return(profile_));

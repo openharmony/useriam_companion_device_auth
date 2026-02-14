@@ -14,6 +14,7 @@
  */
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -102,7 +103,7 @@ public:
         return activeUserId_;
     }
 
-    std::string GetActiveUserName() const override
+    std::optional<std::string> GetActiveUserName() const override
     {
         return "tester";
     }

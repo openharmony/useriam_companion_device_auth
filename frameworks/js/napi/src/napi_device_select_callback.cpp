@@ -52,7 +52,6 @@ void DeviceSelectCallback(std::shared_ptr<DeviceSelectCallbackHolder> deviceSele
 
     ClientDeviceSelectResult result {};
     napi_value napiDeviceSelectResult = nullptr;
-    ENSURE_OR_RETURN(deviceSelectCallbackHolder->callback != nullptr);
     napi_status status = deviceSelectCallbackHolder->callback->DoCallback(deviceSelectCallbackHolder->selectPurpose,
         &napiDeviceSelectResult);
     if (status != napi_ok) {

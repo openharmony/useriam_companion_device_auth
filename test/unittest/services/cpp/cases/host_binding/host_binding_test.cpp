@@ -63,7 +63,6 @@ DeviceStatus MakeDeviceStatus(const DeviceKey &deviceKey, bool isOnline = true)
     status.deviceUserName = "TestUser";
     status.deviceModelInfo = "TestModel";
     status.protocolId = ProtocolId::VERSION_1;
-    status.secureProtocolId = SecureProtocolId::DEFAULT;
     return status;
 }
 

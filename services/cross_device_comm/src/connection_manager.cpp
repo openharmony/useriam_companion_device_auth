@@ -23,6 +23,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
+#include "iam_safe_arithmetic.h"
 
 #include "adapter_manager.h"
 #include "common_defines.h"
@@ -381,6 +382,7 @@ std::string ConnectionManager::GenerateConnectionName(const PhysicalDeviceKey &l
     std::string localShort = GetTruncatedString(localPhysicalKey.deviceId);
     std::string remoteShort = GetTruncatedString(remotePhysicalKey.deviceId);
 
+    // connectionName lifetime is less than 10 minutes, uint32_t is sufficient, wrap around is acceptable
     uint32_t id = static_cast<uint32_t>(GetMiscManager().GetNextGlobalId());
 
     std::ostringstream oss;
@@ -449,16 +451,15 @@ void ConnectionManager::HandleIdleMonitorTimer()
 
     for (const auto &pair : connectionMap_) {
         const Connection &connection = pair.second;
-
-        if (now.value() < connection.lastActivityTimeMs) {
+        // Use safe subtraction to prevent underflow
+        std::optional<SteadyTimeMs> idleTimeMsOpt = safe_sub(now.value(), connection.lastActivityTimeMs);
+        if (!idleTimeMsOpt.has_value()) {
             IAM_LOGW("clock anomaly detected for connection %{public}s, skipping idle check",
                 connection.connectionName.c_str());
             continue;
         }
-
-        auto idleTimeMs = now.value() - connection.lastActivityTimeMs;
-        if (idleTimeMs >= IDLE_THRESHOLD_MS) {
-            IAM_LOGW("connection idle for %{public}" PRIu64 " ms: %{public}s", idleTimeMs,
+        if (idleTimeMsOpt.value() >= IDLE_THRESHOLD_MS) {
+            IAM_LOGW("connection idle for %{public}" PRIu64 " ms: %{public}s", idleTimeMsOpt.value(),
                 connection.connectionName.c_str());
             auto messageRouter = weakMessageRouter_.lock();
             ENSURE_OR_RETURN(messageRouter != nullptr);

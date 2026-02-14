@@ -95,13 +95,12 @@ fn host_sync_status_request_new_test_success() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let result = HostDeviceSyncStatusRequest::new(&input);
     assert!(result.is_ok());
 
     let request = result.unwrap();
     assert_eq!(request.get_request_id(), 1);
-    assert_eq!(request.expected_capability_list, SUPPORT_CAPABILITY.to_vec());
 }
 
 #[test]
@@ -115,7 +114,7 @@ fn host_sync_status_request_new_test_secure_random_salt_fail() {
         .returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let result = HostDeviceSyncStatusRequest::new(&input);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -129,7 +128,7 @@ fn host_sync_status_request_prepare_test_not_implemented() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let mut output = HostBeginCompanionCheckOutputFfi::default();
@@ -147,7 +146,7 @@ fn host_sync_status_request_begin_test_wrong_input_type() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let wrong_input = HostEndCompanionCheckInputFfi {
@@ -174,7 +173,7 @@ fn host_sync_status_request_end_test_wrong_input_type() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let mut output = HostBeginCompanionCheckOutputFfi::default();
@@ -198,7 +197,7 @@ fn host_sync_status_request_end_test_protocol_list_convert_fail() {
         .returning(|| Ok(create_mock_companion_device_info()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let mut protocol_list = Uint16Array64Ffi::default();
@@ -228,7 +227,7 @@ fn host_sync_status_request_end_test_capability_list_convert_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let mut capability_list = Uint16Array64Ffi::default();
@@ -268,13 +267,13 @@ fn host_sync_status_request_end_test_read_device_capability_info_fail() {
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
 
     let end_input = HostEndCompanionCheckInputFfi {
@@ -318,7 +317,7 @@ fn host_sync_status_request_end_test_decode_sec_message_fail() {
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
     let end_input = HostEndCompanionCheckInputFfi {
@@ -365,10 +364,10 @@ fn host_sync_status_request_end_test_get_session_key_fail() {
         .returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
         template_id: 123,
@@ -399,14 +398,14 @@ fn host_sync_status_request_end_test_decrypt_sec_message_fail() {
         .returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
@@ -438,14 +437,14 @@ fn host_sync_status_request_end_test_attribute_try_from_bytes_fail() {
         .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
@@ -470,15 +469,15 @@ fn host_sync_status_request_end_test_challenge_mismatch() {
     mock_set_crypto_engine();
     mock_set_host_db_manager();
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
     request.challenge = 999;
 
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
@@ -503,20 +502,20 @@ fn host_sync_status_request_end_test_protocol_list_mismatch() {
     mock_set_crypto_engine();
     mock_set_host_db_manager();
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
     request.challenge = 0;
 
     let mut protocol_list = Uint16Array64Ffi::default();
-    protocol_list.data[0] = PROTOCOL_VERSION[0];
+    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
     protocol_list.len = 1;
 
     let wrong_protocol = vec![0xFFFF];
-    let sec_message = create_valid_sync_reply_message(0, &wrong_protocol, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, &wrong_protocol, SUPPORT_CAPABILITIES);
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
@@ -541,22 +540,22 @@ fn host_sync_status_request_end_test_capability_list_mismatch() {
     mock_set_crypto_engine();
     mock_set_host_db_manager();
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
     request.challenge = 0;
 
     let mut protocol_list = Uint16Array64Ffi::default();
-    protocol_list.data[0] = PROTOCOL_VERSION[0];
+    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
     protocol_list.len = 1;
 
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
 
     let wrong_capability = vec![0xFFFF];
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, &wrong_capability);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, &wrong_capability);
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
         template_id: 123,
@@ -580,17 +579,17 @@ fn host_sync_status_request_end_test_success() {
     mock_set_crypto_engine();
     mock_set_host_db_manager();
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
     request.challenge = 0;
 
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
 
-    let sec_message = create_valid_sync_reply_message(0, PROTOCOL_VERSION, SUPPORT_CAPABILITY);
+    let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let end_input = HostEndCompanionCheckInputFfi {
         request_id: 1,
         template_id: 123,

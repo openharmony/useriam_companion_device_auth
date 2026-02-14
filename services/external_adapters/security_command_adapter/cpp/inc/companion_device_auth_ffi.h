@@ -63,6 +63,7 @@ typedef struct PlaceHolderFfi SetActiveUserOutputFfi;
 
 typedef struct HostBeginCompanionCheckInputFfi {
     int32_t requestId;
+    int32_t userId;
 } HostBeginCompanionCheckInputFfi;
 
 typedef struct HostBeginCompanionCheckOutputFfi {
@@ -93,7 +94,7 @@ typedef struct HostGetInitKeyNegotiationInputFfi {
 } HostGetInitKeyNegotiationInputFfi;
 
 typedef struct HostGetInitKeyNegotiationOutputFfi {
-    struct DataArray20000Ffi secMessage;
+    struct DataArray1024Ffi secMessage;
 } HostGetInitKeyNegotiationOutputFfi;
 
 typedef struct HostBeginAddCompanionInputFfi {
@@ -107,7 +108,7 @@ typedef struct HostBeginAddCompanionInputFfi {
 } HostBeginAddCompanionInputFfi;
 
 typedef struct HostBeginAddCompanionOutputFfi {
-    struct DataArray1024Ffi secMessage;
+    struct DataArray20000Ffi secMessage;
 } HostBeginAddCompanionOutputFfi;
 
 typedef struct HostEndAddCompanionInputFfi {
@@ -182,6 +183,7 @@ typedef struct HostBeginTokenAuthInputFfi {
     int32_t requestId;
     uint64_t scheduleId;
     uint64_t templateId;
+    uint16_t secureProtocolId;
     struct DataArray1024Ffi fwkMessage;
 } HostBeginTokenAuthInputFfi;
 
@@ -305,6 +307,7 @@ typedef struct CompanionGetPersistedStatusOutputFfi {
 
 typedef struct CompanionProcessCheckInputFfi {
     int32_t bindingId;
+    struct Uint16Array64Ffi protocolList;
     struct Uint16Array64Ffi capabilityList;
     uint16_t secureProtocolId;
     struct DataArray32Ffi salt;
@@ -319,6 +322,8 @@ typedef struct CompanionProcessCheckOutputFfi {
 typedef struct CompanionInitKeyNegotiationInputFfi {
     int32_t requestId;
     uint16_t secureProtocolId;
+    struct Uint16Array64Ffi protocolList;
+    struct Uint16Array64Ffi capabilityList;
     struct DeviceKeyFfi companionDeviceKey;
     struct DeviceKeyFfi hostDeviceKey;
     struct DataArray20000Ffi secMessage;

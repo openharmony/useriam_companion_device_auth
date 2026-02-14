@@ -85,7 +85,7 @@ void HostSyncDeviceStatusRequest::BeginCompanionCheck()
 {
     ErrorGuard errorGuard([this](ResultCode resultCode) { CompleteWithError(resultCode); });
 
-    HostBeginCompanionCheckInput input { GetRequestId() };
+    HostBeginCompanionCheckInput input { GetRequestId(), hostUserId_ };
     HostBeginCompanionCheckOutput output {};
     ResultCode ret = GetSecurityAgent().HostBeginCompanionCheck(input, output);
     if (ret != ResultCode::SUCCESS) {

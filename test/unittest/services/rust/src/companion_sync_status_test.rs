@@ -28,6 +28,10 @@ use crate::ut_registry_guard;
 use std::boxed::Box;
 
 fn create_valid_input(binding_id: i32, challenge: u64) -> CompanionProcessCheckInputFfi {
+    let mut protocol_list = Uint16Array64Ffi::default();
+    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
+    protocol_list.len = 1;
+
     let mut capability_list = Uint16Array64Ffi::default();
     capability_list.data[0] = 0x01;
     capability_list.data[1] = 0x02;
@@ -35,6 +39,7 @@ fn create_valid_input(binding_id: i32, challenge: u64) -> CompanionProcessCheckI
 
     CompanionProcessCheckInputFfi {
         binding_id,
+        protocol_list,
         capability_list,
         secure_protocol_id: 1,
         salt: DataArray32Ffi { data: [1u8; HKDF_SALT_SIZE], len: HKDF_SALT_SIZE as u32 },
@@ -55,7 +60,7 @@ fn companion_sync_status_request_new_test_success() {
     let request = result.unwrap();
     assert_eq!(request.get_request_id(), 123);
     assert_eq!(request.challenge, 0);
-    assert_eq!(request.expected_protocol_list, PROTOCOL_VERSION.to_vec());
+    assert_eq!(request.expected_protocol_list, SUPPORTED_PROTOCOL_VERSIONS.to_vec());
     assert_eq!(request.expected_capability_list, vec![0x01, 0x02]);
 }
 
@@ -69,6 +74,7 @@ fn companion_sync_status_request_new_test_capability_list_convert_fail() {
 
     let input = CompanionProcessCheckInputFfi {
         binding_id: 123,
+        protocol_list: Uint16Array64Ffi::default(),
         capability_list,
         secure_protocol_id: 1,
         salt: DataArray32Ffi { data: [1u8; HKDF_SALT_SIZE], len: HKDF_SALT_SIZE as u32 },

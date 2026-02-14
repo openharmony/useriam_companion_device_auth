@@ -115,6 +115,7 @@ std::shared_ptr<MiscManagerImpl> MiscManagerImpl::Create()
 
 uint64_t MiscManagerImpl::GetNextGlobalId()
 {
+    // uint64_t overflow is acceptable: it will wrap around to 0
     return globalIdCounter_++;
 }
 

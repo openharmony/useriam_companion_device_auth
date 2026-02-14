@@ -54,7 +54,6 @@ bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
 
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::DELEGATE_AUTH)) {
         IAM_LOGE("%{public}s DELEGATE_AUTH capability not supported by companion device", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
 
@@ -107,7 +106,6 @@ void HostDelegateAuthRequest::HostBeginDelegateAuth()
 
     if (!InitDelegateResultSubscription()) {
         IAM_LOGE("%{public}s InitDelegateResultSubscription failed", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return;
     }
 
@@ -146,7 +144,6 @@ void HostDelegateAuthRequest::HostBeginDelegateAuth()
         });
     if (!sendRet) {
         IAM_LOGE("%{public}s SendMessage failed", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return;
     }
     errorGuard.Cancel();

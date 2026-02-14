@@ -16,21 +16,13 @@ import("//build/ohos/sa_profile/sa_profile.gni")
 import("../companion_device_auth.gni")
 
 ohos_sa_profile("companion_device_auth_sa_profile") {
-  if (companion_device_auth_enable_dynamic_load) {
-    sources = [ "dynamic_load/945.json" ]
-  } else {
-    sources = [ "default/945.json" ]
-  }
+  sources = [ "default/945.json" ]
 
   part_name = companion_device_auth_part_name
 }
 
 ohos_prebuilt_etc("companion_device_auth_sa_profile.init") {
-  if (companion_device_auth_enable_dynamic_load) {
-    source = "dynamic_load/companiondeviceauth.cfg"
-  } else {
-    source = "default/companiondeviceauth.cfg"
-  }
+  source = "default/companiondeviceauth.cfg"
   relative_install_dir = "init"
 
   subsystem_name = companion_device_auth_subsystem_name
@@ -38,8 +30,12 @@ ohos_prebuilt_etc("companion_device_auth_sa_profile.init") {
 }
 
 group("sa_profile_group") {
-  deps = [
-    ":companion_device_auth_sa_profile",
-    ":companion_device_auth_sa_profile.init",
-  ]
+  if (!companion_device_auth_has_ext) {
+    deps = [
+      ":companion_device_auth_sa_profile",
+      ":companion_device_auth_sa_profile.init",
+    ]
+  } else {
+    deps = []
+  }
 }
