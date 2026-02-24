@@ -50,7 +50,6 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::TOKEN_AUTH)) {
         IAM_LOGE("%{public}s TOKEN_AUTH capability not supported by companion device", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
 
@@ -63,9 +62,9 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
     companionUserId_ = companionStatus->companionDeviceStatus.deviceKey.deviceUserId;
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
+
     secureProtocolId_ = secureProtocolOpt.value();
     if (!OpenConnection()) {
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
@@ -237,12 +236,10 @@ bool HostIssueTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &d
     auto deviceStatus = GetCrossDeviceCommManager().GetDeviceStatus(deviceKey);
     if (!deviceStatus.has_value()) {
         IAM_LOGE("%{public}s failed to get device status", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     if (!deviceStatus->isAuthMaintainActive) {
         IAM_LOGE("%{public}s device not in auth maintain active state", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey,
@@ -254,7 +251,6 @@ bool HostIssueTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &d
         });
     if (deviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe device status", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     return true;

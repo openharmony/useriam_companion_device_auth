@@ -13,14 +13,13 @@
 
 declare_args() {
   companion_device_auth_enable_auth_state_maintain_simulation = true
-  companion_device_auth_enable_dynamic_load = false
-  companion_device_auth_enable_coverage = false
   companion_device_auth_role_companion_only = false
 }
 
 companion_device_auth_subsystem_name = "useriam"
 companion_device_auth_part_name = "companion_device_auth"
 companion_device_auth_path = "//base/useriam/companion_device_auth"
+companion_device_auth_enable_coverage = false
 
 companion_device_auth_has_account_os_account =
     defined(global_parts_info) && defined(global_parts_info.account_os_account)

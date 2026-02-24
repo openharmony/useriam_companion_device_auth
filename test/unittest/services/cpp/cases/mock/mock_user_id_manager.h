@@ -28,7 +28,7 @@ class MockUserIdManager : public IUserIdManager {
 public:
     MOCK_METHOD(bool, Initialize, (), ());
     MOCK_METHOD(int32_t, GetActiveUserId, (), (const, override));
-    MOCK_METHOD(std::string, GetActiveUserName, (), (const, override));
+    MOCK_METHOD(std::optional<std::string>, GetActiveUserName, (), (const, override));
     MOCK_METHOD(std::unique_ptr<Subscription>, SubscribeActiveUserId, (ActiveUserIdCallback && callback), (override));
     MOCK_METHOD(bool, IsUserIdValid, (int32_t userId), (override));
 };

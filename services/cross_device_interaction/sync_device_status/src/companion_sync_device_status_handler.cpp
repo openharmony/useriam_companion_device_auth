@@ -63,7 +63,9 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
     syncReply.capabilityList = profile.capabilities;
     syncReply.secureProtocolId = profile.companionSecureProtocolId;
     syncReply.companionDeviceKey.deviceUserId = companionUserId;
-    syncReply.deviceUserName = GetUserIdManager().GetActiveUserName();
+    auto userNameOpt = GetUserIdManager().GetActiveUserName();
+    ENSURE_OR_RETURN(userNameOpt.has_value());
+    syncReply.deviceUserName = userNameOpt.value();
 
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId, syncRequest.hostDeviceKey);
     if (hostBindingStatus.has_value()) {
@@ -83,6 +85,7 @@ bool CompanionSyncDeviceStatusHandler::CompanionProcessCheck(const HostBindingSt
 {
     CompanionProcessCheckInput input = {};
     input.bindingId = hostBindingStatus.bindingId;
+    input.protocolList = ProtocolIdConverter::ToUnderlyingVec(syncRequest.protocolIdList);
     input.capabilityList = CapabilityConverter::ToUnderlyingVec(syncRequest.capabilityList);
     input.secureProtocolId = GetCrossDeviceCommManager().GetLocalDeviceProfile().companionSecureProtocolId;
     input.salt = syncRequest.salt;

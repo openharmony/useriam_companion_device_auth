@@ -88,24 +88,14 @@ void CompanionManagerImpl::ReloadSingleCompanion(const PersistedCompanionStatus 
     const std::vector<TemplateId> &activeUserTemplateIds, uint64_t nowMs)
 {
     TemplateId templateId = persistedStatus.templateId;
+    auto companion = Companion::Create(persistedStatus, true, weak_from_this());
+    ENSURE_OR_RETURN(companion != nullptr);
+
+    ResultCode addCompanionRet = AddCompanionInternal(companion);
+    ENSURE_OR_RETURN(addCompanionRet == ResultCode::SUCCESS);
     bool addedToIdm = std::find(activeUserTemplateIds.begin(), activeUserTemplateIds.end(), templateId) !=
         activeUserTemplateIds.end();
-    if (addedToIdm) {
-        auto companion = Companion::Create(persistedStatus, true, weak_from_this());
-        ENSURE_OR_RETURN(companion != nullptr);
-
-        ResultCode addCompanionRet = AddCompanionInternal(companion);
-        ENSURE_OR_RETURN(addCompanionRet == ResultCode::SUCCESS);
-        IAM_LOGI("Reloaded companion %{public}s (in IDM)", GET_MASKED_NUM_CSTR(templateId));
-    } else {
-        auto companion = Companion::Create(persistedStatus, true, weak_from_this());
-        ENSURE_OR_RETURN(companion != nullptr);
-
-        ResultCode addCompanionRet = AddCompanionInternal(companion);
-        ENSURE_OR_RETURN(addCompanionRet == ResultCode::SUCCESS);
-
-        IAM_LOGI("Reloaded companion %{public}s (not in IDM, timer started)", GET_MASKED_NUM_CSTR(templateId));
-    }
+    IAM_LOGI("Reloaded companion %{public}s addedToIdm %{public}d", GET_MASKED_NUM_CSTR(templateId), addedToIdm);
 }
 
 std::optional<CompanionStatus> CompanionManagerImpl::GetCompanionStatus(TemplateId templateId)

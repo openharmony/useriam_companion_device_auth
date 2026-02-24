@@ -57,7 +57,6 @@ bool HostTokenAuthRequest::OnStart(ErrorGuard &errorGuard)
 
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::TOKEN_AUTH)) {
         IAM_LOGE("%{public}s TOKEN_AUTH capability not supported by companion device", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
 
@@ -66,7 +65,6 @@ bool HostTokenAuthRequest::OnStart(ErrorGuard &errorGuard)
     companionUserId_ = companionStatus->companionDeviceStatus.deviceKey.deviceUserId;
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     secureProtocolId_ = secureProtocolOpt.value();
@@ -96,6 +94,7 @@ void HostTokenAuthRequest::HostBeginTokenAuth()
     input.requestId = GetRequestId();
     input.scheduleId = GetScheduleId();
     input.templateId = templateId_;
+    input.secureProtocolId = secureProtocolId_;
     input.fwkMsg = fwkMsg_;
     HostBeginTokenAuthOutput output = {};
     ResultCode ret = GetSecurityAgent().HostBeginTokenAuth(input, output);

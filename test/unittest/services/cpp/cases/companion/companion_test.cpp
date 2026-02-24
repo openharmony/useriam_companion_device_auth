@@ -65,7 +65,6 @@ PersistedCompanionStatus MakePersistedStatus(TemplateId templateId, UserId hostU
     status.isValid = true;
     status.enabledBusinessIds = { BUSINESS_ID_1, BUSINESS_ID_2 };
     status.addedTime = 0;
-    status.secureProtocolId = SecureProtocolId::DEFAULT;
     status.deviceModelInfo = "TestModel";
     status.deviceUserName = "TestUser";
     status.deviceName = "TestDevice";
@@ -82,7 +81,6 @@ DeviceStatus MakeDeviceStatus(const DeviceKey &deviceKey, bool isOnline = true, 
     status.deviceUserName = "TestUser";
     status.deviceModelInfo = "TestModel";
     status.protocolId = ProtocolId::VERSION_1;
-    status.secureProtocolId = SecureProtocolId::DEFAULT;
     return status;
 }
 

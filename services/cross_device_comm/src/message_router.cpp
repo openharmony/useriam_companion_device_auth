@@ -169,6 +169,7 @@ bool MessageRouter::SendMessage(const std::string &connectionName, MessageType m
         return false;
     }
 
+    // message lifetime is less than 1 minutes, uint32_t sequence is sufficient, wrap around is acceptable
     uint32_t messageSeq = static_cast<uint32_t>(GetMiscManager().GetNextGlobalId());
 
     IAM_LOGI("sending message: seq=0x%{public}08X, conn=%{public}s, type=0x%{public}04x", messageSeq,

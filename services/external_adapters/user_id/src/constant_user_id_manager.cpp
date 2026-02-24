@@ -15,6 +15,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -47,9 +48,9 @@ public:
         return DEFAULT_USER_ID;
     }
 
-    std::string GetActiveUserName() const override
+    std::optional<std::string> GetActiveUserName() const override
     {
-        return "";
+        return std::nullopt;
     }
 
     std::unique_ptr<Subscription> SubscribeActiveUserId(ActiveUserIdCallback &&callback) override

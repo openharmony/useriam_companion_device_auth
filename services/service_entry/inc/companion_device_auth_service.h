@@ -42,16 +42,16 @@ namespace CompanionDeviceAuth {
 
 class SubscriptionManager;
 
-// Function pointer types for Creater methods
-using BaseServiceInitializerCreater = std::function<std::shared_ptr<BaseServiceInitializer>()>;
-using BaseServiceCoreCreater = std::function<std::shared_ptr<BaseServiceCore>(
+// Function pointer types for Creator methods
+using BaseServiceInitializerCreator = std::function<std::shared_ptr<BaseServiceInitializer>()>;
+using BaseServiceCoreCreator = std::function<std::shared_ptr<BaseServiceCore>(
     const std::shared_ptr<SubscriptionManager> &, const std::vector<BusinessId> &)>;
 
 class CompanionDeviceAuthService : public SystemAbility, public CompanionDeviceAuthStub, public NoCopyable {
     DECLARE_SYSTEM_ABILITY(CompanionDeviceAuthService);
 
 public:
-    CompanionDeviceAuthService(BaseServiceInitializerCreater initializerCreater, BaseServiceCoreCreater coreCreater);
+    CompanionDeviceAuthService(BaseServiceInitializerCreator initializerCreator, BaseServiceCoreCreator coreCreator);
     ~CompanionDeviceAuthService() override = default;
 
     ErrCode SubscribeAvailableDeviceStatus(int32_t localUserId,
@@ -81,6 +81,7 @@ public:
         int32_t &companionDeviceAuthResult) override;
     int32_t CallbackEnter(uint32_t code) override;
     int32_t CallbackExit(uint32_t code, int32_t result) override;
+    void SetWeakPtr(const wptr<IRemoteObject> &weakSelf);
 
 protected:
     void OnStart() override;
@@ -93,13 +94,14 @@ private:
     std::optional<typename std::invoke_result<Func>::type> RunOnResidentSync(Func &&func,
         uint32_t timeoutSec = MAX_SYNC_WAIT_TIME_SEC);
 
-    std::shared_ptr<BaseServiceCore> inner_;
+    std::shared_ptr<BaseServiceCore> core_;
     std::shared_ptr<BaseServiceInitializer> baseServiceInitializer_;
-    std::mutex innerMutex_;
+    std::mutex mutex_;
+    wptr<IRemoteObject> weakSelf_;
 
-    // Function pointers for Creater methods (for dependency injection)
-    BaseServiceInitializerCreater initializerCreater_;
-    BaseServiceCoreCreater coreCreater_;
+    // Function pointers for Creator methods (for dependency injection)
+    BaseServiceInitializerCreator initializerCreator_;
+    BaseServiceCoreCreator coreCreator_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

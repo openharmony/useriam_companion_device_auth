@@ -116,6 +116,10 @@ static void FuzzHostCancelCompanionCheck(std::shared_ptr<ISecurityAgent> &agent,
 static void FuzzCompanionProcessCheck(std::shared_ptr<ISecurityAgent> &agent, FuzzedDataProvider &fuzzData)
 {
     CompanionProcessCheckInput input;
+    uint8_t protocolCount = fuzzData.ConsumeIntegralInRange<uint8_t>(0, INT32_10);
+    for (uint8_t i = 0; i < protocolCount; ++i) {
+        input.protocolList.push_back(fuzzData.ConsumeIntegral<uint16_t>());
+    }
     input.companionCheckRequest =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, SIZE_T_1024));
     CompanionProcessCheckOutput output;
@@ -170,6 +174,14 @@ static void FuzzCompanionInitKeyNegotiation(std::shared_ptr<ISecurityAgent> &age
     CompanionInitKeyNegotiationInput input;
     input.requestId = fuzzData.ConsumeIntegral<uint32_t>();
     input.secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint16_t>());
+    uint8_t protocolCount = fuzzData.ConsumeIntegralInRange<uint8_t>(0, INT32_10);
+    for (uint8_t i = 0; i < protocolCount; ++i) {
+        input.protocolList.push_back(fuzzData.ConsumeIntegral<uint16_t>());
+    }
+    uint8_t capCount = fuzzData.ConsumeIntegralInRange<uint8_t>(0, INT32_10);
+    for (uint8_t i = 0; i < capCount; ++i) {
+        input.capabilityList.push_back(fuzzData.ConsumeIntegral<uint16_t>());
+    }
     input.companionDeviceKey = GenerateFuzzDeviceKey(fuzzData);
     input.hostDeviceKey = GenerateFuzzDeviceKey(fuzzData);
     input.initKeyNegotiationRequest =

@@ -62,8 +62,8 @@ HWTEST_F(ConstantUserIdManagerTest, GetActiveUserName_001, TestSize.Level0)
     auto manager = IUserIdManager::Create();
     ASSERT_NE(nullptr, manager);
 
-    std::string userName = manager->GetActiveUserName();
-    EXPECT_EQ("", userName);
+    auto userNameOpt = manager->GetActiveUserName();
+    EXPECT_EQ(std::nullopt, userNameOpt);
 }
 
 HWTEST_F(ConstantUserIdManagerTest, SubscribeActiveUserId_001, TestSize.Level0)

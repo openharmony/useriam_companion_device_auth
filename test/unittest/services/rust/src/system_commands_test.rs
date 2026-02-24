@@ -465,7 +465,7 @@ fn host_begin_companion_check_test_success() {
     mock_host_request_manager.expect_add_request().returning(|| Ok(()));
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut output = HostBeginCompanionCheckOutputFfi {
         challenge: 0,
         salt: DataArray32Ffi { data: [0u8; SALT_LEN_FFI], len: SALT_LEN_FFI as u32 },
@@ -485,7 +485,7 @@ fn host_begin_companion_check_test_request_new_fail() {
         .returning(|_buf| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut output = HostBeginCompanionCheckOutputFfi {
         challenge: 0,
         salt: DataArray32Ffi { data: [0u8; SALT_LEN_FFI], len: SALT_LEN_FFI as u32 },
@@ -509,7 +509,7 @@ fn host_begin_companion_check_test_add_request_fail() {
         .returning(|| Err(ErrorCode::GeneralError));
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
-    let input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut output = HostBeginCompanionCheckOutputFfi {
         challenge: 0,
         salt: DataArray32Ffi { data: [0u8; SALT_LEN_FFI], len: SALT_LEN_FFI as u32 },
@@ -527,7 +527,7 @@ fn host_end_companion_check_test_success() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let sync_status_request = HostDeviceSyncStatusRequest::new(&begin_input).unwrap();
 
     let mut mock_host_request_manager = MockRequestManager::new();
@@ -547,9 +547,9 @@ fn host_end_companion_check_test_success() {
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut capability_list = Uint16Array64Ffi::default();
-    capability_list.data[0] = SUPPORT_CAPABILITY[0];
-    capability_list.data[1] = SUPPORT_CAPABILITY[1];
-    capability_list.data[2] = SUPPORT_CAPABILITY[2];
+    capability_list.data[0] = SUPPORT_CAPABILITIES[0];
+    capability_list.data[1] = SUPPORT_CAPABILITIES[1];
+    capability_list.data[2] = SUPPORT_CAPABILITIES[2];
     capability_list.len = 3;
 
     let input = HostEndCompanionCheckInputFfi {
@@ -598,7 +598,7 @@ fn host_end_companion_check_test_request_end_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let sync_status_request = HostDeviceSyncStatusRequest::new(&begin_input).unwrap();
 
     let mut mock_host_request_manager = MockRequestManager::new();
@@ -638,7 +638,7 @@ fn host_cancel_companion_check_test_success() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1 };
+    let begin_input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let sync_status_request = HostDeviceSyncStatusRequest::new(&begin_input).unwrap();
 
     let mut mock_host_request_manager = MockRequestManager::new();
@@ -684,7 +684,7 @@ fn host_get_init_key_negotiation_test_success() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert!(result.is_ok());
 }
@@ -701,7 +701,7 @@ fn host_get_init_key_negotiation_test_request_new_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -722,7 +722,7 @@ fn host_get_init_key_negotiation_test_add_request_fail() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -1458,6 +1458,7 @@ fn host_begin_token_auth_test_success() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(&fwk_message).unwrap(),
     };
     let mut output = HostBeginTokenAuthOutputFfi { sec_message: DataArray1024Ffi::default() };
@@ -1480,6 +1481,7 @@ fn host_begin_token_auth_test_request_new_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
     let mut output = HostBeginTokenAuthOutputFfi { sec_message: DataArray1024Ffi::default() };
@@ -1512,6 +1514,7 @@ fn host_begin_token_auth_test_request_begin_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
     let mut output = HostBeginTokenAuthOutputFfi { sec_message: DataArray1024Ffi::default() };
@@ -1580,6 +1583,7 @@ fn host_begin_token_auth_test_add_request_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(&fwk_message).unwrap(),
     };
     let mut output = HostBeginTokenAuthOutputFfi { sec_message: DataArray1024Ffi::default() };
@@ -1604,6 +1608,7 @@ fn host_end_token_auth_test_success() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
     let token_auth_request = HostTokenAuthRequest::new(&begin_input).unwrap();
@@ -1675,6 +1680,7 @@ fn host_end_token_auth_test_request_end_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
     let token_auth_request = HostTokenAuthRequest::new(&begin_input).unwrap();
@@ -2621,6 +2627,7 @@ fn companion_process_check_test_success() {
 
     let input = CompanionProcessCheckInputFfi {
         binding_id: 123,
+        protocol_list: Uint16Array64Ffi::default(),
         capability_list: Uint16Array64Ffi::default(),
         secure_protocol_id: 1,
         salt: DataArray32Ffi { data: [0u8; SALT_LEN_FFI], len: SALT_LEN_FFI as u32 },
@@ -2645,6 +2652,7 @@ fn companion_process_check_test_request_begin_fail() {
 
     let input = CompanionProcessCheckInputFfi {
         binding_id: 123,
+        protocol_list: Uint16Array64Ffi::default(),
         capability_list: Uint16Array64Ffi::default(),
         secure_protocol_id: 1,
         salt: DataArray32Ffi { data: [0u8; SALT_LEN_FFI], len: SALT_LEN_FFI as u32 },
@@ -2678,6 +2686,8 @@ fn companion_init_key_negotiation_test_success() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
@@ -2701,6 +2711,8 @@ fn companion_init_key_negotiation_test_request_new_fail() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -2722,6 +2734,8 @@ fn companion_init_key_negotiation_test_request_prepare_fail() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -2755,6 +2769,8 @@ fn companion_init_key_negotiation_test_add_request_fail() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
@@ -2805,6 +2821,8 @@ fn companion_begin_add_host_binding_test_success() {
     let init_input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -2883,6 +2901,8 @@ fn companion_begin_add_host_binding_test_request_begin_fail() {
     let init_input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -2934,6 +2954,8 @@ fn companion_end_add_host_binding_test_success() {
     let init_input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -2992,6 +3014,8 @@ fn companion_end_add_host_binding_test_request_end_fail() {
     let init_input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),

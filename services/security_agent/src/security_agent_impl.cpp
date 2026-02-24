@@ -172,6 +172,7 @@ ResultCode SecurityAgentImpl::HostBeginCompanionCheck(const HostBeginCompanionCh
     auto ffiInput = std::make_unique<HostBeginCompanionCheckInputFfi>();
     ENSURE_OR_RETURN_VAL(ffiInput != nullptr, GENERAL_ERROR);
     ffiInput->requestId = input.requestId;
+    ffiInput->userId = input.userId;
 
     auto ffiOutput = std::make_unique<HostBeginCompanionCheckOutputFfi>();
     ENSURE_OR_RETURN_VAL(ffiOutput != nullptr, GENERAL_ERROR);

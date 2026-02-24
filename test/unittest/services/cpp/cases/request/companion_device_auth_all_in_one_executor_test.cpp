@@ -14,6 +14,7 @@
  */
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -59,7 +60,7 @@ public:
         return activeUserId_;
     }
 
-    std::string GetActiveUserName() const override
+    std::optional<std::string> GetActiveUserName() const override
     {
         return "tester";
     }

@@ -43,7 +43,6 @@ bool CompanionObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
 {
     if (!GetCrossDeviceCommManager().IsAuthMaintainActive()) {
         IAM_LOGE("%{public}s local auth maintain inactive", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
     localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
@@ -54,7 +53,6 @@ bool CompanionObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
         });
     if (localDeviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe auth maintain active", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return false;
     }
 
@@ -128,7 +126,6 @@ void CompanionObtainTokenRequest::HandlePreObtainTokenReply(const Attributes &re
     bool beginRet = CompanionBeginObtainToken(preObtainTokenReply);
     if (!beginRet) {
         IAM_LOGE("%{public}s CompanionBeginObtainToken failed", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return;
     }
     errorGuard.Cancel();
@@ -205,7 +202,6 @@ void CompanionObtainTokenRequest::HandleObtainTokenReply(const Attributes &reply
     bool endRet = CompanionEndObtainToken(obtainTokenReply);
     if (!endRet) {
         IAM_LOGE("%{public}s CompanionEndObtainToken failed", GetDescription());
-        errorGuard.UpdateErrorCode(ResultCode::GENERAL_ERROR);
         return;
     }
     needCancelObtainToken_ = false;

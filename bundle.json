@@ -27,8 +27,6 @@
     ],
     "features":[
       "companion_device_auth_enable_auth_state_maintain_simulation",
-      "companion_device_auth_enable_dynamic_load",
-      "companion_device_auth_enable_coverage",
       "companion_device_auth_role_companion_only"
     ],
     "rom":"3380KB",

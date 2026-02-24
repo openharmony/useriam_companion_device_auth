@@ -24,6 +24,7 @@
 #include "iam_logger.h"
 
 #include "companion_device_auth_driver.h"
+#include "service_common.h"
 #include "token_setproc.h"
 #include "xcollie_helper.h"
 

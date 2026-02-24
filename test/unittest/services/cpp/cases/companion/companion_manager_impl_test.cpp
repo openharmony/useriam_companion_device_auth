@@ -63,7 +63,6 @@ PersistedCompanionStatus MakePersistedStatus(TemplateId templateId, UserId hostU
     status.enabledBusinessIds = { BUSINESS_ID_1, BUSINESS_ID_2 };
     // Set addedTime to 0 for MockTimeKeeper compatibility
     status.addedTime = 0;
-    status.secureProtocolId = SecureProtocolId::DEFAULT;
     status.deviceModelInfo = "TestModel";
     status.deviceUserName = "TestUser";
     status.deviceName = "TestDevice";

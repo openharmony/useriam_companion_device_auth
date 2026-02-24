@@ -232,7 +232,6 @@ bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &re
     PersistedCompanionStatus companionStatus = {};
     companionStatus.hostUserId = hostDeviceKey_.deviceUserId;
     companionStatus.companionDeviceKey = *companionDeviceKey;
-    companionStatus.secureProtocolId = deviceStatus->secureProtocolId;
     companionStatus.deviceModelInfo = deviceStatus->deviceModelInfo;
     companionStatus.deviceUserName = deviceStatus->deviceUserName;
     companionStatus.deviceName = deviceStatus->deviceName;
