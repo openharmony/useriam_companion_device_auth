@@ -171,13 +171,13 @@ if (companion_device_auth_has_user_auth_framework) {
       "fwk_comm/src/companion_device_auth_executor_callback.cpp",
       "fwk_comm/src/fwk_comm_manager.cpp",
     ]
+    companion_device_auth_service_flags += [ "-DHAS_USER_AUTH_FRAMEWORK" ]
   }
 
   companion_device_auth_service_external_deps += [
     "user_auth_framework:userauth_client",
     "user_auth_framework:userauth_executors",
   ]
-  companion_device_auth_service_flags += [ "-DHAS_USER_AUTH_FRAMEWORK" ]
 }
 
 if (companion_device_auth_has_soft_bus_channel) {

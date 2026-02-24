@@ -287,7 +287,7 @@ void SoftBusConnectionManager::UnsubscribeRawMessage(SubscribeId subscriptionId)
     auto it = std::remove_if(rawMessageSubscribers_.begin(), rawMessageSubscribers_.end(),
         [subscriptionId](const RawMessageSubscription &sub) { return sub.subscriptionId == subscriptionId; });
     if (it != rawMessageSubscribers_.end()) {
-        rawMessageSubscribers_.erase(it);
+        rawMessageSubscribers_.erase(it, rawMessageSubscribers_.end());
         IAM_LOGD("raw message subscription removed: 0x%{public}016" PRIX64 "", subscriptionId);
     }
 }
