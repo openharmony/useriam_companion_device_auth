@@ -48,7 +48,7 @@ public:
     ~DefaultUserIdManager() override;
 
     UserId GetActiveUserId() const override;
-    std::string GetActiveUserName() const override;
+    std::optional<std::string> GetActiveUserName() const override;
     std::unique_ptr<Subscription> SubscribeActiveUserId(ActiveUserIdCallback &&callback) override;
     bool IsUserIdValid(int32_t userId) override;
 
@@ -139,18 +139,18 @@ UserId DefaultUserIdManager::GetActiveUserId() const
     return activeUserId_;
 }
 
-std::string DefaultUserIdManager::GetActiveUserName() const
+std::optional<std::string> DefaultUserIdManager::GetActiveUserName() const
 {
     if (activeUserId_ == INVALID_USER_ID) {
         IAM_LOGW("active user id is invalid");
-        return "";
+        return std::nullopt;
     }
 
     std::string userName;
     ErrCode errCode = AccountSA::OsAccountManager::GetOsAccountNameById(activeUserId_, userName);
     if (errCode != ERR_OK) {
         IAM_LOGE("GetOsAccountNameById failed %{public}d for %{public}d", errCode, activeUserId_);
-        return "";
+        return std::nullopt;
     }
     return userName;
 }

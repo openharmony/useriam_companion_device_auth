@@ -341,6 +341,7 @@ pub type SetActiveUserOutputFfi = PlaceHolderFfi;
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostBeginCompanionCheckInputFfi {
     pub request_id: i32,
+    pub user_id: i32,
 }
 assert_max_size!(HostBeginCompanionCheckInputFfi);
 
@@ -394,7 +395,7 @@ assert_max_size!(HostGetInitKeyNegotiationInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostGetInitKeyNegotiationOutputFfi {
-    pub sec_message: DataArray20000Ffi, /* algorithm_list */
+    pub sec_message: DataArray1024Ffi, /* algorithm_list */
 }
 assert_max_size!(HostGetInitKeyNegotiationOutputFfi);
 
@@ -417,7 +418,7 @@ assert_max_size!(HostBeginAddCompanionInputFfi);
 #[derive(Default, Copy, Clone)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostBeginAddCompanionOutputFfi {
-    pub sec_message: DataArray1024Ffi, /* device_id, user_id, pub_key, salt, tag, iv, encrypt_data(challenge, device_id, user_id) */
+    pub sec_message: DataArray20000Ffi, /* device_id, user_id, pub_key, salt, tag, iv, encrypt_data(challenge, device_id, user_id) */
 }
 assert_max_size!(HostBeginAddCompanionOutputFfi);
 
@@ -551,6 +552,7 @@ pub struct HostBeginTokenAuthInputFfi {
     pub request_id: i32,
     pub schedule_id: u64,
     pub template_id: u64,
+    pub secure_protocol_id: u16,
     pub fwk_message: DataArray1024Ffi,
 }
 assert_max_size!(HostBeginTokenAuthInputFfi);
@@ -781,6 +783,7 @@ assert_max_size!(CompanionGetPersistedStatusOutputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionProcessCheckInputFfi {
     pub binding_id: i32,
+    pub protocol_list: Uint16Array64Ffi,
     pub capability_list: Uint16Array64Ffi,
     pub secure_protocol_id: u16,
     pub salt: DataArray32Ffi,
@@ -804,6 +807,8 @@ assert_max_size!(CompanionProcessCheckOutputFfi);
 pub struct CompanionInitKeyNegotiationInputFfi {
     pub request_id: i32,
     pub secure_protocol_id: u16,
+    pub protocol_list: Uint16Array64Ffi,
+    pub capability_list: Uint16Array64Ffi,
     pub companion_device_key: DeviceKeyFfi,
     pub host_device_key: DeviceKeyFfi,
     pub sec_message: DataArray20000Ffi, /* algorithm_list */

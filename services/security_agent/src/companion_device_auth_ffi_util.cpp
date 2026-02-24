@@ -217,7 +217,6 @@ bool DecodePersistedCompanionStatus(const PersistedCompanionStatusFfi &ffi, Pers
     status.templateId = ffi.templateId;
     status.hostUserId = ffi.hostUserId;
     status.addedTime = ffi.addedTime;
-    status.secureProtocolId = static_cast<SecureProtocolId>(ffi.secureProtocolId);
     status.isValid = (ffi.isValid != 0);
 
     if (!DecodeDeviceKey(ffi.companionDeviceKey, status.companionDeviceKey)) {
@@ -246,7 +245,6 @@ bool EncodePersistedCompanionStatus(const PersistedCompanionStatus &status, Pers
     ffi.templateId = status.templateId;
     ffi.hostUserId = status.hostUserId;
     ffi.addedTime = status.addedTime;
-    ffi.secureProtocolId = static_cast<uint16_t>(status.secureProtocolId);
     ffi.isValid = status.isValid ? 1 : 0;
 
     if (!EncodeDeviceKey(status.companionDeviceKey, ffi.companionDeviceKey)) {
@@ -433,6 +431,7 @@ bool EncodeHostBeginTokenAuthInput(const HostBeginTokenAuthInput &input, HostBeg
     ffi.requestId = input.requestId;
     ffi.scheduleId = input.scheduleId;
     ffi.templateId = input.templateId;
+    ffi.secureProtocolId = static_cast<uint16_t>(input.secureProtocolId);
 
     return EncodeMessageArray(input.fwkMsg, ffi.fwkMessage);
 }
@@ -569,6 +568,10 @@ bool EncodeCompanionProcessCheckInput(const CompanionProcessCheckInput &input, C
     ffi.secureProtocolId = static_cast<uint16_t>(input.secureProtocolId);
     ffi.challenge = input.challenge;
 
+    if (!VectorToFfiArray(input.protocolList, ffi.protocolList, "protocol list")) {
+        return false;
+    }
+
     if (!VectorToFfiArray(input.capabilityList, ffi.capabilityList, "capability list")) {
         return false;
     }
@@ -590,6 +593,14 @@ bool EncodeCompanionInitKeyNegotiationInput(const CompanionInitKeyNegotiationInp
 {
     ffi.requestId = input.requestId;
     ffi.secureProtocolId = static_cast<uint16_t>(input.secureProtocolId);
+
+    if (!VectorToFfiArray(input.protocolList, ffi.protocolList, "protocol list")) {
+        return false;
+    }
+
+    if (!VectorToFfiArray(input.capabilityList, ffi.capabilityList, "capability list")) {
+        return false;
+    }
 
     if (!EncodeDeviceKey(input.hostDeviceKey, ffi.hostDeviceKey) ||
         !EncodeDeviceKey(input.companionDeviceKey, ffi.companionDeviceKey)) {

@@ -23,6 +23,8 @@
 #include "if_system_ability_manager.h"
 #include "xcollie_helper.h"
 
+#include "service_common.h"
+
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {

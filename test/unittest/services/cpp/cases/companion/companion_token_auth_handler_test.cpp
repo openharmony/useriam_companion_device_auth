@@ -55,6 +55,7 @@ HWTEST_F(CompanionTokenAuthHandlerTest, HandleRequest_001, TestSize.Level0)
         static_cast<int32_t>(tokenAuthRequest.hostDeviceKey.idType));
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, tokenAuthRequest.hostDeviceKey.deviceId);
 
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
         .WillOnce(Return(std::make_optional(hostBindingStatus_)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -99,6 +100,7 @@ HWTEST_F(CompanionTokenAuthHandlerTest, HandleRequest_003, TestSize.Level0)
         static_cast<int32_t>(tokenAuthRequest.hostDeviceKey.idType));
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, tokenAuthRequest.hostDeviceKey.deviceId);
 
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
     Attributes reply;
@@ -124,6 +126,7 @@ HWTEST_F(CompanionTokenAuthHandlerTest, HandleRequest_004, TestSize.Level0)
         static_cast<int32_t>(tokenAuthRequest.hostDeviceKey.idType));
     request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, tokenAuthRequest.hostDeviceKey.deviceId);
 
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
         .WillOnce(Return(std::make_optional(hostBindingStatus_)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))

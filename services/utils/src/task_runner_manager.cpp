@@ -153,10 +153,7 @@ void TaskRunnerManager::PostTask(const std::string &name, std::function<void()> 
     auto taskBlockMonitor = std::make_shared<XCollieHelper>("taskBlockMonitor", TASK_BLOCK_MONITOR_TIMEOUT);
     ENSURE_OR_RETURN(taskBlockMonitor != nullptr);
 
-    taskRunner->PostTask([taskRunner, taskBlockMonitor, originalTask = std::move(task)]() mutable {
-        originalTask();
-        taskRunner->PostTask([taskBlockMonitor]() mutable { (void)taskBlockMonitor; });
-    });
+    taskRunner->PostTask([taskRunner, taskBlockMonitor, originalTask = std::move(task)]() mutable { originalTask(); });
 }
 
 void TaskRunnerManager::PostTaskOnResident(std::function<void()> &&task)
@@ -166,10 +163,10 @@ void TaskRunnerManager::PostTaskOnResident(std::function<void()> &&task)
 
 void TaskRunnerManager::PostTaskOnTemporary(const std::string &name, std::function<void()> &&task)
 {
+    static std::atomic<uint32_t> runnerSerial = 1;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    static std::atomic<uint32_t> serial = 0;
-    uint32_t thisSerial = serial.fetch_add(1);
-    std::string thread_name = name + "_" + std::to_string(thisSerial);
+    uint32_t serial = runnerSerial.fetch_add(1);
+    std::string thread_name = name + "_" + std::to_string(serial);
     CreateTaskRunner(thread_name);
     PostTask(thread_name, std::move(task));
     DestroyTaskRunner(thread_name);

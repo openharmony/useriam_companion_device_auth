@@ -51,13 +51,13 @@ fn create_valid_auth_reply_message(hmac: &[u8]) -> Vec<u8> {
     reply.encode(DeviceType::Default).unwrap()
 }
 
-fn create_mock_companion_device_info(template_id: u64, secure_protocol_id: u16) -> CompanionDeviceInfo {
+fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
         user_info: UserInfo { user_id: 100, user_type: 0 },
         added_time: 123456,
-        secure_protocol_id,
+        secure_protocol_id: 1,
         is_valid: true,
         capability_list: vec![1, 2, 3],
     }
@@ -113,6 +113,7 @@ fn host_token_auth_request_new_test_success() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -143,6 +144,7 @@ fn host_token_auth_request_new_test_secure_random_salt_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -163,6 +165,7 @@ fn host_token_auth_request_prepare_test_not_implemented() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -187,6 +190,7 @@ fn host_token_auth_request_begin_test_wrong_input_type() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -216,7 +220,7 @@ fn host_token_auth_request_begin_test_schedule_id_mismatch() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(999, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -224,6 +228,7 @@ fn host_token_auth_request_begin_test_schedule_id_mismatch() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -246,7 +251,7 @@ fn host_token_auth_request_begin_test_template_id_not_found() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[456u64], AuthTrustLevel::Atl3 as i32);
@@ -254,6 +259,7 @@ fn host_token_auth_request_begin_test_template_id_not_found() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -276,7 +282,7 @@ fn host_token_auth_request_begin_test_atl_try_from_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], 99999);
@@ -284,6 +290,7 @@ fn host_token_auth_request_begin_test_atl_try_from_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -306,7 +313,7 @@ fn host_token_auth_request_begin_test_get_device_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
@@ -318,6 +325,7 @@ fn host_token_auth_request_begin_test_get_device_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -340,13 +348,13 @@ fn host_token_auth_request_begin_test_secure_protocol_id_not_support() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 999)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -354,6 +362,7 @@ fn host_token_auth_request_begin_test_secure_protocol_id_not_support() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -376,13 +385,13 @@ fn host_token_auth_request_begin_test_get_token_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager.expect_get_token().returning(|| Err(ErrorCode::NotFound));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
@@ -391,6 +400,7 @@ fn host_token_auth_request_begin_test_get_token_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -413,13 +423,13 @@ fn host_token_auth_request_begin_test_get_rtc_time_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_get_token()
         .returning(|| Ok(create_mock_companion_token_info(1000)));
@@ -436,6 +446,7 @@ fn host_token_auth_request_begin_test_get_rtc_time_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -458,14 +469,14 @@ fn host_token_auth_request_begin_test_token_time_bad() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
     mock_set_time_keeper(1000);
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_get_token()
         .returning(|| Ok(create_mock_companion_token_info(10000)));
@@ -476,6 +487,7 @@ fn host_token_auth_request_begin_test_token_time_bad() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -498,14 +510,14 @@ fn host_token_auth_request_begin_test_token_expired() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
     mock_set_time_keeper(1001 + TOKEN_VALID_PERIOD);
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_get_token()
         .returning(|| Ok(create_mock_companion_token_info(1000)));
@@ -516,6 +528,7 @@ fn host_token_auth_request_begin_test_token_expired() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -538,14 +551,14 @@ fn host_token_auth_request_begin_test_get_session_key_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
     mock_set_time_keeper(2000);
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_get_token()
         .returning(|| Ok(create_mock_companion_token_info(1000)));
@@ -559,6 +572,7 @@ fn host_token_auth_request_begin_test_get_session_key_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -592,7 +606,7 @@ fn host_token_auth_request_begin_test_aes_gcm_encrypt_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager
         .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123, 1)));
+        .returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_get_token()
         .returning(|| Ok(create_mock_companion_token_info(1000)));
@@ -607,6 +621,7 @@ fn host_token_auth_request_begin_test_aes_gcm_encrypt_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::try_from(fwk_message).unwrap(),
     };
 
@@ -631,6 +646,7 @@ fn host_token_auth_request_end_test_wrong_input_type() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -659,6 +675,7 @@ fn host_token_auth_request_end_test_get_token_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -702,6 +719,7 @@ fn host_token_auth_request_end_test_hmac_sha256_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -745,6 +763,7 @@ fn host_token_auth_request_end_test_hmac_verification_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 
@@ -794,6 +813,7 @@ fn host_token_auth_request_end_test_get_local_key_pair_fail() {
         request_id: 1,
         schedule_id: 1,
         template_id: 123,
+        secure_protocol_id: 0,
         fwk_message: DataArray1024Ffi::default(),
     };
 

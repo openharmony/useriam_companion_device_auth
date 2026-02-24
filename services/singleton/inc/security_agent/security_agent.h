@@ -64,6 +64,7 @@ struct CompanionGetPersistedHostBindingStatusOutput {
 // Companion check input/output structs
 struct HostBeginCompanionCheckInput {
     RequestId requestId;
+    int32_t userId;
 };
 
 struct HostBeginCompanionCheckOutput {
@@ -86,6 +87,7 @@ struct HostCancelCompanionCheckInput {
 
 struct CompanionProcessCheckInput {
     BindingId bindingId;
+    std::vector<uint16_t> protocolList;
     std::vector<uint16_t> capabilityList;
     SecureProtocolId secureProtocolId;
     std::vector<uint8_t> salt;
@@ -149,6 +151,8 @@ struct HostCancelAddCompanionInput {
 struct CompanionInitKeyNegotiationInput {
     RequestId requestId;
     SecureProtocolId secureProtocolId;
+    std::vector<uint16_t> protocolList;
+    std::vector<uint16_t> capabilityList;
     DeviceKey companionDeviceKey;
     DeviceKey hostDeviceKey;
     std::vector<uint8_t> initKeyNegotiationRequest;
@@ -358,6 +362,7 @@ struct HostBeginTokenAuthInput {
     RequestId requestId;
     ScheduleId scheduleId;
     TemplateId templateId;
+    SecureProtocolId secureProtocolId;
     std::vector<uint8_t> fwkMsg;
 };
 

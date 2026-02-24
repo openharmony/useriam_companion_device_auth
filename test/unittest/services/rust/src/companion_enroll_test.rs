@@ -16,7 +16,7 @@
 use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::{
     CompanionBeginAddHostBindingInputFfi, CompanionEndAddHostBindingInputFfi, CompanionInitKeyNegotiationInputFfi,
-    DataArray1024Ffi, DataArray20000Ffi, DeviceKeyFfi,
+    DataArray1024Ffi, DataArray20000Ffi, DeviceKeyFfi, Uint16Array64Ffi,
 };
 use crate::log_i;
 use crate::request::enroll::companion_enroll::CompanionDeviceEnrollRequest;
@@ -35,9 +35,15 @@ fn create_mock_key_pair() -> KeyPair {
 }
 
 fn genereate_companion_init_key_negotiation_input_ffi() -> CompanionInitKeyNegotiationInputFfi {
+    let mut protocol_list = Uint16Array64Ffi::default();
+    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
+    protocol_list.len = 1;
+
     CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list,
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::default(),
@@ -127,6 +133,8 @@ fn companion_enroll_request_prepare_test_algorithm_not_supported() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
@@ -155,6 +163,8 @@ fn companion_enroll_request_prepare_test_generate_key_pair_fail() {
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),

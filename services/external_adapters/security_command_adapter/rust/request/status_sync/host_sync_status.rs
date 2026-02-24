@@ -30,12 +30,12 @@ pub struct HostDeviceSyncStatusRequest {
     pub challenge: u64,
     pub salt: [u8; HKDF_SALT_SIZE],
     pub template_id: u64,
-    pub expected_protocol_list: Vec<u16>,
-    pub expected_capability_list: Vec<u16>,
 }
 
 impl HostDeviceSyncStatusRequest {
     pub fn new(input: &HostBeginCompanionCheckInputFfi) -> Result<Self, ErrorCode> {
+        log_i!("HostDeviceSyncStatusRequest::new with request_id: {}, user_id: {}", input.request_id, input.user_id);
+
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
             log_e!("secure_random fail");
@@ -53,8 +53,6 @@ impl HostDeviceSyncStatusRequest {
             challenge: u64::from_ne_bytes(challenge),
             salt,
             template_id: 0,
-            expected_protocol_list: Vec::new(),
-            expected_capability_list: SUPPORT_CAPABILITY.to_vec(),
         })
     }
 
@@ -77,16 +75,30 @@ impl HostDeviceSyncStatusRequest {
         let protocol_list = decrypt_attribute
             .get_u16_vec(AttributeKey::AttrProtocolList)
             .map_err(|e| p!(e))?;
-        if protocol_list != self.expected_protocol_list {
-            log_e!("Protocol verification failed");
-            return Err(ErrorCode::GeneralError);
+        // Validate that TA's protocol_list is a subset of CA's SUPPORTED_PROTOCOL_VERSIONS
+        for protocol in &protocol_list {
+            if !SUPPORTED_PROTOCOL_VERSIONS.contains(protocol) {
+                log_e!(
+                    "protocol {} is not supported by CA, supported: {:?}",
+                    protocol,
+                    SUPPORTED_PROTOCOL_VERSIONS
+                );
+                return Err(ErrorCode::GeneralError);
+            }
         }
         let capabilities = decrypt_attribute
             .get_u16_vec(AttributeKey::AttrCapabilityList)
             .map_err(|e| p!(e))?;
-        if capabilities != self.expected_capability_list {
-            log_e!("Capabilities verification failed");
-            return Err(ErrorCode::GeneralError);
+        // Validate that TA's capabilities is a subset of CA's SUPPORT_CAPABILITIES
+        for capability in &capabilities {
+            if !SUPPORT_CAPABILITIES.contains(capability) {
+                log_e!(
+                    "capability {} is not supported by CA, supported: {:?}",
+                    capability,
+                    SUPPORT_CAPABILITIES
+                );
+                return Err(ErrorCode::GeneralError);
+            }
         }
 
         Ok(())
@@ -138,18 +150,6 @@ impl Request for HostDeviceSyncStatusRequest {
         };
 
         self.template_id = ffi_input.template_id;
-        let ffi_protocol_list = Vec::<u16>::try_from(ffi_input.protocol_list).map_err(|e| {
-            log_e!("Failed to convert protocol_list: {:?}", e);
-            ErrorCode::GeneralError
-        })?;
-
-        let ffi_capability_list = Vec::<u16>::try_from(ffi_input.capability_list).map_err(|e| {
-            log_e!("Failed to convert capability_list: {:?}", e);
-            ErrorCode::GeneralError
-        })?;
-
-        self.expected_protocol_list = ffi_protocol_list;
-        self.expected_capability_list = ffi_capability_list;
 
         if self.decode_sec_status_sync_reply(ffi_input.sec_message.as_slice()?).is_ok() {
             host_db_helper::update_companion_device_valid_flag(self.template_id, true)?;

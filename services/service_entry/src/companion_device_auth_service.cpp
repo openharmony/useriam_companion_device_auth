@@ -67,29 +67,39 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 
 namespace {
-// Get service instance with BaseServiceInitializer
-sptr<CompanionDeviceAuthService> GetServiceInstance()
+#ifndef ENABLE_STATIC_LIB
+[[maybe_unused]] sptr<CompanionDeviceAuthService> GetServiceInstance()
 {
-    static sptr<CompanionDeviceAuthService> instance = sptr<CompanionDeviceAuthService>::MakeSptr(
-        []() -> std::shared_ptr<BaseServiceInitializer> { return BaseServiceInitializer::Create(); },
-        [](const std::shared_ptr<SubscriptionManager> &subscriptionManager,
-            const std::vector<BusinessId> &supportedBusinessIds) -> std::shared_ptr<BaseServiceCore> {
-            return BaseServiceCore::Create(subscriptionManager, supportedBusinessIds);
-        });
+    static sptr<CompanionDeviceAuthService> instance = []() {
+        auto ptr = sptr<CompanionDeviceAuthService>::MakeSptr(
+            []() -> std::shared_ptr<BaseServiceInitializer> { return BaseServiceInitializer::Create(); },
+            [](const std::shared_ptr<SubscriptionManager> &subscriptionManager,
+                const std::vector<BusinessId> &supportedBusinessIds) -> std::shared_ptr<BaseServiceCore> {
+                return BaseServiceCore::Create(subscriptionManager, supportedBusinessIds);
+            });
+        ptr->SetWeakPtr(ptr);
+        return ptr;
+    }();
     return instance;
 }
 
 #ifndef ENABLE_TEST
 [[maybe_unused]] const bool REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(GetServiceInstance().GetRefPtr());
 #endif // ENABLE_TEST
+#endif // ENABLE_STATIC_LIB
 } // namespace
 
-CompanionDeviceAuthService::CompanionDeviceAuthService(BaseServiceInitializerCreater initializerCreater,
-    BaseServiceCoreCreater coreCreater)
+CompanionDeviceAuthService::CompanionDeviceAuthService(BaseServiceInitializerCreator initializerCreator,
+    BaseServiceCoreCreator coreCreator)
     : SystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, true),
-      initializerCreater_(std::move(initializerCreater)),
-      coreCreater_(std::move(coreCreater))
+      initializerCreator_(std::move(initializerCreator)),
+      coreCreator_(std::move(coreCreator))
 {
+}
+
+void CompanionDeviceAuthService::SetWeakPtr(const wptr<IRemoteObject> &weakSelf)
+{
+    weakSelf_ = weakSelf;
 }
 
 bool CompanionDeviceAuthService::CheckPermission(int32_t &companionDeviceAuthResult)
@@ -110,20 +120,28 @@ bool CompanionDeviceAuthService::CheckPermission(int32_t &companionDeviceAuthRes
 void CompanionDeviceAuthService::OnStart()
 {
     IAM_LOGI("Start");
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (baseServiceInitializer_ != nullptr || core_ != nullptr) {
+            IAM_LOGE("base service initializer or inner service already created");
+            return;
+        }
+    }
+
     auto resultOpt = RunOnResidentSync(
-        [initializerCreater = initializerCreater_, coreCreater = coreCreater_]()
+        [initializerCreator = initializerCreator_, coreCreator = coreCreator_]()
             -> std::pair<std::shared_ptr<BaseServiceInitializer>, std::shared_ptr<BaseServiceCore>> {
-            auto baseServiceInitializer = initializerCreater();
+            auto baseServiceInitializer = initializerCreator();
             ENSURE_OR_RETURN_VAL(baseServiceInitializer != nullptr, std::make_pair(nullptr, nullptr));
             GetSystemParamManager().SetParam(CDA_IS_FUNCTION_READY_KEY, TRUE_STR);
             IAM_LOGI("created base service initializer");
 
-            auto inner = coreCreater(baseServiceInitializer->GetSubscriptionManager(),
+            auto core = coreCreator(baseServiceInitializer->GetSubscriptionManager(),
                 baseServiceInitializer->GetSupportedBusinessIds());
-            ENSURE_OR_RETURN_VAL(inner != nullptr, std::make_pair(nullptr, nullptr));
+            ENSURE_OR_RETURN_VAL(core != nullptr, std::make_pair(nullptr, nullptr));
             IAM_LOGI("created inner service");
 
-            return std::make_pair(baseServiceInitializer, inner);
+            return std::make_pair(baseServiceInitializer, core);
         },
         MAX_ON_START_WAIT_TIME_SEC);
     if (!resultOpt.has_value()) {
@@ -131,22 +149,24 @@ void CompanionDeviceAuthService::OnStart()
         return;
     }
 
-    auto [baseServiceInitializer, inner] = resultOpt.value();
-    if (baseServiceInitializer == nullptr || inner == nullptr) {
+    auto [baseServiceInitializer, core] = resultOpt.value();
+    if (baseServiceInitializer == nullptr || core == nullptr) {
         IAM_LOGE("failed to create base service initializer or inner service");
         return;
     }
 
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
+        std::lock_guard<std::mutex> lock(mutex_);
         baseServiceInitializer_ = baseServiceInitializer;
-        inner_ = inner;
+        core_ = core;
     }
 
-    if (!Publish(GetServiceInstance())) {
+    auto sharedPtr = weakSelf_.promote();
+    ENSURE_OR_RETURN(sharedPtr != nullptr);
+    if (!Publish(sharedPtr)) {
         IAM_LOGE("fail to publish companion device auth service");
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner_.reset();
+        std::lock_guard<std::mutex> lock(mutex_);
+        core_.reset();
         baseServiceInitializer_.reset();
         return;
     }
@@ -166,14 +186,14 @@ ErrCode CompanionDeviceAuthService::SubscribeAvailableDeviceStatus(int32_t local
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, localUserId, deviceStatusCallback]() {
-        return inner->SubscribeAvailableDeviceStatus(localUserId, deviceStatusCallback);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, localUserId, deviceStatusCallback]() {
+        return core->SubscribeAvailableDeviceStatus(localUserId, deviceStatusCallback);
     });
     if (!resultOpt.has_value()) {
         IAM_LOGE("SubscribeAvailableDeviceStatus timeout");
@@ -192,14 +212,14 @@ ErrCode CompanionDeviceAuthService::UnsubscribeAvailableDeviceStatus(
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
     auto resultOpt = RunOnResidentSync(
-        [inner, deviceStatusCallback]() { return inner->UnsubscribeAvailableDeviceStatus(deviceStatusCallback); });
+        [core, deviceStatusCallback]() { return core->UnsubscribeAvailableDeviceStatus(deviceStatusCallback); });
     if (!resultOpt.has_value()) {
         IAM_LOGE("UnsubscribeAvailableDeviceStatus timeout");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::TIMEOUT);
@@ -217,14 +237,14 @@ ErrCode CompanionDeviceAuthService::SubscribeTemplateStatusChange(int32_t localU
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, localUserId, templateStatusCallback]() {
-        return inner->SubscribeTemplateStatusChange(localUserId, templateStatusCallback);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, localUserId, templateStatusCallback]() {
+        return core->SubscribeTemplateStatusChange(localUserId, templateStatusCallback);
     });
     if (!resultOpt.has_value()) {
         IAM_LOGE("SubscribeTemplateStatusChange timeout");
@@ -243,14 +263,14 @@ ErrCode CompanionDeviceAuthService::UnsubscribeTemplateStatusChange(
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
     auto resultOpt = RunOnResidentSync(
-        [inner, templateStatusCallback]() { return inner->UnsubscribeTemplateStatusChange(templateStatusCallback); });
+        [core, templateStatusCallback]() { return core->UnsubscribeTemplateStatusChange(templateStatusCallback); });
     if (!resultOpt.has_value()) {
         IAM_LOGE("UnsubscribeTemplateStatusChange timeout");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::TIMEOUT);
@@ -269,14 +289,14 @@ ErrCode CompanionDeviceAuthService::SubscribeContinuousAuthStatusChange(
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, subscribeContinuousAuthStatusParam, continuousAuthStatusCallback]() {
-        return inner->SubscribeContinuousAuthStatusChange(subscribeContinuousAuthStatusParam,
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, subscribeContinuousAuthStatusParam, continuousAuthStatusCallback]() {
+        return core->SubscribeContinuousAuthStatusChange(subscribeContinuousAuthStatusParam,
             continuousAuthStatusCallback);
     });
     if (!resultOpt.has_value()) {
@@ -296,14 +316,14 @@ ErrCode CompanionDeviceAuthService::UnsubscribeContinuousAuthStatusChange(
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, continuousAuthStatusCallback]() {
-        return inner->UnsubscribeContinuousAuthStatusChange(continuousAuthStatusCallback);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, continuousAuthStatusCallback]() {
+        return core->UnsubscribeContinuousAuthStatusChange(continuousAuthStatusCallback);
     });
     if (!resultOpt.has_value()) {
         IAM_LOGE("UnsubscribeContinuousAuthStatusChange timeout");
@@ -322,14 +342,14 @@ ErrCode CompanionDeviceAuthService::UpdateTemplateEnabledBusinessIds(uint64_t te
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, templateId, enabledBusinessIds]() {
-        return inner->UpdateTemplateEnabledBusinessIds(templateId, enabledBusinessIds);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, templateId, enabledBusinessIds]() {
+        return core->UpdateTemplateEnabledBusinessIds(templateId, enabledBusinessIds);
     });
     if (!resultOpt.has_value()) {
         IAM_LOGE("UpdateTemplateEnabledBusinessIds timeout");
@@ -348,15 +368,15 @@ ErrCode CompanionDeviceAuthService::GetTemplateStatus(int32_t localUserId,
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultPair = RunOnResidentSync([inner, localUserId]() {
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultPair = RunOnResidentSync([core, localUserId]() {
         std::vector<IpcTemplateStatus> array;
-        ResultCode result = inner->GetTemplateStatus(localUserId, array);
+        ResultCode result = core->GetTemplateStatus(localUserId, array);
         return std::make_pair(result, std::move(array));
     });
     if (!resultPair.has_value()) {
@@ -377,16 +397,16 @@ ErrCode CompanionDeviceAuthService::RegisterDeviceSelectCallback(
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
     uint32_t tokenId = GetAccessTokenKitAdapter().GetAccessTokenId(*this);
     ENSURE_OR_RETURN_VAL(tokenId != 0, ResultCode::GENERAL_ERROR);
-    auto resultOpt = RunOnResidentSync([inner, deviceSelectCallback, tokenId]() {
-        return inner->RegisterDeviceSelectCallback(tokenId, deviceSelectCallback);
+    auto resultOpt = RunOnResidentSync([core, deviceSelectCallback, tokenId]() {
+        return core->RegisterDeviceSelectCallback(tokenId, deviceSelectCallback);
     });
     if (!resultOpt.has_value()) {
         IAM_LOGE("RegisterDeviceSelectCallback timeout");
@@ -404,15 +424,15 @@ ErrCode CompanionDeviceAuthService::UnregisterDeviceSelectCallback(int32_t &comp
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
     uint32_t tokenId = GetAccessTokenKitAdapter().GetAccessTokenId(*this);
     ENSURE_OR_RETURN_VAL(tokenId != 0, ResultCode::GENERAL_ERROR);
-    auto resultOpt = RunOnResidentSync([inner, tokenId]() { return inner->UnregisterDeviceSelectCallback(tokenId); });
+    auto resultOpt = RunOnResidentSync([core, tokenId]() { return core->UnregisterDeviceSelectCallback(tokenId); });
     if (!resultOpt.has_value()) {
         IAM_LOGE("UnregisterDeviceSelectCallback timeout");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::TIMEOUT);
@@ -430,13 +450,13 @@ ErrCode CompanionDeviceAuthService::CheckLocalUserIdValid(int32_t localUserId, b
     if (!CheckPermission(companionDeviceAuthResult)) {
         return ERR_OK;
     }
-    std::shared_ptr<BaseServiceCore> inner;
+    std::shared_ptr<BaseServiceCore> core;
     {
-        std::lock_guard<std::mutex> lock(innerMutex_);
-        inner = inner_;
+        std::lock_guard<std::mutex> lock(mutex_);
+        core = core_;
     }
-    ENSURE_OR_RETURN_VAL(inner != nullptr, ERR_INVALID_VALUE);
-    auto resultOpt = RunOnResidentSync([inner, localUserId]() { return inner->CheckLocalUserIdValid(localUserId); });
+    ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
+    auto resultOpt = RunOnResidentSync([core, localUserId]() { return core->CheckLocalUserIdValid(localUserId); });
     if (!resultOpt.has_value()) {
         IAM_LOGE("CheckLocalUserIdValid timeout");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::TIMEOUT);

@@ -21,6 +21,7 @@
 
 #include "iam_logger.h"
 
+#include "service_common.h"
 #include "tokenid_kit.h"
 #include "xcollie_helper.h"
 
