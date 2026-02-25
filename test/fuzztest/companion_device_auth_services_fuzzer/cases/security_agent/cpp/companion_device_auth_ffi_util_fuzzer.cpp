@@ -57,7 +57,6 @@ static void FuzzDecodePersistedCompanionStatus(FuzzedDataProvider &fuzzData)
     ffi.templateId = fuzzData.ConsumeIntegral<uint64_t>();
     ffi.hostUserId = fuzzData.ConsumeIntegral<int32_t>();
     ffi.addedTime = fuzzData.ConsumeIntegral<uint64_t>();
-    ffi.secureProtocolId = fuzzData.ConsumeIntegral<uint16_t>();
     ffi.isValid = fuzzData.ConsumeBool();
 
     // companionDeviceKey
@@ -127,7 +126,6 @@ static void FuzzDecodePersistedCompanionStatusList(FuzzedDataProvider &fuzzData)
         item.templateId = fuzzData.ConsumeIntegral<uint64_t>();
         item.hostUserId = fuzzData.ConsumeIntegral<int32_t>();
         item.addedTime = fuzzData.ConsumeIntegral<uint64_t>();
-        item.secureProtocolId = fuzzData.ConsumeIntegral<uint16_t>();
         item.isValid = fuzzData.ConsumeBool();
         item.companionDeviceKey.deviceIdType = fuzzData.ConsumeIntegral<uint32_t>();
         item.companionDeviceKey.deviceId.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL64);

@@ -215,7 +215,6 @@ pub struct PersistedCompanionStatusFfi {
     pub is_valid: u8,
     pub enabled_business_ids: Int32Array64Ffi,
     pub added_time: u64,
-    pub secure_protocol_id: u16,
     pub device_model: DataArray256Ffi,
     pub device_user_name: DataArray256Ffi,
     pub device_name: DataArray256Ffi,

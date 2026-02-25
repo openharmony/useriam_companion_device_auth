@@ -14,9 +14,13 @@
  */
 
 use crate::common::constants::*;
-use crate::jobs::host_db_helper::{get_session_key, update_companion_device_info, update_device_business_id};
+use crate::jobs::host_db_helper::{
+    get_session_key, update_companion_device_info, update_device_business_id,
+};
 use crate::log_i;
-use crate::traits::db_manager::{CompanionDeviceBaseInfo, CompanionDeviceInfo, DeviceKey, UserInfo};
+use crate::traits::db_manager::{
+    CompanionDeviceBaseInfo, CompanionDeviceInfo, DeviceKey, UserInfo,
+};
 use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
 use crate::ut_registry_guard;
 
@@ -32,10 +36,16 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
 fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
-        device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
-        user_info: UserInfo { user_id: 100, user_type: 0 },
+        device_key: DeviceKey {
+            device_id: String::from("test_device"),
+            device_id_type: 1,
+            user_id: 100,
+        },
+        user_info: UserInfo {
+            user_id: 100,
+            user_type: 0,
+        },
         added_time: 123456,
-        secure_protocol_id: 1,
         is_valid: true,
         capability_list: vec![1, 2, 3],
     }

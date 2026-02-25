@@ -95,7 +95,6 @@ pub struct CompanionDeviceInfo {
     pub device_key: DeviceKey,
     pub user_info: UserInfo,
     pub added_time: u64,
-    pub secure_protocol_id: u16,
     pub is_valid: bool,
     pub capability_list: Vec<u16>,
 }
