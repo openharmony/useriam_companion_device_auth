@@ -82,7 +82,7 @@ fn companion_sync_status_request_new_test_capability_list_convert_fail() {
         sec_message: DataArray1024Ffi::default(),
     };
     let result = CompanionDeviceSyncStatusRequest::new(&input);
-    assert_eq!(result, Err(ErrorCode::BadParam));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]

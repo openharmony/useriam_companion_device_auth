@@ -104,7 +104,6 @@ impl DefaultHostDbManager {
             parcel.write_i32(companion_device_info.user_info.user_id);
             parcel.write_i32(companion_device_info.user_info.user_type);
             parcel.write_u64(companion_device_info.added_time);
-            parcel.write_u16(companion_device_info.secure_protocol_id);
             parcel.write_u32(companion_device_info.is_valid as u32);
             parcel.write_i32(companion_device_info.capability_list.len() as i32);
             for &capability in &companion_device_info.capability_list {
@@ -135,7 +134,6 @@ impl DefaultHostDbManager {
             let user_info_user_id = parcel.read_i32().map_err(|e| p!(e))?;
             let user_info_user_type = parcel.read_i32().map_err(|e| p!(e))?;
             let added_time = parcel.read_u64().map_err(|e| p!(e))?;
-            let secure_protocol_id = parcel.read_u16().map_err(|e| p!(e))?;
             let is_valid_u32 = parcel.read_u32().map_err(|e| p!(e))?;
             let capability_list_len_raw = parcel.read_i32().map_err(|e| p!(e))?;
             if capability_list_len_raw < 0 || capability_list_len_raw as usize > MAX_CAPABILITY_NUM {
@@ -154,7 +152,6 @@ impl DefaultHostDbManager {
                 device_key: DeviceKey { device_id, device_id_type, user_id },
                 user_info: UserInfo { user_id: user_info_user_id, user_type: user_info_user_type },
                 added_time,
-                secure_protocol_id,
                 is_valid: is_valid_u32 != 0,
                 capability_list,
             };

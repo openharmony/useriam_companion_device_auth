@@ -105,7 +105,6 @@ pub fn host_get_persisted_status(
                     is_valid: device_info.is_valid as u8,
                     enabled_business_ids: Int32Array64Ffi::try_from(device_base_info.business_ids)?,
                     added_time: device_info.added_time,
-                    secure_protocol_id: device_info.secure_protocol_id,
                     device_model: DataArray256Ffi::try_from(device_base_info.device_model)?,
                     device_user_name: DataArray256Ffi::try_from(device_base_info.device_user_name)?,
                     device_name: DataArray256Ffi::try_from(device_base_info.device_name)?,
