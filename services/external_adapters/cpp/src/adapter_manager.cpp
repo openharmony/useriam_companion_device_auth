@@ -22,11 +22,9 @@
 
 #include "common_defines.h"
 
-#ifdef HAS_USER_AUTH_FRAMEWORK
 #include "driver_manager_adapter_impl.h"
 #include "idm_adapter_impl.h"
 #include "user_auth_adapter_impl.h"
-#endif
 
 #include "access_token_kit_adapter_impl.h"
 #include "event_manager_adapter_impl.h"

@@ -131,12 +131,10 @@ bool BaseServiceInitializer::InitializeDependentSteps()
         return false;
     }
 
-#ifdef HAS_USER_AUTH_FRAMEWORK
     if (!InitializeFwkComm()) {
         IAM_LOGE("InitializeFwkComm failed");
         return false;
     }
-#endif
 
     return true;
 }
@@ -211,7 +209,6 @@ bool BaseServiceInitializer::InitializeUserIdManager()
 
 bool BaseServiceInitializer::InitializeUserAuthFramework()
 {
-#ifdef HAS_USER_AUTH_FRAMEWORK
     auto &adapterManager = AdapterManager::GetInstance();
     auto userAuthAdapter = std::make_shared<UserAuthAdapterImpl>();
     ENSURE_OR_RETURN_VAL(userAuthAdapter != nullptr, false);
@@ -224,7 +221,6 @@ bool BaseServiceInitializer::InitializeUserAuthFramework()
     auto idmAdapter = IdmAdapterImpl::Create();
     ENSURE_OR_RETURN_VAL(idmAdapter != nullptr, false);
     adapterManager.SetIdmAdapter(idmAdapter);
-#endif
     return true;
 }
 
@@ -329,12 +325,10 @@ bool BaseServiceInitializer::StartCrossDeviceCommManager()
 
 bool BaseServiceInitializer::InitializeFwkComm()
 {
-#ifdef HAS_USER_AUTH_FRAMEWORK
     if (FwkCommManager::Create() == nullptr) {
         IAM_LOGE("failed to create FwkCommManager");
         return false;
     }
-#endif
     return true;
 }
 
