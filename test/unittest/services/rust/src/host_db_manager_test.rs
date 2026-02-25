@@ -16,8 +16,8 @@
 use crate::common::constants::*;
 use crate::log_i;
 use crate::traits::db_manager::{
-    CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo,
-    DeviceKey, UserInfo,
+    CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk,
+    CompanionTokenInfo, DeviceKey, UserInfo,
 };
 use crate::traits::host_db_manager::{DummyHostDbManager, HostDbManager};
 use crate::ut_registry_guard;
@@ -26,9 +26,11 @@ fn create_mock_companion_device_info() -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id: 0,
         device_key: DeviceKey::default(),
-        user_info: UserInfo { user_id: 0, user_type: 0 },
+        user_info: UserInfo {
+            user_id: 0,
+            user_type: 0,
+        },
         added_time: 0,
-        secure_protocol_id: 0,
         is_valid: false,
         capability_list: Vec::new(),
     }

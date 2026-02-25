@@ -15,8 +15,8 @@
 
 use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::{
-    DataArray1024Ffi, HostBeginDelegateAuthInputFfi, HostBeginDelegateAuthOutputFfi, HostEndDelegateAuthInputFfi,
-    HostEndDelegateAuthOutputFfi,
+    DataArray1024Ffi, HostBeginDelegateAuthInputFfi, HostBeginDelegateAuthOutputFfi,
+    HostEndDelegateAuthInputFfi, HostEndDelegateAuthOutputFfi,
 };
 use crate::log_i;
 use crate::request::delegate_auth::host_delegate_auth::HostDelegateAuthRequest;
@@ -117,10 +117,16 @@ fn mock_set_host_db_manager() {
 fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
-        device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
-        user_info: UserInfo { user_id: 100, user_type: 0 },
+        device_key: DeviceKey {
+            device_id: String::from("test_device"),
+            device_id_type: 1,
+            user_id: 100,
+        },
+        user_info: UserInfo {
+            user_id: 100,
+            user_type: 0,
+        },
         added_time: 123456,
-        secure_protocol_id: 1,
         is_valid: true,
         capability_list: vec![1, 2, 3], // Includes both DelegateAuth(1) and TokenAuth(2)
     }

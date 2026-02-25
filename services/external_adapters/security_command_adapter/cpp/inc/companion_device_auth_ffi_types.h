@@ -200,7 +200,6 @@ typedef struct PersistedCompanionStatusFfi {
     uint8_t isValid;
     struct Int32Array64Ffi enabledBusinessIds;
     uint64_t addedTime;
-    uint16_t secureProtocolId;
     struct DataArray256Ffi deviceModel;
     struct DataArray256Ffi deviceUserName;
     struct DataArray256Ffi deviceName;
