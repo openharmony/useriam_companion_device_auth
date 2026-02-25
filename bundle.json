@@ -26,8 +26,7 @@
       "SystemCapability.UserIAM.UserAuth.CompanionDeviceAuth"
     ],
     "features":[
-      "companion_device_auth_enable_auth_state_maintain_simulation",
-      "companion_device_auth_role_companion_only"
+      "companion_device_auth_enable_auth_state_maintain_simulation"
     ],
     "rom":"3380KB",
     "ram":"7271KB",

@@ -13,7 +13,6 @@
 
 declare_args() {
   companion_device_auth_enable_auth_state_maintain_simulation = true
-  companion_device_auth_role_companion_only = false
 }
 
 companion_device_auth_subsystem_name = "useriam"
@@ -26,9 +25,6 @@ companion_device_auth_has_account_os_account =
 companion_device_auth_has_soft_bus_channel =
     defined(global_parts_info) &&
     defined(global_parts_info.communication_dsoftbus)
-companion_device_auth_has_user_auth_framework =
-    defined(global_parts_info) &&
-    defined(global_parts_info.useriam_user_auth_framework)
 companion_device_auth_has_ext =
     defined(global_parts_info) &&
     defined(global_parts_info.useriam_companion_device_auth_ext)

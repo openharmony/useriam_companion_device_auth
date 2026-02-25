@@ -54,11 +54,9 @@
 #include "user_id_manager.h"
 #include "xcollie_helper.h"
 
-#ifdef HAS_USER_AUTH_FRAMEWORK
 #include "driver_manager_adapter_impl.h"
 #include "idm_adapter_impl.h"
 #include "user_auth_adapter_impl.h"
-#endif
 
 #define LOG_TAG "CDA_SA"
 
