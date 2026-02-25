@@ -347,7 +347,6 @@ impl HostDeviceEnrollRequest {
             device_key: self.enroll_param.companion_device_key.clone(),
             user_info: UserInfo { user_id: self.enroll_param.host_device_key.user_id, user_type: 0 },
             added_time: TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?,
-            secure_protocol_id: self.secure_protocol_id,
             is_valid: true,
             capability_list: self.expected_capability_list.clone(),
         });

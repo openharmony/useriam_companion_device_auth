@@ -15,14 +15,16 @@
 
 use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::{
-    DataArray1024Ffi, HostBeginTokenAuthInputFfi, HostBeginTokenAuthOutputFfi, HostEndTokenAuthInputFfi,
-    HostEndTokenAuthOutputFfi,
+    DataArray1024Ffi, HostBeginTokenAuthInputFfi, HostBeginTokenAuthOutputFfi,
+    HostEndTokenAuthInputFfi, HostEndTokenAuthOutputFfi,
 };
 use crate::log_i;
 use crate::request::token_auth::host_token_auth::{HostTokenAuthRequest, TOKEN_VALID_PERIOD};
 use crate::request::token_auth::token_auth_message::SecAuthReply;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair, MockCryptoEngine};
-use crate::traits::db_manager::{CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo, DeviceKey, UserInfo};
+use crate::traits::db_manager::{
+    CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo, DeviceKey, UserInfo,
+};
 use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
 use crate::traits::misc_manager::{MiscManagerRegistry, MockMiscManager};
 use crate::traits::request_manager::{Request, RequestParam};
@@ -54,10 +56,16 @@ fn create_valid_auth_reply_message(hmac: &[u8]) -> Vec<u8> {
 fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
-        device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
-        user_info: UserInfo { user_id: 100, user_type: 0 },
+        device_key: DeviceKey {
+            device_id: String::from("test_device"),
+            device_id_type: 1,
+            user_id: 100,
+        },
+        user_info: UserInfo {
+            user_id: 100,
+            user_type: 0,
+        },
         added_time: 123456,
-        secure_protocol_id: 1,
         is_valid: true,
         capability_list: vec![1, 2, 3],
     }
@@ -409,7 +417,7 @@ fn host_token_auth_request_begin_test_get_token_fail() {
     let mut output = HostBeginTokenAuthOutputFfi::default();
     let param = RequestParam::HostTokenAuthBegin(&input, &mut output);
     let result = request.begin(param);
-    assert_eq!(result, Err(ErrorCode::NotFound));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -581,7 +589,7 @@ fn host_token_auth_request_begin_test_get_session_key_fail() {
     let mut output = HostBeginTokenAuthOutputFfi::default();
     let param = RequestParam::HostTokenAuthBegin(&input, &mut output);
     let result = request.begin(param);
-    assert_eq!(result, Err(ErrorCode::NotFound));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]

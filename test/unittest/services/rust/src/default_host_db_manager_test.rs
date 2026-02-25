@@ -18,8 +18,8 @@ use crate::impls::default_host_db_manager::DefaultHostDbManager;
 use crate::log_i;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, MockCryptoEngine};
 use crate::traits::db_manager::{
-    CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo,
-    DeviceKey, UserInfo,
+    CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk,
+    CompanionTokenInfo, DeviceKey, UserInfo,
 };
 use crate::traits::host_db_manager::HostDbManager;
 use crate::traits::storage_io::{MockStorageIo, StorageIoRegistry};
@@ -33,10 +33,16 @@ const MAX_TOKEN_NUM: usize = 1;
 fn create_test_device_info(template_id: u64, device_id: &str, user_id: i32) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
-        device_key: DeviceKey { device_id: device_id.to_string(), device_id_type: 1, user_id },
-        user_info: UserInfo { user_id, user_type: 1 },
+        device_key: DeviceKey {
+            device_id: device_id.to_string(),
+            device_id_type: 1,
+            user_id,
+        },
+        user_info: UserInfo {
+            user_id,
+            user_type: 1,
+        },
         added_time: 1000,
-        secure_protocol_id: 1,
         is_valid: true,
         capability_list: vec![1, 2, 3],
     }
@@ -682,7 +688,6 @@ fn default_host_db_manager_read_device_db_test_success() {
     parcel.write_i32(100);
     parcel.write_i32(1);
     parcel.write_u64(1000);
-    parcel.write_u16(1);
     parcel.write_u32(1);
     // capability_list
     parcel.write_i32(3);
@@ -967,7 +972,6 @@ fn default_host_db_manager_read_device_db_test_deserialize_is_valid_fail() {
     parcel.write_i32(100);
     parcel.write_i32(1);
     parcel.write_u64(1000);
-    parcel.write_u16(1);
 
     let serialized_data = parcel.as_slice().to_vec();
 

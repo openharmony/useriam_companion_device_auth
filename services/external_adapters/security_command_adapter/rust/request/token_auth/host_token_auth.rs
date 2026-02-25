@@ -33,6 +33,7 @@ pub struct AuthParam {
     pub request_id: i32,
     pub schedule_id: u64,
     pub template_id: u64,
+    pub secure_protocol_id: u16,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -64,6 +65,7 @@ impl HostTokenAuthRequest {
                 request_id: input.request_id,
                 schedule_id: input.schedule_id,
                 template_id: input.template_id,
+                secure_protocol_id: input.secure_protocol_id,
             },
             challenge: u64::from_ne_bytes(challenge),
             atl: AuthTrustLevel::Atl0,
@@ -94,11 +96,11 @@ impl HostTokenAuthRequest {
 
     fn encode_sec_token_auth_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let device_info = HostDbManagerRegistry::get().get_device(self.auth_param.template_id)?;
-        self.device_type = if device_info.secure_protocol_id == SecureProtocolId::Default as u16 {
+        self.device_type = if self.auth_param.secure_protocol_id == SecureProtocolId::Default as u16 {
             self.acl = AuthCapabilityLevel::Acl3;
             DeviceType::Default
         } else {
-            log_e!("secure_protocol_id is not support secure_protocol_id: {}", device_info.secure_protocol_id);
+            log_e!("secure_protocol_id is not support secure_protocol_id: {}", self.auth_param.secure_protocol_id);
             return Err(ErrorCode::GeneralError);
         };
         let token_info = HostDbManagerRegistry::get().get_token(self.auth_param.template_id, self.device_type)?;
@@ -148,7 +150,7 @@ impl HostTokenAuthRequest {
             .map_err(|e| p!(e))?;
         if output.hmac != expected_hmac.as_slice() {
             log_e!("hmac verification failed");
-            return Err(ErrorCode::GeneralError);
+            return Err(ErrorCode::Fail);
         }
 
         Ok(())
