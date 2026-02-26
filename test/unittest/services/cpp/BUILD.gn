@@ -25,10 +25,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
   cflags = companion_device_auth_unit_test_cflags
   ldflags = companion_device_auth_unit_test_ldflags
 
-  sources = companion_device_auth_service_sources_for_test
-  sources += companion_device_auth_fake_sources
-  sources += [
-    "../../common/mock_guard.cpp",
+  sources = [
     "cases/common/attributes_test.cpp",
     "cases/common/error_guard_test.cpp",
     "cases/common/misc_manager_impl_test.cpp",
@@ -100,15 +97,15 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
   ]
 
   include_dirs = [
-    "../../common",
-    "common",
-    "cases/mock",
+    "common/inc",
+    "common/inc/mock",
     "inc",
   ]
   include_dirs += companion_device_auth_fake_include_dirs
 
   configs = [ "${companion_device_auth_path}/services:service_config" ]
   deps = companion_device_auth_service_deps
+  deps += [ "common:companion_device_auth_service_unittest_common" ]
   external_deps = companion_device_auth_service_external_deps +
                   companion_device_auth_unit_test_external_deps
   remove_configs = [ "//build/config/compiler:no_exceptions" ]

@@ -49,6 +49,8 @@ public:
     void SetRequestFactory(std::shared_ptr<IRequestFactory> requestFactory) override;
     IncomingMessageHandlerRegistry &GetIncomingMessageHandlerRegistry() override;
     void SetIncomingMessageHandlerRegistry(std::shared_ptr<IncomingMessageHandlerRegistry> registry) override;
+    IExecutorFactory &GetExecutorFactory() override;
+    void SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory) override;
 
 #ifdef ENABLE_TEST
     virtual void Reset() override;
@@ -65,6 +67,7 @@ private:
     std::shared_ptr<IRequestManager> requestManager_;
     std::shared_ptr<IRequestFactory> requestFactory_;
     std::shared_ptr<IncomingMessageHandlerRegistry> incomingMessageHandlerRegistry_;
+    std::shared_ptr<IExecutorFactory> executorFactory_;
 };
 
 #ifdef ENABLE_TEST
@@ -78,6 +81,7 @@ void SingletonManagerImpl::Reset()
     requestManager_.reset();
     requestFactory_.reset();
     incomingMessageHandlerRegistry_.reset();
+    executorFactory_.reset();
 }
 #endif // ENABLE_TEST
 
@@ -239,6 +243,26 @@ void SingletonManagerImpl::SetIncomingMessageHandlerRegistry(std::shared_ptr<Inc
         return;
     }
     incomingMessageHandlerRegistry_ = registry;
+}
+
+IExecutorFactory &SingletonManagerImpl::GetExecutorFactory()
+{
+    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread();
+    if (executorFactory_ == nullptr) {
+        IAM_LOGE("executor factory is not initialized");
+        AbortIfSingletonUninitialized();
+    }
+    return *executorFactory_;
+}
+
+void SingletonManagerImpl::SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory)
+{
+    ENSURE_OR_RETURN(executorFactory != nullptr);
+    if (executorFactory_ != nullptr) {
+        IAM_LOGE("executor factory is already set");
+        return;
+    }
+    executorFactory_ = executorFactory;
 }
 
 void SingletonManagerImpl::AbortIfSingletonUninitialized()

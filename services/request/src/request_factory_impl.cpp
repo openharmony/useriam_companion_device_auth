@@ -151,12 +151,10 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateCompanionRevokeTokenRequest(
     return request;
 }
 
-std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostMixAuthRequest(ScheduleId scheduleId,
-    std::vector<uint8_t> fwkMsg, UserId hostUserId, std::vector<TemplateId> templateIdList,
+std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostMixAuthRequest(const HostMixAuthParams &params,
     FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateIdList,
-        std::move(requestCallback));
+    auto request = std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }

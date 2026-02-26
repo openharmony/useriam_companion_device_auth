@@ -77,6 +77,12 @@
         },
         {
           "name":"//base/useriam/companion_device_auth/services:companion_device_auth_service_static"
+        },
+        {
+          "name":"//base/useriam/companion_device_auth/test/unittest/services/cpp/common:companion_device_auth_service_unittest_common"
+        },
+        {
+          "name":"//base/useriam/companion_device_auth/test/fuzztest/companion_device_auth_services_fuzzer/common:companion_device_auth_service_fuzzer_common"
         }
       ],
       "test":[

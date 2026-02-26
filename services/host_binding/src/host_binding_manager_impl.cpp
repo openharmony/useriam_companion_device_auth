@@ -167,7 +167,7 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(RequestId requestId, User
         IAM_LOGI("replacing binding %{public}s", GET_MASKED_NUM_STRING(replacedId).c_str());
         ResultCode removeRet = RemoveBindingInternal(replacedId);
         if (removeRet != ResultCode::SUCCESS) {
-            IAM_LOGW("failed to remove replaced binding %{public}s, ret %{public}d",
+            IAM_LOGE("failed to remove replaced binding %{public}s, ret %{public}d",
                 GET_MASKED_NUM_STRING(replacedId).c_str(), removeRet);
         }
     }
@@ -242,7 +242,7 @@ ResultCode HostBindingManagerImpl::RemoveHostBinding(UserId companionUserId, con
 
     ResultCode removeRet = RemoveBindingInternal(bindingId);
     if (removeRet != ResultCode::SUCCESS) {
-        IAM_LOGW("binding id %{public}s not cached locally", GET_MASKED_NUM_STRING(bindingId).c_str());
+        IAM_LOGE("binding id %{public}s not cached locally", GET_MASKED_NUM_STRING(bindingId).c_str());
     }
 
     IAM_LOGI("remove host binding success, id %{public}s", GET_MASKED_NUM_STRING(bindingId).c_str());
@@ -300,7 +300,7 @@ ResultCode HostBindingManagerImpl::RemoveBindingInternal(BindingId bindingId)
     auto it = std::find_if(bindings_.begin(), bindings_.end(),
         [bindingId](const std::shared_ptr<HostBinding> &binding) { return binding->GetBindingId() == bindingId; });
     if (it == bindings_.end()) {
-        IAM_LOGW("binding id %{public}s not found", GET_MASKED_NUM_STRING(bindingId).c_str());
+        IAM_LOGE("binding id %{public}s not found", GET_MASKED_NUM_STRING(bindingId).c_str());
         return ResultCode::GENERAL_ERROR;
     }
 

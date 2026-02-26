@@ -176,7 +176,7 @@ void DeviceStatusManager::HandleSyncResult(const DeviceKey &deviceKey, int32_t r
 
     auto it = deviceStatusMap_.find(physicalKey);
     if (it == deviceStatusMap_.end()) {
-        IAM_LOGW("device not found in cache");
+        IAM_LOGE("device not found in cache");
         return;
     }
 
@@ -271,7 +271,7 @@ bool DeviceStatusManager::UnsubscribeDeviceStatus(SubscribeId subscriptionId)
         }
         return true;
     }
-    IAM_LOGW("device status subscription not found: id=0x%{public}016" PRIX64 "", subscriptionId);
+    IAM_LOGE("device status subscription not found: id=0x%{public}016" PRIX64 "", subscriptionId);
     return false;
 }
 
@@ -352,7 +352,7 @@ std::optional<ProtocolId> DeviceStatusManager::NegotiateProtocol(const std::vect
         }
     }
 
-    IAM_LOGW("no common protocol found");
+    IAM_LOGE("no common protocol found");
     return std::nullopt;
 }
 

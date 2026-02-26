@@ -138,13 +138,13 @@ std::optional<DeviceKey> LocalDeviceStatusManager::GetLocalDeviceKey(ChannelId c
     ENSURE_OR_RETURN_VAL(channelMgr_ != nullptr, std::nullopt);
     auto channel = channelMgr_->GetChannelById(channelId);
     if (channel == nullptr) {
-        IAM_LOGW("Channel not found: %{public}d", channelId);
+        IAM_LOGE("Channel not found: %{public}d", channelId);
         return std::nullopt;
     }
 
     auto physicalKeyOpt = channel->GetLocalPhysicalDeviceKey();
     if (!physicalKeyOpt.has_value()) {
-        IAM_LOGW("Failed to get physical device key for channel: %{public}d", channelId);
+        IAM_LOGE("Failed to get physical device key for channel: %{public}d", channelId);
         return std::nullopt;
     }
 

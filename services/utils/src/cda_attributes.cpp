@@ -532,11 +532,14 @@ bool Attributes::GetStringValue(AttributeKey key, std::string &value) const
         return true;
     }
 
+    // Data must end with null terminator
     if (iter->second.back() != 0) {
         IAM_LOGE("GetStringValue invalid format, last_byte: %{public}d", iter->second.back());
         return false;
     }
-    value.assign(iter->second.begin(), iter->second.end() - 1);
+
+    const char *data = reinterpret_cast<const char *>(iter->second.data());
+    value.assign(data, strlen(data));
     return true;
 }
 

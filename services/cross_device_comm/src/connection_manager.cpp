@@ -167,7 +167,7 @@ void ConnectionManager::CloseConnection(const std::string &connectionName, const
 
     auto it = connectionMap_.find(connectionName);
     if (it == connectionMap_.end()) {
-        IAM_LOGW("connection not found: %{public}s", connectionName.c_str());
+        IAM_LOGE("connection not found: %{public}s", connectionName.c_str());
         return;
     }
 
@@ -218,7 +218,7 @@ bool ConnectionManager::HandleIncomingConnection(const std::string &connectionNa
     ENSURE_OR_RETURN_VAL(channelManager_ != nullptr, false);
 
     if (connectionMap_.find(connectionName) != connectionMap_.end()) {
-        IAM_LOGW("connection already exists: %{public}s", connectionName.c_str());
+        IAM_LOGE("connection already exists: %{public}s", connectionName.c_str());
         return false;
     }
 
@@ -279,7 +279,7 @@ void ConnectionManager::HandleIncomingConnectionFromChannel(ChannelId channelId,
         GET_MASKED_STR_CSTR(remotePhysicalDeviceKey.deviceId));
 
     if (connectionMap_.find(connectionName) != connectionMap_.end()) {
-        IAM_LOGW("connection already exists: %{public}s", connectionName.c_str());
+        IAM_LOGE("connection already exists: %{public}s", connectionName.c_str());
         return;
     }
 
@@ -345,14 +345,14 @@ void ConnectionManager::HandleChannelConnectionEstablished(const std::string &co
 
     auto it = connectionMap_.find(connectionName);
     if (it == connectionMap_.end()) {
-        IAM_LOGW("connection not found: %{public}s", connectionName.c_str());
+        IAM_LOGE("connection not found: %{public}s", connectionName.c_str());
         return;
     }
 
     it->second.connectionStatus = ConnectionStatus::CONNECTED;
-    auto lastActivityTimeMs = GetTimeKeeper().GetSteadyTimeMs();
-    ENSURE_OR_RETURN(lastActivityTimeMs.has_value());
-    it->second.lastActivityTimeMs = lastActivityTimeMs.value();
+    auto steadyTimeMs = GetTimeKeeper().GetSteadyTimeMs();
+    ENSURE_OR_RETURN(steadyTimeMs.has_value());
+    it->second.lastActivityTimeMs = steadyTimeMs.value();
 
     NotifyConnectionStatus(connectionName, ConnectionStatus::CONNECTED, "established");
 }
@@ -428,7 +428,7 @@ void ConnectionManager::CheckIdleMonitoring()
                 ENSURE_OR_RETURN(self != nullptr);
                 self->HandleIdleMonitorTimer();
             },
-            IDLE_MONITOR_INTERVAL_MS);
+            CONNECTION_IDLE_MONITOR_INTERVAL_MS);
         ENSURE_OR_RETURN(idleMonitorTimerSubscription_ != nullptr);
         IAM_LOGI("idle monitoring started");
     } else if (!hasConnections && hasTimer) {
@@ -454,12 +454,13 @@ void ConnectionManager::HandleIdleMonitorTimer()
         // Use safe subtraction to prevent underflow
         std::optional<SteadyTimeMs> idleTimeMsOpt = safe_sub(now.value(), connection.lastActivityTimeMs);
         if (!idleTimeMsOpt.has_value()) {
-            IAM_LOGW("clock anomaly detected for connection %{public}s, skipping idle check",
+            IAM_LOGE("clock anomaly detected for connection %{public}s, skipping idle check",
                 connection.connectionName.c_str());
             continue;
         }
-        if (idleTimeMsOpt.value() >= IDLE_THRESHOLD_MS) {
-            IAM_LOGW("connection idle for %{public}" PRIu64 " ms: %{public}s", idleTimeMsOpt.value(),
+
+        if (idleTimeMsOpt.value() >= CONNECTION_IDLE_TIMEOUT_MS) {
+            IAM_LOGE("connection idle for %{public}" PRIu64 " ms: %{public}s, send keep alive", idleTimeMsOpt.value(),
                 connection.connectionName.c_str());
             auto messageRouter = weakMessageRouter_.lock();
             ENSURE_OR_RETURN(messageRouter != nullptr);
@@ -499,9 +500,23 @@ void ConnectionManager::HandleKeepAliveReply(const std::string &connectionName, 
         return;
     }
 
-    auto lastActivityTimeMs = GetTimeKeeper().GetSteadyTimeMs();
-    ENSURE_OR_RETURN(lastActivityTimeMs.has_value());
-    it->second.lastActivityTimeMs = lastActivityTimeMs.value();
+    auto steadyTimeMs = GetTimeKeeper().GetSteadyTimeMs();
+    ENSURE_OR_RETURN(steadyTimeMs.has_value());
+    it->second.lastActivityTimeMs = steadyTimeMs.value();
+}
+
+void ConnectionManager::RefreshLastActivityTime(const std::string &connectionName)
+{
+    auto it = connectionMap_.find(connectionName);
+    if (it == connectionMap_.end()) {
+        IAM_LOGE("connection not found: %{public}s", connectionName.c_str());
+        return;
+    }
+
+    auto steadyTimeMs = GetTimeKeeper().GetSteadyTimeMs();
+    ENSURE_OR_RETURN(steadyTimeMs.has_value());
+    it->second.lastActivityTimeMs = steadyTimeMs.value();
+    IAM_LOGI("activity time refreshed for connection: %{public}s", connectionName.c_str());
 }
 
 void ConnectionManager::NotifyConnectionStatus(const std::string &connectionName, ConnectionStatus status,

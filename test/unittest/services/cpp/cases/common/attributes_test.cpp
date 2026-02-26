@@ -37,6 +37,37 @@ using namespace testing;
 using namespace testing::ext;
 
 namespace {
+constexpr uint8_t BYTE_MASK = 0xFF;
+constexpr uint32_t UINT32_8 = 8;
+constexpr uint32_t UINT32_16 = 16;
+constexpr uint32_t UINT32_24 = 24;
+
+std::vector<uint8_t> BuildRawData(uint32_t key, const std::vector<uint8_t> &value)
+{
+    std::vector<uint8_t> raw;
+    raw.push_back(key & BYTE_MASK);
+    raw.push_back((key >> UINT32_8) & BYTE_MASK);
+    raw.push_back((key >> UINT32_16) & BYTE_MASK);
+    raw.push_back((key >> UINT32_24) & BYTE_MASK);
+    uint32_t len = static_cast<uint32_t>(value.size());
+    raw.push_back(len & BYTE_MASK);
+    raw.push_back((len >> UINT32_8) & BYTE_MASK);
+    raw.push_back((len >> UINT32_16) & BYTE_MASK);
+    raw.push_back((len >> UINT32_24) & BYTE_MASK);
+    raw.insert(raw.end(), value.begin(), value.end());
+    return raw;
+}
+
+void TestGetStringValue(const std::vector<uint8_t> &rawValue, bool expectSuccess, const std::string &expectValue)
+{
+    auto raw = BuildRawData(Attributes::ATTR_CDA_SA_RESULT, rawValue);
+    Attributes attrs(raw);
+    std::string value;
+    EXPECT_EQ(attrs.GetStringValue(Attributes::ATTR_CDA_SA_RESULT, value), expectSuccess);
+    if (expectSuccess) {
+        EXPECT_EQ(value, expectValue);
+    }
+}
 } // namespace
 
 class AttributesTest : public testing::Test {
@@ -205,6 +236,22 @@ HWTEST_F(AttributesTest, AttributesStringValue, TestSize.Level0)
     EXPECT_TRUE(attrs.GetStringValue(Attributes::ATTR_SIGNATURE, value2));
     EXPECT_EQ(value1, "hello iam");
     EXPECT_EQ(value2, "");
+}
+
+HWTEST_F(AttributesTest, AttributesStringValueWithTrailingZeros, TestSize.Level0)
+{
+    MockGuard guard;
+    std::vector<uint8_t> rawWithMultipleZeros = { 't', 'e', 's', 't', 0, 0, 0 };
+    std::vector<uint8_t> rawWithSingleZero = { 'h', 'e', 'l', 'l', 'o', 0 };
+    std::vector<uint8_t> rawWithNoZero = { 'w', 'o', 'r', 'l', 'd' };
+    std::vector<uint8_t> rawOnlyZeros = { 0, 0, 0 };
+    std::vector<uint8_t> rawEmpty = {};
+
+    TestGetStringValue(rawWithMultipleZeros, true, "test");
+    TestGetStringValue(rawWithSingleZero, true, "hello");
+    TestGetStringValue(rawWithNoZero, false, "");
+    TestGetStringValue(rawOnlyZeros, true, "");
+    TestGetStringValue(rawEmpty, true, "");
 }
 
 HWTEST_F(AttributesTest, AttributesUint64ByteArray, TestSize.Level0)

@@ -25,6 +25,7 @@
 #include "adapter_manager.h"
 #include "companion_manager_impl.h"
 #include "cross_device_comm_manager_impl.h"
+#include "default_executor_factory.h"
 #include "driver_manager_adapter_impl.h"
 #include "event_manager_adapter_impl.h"
 #include "fwk_comm_manager.h"
@@ -226,48 +227,43 @@ bool BaseServiceInitializer::InitializeUserAuthFramework()
 
 bool BaseServiceInitializer::InitializeRequestManager()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto requestManager = RequestManagerImpl::Create();
     ENSURE_OR_RETURN_VAL(requestManager != nullptr, false);
-    singletonManager.SetRequestManager(requestManager);
+    SingletonManager::GetInstance().SetRequestManager(requestManager);
     return true;
 }
 
 bool BaseServiceInitializer::InitializeRequestFactory()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto requestFactory = RequestFactoryImpl::Create();
     ENSURE_OR_RETURN_VAL(requestFactory != nullptr, false);
-    singletonManager.SetRequestFactory(requestFactory);
+    SingletonManager::GetInstance().SetRequestFactory(requestFactory);
     return true;
 }
 
 bool BaseServiceInitializer::InitializeMiscManager()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto miscManager = MiscManagerImpl::Create();
     ENSURE_OR_RETURN_VAL(miscManager != nullptr, false);
-    singletonManager.SetMiscManager(miscManager);
+    SingletonManager::GetInstance().SetMiscManager(miscManager);
     return true;
 }
 
 bool BaseServiceInitializer::InitializeSecurityAgent()
 {
 #ifndef ENABLE_TEST
-    auto &singletonManager = SingletonManager::GetInstance();
     auto securityAgent = SecurityAgentImpl::Create();
     ENSURE_OR_RETURN_VAL(securityAgent != nullptr, false);
-    singletonManager.SetSecurityAgent(securityAgent);
+    SingletonManager::GetInstance().SetSecurityAgent(securityAgent);
 #endif
     return true;
 }
 
 bool BaseServiceInitializer::InitializeIncomingMessageHandlerRegistry()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto registry = IncomingMessageHandlerRegistry::Create();
     ENSURE_OR_RETURN_VAL(registry != nullptr, false);
-    singletonManager.SetIncomingMessageHandlerRegistry(registry);
+    SingletonManager::GetInstance().SetIncomingMessageHandlerRegistry(registry);
     incomingMessageHandlerRegistryHolder_ = registry;
     return true;
 }
@@ -285,29 +281,26 @@ bool BaseServiceInitializer::InitializeChannels()
 
 bool BaseServiceInitializer::InitializeCrossDeviceCommManager()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto crossDeviceCommManager =
         CrossDeviceCommManagerImpl::Create(supportedBusinessIds_, localCapabilities_, channelsHolder_);
     ENSURE_OR_RETURN_VAL(crossDeviceCommManager != nullptr, false);
-    singletonManager.SetCrossDeviceCommManager(crossDeviceCommManager);
+    SingletonManager::GetInstance().SetCrossDeviceCommManager(crossDeviceCommManager);
     return true;
 }
 
 bool BaseServiceInitializer::InitializeCompanionManager()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto companionManager = CompanionManagerImpl::Create();
     ENSURE_OR_RETURN_VAL(companionManager != nullptr, false);
-    singletonManager.SetCompanionManager(companionManager);
+    SingletonManager::GetInstance().SetCompanionManager(companionManager);
     return true;
 }
 
 bool BaseServiceInitializer::InitializeHostBindingManager()
 {
-    auto &singletonManager = SingletonManager::GetInstance();
     auto hostBindingManager = HostBindingManagerImpl::Create();
     ENSURE_OR_RETURN_VAL(hostBindingManager != nullptr, false);
-    singletonManager.SetHostBindingManager(hostBindingManager);
+    SingletonManager::GetInstance().SetHostBindingManager(hostBindingManager);
     return true;
 }
 
@@ -325,6 +318,10 @@ bool BaseServiceInitializer::StartCrossDeviceCommManager()
 
 bool BaseServiceInitializer::InitializeFwkComm()
 {
+    auto executorFactory = ExecutorFactoryImpl::Create();
+    ENSURE_OR_RETURN_VAL(executorFactory != nullptr, false);
+    SingletonManager::GetInstance().SetExecutorFactory(executorFactory);
+
     if (FwkCommManager::Create() == nullptr) {
         IAM_LOGE("failed to create FwkCommManager");
         return false;
