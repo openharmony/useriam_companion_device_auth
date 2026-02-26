@@ -49,8 +49,8 @@ public:
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateCompanionDelegateAuthRequest,
         (const std::string &, int32_t, const DeviceKey &, const std::vector<uint8_t> &), (override));
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateCompanionRevokeTokenRequest, (int32_t, const DeviceKey &), (override));
-    MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostMixAuthRequest,
-        (uint64_t, std::vector<uint8_t>, int32_t, std::vector<uint64_t>, FwkResultCallback &&), (override));
+    MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostMixAuthRequest, (const HostMixAuthParams &, FwkResultCallback &&),
+        (override));
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostSingleMixAuthRequest,
         (uint64_t, std::vector<uint8_t>, int32_t, uint64_t, FwkResultCallback &&), (override));
 };

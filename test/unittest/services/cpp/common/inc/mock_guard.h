@@ -22,6 +22,7 @@
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
 #include "mock_driver_manager_adapter.h"
+#include "mock_executor_factory.h"
 #include "mock_host_binding_manager.h"
 #include "mock_idm_adapter.h"
 #include "mock_misc_manager.h"
@@ -67,6 +68,7 @@ public:
     MockMiscManager &GetMiscManager();
     MockRequestManager &GetRequestManager();
     MockRequestFactory &GetRequestFactory();
+    MockExecutorFactory &GetExecutorFactory();
 
 private:
     // Helper methods for mock initialization
@@ -78,6 +80,7 @@ private:
     void SetupCompanionManagerDefaults();
     void SetupRequestManagerDefaults();
     void SetupRequestFactoryDefaults();
+    void SetupExecutorFactoryDefaults();
     void SetupHostBindingManagerDefaults();
     void SetupSecurityAgentDefaults();
 
@@ -98,6 +101,7 @@ private:
     std::shared_ptr<MockMiscManager> miscManager_;
     std::shared_ptr<MockRequestManager> requestManager_;
     std::shared_ptr<MockRequestFactory> requestFactory_;
+    std::shared_ptr<MockExecutorFactory> executorFactory_;
 };
 
 } // namespace CompanionDeviceAuth

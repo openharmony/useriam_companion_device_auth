@@ -28,8 +28,7 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostMixAuthRequest : public std::enable_shared_from_this<HostMixAuthRequest>, public BaseRequest {
 public:
-    HostMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg, UserId hostUserId,
-        std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback);
+    HostMixAuthRequest(const HostMixAuthParams &params, FwkResultCallback &&requestCallback);
 
     void Start() override final;
     bool Cancel(ResultCode resultCode) override final;
@@ -47,10 +46,14 @@ private:
     void HandleAuthResult(TemplateId templateId, ResultCode result, const std::vector<uint8_t> &extraInfo);
 
     bool AnyTemplateValid() const;
+    void HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices);
+    std::vector<TemplateId> GetFilteredTemplateList(const std::vector<DeviceKey> &selectedDevices);
+    void StartAuthWithTemplateList(const std::vector<TemplateId> &templateList);
 
     std::vector<uint8_t> fwkMsg_;
     UserId hostUserId_ = INVALID_USER_ID;
     std::vector<TemplateId> templateIdList_;
+    std::optional<uint32_t> tokenId_;
     FwkResultCallback requestCallback_;
     std::unordered_map<TemplateId, std::shared_ptr<IRequest>> requestMap_;
 };

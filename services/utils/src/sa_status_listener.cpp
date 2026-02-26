@@ -128,7 +128,7 @@ void SaStatusListener::Unsubscribe()
     ENSURE_OR_RETURN(stub_ != nullptr);
 
     if (!GetSaManagerAdapter().UnSubscribeSystemAbility(systemAbilityId_, stub_)) {
-        IAM_LOGW("UnSubscribeSystemAbility failed for SA %{public}d", systemAbilityId_);
+        IAM_LOGE("UnSubscribeSystemAbility failed for SA %{public}d", systemAbilityId_);
     }
 
     stub_ = nullptr;

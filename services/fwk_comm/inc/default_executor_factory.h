@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,32 +13,30 @@
  * limitations under the License.
  */
 
-#include "companion_device_auth_driver.h"
+#ifndef DEFAULT_EXECUTOR_FACTORY_H
+#define DEFAULT_EXECUTOR_FACTORY_H
 
-#include "iam_check.h"
-#include "iam_logger.h"
+#include <memory>
 
-#include "singleton_manager.h"
-
-#define LOG_TAG "CDA_SA"
+#include "fwk_comm/executor_factory.h"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-void CompanionDeviceAuthDriver::GetExecutorList(std::vector<std::shared_ptr<FwkIAuthExecutorHdi>> &executorList)
-{
-    IAM_LOGI("start GetExecutorList");
-    auto executor = GetExecutorFactory().CreateExecutor();
-    ENSURE_OR_RETURN(executor != nullptr);
-    executorList.push_back(executor);
-}
+class ExecutorFactoryImpl : public IExecutorFactory {
+public:
+    static std::shared_ptr<ExecutorFactoryImpl> Create();
+    ~ExecutorFactoryImpl() override = default;
 
-void CompanionDeviceAuthDriver::OnHdiDisconnect()
-{
-    IAM_LOGI("start");
-}
+    std::shared_ptr<FwkIAuthExecutorHdi> CreateExecutor() override;
+
+private:
+    ExecutorFactoryImpl() = default;
+};
 
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
+
+#endif // DEFAULT_EXECUTOR_FACTORY_H

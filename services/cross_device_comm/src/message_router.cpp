@@ -263,16 +263,20 @@ void MessageRouter::HandleRawMessage(const std::string &connectionName, const st
 
 void MessageRouter::HandleReply(const MessageHeader &header, const Attributes &payload)
 {
-    IAM_LOGI("handling reply: seq=0x%{public}08X", header.messageSeq);
+    IAM_LOGI("handling reply: seq=0x%{public}08X, type=0x%{public}04x", header.messageSeq,
+        static_cast<uint16_t>(header.msgType));
 
     auto it = pendingReplyMessages_.find(header.messageSeq);
     if (it == pendingReplyMessages_.end()) {
-        IAM_LOGW("no pending reply message found for seq: 0x%{public}08X", header.messageSeq);
+        IAM_LOGE("no pending reply message found for seq: 0x%{public}08X", header.messageSeq);
         return;
     }
 
     auto pending = std::move(it->second);
     pendingReplyMessages_.erase(it);
+
+    ENSURE_OR_RETURN(connectionMgr_ != nullptr);
+    connectionMgr_->RefreshLastActivityTime(pending.connectionName);
 
     RefreshConnectionStatusSubscription(pending.connectionName);
     RefreshTimeOutSubscription();
@@ -305,6 +309,9 @@ void MessageRouter::HandleRequest(const MessageHeader &header, const Attributes 
         channel->OnRemoteDisconnect(header.connectionName, reason);
         return;
     }
+
+    ENSURE_OR_RETURN(connectionMgr_ != nullptr);
+    connectionMgr_->RefreshLastActivityTime(header.connectionName);
 
     ScopeGuard scopeGuard([weakSelf = weak_from_this(), header, channelId]() {
         auto self = weakSelf.lock();

@@ -177,6 +177,8 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
         return true;
     }
 
+    ENSURE_OR_RETURN_DESC_VAL(GetDescription(), reply.companionCheckResponse.size() != 0, false);
+
     HostEndCompanionCheckInput input = {};
     input.requestId = GetRequestId();
     input.templateId = companionStatus->templateId;

@@ -30,6 +30,7 @@
 #include "fuzz_constants.h"
 #include "fuzz_data_generator.h"
 #include "fuzz_registry.h"
+#include "fwk_comm/executor_factory.h"
 #include "host_binding_manager.h"
 #include "incoming_message_handler_registry.h"
 #include "misc_manager.h"
@@ -1244,15 +1245,13 @@ public:
             : nullptr;
     }
 
-    std::shared_ptr<IRequest> CreateHostMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback) override
+    std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
+        FwkResultCallback &&requestCallback) override
     {
-        (void)fwkMsg;
-        (void)hostUserId;
-        (void)templateIdList;
+        (void)params;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
-            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, scheduleId)
+            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, params.scheduleId)
             : nullptr;
     }
 
@@ -1271,31 +1270,6 @@ public:
 private:
     FuzzedDataProvider &fuzzData_;
     uint32_t requestCounter_;
-};
-
-class MockIncomingMessageHandlerRegistry : public IncomingMessageHandlerRegistry {
-public:
-    explicit MockIncomingMessageHandlerRegistry(FuzzedDataProvider &fuzzData) : fuzzData_(fuzzData)
-    {
-    }
-
-    bool Initialize()
-    {
-        return fuzzData_.ConsumeIntegral<uint32_t>() > 0;
-    }
-
-    void AddHandler(std::shared_ptr<IncomingMessageHandler> handler)
-    {
-        (void)handler;
-    }
-
-    bool RegisterHandlers()
-    {
-        return fuzzData_.ConsumeIntegral<uint32_t>() > 0;
-    }
-
-private:
-    FuzzedDataProvider &fuzzData_ [[maybe_unused]];
 };
 
 // Singleton initializer functions
@@ -1350,8 +1324,32 @@ static bool InitRequestFactory(FuzzedDataProvider &fuzzData)
 
 static bool InitIncomingMessageHandlerRegistry(FuzzedDataProvider &fuzzData)
 {
-    auto messageHandlerRegistry = std::make_shared<MockIncomingMessageHandlerRegistry>(fuzzData);
+    (void)fuzzData;
+    auto messageHandlerRegistry = IncomingMessageHandlerRegistry::Create();
     SingletonManager::GetInstance().SetIncomingMessageHandlerRegistry(messageHandlerRegistry);
+    return true;
+}
+
+class MockExecutorFactory : public IExecutorFactory {
+public:
+    explicit MockExecutorFactory(FuzzedDataProvider &fuzzData) : fuzzData_(fuzzData)
+    {
+    }
+
+    std::shared_ptr<FwkIAuthExecutorHdi> CreateExecutor() override
+    {
+        (void)fuzzData_;
+        return nullptr;
+    }
+
+private:
+    FuzzedDataProvider &fuzzData_;
+};
+
+static bool InitExecutorFactory(FuzzedDataProvider &fuzzData)
+{
+    auto executorFactory = std::make_shared<MockExecutorFactory>(fuzzData);
+    SingletonManager::GetInstance().SetExecutorFactory(executorFactory);
     return true;
 }
 
@@ -1386,6 +1384,7 @@ static const bool g_singletonInitializersRegistered = []() {
     REGISTER_SINGLETON_INIT(RequestManager);
     REGISTER_SINGLETON_INIT(RequestFactory);
     REGISTER_SINGLETON_INIT(IncomingMessageHandlerRegistry);
+    REGISTER_SINGLETON_INIT(ExecutorFactory);
 
     SingletonCleanupRegistry::Register(ResetSingletonManagerRegistry);
 

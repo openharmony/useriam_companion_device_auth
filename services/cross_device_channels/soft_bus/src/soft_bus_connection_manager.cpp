@@ -148,7 +148,7 @@ void SoftBusConnectionManager::CloseConnection(const std::string &connectionName
 {
     auto entry = FindSocketByConnectionName(connectionName);
     if (entry == nullptr) {
-        IAM_LOGW("Connection not found: %{public}s", connectionName.c_str());
+        IAM_LOGE("Connection not found: %{public}s", connectionName.c_str());
         return;
     }
 
@@ -203,7 +203,7 @@ void SoftBusConnectionManager::HandleError(int32_t socketId, int32_t errCode)
 
     auto entry = FindSocketBySocketId(socketId);
     if (entry == nullptr) {
-        IAM_LOGW("Socket not found for error handling");
+        IAM_LOGE("Socket not found for error handling");
         return;
     }
 
@@ -239,7 +239,7 @@ void SoftBusConnectionManager::HandleBytes(int32_t socketId, const void *data, u
 
     auto connection = FindSocketBySocketId(socketId);
     if (connection == nullptr) {
-        IAM_LOGW("Connection not found for bytes handling");
+        IAM_LOGE("Connection not found for bytes handling");
         return;
     }
 

@@ -21,7 +21,8 @@ import("../../test_config.gni")
 ohos_fuzztest("CompanionDeviceAuthClientFuzzer") {
   branch_protector_ret = "pac_ret"
   module_out_path = "companion_device_auth/client"
-  fuzz_config_file = "../common_fuzzer_config"
+  fuzz_config_file =
+      "${companion_device_auth_path}/test/fuzztest/common_fuzzer_config"
 
   cflags = companion_device_auth_fuzz_test_cflags
   ldflags = companion_device_auth_fuzz_test_ldflags
@@ -34,7 +35,7 @@ ohos_fuzztest("CompanionDeviceAuthClientFuzzer") {
 
   configs = [
     "${companion_device_auth_path}/services:service_config",
-    "../common_fuzzer_config:fuzz_common_config",
+    "${companion_device_auth_path}/test/fuzztest/common_fuzzer_config:fuzz_common_config",
   ]
 
   include_dirs = companion_device_auth_fake_include_dirs + [

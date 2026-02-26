@@ -20,6 +20,9 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "common_defines.h"
+#include "companion_manager.h"
+#include "misc_manager.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
 
@@ -28,12 +31,12 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostMixAuthRequest::HostMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg, UserId hostUserId,
-    std::vector<uint64_t> templateIdList, FwkResultCallback &&requestCallback)
-    : BaseRequest(RequestType::HOST_MIX_AUTH_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
-      fwkMsg_(fwkMsg),
-      hostUserId_(hostUserId),
-      templateIdList_(templateIdList),
+HostMixAuthRequest::HostMixAuthRequest(const HostMixAuthParams &params, FwkResultCallback &&requestCallback)
+    : BaseRequest(RequestType::HOST_MIX_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
+      fwkMsg_(params.fwkMsg),
+      hostUserId_(params.hostUserId),
+      templateIdList_(params.templateIdList),
+      tokenId_(params.tokenId),
       requestCallback_(std::move(requestCallback))
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateIdList_));
@@ -56,14 +59,49 @@ bool HostMixAuthRequest::AnyTemplateValid() const
     return false;
 }
 
-void HostMixAuthRequest::Start()
+void HostMixAuthRequest::HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices)
 {
-    if (!AnyTemplateValid()) {
-        IAM_LOGE("%{public}s no valid templateId found", GetDescription());
+    IAM_LOGI("%{public}s HandleDeviceSelectResult size:%{public}zu", GetDescription(), selectedDevices.size());
+
+    if (selectedDevices.empty()) {
+        IAM_LOGI("%{public}s selected devices is empty, use all templates", GetDescription());
+        StartAuthWithTemplateList(templateIdList_);
+        return;
+    }
+
+    auto filteredList = GetFilteredTemplateList(selectedDevices);
+    if (filteredList.empty()) {
+        IAM_LOGE("%{public}s filtered list is empty", GetDescription());
         CompleteWithError(ResultCode::NO_VALID_CREDENTIAL);
         return;
     }
-    for (auto templateId : templateIdList_) {
+
+    StartAuthWithTemplateList(filteredList);
+}
+
+std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::vector<DeviceKey> &selectedDevices)
+{
+    std::vector<TemplateId> result;
+
+    for (const auto &deviceKey : selectedDevices) {
+        auto companionStatus = GetCompanionManager().GetCompanionStatus(hostUserId_, deviceKey);
+        if (!companionStatus.has_value()) {
+            IAM_LOGE("%{public}s companion status not found for device", GetDescription());
+            continue;
+        }
+
+        TemplateId templateId = companionStatus->templateId;
+        if (std::find(templateIdList_.begin(), templateIdList_.end(), templateId) != templateIdList_.end()) {
+            result.push_back(templateId);
+        }
+    }
+
+    return result;
+}
+
+void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId> &templateList)
+{
+    for (auto templateId : templateList) {
         auto hostSingleMixAuthRequest =
             GetRequestFactory().CreateHostSingleMixAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId,
                 [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
@@ -89,6 +127,35 @@ void HostMixAuthRequest::Start()
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
+}
+
+void HostMixAuthRequest::Start()
+{
+    if (!AnyTemplateValid()) {
+        IAM_LOGE("%{public}s no valid templateId found", GetDescription());
+        CompleteWithError(ResultCode::NO_VALID_CREDENTIAL);
+        return;
+    }
+
+    if (!tokenId_.has_value()) {
+        IAM_LOGI("%{public}s no tokenId, skip device selection, use all templates", GetDescription());
+        StartAuthWithTemplateList(templateIdList_);
+        return;
+    }
+
+    bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_.value(), SelectPurpose::SELECT_AUTH_DEVICE,
+        [weakSelf = weak_from_this(), description = GetDescription()](const std::vector<DeviceKey> &selectedDevices) {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            self->HandleDeviceSelectResult(selectedDevices);
+        });
+    if (!selectorSet) {
+        IAM_LOGE("%{public}s no device selector set", GetDescription());
+        CompleteWithError(ResultCode::GENERAL_ERROR);
+        return;
+    }
+
+    IAM_LOGI("%{public}s waiting for device select result", GetDescription());
 }
 
 bool HostMixAuthRequest::Cancel(ResultCode resultCode)

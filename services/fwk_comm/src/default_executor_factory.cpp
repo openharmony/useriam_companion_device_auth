@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,33 +13,33 @@
  * limitations under the License.
  */
 
-#include "keep_alive_handler.h"
+#include "default_executor_factory.h"
 
 #include "iam_check.h"
 #include "iam_logger.h"
 
-#include "singleton_manager.h"
+#include "companion_device_auth_all_in_one_executor.h"
 
 #define LOG_TAG "CDA_SA"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-void KeepAliveHandler::HandleRequest(const Attributes &request, Attributes &reply)
+
+std::shared_ptr<ExecutorFactoryImpl> ExecutorFactoryImpl::Create()
 {
     IAM_LOGI("start");
-
-    reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
-
-    std::string connectionName;
-    bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
-
-    bool isOpen = GetCrossDeviceCommManager().IsConnectionOpen(connectionName);
-    ENSURE_OR_RETURN(isOpen);
-
-    reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::SUCCESS));
+    auto factory = std::shared_ptr<ExecutorFactoryImpl>(new ExecutorFactoryImpl());
+    ENSURE_OR_RETURN_VAL(factory != nullptr, nullptr);
+    return factory;
 }
+
+std::shared_ptr<FwkIAuthExecutorHdi> ExecutorFactoryImpl::CreateExecutor()
+{
+    IAM_LOGI("start");
+    return CompanionDeviceAuthAllInOneExecutor::Create();
+}
+
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
