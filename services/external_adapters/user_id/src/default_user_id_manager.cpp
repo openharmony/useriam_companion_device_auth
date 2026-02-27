@@ -300,6 +300,7 @@ int32_t DefaultUserIdManager::QueryActiveUserIdFromSystem() const
         IAM_LOGI("active os account %{public}d not verified", candidate);
         return INVALID_USER_ID;
     }
+    IAM_LOGI("active user id: %{public}d", candidate);
 
     return candidate;
 }

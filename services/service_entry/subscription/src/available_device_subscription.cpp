@@ -139,6 +139,10 @@ void AvailableDeviceSubscription::HandleDeviceStatusChange()
     IAM_LOGI("NotifyAvailableDeviceStatus start, callback count:%{public}zu, device count:%{public}zu",
         callbacks.size(), availableDeviceStatus.size());
 
+    if (callbacks.empty()) {
+        return;
+    }
+
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [callbacks = std::move(callbacks), availableDeviceStatus = std::move(availableDeviceStatus)]() {
             for (const auto &callback : callbacks) {

@@ -54,6 +54,7 @@ private:
     UserId hostUserId_ = INVALID_USER_ID;
     std::vector<TemplateId> templateIdList_;
     std::optional<uint32_t> tokenId_;
+    std::optional<BusinessId> businessId_;
     FwkResultCallback requestCallback_;
     std::unordered_map<TemplateId, std::shared_ptr<IRequest>> requestMap_;
 };

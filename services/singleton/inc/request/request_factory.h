@@ -41,6 +41,7 @@ struct HostMixAuthParams {
     UserId hostUserId;
     std::vector<TemplateId> templateIdList;
     std::optional<uint32_t> tokenId;
+    std::optional<BusinessId> businessId;
 };
 
 class IRequestFactory : public NoCopyable {

@@ -16,22 +16,17 @@ import("../companion_device_auth.gni")
 # Sanitize config for unit tests - disable CFI when coverage is enabled
 # to avoid bitcode and speed up linking
 if (companion_device_auth_enable_coverage) {
-  companion_device_auth_unit_test_sanitize = {
-    integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
-    cfi = false
-    cfi_cross_dso = false
-    debug = false
-  }
+  companion_device_auth_unit_test_sanitize =
+      companion_device_auth_no_cfi_sanitize
 } else {
-  companion_device_auth_unit_test_sanitize = companion_device_auth_sanitize
+  companion_device_auth_unit_test_sanitize =
+      companion_device_auth_default_sanitize
 }
 
 _unit_test_coverage_cflags = []
 _unit_test_coverage_ldflags = []
-_fuzz_test_coverage_cflags = []
-_fuzz_test_coverage_ldflags = []
+_fuzz_test_coverage_cflags = [ "-fno-sanitize=cfi" ]
+_fuzz_test_coverage_ldflags = [ "-fno-sanitize=cfi" ]
 _coverage_rustflags = []
 
 if (companion_device_auth_enable_coverage) {
@@ -44,14 +39,8 @@ if (companion_device_auth_enable_coverage) {
     "-fprofile-instr-generate",
     "-fno-sanitize=cfi",
   ]
-  _fuzz_test_coverage_cflags = [
-    "--coverage",
-    "-fno-sanitize=cfi",
-  ]
-  _fuzz_test_coverage_ldflags = [
-    "--coverage",
-    "-fno-sanitize=cfi",
-  ]
+  _fuzz_test_coverage_cflags += [ "--coverage" ]
+  _fuzz_test_coverage_ldflags += [ "--coverage" ]
   _coverage_rustflags += [
     "-C",
     "instrument-coverage",

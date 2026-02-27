@@ -21,7 +21,7 @@ config("client_config") {
 }
 
 ohos_shared_library("companion_device_auth_client") {
-  sanitize = companion_device_auth_sanitize
+  sanitize = companion_device_auth_default_sanitize
   branch_protector_ret = "pac_ret"
   include_dirs = companion_device_auth_client_include_dirs
 
