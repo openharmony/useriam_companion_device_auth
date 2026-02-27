@@ -349,11 +349,9 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_001, TestSize.Lev
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _, _, _, _))
-        .WillOnce(Invoke([](ScheduleId scheduleId, std::vector<uint8_t> fwkMsg, UserId hostUserId,
-                             std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateIdList,
-                std::move(requestCallback));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _))
+        .WillOnce(Invoke([](const HostMixAuthParams &params, FwkResultCallback &&requestCallback) {
+            return std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
@@ -409,7 +407,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_004, TestSize.Lev
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _, _, _, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*callback, OnResult(FwkResultCode::GENERAL_ERROR, _)).Times(1);
 
     FwkResultCode ret = executor->Authenticate(scheduleId, param, callback);
@@ -430,11 +428,9 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_005, TestSize.Lev
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _, _, _, _))
-        .WillOnce(Invoke([](ScheduleId scheduleId, std::vector<uint8_t> fwkMsg, UserId hostUserId,
-                             std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateIdList,
-                std::move(requestCallback));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _))
+        .WillOnce(Invoke([](const HostMixAuthParams &params, FwkResultCallback &&requestCallback) {
+            return std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(false));
     EXPECT_CALL(*callback, OnResult(FwkResultCode::GENERAL_ERROR, _)).Times(1);
@@ -459,6 +455,69 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_006, TestSize.Lev
     FwkResultCode ret = executor->Authenticate(scheduleId, param, callback);
 
     EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+}
+
+HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_WithAuthIntent5, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto executor = CompanionDeviceAuthAllInOneExecutor::Create();
+    ASSERT_NE(nullptr, executor);
+
+    uint64_t scheduleId = UINT64_12345;
+    FwkAuthenticateParam param;
+    param.extraInfo = { 1, 2, 3 };
+    param.userId = INT32_100;
+    param.templateIdList = { 123 };
+    param.tokenId = 1000;
+    param.authIntent = 5;
+
+    auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
+
+    // When authIntent is 5, SupportDeviceSelect returns true, so tokenId should be passed
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _))
+        .WillOnce(Invoke([](const HostMixAuthParams &params, FwkResultCallback &&requestCallback) {
+            // tokenId should have a value since authIntent is 5
+            EXPECT_TRUE(params.tokenId.has_value());
+            EXPECT_EQ(1000u, params.tokenId.value());
+            return std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
+        }));
+    EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
+
+    FwkResultCode ret = executor->Authenticate(scheduleId, param, callback);
+
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
+}
+
+HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_WithAuthIntentNot5, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto executor = CompanionDeviceAuthAllInOneExecutor::Create();
+    ASSERT_NE(nullptr, executor);
+
+    uint64_t scheduleId = UINT64_12345;
+    FwkAuthenticateParam param;
+    param.extraInfo = { 1, 2, 3 };
+    param.userId = INT32_100;
+    param.templateIdList = { 123 };
+    param.tokenId = 1000;
+    param.authIntent = 1;
+
+    auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
+
+    // When authIntent is not 5, SupportDeviceSelect returns false, so tokenId should be nullopt
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _))
+        .WillOnce(Invoke([](const HostMixAuthParams &params, FwkResultCallback &&requestCallback) {
+            // tokenId should NOT have a value since authIntent is not 5
+            EXPECT_FALSE(params.tokenId.has_value());
+            return std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
+        }));
+    EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
+
+    FwkResultCode ret = executor->Authenticate(scheduleId, param, callback);
+
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Delete_001, TestSize.Level0)

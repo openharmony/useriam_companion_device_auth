@@ -22,6 +22,7 @@
 
 #include "companion_manager.h"
 #include "cross_device_comm_manager.h"
+#include "fwk_comm/executor_factory.h"
 #include "host_binding_manager.h"
 #include "incoming_message_handler_registry.h"
 #include "misc_manager.h"
@@ -61,6 +62,9 @@ public:
 
     virtual IncomingMessageHandlerRegistry &GetIncomingMessageHandlerRegistry() = 0;
     virtual void SetIncomingMessageHandlerRegistry(std::shared_ptr<IncomingMessageHandlerRegistry> registry) = 0;
+
+    virtual IExecutorFactory &GetExecutorFactory() = 0;
+    virtual void SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory) = 0;
 
 #ifdef ENABLE_TEST
     virtual void Reset() = 0;
@@ -108,6 +112,11 @@ inline IRequestFactory &GetRequestFactory()
 inline IncomingMessageHandlerRegistry &GetIncomingMessageHandlerRegistry()
 {
     return SingletonManager::GetInstance().GetIncomingMessageHandlerRegistry();
+}
+
+inline IExecutorFactory &GetExecutorFactory()
+{
+    return SingletonManager::GetInstance().GetExecutorFactory();
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

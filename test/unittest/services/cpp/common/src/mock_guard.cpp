@@ -23,10 +23,14 @@
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
 
+// Include real executor for default factory behavior
+#include "companion_device_auth_all_in_one_executor.h"
+
 // Include all mock headers
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
 #include "mock_driver_manager_adapter.h"
+#include "mock_executor_factory.h"
 #include "mock_host_binding_manager.h"
 #include "mock_idm_adapter.h"
 #include "mock_misc_manager.h"
@@ -98,6 +102,9 @@ void MockGuard::CreateMocks()
 
     requestFactory_ = std::make_shared<MockRequestFactory>();
     SingletonManager::GetInstance().SetRequestFactory(requestFactory_);
+
+    executorFactory_ = std::make_shared<MockExecutorFactory>();
+    SingletonManager::GetInstance().SetExecutorFactory(executorFactory_);
 }
 
 void MockGuard::SetupDefaultBehaviors()
@@ -108,6 +115,7 @@ void MockGuard::SetupDefaultBehaviors()
     SetupCompanionManagerDefaults();
     SetupRequestManagerDefaults();
     SetupRequestFactoryDefaults();
+    SetupExecutorFactoryDefaults();
     SetupHostBindingManagerDefaults();
     SetupSecurityAgentDefaults();
 }
@@ -115,6 +123,7 @@ void MockGuard::SetupDefaultBehaviors()
 void MockGuard::SetupMiscManagerDefaults()
 {
     ON_CALL(*miscManager_, GetNextGlobalId()).WillByDefault(Return(1));
+    ON_CALL(*miscManager_, GetDeviceDeviceSelectResult(_, _, _)).WillByDefault(Return(false));
 }
 
 void MockGuard::SetupUserIdManagerDefaults()
@@ -193,6 +202,14 @@ void MockGuard::SetupRequestFactoryDefaults()
 {
     ON_CALL(*requestFactory_, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
     ON_CALL(*requestFactory_, CreateHostSyncDeviceStatusRequest(_, _, _, _)).WillByDefault(Return(nullptr));
+}
+
+void MockGuard::SetupExecutorFactoryDefaults()
+{
+    // Return a real executor by default for driver tests
+    ON_CALL(*executorFactory_, CreateExecutor).WillByDefault(Invoke([]() {
+        return CompanionDeviceAuthAllInOneExecutor::Create();
+    }));
 }
 
 void MockGuard::SetupHostBindingManagerDefaults()
@@ -321,6 +338,11 @@ MockRequestManager &MockGuard::GetRequestManager()
 MockRequestFactory &MockGuard::GetRequestFactory()
 {
     return *requestFactory_;
+}
+
+MockExecutorFactory &MockGuard::GetExecutorFactory()
+{
+    return *executorFactory_;
 }
 
 } // namespace CompanionDeviceAuth

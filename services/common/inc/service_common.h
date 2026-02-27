@@ -267,12 +267,12 @@ struct SyncDeviceStatus {
     std::string deviceUserName {};
 };
 
-constexpr uint32_t DEFAULT_REQUEST_TIMEOUT_MS = 60 * 1000;  // 60 seconds
-constexpr uint32_t TOKEN_TIMEOUT_MS = 4 * 60 * 60 * 1000;   // 4 hours
-constexpr uint32_t IDM_ADD_TEMPLATE_TIMEOUT_MS = 30 * 1000; // 30 seconds
-constexpr uint64_t IDLE_THRESHOLD_MS = 10 * 1000;           // 10 seconds
-constexpr uint32_t IDLE_MONITOR_INTERVAL_MS = 10 * 1000;    // 10 seconds
-constexpr uint32_t MAX_SYNC_WAIT_TIME_SEC = 2;              // 2 second
+constexpr uint32_t DEFAULT_REQUEST_TIMEOUT_MS = 60 * 1000;          // 60 seconds
+constexpr uint32_t TOKEN_TIMEOUT_MS = 4 * 60 * 60 * 1000;           // 4 hours
+constexpr uint32_t IDM_ADD_TEMPLATE_TIMEOUT_MS = 30 * 1000;         // 30 seconds
+constexpr uint64_t CONNECTION_IDLE_TIMEOUT_MS = 10 * 1000;          // 10 seconds
+constexpr uint32_t CONNECTION_IDLE_MONITOR_INTERVAL_MS = 10 * 1000; // 10 seconds
+constexpr uint32_t MAX_SYNC_WAIT_TIME_SEC = 2;                      // 2 second
 constexpr uint32_t MAX_ON_START_WAIT_TIME_SEC = UINT32_MAX;
 constexpr uint32_t ADAPTER_CALL_TIMEOUT_SEC = 3; // 3 seconds
 constexpr size_t MAX_MESSAGE_SIZE = 20000;

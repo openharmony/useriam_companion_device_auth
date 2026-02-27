@@ -197,12 +197,14 @@ static void FuzzCreateHostMixAuthRequest(std::shared_ptr<RequestFactoryImpl> &fa
     for (uint8_t j = 0; j < count; ++j) {
         templateIdList.push_back(fuzzData.ConsumeIntegral<TemplateId>());
     }
+    uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
+    std::optional<uint32_t> optionalTokenId = fuzzData.ConsumeBool() ? std::optional<uint32_t>(tokenId) : std::nullopt;
     FwkResultCallback callback = [](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (void)result;
         (void)extraInfo;
     };
-    auto request =
-        factory->CreateHostMixAuthRequest(scheduleId, fwkMsg, hostUserId, templateIdList, std::move(callback));
+    HostMixAuthParams params = { scheduleId, fwkMsg, hostUserId, templateIdList, optionalTokenId };
+    auto request = factory->CreateHostMixAuthRequest(params, std::move(callback));
     (void)request;
 }
 

@@ -38,8 +38,8 @@ class HostMixAuthRequestTest : public Test {
 public:
     void CreateDefaultRequest()
     {
-        request_ = std::make_shared<HostMixAuthRequest>(scheduleId_, fwkMsg_, hostUserId_, templateIdList_,
-            std::move(requestCallback_));
+        HostMixAuthParams params = { scheduleId_, fwkMsg_, hostUserId_, templateIdList_, tokenId_ };
+        request_ = std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback_));
     }
 
 protected:
@@ -49,6 +49,7 @@ protected:
     UserId hostUserId_ = 100;
     TemplateId templateId_ = 12345;
     std::vector<TemplateId> templateIdList_ = { templateId_ };
+    std::optional<uint32_t> tokenId_ = 1000;
     FwkResultCallback requestCallback_ = [](ResultCode result, const std::vector<uint8_t> &fwkMsg) {};
     std::vector<uint8_t> extraInfo_ = { 5, 6, 7, 8 };
 };
@@ -440,6 +441,34 @@ HWTEST_F(HostMixAuthRequestTest, InvokeCallback_001, TestSize.Level0)
     request_->requestCallback_ = nullptr;
 
     EXPECT_NO_THROW(request_->InvokeCallback(ResultCode::SUCCESS, {}));
+}
+
+HWTEST_F(HostMixAuthRequestTest, Start_WithNoTokenId, TestSize.Level0)
+{
+    MockGuard guard;
+
+    CreateDefaultRequest();
+    // Set tokenId to nullopt to test the new behavior
+    request_->tokenId_ = std::nullopt;
+    bool callbackCalled = false;
+    request_->requestCallback_ = [&callbackCalled](ResultCode result, const std::vector<uint8_t> &fwkMsg) {
+        callbackCalled = true;
+    };
+
+    // Set up companion status to be valid so Start() can proceed
+    CompanionStatus validStatus = { .isValid = true };
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(templateId_)).WillOnce(Return(validStatus));
+
+    // Create a mock request to return from the factory
+    auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, scheduleId_);
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _, _, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
+
+    request_->Start();
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    // Callback is not called because request started successfully without device selection
+    EXPECT_FALSE(callbackCalled);
 }
 
 } // namespace

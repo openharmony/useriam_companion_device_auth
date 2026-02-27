@@ -112,7 +112,7 @@ bool DefaultUserIdManager::Initialize()
             [weakImpl]() {
                 auto impl = weakImpl.lock();
                 if (impl == nullptr) {
-                    IAM_LOGW("manager destroyed, ignore service ready event");
+                    IAM_LOGE("manager destroyed, ignore service ready event");
                     return;
                 }
                 impl->HandleOsAccountServiceReady();
@@ -120,7 +120,7 @@ bool DefaultUserIdManager::Initialize()
             [weakImpl]() {
                 auto impl = weakImpl.lock();
                 if (impl == nullptr) {
-                    IAM_LOGW("manager destroyed, ignore service unavailable event");
+                    IAM_LOGE("manager destroyed, ignore service unavailable event");
                     return;
                 }
                 impl->HandleOsAccountServiceUnavailable();
@@ -142,7 +142,7 @@ UserId DefaultUserIdManager::GetActiveUserId() const
 std::optional<std::string> DefaultUserIdManager::GetActiveUserName() const
 {
     if (activeUserId_ == INVALID_USER_ID) {
-        IAM_LOGW("active user id is invalid");
+        IAM_LOGE("active user id is invalid");
         return std::nullopt;
     }
 
@@ -176,7 +176,7 @@ void DefaultUserIdManager::UnsubscribeActiveUserId(const SubscribeId &subscribeI
 bool DefaultUserIdManager::IsUserIdValid(int32_t userId)
 {
     if (userId < 0) {
-        IAM_LOGW("user id is invalid: %{public}d", userId);
+        IAM_LOGE("user id is invalid: %{public}d", userId);
         return false;
     }
     bool exists = false;
@@ -285,7 +285,7 @@ int32_t DefaultUserIdManager::QueryActiveUserIdFromSystem() const
         return INVALID_USER_ID;
     }
     if (ids.empty()) {
-        IAM_LOGW("no active os account id");
+        IAM_LOGE("no active os account id");
         return INVALID_USER_ID;
     }
 
@@ -316,7 +316,7 @@ void DefaultUserIdManager::ActiveUserOsAccountSubscriber::OnStateChanged(const A
     TaskRunnerManager::GetInstance().PostTaskOnResident([weakImpl = impl_, data]() {
         auto impl = weakImpl.lock();
         if (impl == nullptr) {
-            IAM_LOGW("manager has been destroyed, ignore account state change");
+            IAM_LOGE("manager has been destroyed, ignore account state change");
             return;
         }
         impl->OnOsAccountStateChange(data);

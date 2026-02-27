@@ -54,10 +54,6 @@ extern "C" {
 
 #define MAX_STRUCT_SIZE_FFI 409600
 
-#define PROPERTY_MODE_FREEZE 5
-
-#define PROPERTY_MODE_UNFREEZE 6
-
 enum CommandId {
     INIT = 1,
     GET_EXECUTOR_INFO = 2,

@@ -18,6 +18,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,14 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 
 using SyncDeviceStatusCallback = std::function<void(ResultCode result, const SyncDeviceStatus &syncDeviceStatus)>;
+
+struct HostMixAuthParams {
+    ScheduleId scheduleId;
+    std::vector<uint8_t> fwkMsg;
+    UserId hostUserId;
+    std::vector<TemplateId> templateIdList;
+    std::optional<uint32_t> tokenId;
+};
 
 class IRequestFactory : public NoCopyable {
 public:
@@ -66,8 +75,8 @@ public:
         const std::vector<uint8_t> &startDelegateAuthRequest) = 0;
     virtual std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
         const DeviceKey &hostDeviceKey) = 0;
-    virtual std::shared_ptr<IRequest> CreateHostMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback) = 0;
+    virtual std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
+        FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
         UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) = 0;
 
