@@ -144,8 +144,9 @@ void CompanionDeviceAuthClientImpl::PrintIpcTemplateStatus(const IpcTemplateStat
 
     IAM_LOGI("deviceUserName:%{public}s, deviceModelInfo:%{public}s, deviceName:%{public}s, isOnline:%{public}d, "
              "supportedBusinessIds size:%{public}zu",
-        ipcTemplateStatus.deviceStatus.deviceUserName.c_str(), ipcTemplateStatus.deviceStatus.deviceModelInfo.c_str(),
-        ipcTemplateStatus.deviceStatus.deviceName.c_str(), ipcTemplateStatus.deviceStatus.isOnline,
+        GET_MASKED_STR_CSTR(ipcTemplateStatus.deviceStatus.deviceUserName),
+        GET_MASKED_STR_CSTR(ipcTemplateStatus.deviceStatus.deviceModelInfo),
+        GET_MASKED_STR_CSTR(ipcTemplateStatus.deviceStatus.deviceName), ipcTemplateStatus.deviceStatus.isOnline,
         ipcTemplateStatus.deviceStatus.supportedBusinessIds.size());
 
     IAM_LOGI("templateId:%{public}s, isConfirmed:%{public}d, isValid:%{public}d, userId:%{public}d, "
@@ -539,7 +540,6 @@ sptr<ICompanionDeviceAuth> CompanionDeviceAuthClientImpl::GetProxy()
     IAM_LOGE("proxy is nullptr in test mode, please use SetProxy() first");
     return proxy_;
 #else
-    // Use GetInstance() to avoid capturing [this]
     proxy_ = IpcClientFetcher::GetProxy([](const wptr<IRemoteObject> &remote) {
         auto &client = static_cast<CompanionDeviceAuthClient &>(CompanionDeviceAuthClient::GetInstance());
         auto &clientImpl = static_cast<CompanionDeviceAuthClientImpl &>(client);

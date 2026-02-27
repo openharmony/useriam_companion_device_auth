@@ -203,7 +203,7 @@ static void FuzzCreateHostMixAuthRequest(std::shared_ptr<RequestFactoryImpl> &fa
         (void)result;
         (void)extraInfo;
     };
-    HostMixAuthParams params = { scheduleId, fwkMsg, hostUserId, templateIdList, optionalTokenId };
+    HostMixAuthParams params = { scheduleId, fwkMsg, hostUserId, templateIdList, optionalTokenId, std::nullopt };
     auto request = factory->CreateHostMixAuthRequest(params, std::move(callback));
     (void)request;
 }

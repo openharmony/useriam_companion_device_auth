@@ -45,8 +45,12 @@ private:
     SystemParamManagerImpl();
     void UnwatchParam(SubscribeId subscriptionId);
 
-    std::map<int32_t, SystemParamCallback> subscriptions_;
-    std::map<std::string, std::vector<int32_t>> keyToSubscriptionIds_;
+    struct SubscriptionInfo {
+        SubscribeId id;
+        std::string key;
+        SystemParamCallback callback;
+    };
+    std::vector<SubscriptionInfo> subscriptions_;
 };
 
 } // namespace CompanionDeviceAuth

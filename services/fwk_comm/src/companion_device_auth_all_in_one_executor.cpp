@@ -76,7 +76,7 @@ public:
     FwkResultCode Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
         const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
     FwkResultCode Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param, std::optional<uint32_t> tokenId,
-        const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
+        std::optional<BusinessId> businessId, const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
     FwkResultCode Delete(const std::vector<uint64_t> &templateIdList);
     FwkResultCode Cancel(uint64_t scheduleId);
     FwkResultCode SendCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo,
@@ -176,7 +176,8 @@ FwkResultCode Inner::Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
 }
 
 FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param,
-    std::optional<uint32_t> tokenId, const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
+    std::optional<uint32_t> tokenId, std::optional<BusinessId> businessId,
+    const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
 {
     IAM_LOGI("start");
     if (callbackObj == nullptr) {
@@ -196,7 +197,7 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
         (*callback)(result, extraInfo);
     };
 
-    HostMixAuthParams params = { scheduleId, param.extraInfo, param.userId, param.templateIdList, tokenId };
+    HostMixAuthParams params = { scheduleId, param.extraInfo, param.userId, param.templateIdList, tokenId, businessId };
     auto request = GetRequestFactory().CreateHostMixAuthRequest(params, std::move(requestCallback));
     if (request == nullptr) {
         IAM_LOGE("CreateHostMixAuthRequest failed");
@@ -414,8 +415,10 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::Authenticate(uint64_t schedul
         tokenId = param.tokenId;
     }
 
-    return RunOnResidentSync([inner, scheduleId, paramCopy = param, tokenId, callbackObj]() {
-        return inner->Authenticate(scheduleId, paramCopy, tokenId, callbackObj);
+    std::optional<BusinessId> businessId = GetAuthBusinessId(param.authIntent);
+
+    return RunOnResidentSync([inner, scheduleId, paramCopy = param, tokenId, businessId, callbackObj]() {
+        return inner->Authenticate(scheduleId, paramCopy, tokenId, businessId, callbackObj);
     });
 }
 
@@ -475,6 +478,13 @@ bool CompanionDeviceAuthAllInOneExecutor::SupportDeviceSelect(int32_t authIntent
     static_cast<void>(authIntent);
     IAM_LOGI("device select is not supported");
     return false;
+}
+
+std::optional<BusinessId> CompanionDeviceAuthAllInOneExecutor::GetAuthBusinessId(int32_t authIntent) const
+{
+    static_cast<void>(authIntent);
+    IAM_LOGI("get device business id is not supported");
+    return std::nullopt;
 }
 
 FwkResultCode CompanionDeviceAuthAllInOneExecutor::RunOnResidentSync(std::function<FwkResultCode()> func,

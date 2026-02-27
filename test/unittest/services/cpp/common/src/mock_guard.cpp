@@ -253,6 +253,24 @@ MockGuard::~MockGuard()
     SingletonManager::GetInstance().Reset();
     AdapterManager::GetInstance().Reset();
 
+    // Clear all GMock expectations before destroying mocks
+    // This prevents UBSAN errors during mock destruction when internal state is corrupted
+    Mock::VerifyAndClearExpectations(crossDeviceCommManager_.get());
+    Mock::VerifyAndClearExpectations(securityAgent_.get());
+    Mock::VerifyAndClearExpectations(companionManager_.get());
+    Mock::VerifyAndClearExpectations(hostBindingManager_.get());
+    Mock::VerifyAndClearExpectations(miscManager_.get());
+    Mock::VerifyAndClearExpectations(requestManager_.get());
+    Mock::VerifyAndClearExpectations(requestFactory_.get());
+    Mock::VerifyAndClearExpectations(executorFactory_.get());
+    Mock::VerifyAndClearExpectations(timeKeeper_.get());
+    Mock::VerifyAndClearExpectations(userAuthAdapter_.get());
+    Mock::VerifyAndClearExpectations(idmAdapter_.get());
+    Mock::VerifyAndClearExpectations(driverManagerAdapter_.get());
+    Mock::VerifyAndClearExpectations(saManagerAdapter_.get());
+    Mock::VerifyAndClearExpectations(systemParamManager_.get());
+    Mock::VerifyAndClearExpectations(userIdManager_.get());
+
     // Now it's safe to clear AdapterManager mocks (these don't have nullptr checks)
     AdapterManager::GetInstance().SetTimeKeeper(nullptr);
     AdapterManager::GetInstance().SetUserAuthAdapter(nullptr);

@@ -474,12 +474,11 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Authenticate_WithAuthIntent5, 
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    // When authIntent is 5, SupportDeviceSelect returns true, so tokenId should be passed
+    // SupportDeviceSelect always returns false, so tokenId should be nullopt
     EXPECT_CALL(guard.GetRequestFactory(), CreateHostMixAuthRequest(_, _))
         .WillOnce(Invoke([](const HostMixAuthParams &params, FwkResultCallback &&requestCallback) {
-            // tokenId should have a value since authIntent is 5
-            EXPECT_TRUE(params.tokenId.has_value());
-            EXPECT_EQ(1000u, params.tokenId.value());
+            // tokenId should NOT have a value since SupportDeviceSelect returns false
+            EXPECT_FALSE(params.tokenId.has_value());
             return std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback));
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));

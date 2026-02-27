@@ -38,7 +38,7 @@ class HostMixAuthRequestTest : public Test {
 public:
     void CreateDefaultRequest()
     {
-        HostMixAuthParams params = { scheduleId_, fwkMsg_, hostUserId_, templateIdList_, tokenId_ };
+        HostMixAuthParams params = { scheduleId_, fwkMsg_, hostUserId_, templateIdList_, tokenId_, std::nullopt };
         request_ = std::make_shared<HostMixAuthRequest>(params, std::move(requestCallback_));
     }
 
@@ -49,7 +49,7 @@ protected:
     UserId hostUserId_ = 100;
     TemplateId templateId_ = 12345;
     std::vector<TemplateId> templateIdList_ = { templateId_ };
-    std::optional<uint32_t> tokenId_ = 1000;
+    std::optional<uint32_t> tokenId_ = std::nullopt;
     FwkResultCallback requestCallback_ = [](ResultCode result, const std::vector<uint8_t> &fwkMsg) {};
     std::vector<uint8_t> extraInfo_ = { 5, 6, 7, 8 };
 };
@@ -443,13 +443,13 @@ HWTEST_F(HostMixAuthRequestTest, InvokeCallback_001, TestSize.Level0)
     EXPECT_NO_THROW(request_->InvokeCallback(ResultCode::SUCCESS, {}));
 }
 
-HWTEST_F(HostMixAuthRequestTest, Start_WithNoTokenId, TestSize.Level0)
+HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
 {
     MockGuard guard;
 
     CreateDefaultRequest();
-    // Set tokenId to nullopt to test the new behavior
-    request_->tokenId_ = std::nullopt;
+    // Set tokenId to a value to test device selection path
+    request_->tokenId_ = 1000;
     bool callbackCalled = false;
     request_->requestCallback_ = [&callbackCalled](ResultCode result, const std::vector<uint8_t> &fwkMsg) {
         callbackCalled = true;
@@ -459,6 +459,14 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithNoTokenId, TestSize.Level0)
     CompanionStatus validStatus = { .isValid = true };
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(templateId_)).WillOnce(Return(validStatus));
 
+    // Mock device selection to return true and invoke callback with empty devices (use all templates)
+    EXPECT_CALL(guard.GetMiscManager(), GetDeviceDeviceSelectResult(_, _, _))
+        .WillOnce([](uint32_t tokenId, SelectPurpose purpose, DeviceSelectResultHandler &&handler) {
+            // Invoke handler with empty device list, which triggers StartAuthWithTemplateList
+            handler({});
+            return true;
+        });
+
     // Create a mock request to return from the factory
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, scheduleId_);
     EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _, _, _)).WillOnce(Return(mockRequest));
@@ -467,7 +475,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithNoTokenId, TestSize.Level0)
     request_->Start();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    // Callback is not called because request started successfully without device selection
+    // Callback is not called because request started successfully
     EXPECT_FALSE(callbackCalled);
 }
 

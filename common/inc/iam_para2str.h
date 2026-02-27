@@ -49,6 +49,20 @@ std::string GetOptionalString(const std::optional<T> &val)
 {
     return val.has_value() ? std::to_string(val.value()) : "nullopt";
 }
+
+template <typename T>
+std::string GetVectorString(const std::vector<T> &vec)
+{
+    std::string result = "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        result += std::to_string(vec[i]);
+        if (i + 1 < vec.size()) {
+            result += ", ";
+        }
+    }
+    result += "]";
+    return result;
+}
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

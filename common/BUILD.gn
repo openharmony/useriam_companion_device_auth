@@ -19,7 +19,7 @@ config("companion_device_auth_common_config") {
 }
 
 ohos_static_library("companion_device_auth_common") {
-  sanitize = companion_device_auth_sanitize
+  sanitize = companion_device_auth_default_sanitize
 
   sources = [ "src/iam_para2str.cpp" ]
 

@@ -54,8 +54,9 @@ int32_t IpcAvailableDeviceStatusCallbackService::OnAvailableDeviceStatusChange(
 
         IAM_LOGI("deviceUserName:%{public}s, deviceModelInfo:%{public}s, deviceName:%{public}s, isOnline:%{public}d, "
                  "supportedBusinessIds size:%{public}zu",
-            deviceStatus.deviceUserName.c_str(), deviceStatus.deviceModelInfo.c_str(), deviceStatus.deviceName.c_str(),
-            deviceStatus.isOnline, deviceStatus.supportedBusinessIds.size());
+            GET_MASKED_STR_CSTR(deviceStatus.deviceUserName), GET_MASKED_STR_CSTR(deviceStatus.deviceModelInfo),
+            GET_MASKED_STR_CSTR(deviceStatus.deviceName), deviceStatus.isOnline,
+            deviceStatus.supportedBusinessIds.size());
         ClientDeviceStatus clientDeviceStatus;
         clientDeviceStatus.deviceKey = clientDeviceKey;
         clientDeviceStatus.deviceUserName = deviceStatus.deviceUserName;
