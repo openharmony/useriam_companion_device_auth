@@ -78,7 +78,7 @@ bool SaManagerAdapterImpl::UnSubscribeSystemAbility(int32_t systemAbilityId,
     XCollieHelper xcollie("SaManagerAdapterImpl-UnSubscribeSystemAbility", API_CALL_TIMEOUT);
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
-        IAM_LOGW("Failed to get SAM");
+        IAM_LOGE("Failed to get SAM");
         return false;
     }
 

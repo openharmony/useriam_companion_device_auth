@@ -126,14 +126,14 @@ void IdmAdapterImpl::OnUserIdmServiceReady()
 
 void IdmAdapterImpl::OnUserIdmServiceUnavailable()
 {
-    IAM_LOGW("UserIdM SA is unavailable");
+    IAM_LOGE("UserIdM SA is unavailable");
 
     if (eventListener_ != nullptr) {
         SetFirstCallerTokenID(IPCSkeleton::GetCallingTokenID());
         int32_t ret = UserIdmClient::GetInstance().UnRegistCredChangeEventListener(eventListener_);
         SetFirstCallerTokenID(0);
         if (ret != ERR_OK) {
-            IAM_LOGW("UnRegistCredChangeEventListener failed: %{public}d", ret);
+            IAM_LOGE("UnRegistCredChangeEventListener failed: %{public}d", ret);
         }
     }
 }
@@ -164,7 +164,7 @@ std::vector<uint64_t> IdmAdapterImpl::GetUserTemplates(int32_t userId)
         return it->second;
     }
 
-    IAM_LOGW("Still no templates found for user %{public}d after query", userId);
+    IAM_LOGE("Still no templates found for user %{public}d after query", userId);
     return {};
 }
 
@@ -192,7 +192,7 @@ void IdmAdapterImpl::Unsubscribe(uint64_t subscriptionId)
 {
     auto it = subscriptions_.find(subscriptionId);
     if (it == subscriptions_.end()) {
-        IAM_LOGW("Subscription 0x%{public}016" PRIX64 " not found", subscriptionId);
+        IAM_LOGE("Subscription 0x%{public}016" PRIX64 " not found", subscriptionId);
         return;
     }
 

@@ -119,7 +119,7 @@ std::optional<CompanionStatus> CompanionManagerImpl::GetCompanionStatus(UserId h
 {
     auto companion = FindCompanionByDeviceUser(hostUserId, companionDeviceKey);
     if (companion == nullptr) {
-        IAM_LOGW("companion not found for device-user combination");
+        IAM_LOGE("companion not found for device-user combination");
         return std::nullopt;
     }
 
@@ -585,7 +585,7 @@ void CompanionManagerImpl::StartIssueTokenRequests(const std::vector<uint64_t> &
 
         CompanionStatus companionStatus = companion->GetStatus();
         if (!companionStatus.isValid) {
-            IAM_LOGW("companion %{public}s is invalid, skip", companion->GetDescription());
+            IAM_LOGE("companion %{public}s is invalid, skip", companion->GetDescription());
             continue;
         }
 

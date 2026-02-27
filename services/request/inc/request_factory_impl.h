@@ -56,8 +56,8 @@ public:
         const std::vector<uint8_t> &startDelegateAuthRequest) override;
     std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
         const DeviceKey &hostDeviceKey) override;
-    std::shared_ptr<IRequest> CreateHostMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, std::vector<TemplateId> templateIdList, FwkResultCallback &&requestCallback) override;
+    std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
+        FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
         UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override;
 

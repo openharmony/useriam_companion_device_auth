@@ -367,7 +367,8 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, EndCompanionCheck_002, TestSize.Level0
 HWTEST_F(HostSyncDeviceStatusRequestTest, EndCompanionCheck_003, TestSize.Level0)
 {
     CreateDefaultRequest();
-    SyncDeviceStatusReply syncDeviceStatusReply_ = { .result = ResultCode::SUCCESS };
+    SyncDeviceStatusReply syncDeviceStatusReply_ = { .result = ResultCode::SUCCESS,
+        .companionCheckResponse = { 1, 2, 3 } };
 
     EXPECT_CALL(mockCompanionManager_, GetCompanionStatus(_, _)).WillOnce(Return(std::make_optional(companionStatus_)));
     EXPECT_CALL(mockSecurityAgent_, HostEndCompanionCheck(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));

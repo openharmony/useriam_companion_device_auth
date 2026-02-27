@@ -87,6 +87,7 @@ public:
     void HandleChannelConnectionStatusChange(const std::string &connectionName, ConnectionStatus status,
         const std::string &reason);
     void HandleKeepAliveReply(const std::string &connectionName, const Attributes &reply);
+    void RefreshLastActivityTime(const std::string &connectionName);
 
 private:
     ConnectionManager(std::shared_ptr<ChannelManager> channelManager,

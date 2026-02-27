@@ -23,6 +23,7 @@
 #include "fuzz_data_generator.h"
 #include "fuzz_registry.h"
 #include "host_mix_auth_request.h"
+#include "request_factory.h"
 
 namespace OHOS {
 namespace UserIam {
@@ -122,13 +123,22 @@ void FuzzHostMixAuthRequest(FuzzedDataProvider &fuzzData)
         templateIdList.push_back(fuzzData.ConsumeIntegral<TemplateId>());
     }
 
+    uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
+    std::optional<uint32_t> optionalTokenId = fuzzData.ConsumeBool() ? std::optional<uint32_t>(tokenId) : std::nullopt;
+
     FwkResultCallback callback = [](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (void)result;
         (void)extraInfo;
     };
 
-    auto request =
-        std::make_shared<HostMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateIdList, std::move(callback));
+    HostMixAuthParams params;
+    params.scheduleId = scheduleId;
+    params.fwkMsg = fwkMsg;
+    params.hostUserId = hostUserId;
+    params.templateIdList = templateIdList;
+    params.tokenId = optionalTokenId;
+
+    auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
     if (!request) {
         return;
     }

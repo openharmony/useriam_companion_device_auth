@@ -53,8 +53,6 @@ const uint32_t ATTR_USER_ID = 100041;
 const uint32_t ATTR_LOCK_STATE_AUTH_TYPE = 100075;
 } // namespace
 
-using Inner = CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutorInner;
-
 struct FreezeCommand {
     uint32_t authTypeValue = 0;
     uint32_t lockStateAuthTypeValue = 0;
@@ -77,7 +75,7 @@ public:
     FwkResultCode SendMessage(uint64_t scheduleId, int32_t srcRole, const std::vector<uint8_t> &msg);
     FwkResultCode Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
         const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
-    FwkResultCode Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param,
+    FwkResultCode Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param, std::optional<uint32_t> tokenId,
         const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
     FwkResultCode Delete(const std::vector<uint64_t> &templateIdList);
     FwkResultCode Cancel(uint64_t scheduleId);
@@ -88,6 +86,8 @@ public:
 private:
     std::optional<FreezeCommand> DecodeFreezeCommand(const std::vector<uint8_t> &dataTlv);
 };
+
+using Inner = CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutorInner;
 
 FwkResultCode Inner::GetExecutorInfo(FwkExecutorInfo &info)
 {
@@ -176,7 +176,7 @@ FwkResultCode Inner::Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
 }
 
 FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param,
-    const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
+    std::optional<uint32_t> tokenId, const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
 {
     IAM_LOGI("start");
     if (callbackObj == nullptr) {
@@ -196,8 +196,8 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
         (*callback)(result, extraInfo);
     };
 
-    auto request = GetRequestFactory().CreateHostMixAuthRequest(scheduleId, param.extraInfo, param.userId,
-        param.templateIdList, std::move(requestCallback));
+    HostMixAuthParams params = { scheduleId, param.extraInfo, param.userId, param.templateIdList, tokenId };
+    auto request = GetRequestFactory().CreateHostMixAuthRequest(params, std::move(requestCallback));
     if (request == nullptr) {
         IAM_LOGE("CreateHostMixAuthRequest failed");
         callbackObj->OnResult(FwkResultCode::GENERAL_ERROR, {});
@@ -408,8 +408,14 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::Authenticate(uint64_t schedul
     IAM_LOGI("start");
     auto inner = inner_;
     ENSURE_OR_RETURN_VAL(inner != nullptr, FwkResultCode::GENERAL_ERROR);
-    return RunOnResidentSync([inner, scheduleId, paramCopy = param, cbCopy = callbackObj]() {
-        return inner->Authenticate(scheduleId, paramCopy, cbCopy);
+
+    std::optional<uint32_t> tokenId = std::nullopt;
+    if (SupportDeviceSelect(param.authIntent)) {
+        tokenId = param.tokenId;
+    }
+
+    return RunOnResidentSync([inner, scheduleId, paramCopy = param, tokenId, callbackObj]() {
+        return inner->Authenticate(scheduleId, paramCopy, tokenId, callbackObj);
     });
 }
 
@@ -462,6 +468,13 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::SetCachedTemplates(const std:
     IAM_LOGI("start");
     (void)templateIdList;
     return FwkResultCode::SUCCESS;
+}
+
+bool CompanionDeviceAuthAllInOneExecutor::SupportDeviceSelect(int32_t authIntent) const
+{
+    static_cast<void>(authIntent);
+    IAM_LOGI("device select is not supported");
+    return false;
 }
 
 FwkResultCode CompanionDeviceAuthAllInOneExecutor::RunOnResidentSync(std::function<FwkResultCode()> func,

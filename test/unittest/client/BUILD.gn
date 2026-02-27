@@ -32,6 +32,7 @@ ohos_unittest("companion_device_auth_client_test") {
 
   include_dirs = [
     "cases/mock",
+    "${companion_device_auth_path}/test/unittest/common/inc",
     "${companion_device_auth_path}/frameworks/native/client/inc",
     "${companion_device_auth_path}/frameworks/native/ipc/inc",
   ]
