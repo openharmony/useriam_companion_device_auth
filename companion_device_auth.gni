@@ -29,7 +29,7 @@ companion_device_auth_has_ext =
     defined(global_parts_info) &&
     defined(global_parts_info.useriam_companion_device_auth_ext)
 
-companion_device_auth_sanitize = {
+companion_device_auth_default_sanitize = {
   integer_overflow = true
   ubsan = true
   boundary_sanitize = true
@@ -37,4 +37,13 @@ companion_device_auth_sanitize = {
   cfi_cross_dso = true
   debug = false
   blocklist = "${companion_device_auth_path}/cfi_blocklist.txt"
+}
+
+companion_device_auth_no_cfi_sanitize = {
+  integer_overflow = true
+  ubsan = true
+  boundary_sanitize = true
+  cfi = false
+  cfi_cross_dso = false
+  debug = false
 }

@@ -101,7 +101,10 @@ std::unique_ptr<Subscription> SystemParamManagerImpl::WatchParam(const std::stri
     ENSURE_OR_RETURN_VAL(callback != nullptr, nullptr);
 
     SubscribeId subscriptionId = GetMiscManager().GetNextGlobalId();
-    bool isFirstSubscriptionForKey = keyToSubscriptionIds_.find(key) == keyToSubscriptionIds_.end();
+    // clang-format off
+    bool isFirstSubscriptionForKey = std::find_if(subscriptions_.begin(), subscriptions_.end(),
+        [&key](const auto &info) { return info.key == key; }) == subscriptions_.end();
+    // clang-format on
     if (isFirstSubscriptionForKey) {
         int32_t ret = WatchParameter(key.c_str(), OnParamChg, nullptr);
         if (ret != 0) {
@@ -110,8 +113,7 @@ std::unique_ptr<Subscription> SystemParamManagerImpl::WatchParam(const std::stri
         }
     }
 
-    subscriptions_[subscriptionId] = std::move(callback);
-    keyToSubscriptionIds_[key].push_back(subscriptionId);
+    subscriptions_.push_back({ subscriptionId, key, std::move(callback) });
 
     IAM_LOGD("watch key %{public}s, subscription id 0x%{public}016" PRIX64, key.c_str(), subscriptionId);
 
@@ -125,45 +127,36 @@ std::unique_ptr<Subscription> SystemParamManagerImpl::WatchParam(const std::stri
 
 void SystemParamManagerImpl::UnwatchParam(SubscribeId subscriptionId)
 {
-    auto subscriptionIt = subscriptions_.find(subscriptionId);
-    if (subscriptionIt == subscriptions_.end()) {
+    auto it = std::find_if(subscriptions_.begin(), subscriptions_.end(),
+        [subscriptionId](const auto &info) { return info.id == subscriptionId; });
+    if (it == subscriptions_.end()) {
         return;
     }
 
-    std::string keyToRemove;
-    for (auto it = keyToSubscriptionIds_.begin(); it != keyToSubscriptionIds_.end(); ++it) {
-        auto &subscriptionIds = it->second;
-        auto subscriptionIdIt = std::find(subscriptionIds.begin(), subscriptionIds.end(), subscriptionId);
-        if (subscriptionIdIt != subscriptionIds.end()) {
-            keyToRemove = it->first;
-            subscriptionIds.erase(subscriptionIdIt);
-            if (subscriptionIds.empty()) {
-                keyToRemove = it->first;
-            }
-            break;
+    std::string key = it->key;
+    subscriptions_.erase(it);
+
+    // clang-format off
+    bool hasOtherSubscriptionForKey = std::find_if(subscriptions_.begin(), subscriptions_.end(),
+        [&key](const auto &info) { return info.key == key; }) != subscriptions_.end();
+    // clang-format on
+    if (!hasOtherSubscriptionForKey) {
+        int32_t ret = RemoveParameterWatcher(key.c_str(), OnParamChg, nullptr);
+        if (ret != 0) {
+            IAM_LOGE("RemoveParameterWatcher failed, key %{public}s, ret %{public}d", key.c_str(), ret);
         }
     }
 
-    if (!keyToRemove.empty() && keyToSubscriptionIds_[keyToRemove].empty()) {
-        keyToSubscriptionIds_.erase(keyToRemove);
-    }
-
-    subscriptions_.erase(subscriptionIt);
-    IAM_LOGD("unwatch subscription id 0x%{public}016" PRIX64 ", key %{public}s", subscriptionId, keyToRemove.c_str());
+    IAM_LOGD("unwatch subscription id 0x%{public}016" PRIX64 ", key %{public}s", subscriptionId, key.c_str());
 }
 
 void SystemParamManagerImpl::OnParamChange(const std::string &key, const std::string &value)
 {
     IAM_LOGI("on param change, key %{public}s, value %{public}s", key.c_str(), value.c_str());
     std::vector<SystemParamCallback> callbacks;
-    auto keyIt = keyToSubscriptionIds_.find(key);
-    if (keyIt != keyToSubscriptionIds_.end()) {
-        callbacks.reserve(keyIt->second.size());
-        for (SubscribeId subscriptionId : keyIt->second) {
-            auto subscriptionIt = subscriptions_.find(subscriptionId);
-            if (subscriptionIt != subscriptions_.end() && subscriptionIt->second != nullptr) {
-                callbacks.push_back(subscriptionIt->second);
-            }
+    for (const auto &info : subscriptions_) {
+        if (info.key == key && info.callback != nullptr) {
+            callbacks.push_back(info.callback);
         }
     }
 

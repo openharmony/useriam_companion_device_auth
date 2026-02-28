@@ -156,6 +156,10 @@ void ContinuousAuthSubscription::NotifyAuthStatus(std::optional<Atl> authTrustLe
 
     auto callbacks = callbacks_;
 
+    if (callbacks.empty()) {
+        return;
+    }
+
     IpcContinuousAuthStatus status {};
     status.isAuthPassed = authTrustLevel.has_value();
     status.hasAuthTrustLevel = authTrustLevel.has_value();

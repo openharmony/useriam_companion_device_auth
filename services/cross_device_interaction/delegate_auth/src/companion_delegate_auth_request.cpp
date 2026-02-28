@@ -96,11 +96,9 @@ bool CompanionDelegateAuthRequest::SecureAgentBeginDelegateAuth(uint64_t &challe
 {
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId_, PeerDeviceKey());
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), hostBindingStatus.has_value(), false);
-    int32_t hostBindingId = hostBindingStatus->bindingId;
-
     CompanionDelegateAuthBeginInput input = {};
     input.requestId = GetRequestId();
-    input.bindingId = hostBindingId;
+    input.bindingId = hostBindingStatus->bindingId;
     input.secureProtocolId = secureProtocolId_;
     input.startDelegateAuthRequest = startDelegateAuthRequest_;
     CompanionDelegateAuthBeginOutput output = {};

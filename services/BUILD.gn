@@ -23,7 +23,7 @@ config("service_config") {
 }
 
 ohos_shared_library("companiondeviceauthservice") {
-  sanitize = companion_device_auth_sanitize
+  sanitize = companion_device_auth_default_sanitize
   branch_protector_ret = "pac_ret"
 
   remove_configs = [ "//build/config/compiler:no_exceptions" ]
@@ -52,7 +52,7 @@ group("companion_device_auth_service_group") {
 }
 
 ohos_static_library("companion_device_auth_service_static") {
-  sanitize = companion_device_auth_sanitize
+  sanitize = companion_device_auth_default_sanitize
   branch_protector_ret = "pac_ret"
 
   remove_configs = [ "//build/config/compiler:no_exceptions" ]

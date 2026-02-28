@@ -191,6 +191,8 @@ ResultCode BaseServiceCore::UpdateTemplateEnabledBusinessIds(uint64_t templateId
         }
     }
 
+    IAM_LOGI("enabledBusinessIds:%{public}s", GetVectorString(enabledBusinessIds).c_str());
+
     ResultCode ret =
         GetCompanionManager().UpdateCompanionEnabledBusinessIds(static_cast<TemplateId>(templateId), businessIdEnums);
     if (ret != ResultCode::SUCCESS) {

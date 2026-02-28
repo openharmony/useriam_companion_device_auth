@@ -66,7 +66,7 @@ taihe_shared_library("companiondeviceauth_ani") {
     "user_auth_framework:userauth_ani",
   ]
 
-  sanitize = companion_device_auth_sanitize
+  sanitize = companion_device_auth_default_sanitize
 
   deps = [
     ":companion_device_auth_taihe",

@@ -322,7 +322,8 @@ HWTEST_F(CompanionTest, SetCompanionTokenAtl_002, TestSize.Level0)
     auto companion = Companion::Create(persistedStatus, false, mockCompanionManager_);
     ASSERT_NE(nullptr, companion);
 
-    EXPECT_CALL(mockSecurityAgent_, HostRevokeToken(_)).WillOnce(Return(ResultCode::SUCCESS));
+    // HostRevokeToken is called twice: once in SetCompanionTokenAtl, once in destructor
+    EXPECT_CALL(mockSecurityAgent_, HostRevokeToken(_)).WillRepeatedly(Return(ResultCode::SUCCESS));
 
     companion->status_.tokenAtl = INT32_1;
     companion->SetCompanionTokenAtl(std::nullopt);

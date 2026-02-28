@@ -32,7 +32,6 @@ config("companion_device_auth_service_fuzzer_common_config") {
 
 # Static library for fuzz test helpers
 ohos_static_library("companion_device_auth_service_fuzzer_common") {
-  sanitize = companion_device_auth_unit_test_sanitize
   branch_protector_ret = "pac_ret"
   testonly = true
 

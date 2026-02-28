@@ -137,6 +137,7 @@ void FuzzHostMixAuthRequest(FuzzedDataProvider &fuzzData)
     params.hostUserId = hostUserId;
     params.templateIdList = templateIdList;
     params.tokenId = optionalTokenId;
+    params.businessId = std::nullopt;
 
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
     if (!request) {

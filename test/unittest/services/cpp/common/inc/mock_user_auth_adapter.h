@@ -31,7 +31,7 @@ namespace CompanionDeviceAuth {
 class MockUserAuthAdapter : public IUserAuthAdapter {
 public:
     MOCK_METHOD(uint64_t, BeginDelegateAuth,
-        (uint32_t userId, const std::vector<uint8_t> &challenge, uint32_t authTrustLevel, AuthResultCallback callback),
+        (int32_t userId, const std::vector<uint8_t> &challenge, uint32_t authTrustLevel, AuthResultCallback callback),
         (override));
     MOCK_METHOD(int32_t, CancelAuthentication, (uint64_t contextId), (override));
 };
