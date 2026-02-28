@@ -326,7 +326,7 @@ typedef struct CompanionInitKeyNegotiationInputFfi {
     struct Uint16Array64Ffi capabilityList;
     struct DeviceKeyFfi companionDeviceKey;
     struct DeviceKeyFfi hostDeviceKey;
-    struct DataArray20000Ffi secMessage;
+    struct DataArray1024Ffi secMessage;
 } CompanionInitKeyNegotiationInputFfi;
 
 typedef struct CompanionInitKeyNegotiationOutputFfi {
@@ -336,7 +336,7 @@ typedef struct CompanionInitKeyNegotiationOutputFfi {
 typedef struct CompanionBeginAddHostBindingInputFfi {
     int32_t requestId;
     uint16_t secureProtocolId;
-    struct DataArray1024Ffi secMessage;
+    struct DataArray20000Ffi secMessage;
 } CompanionBeginAddHostBindingInputFfi;
 
 typedef struct CompanionBeginAddHostBindingOutputFfi {
