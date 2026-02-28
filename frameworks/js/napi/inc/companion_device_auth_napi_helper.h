@@ -47,7 +47,7 @@ public:
     static napi_status SetStringPropertyUtf8(napi_env env, napi_value obj, const std::string &name,
         const std::string &value);
     static napi_status SetBoolProperty(napi_env env, napi_value obj, const char *name, bool value);
-    static napi_value ConVertDeviceStatusToNapiValue(napi_env env, const ClientDeviceStatus &deviceStatus);
+    static napi_value ConvertDeviceStatusToNapiValue(napi_env env, const ClientDeviceStatus &deviceStatus);
     static napi_value ConvertTemplateStatusListToNapiValue(napi_env env,
         const std::vector<ClientTemplateStatus> &templateStatusList);
     static napi_value ConvertDeviceKeyToNapiValue(napi_env env, const ClientDeviceKey &deviceKey);

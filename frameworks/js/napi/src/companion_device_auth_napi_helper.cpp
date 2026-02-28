@@ -219,7 +219,7 @@ napi_status CompanionDeviceAuthNapiHelper::SetDateProperty(napi_env env, napi_va
 napi_status CompanionDeviceAuthNapiHelper::SetDeviceStatusProperty(napi_env env, napi_value obj, const char *name,
     const ClientDeviceStatus &deviceStatus)
 {
-    napi_value deviceStatusValue = ConVertDeviceStatusToNapiValue(env, deviceStatus);
+    napi_value deviceStatusValue = ConvertDeviceStatusToNapiValue(env, deviceStatus);
     napi_status ret = napi_set_named_property(env, obj, "deviceStatus", deviceStatusValue);
     if (ret != napi_ok) {
         IAM_LOGE("napi_set_named_property failed %{public}d", ret);
@@ -227,7 +227,7 @@ napi_status CompanionDeviceAuthNapiHelper::SetDeviceStatusProperty(napi_env env,
     return ret;
 }
 
-napi_value CompanionDeviceAuthNapiHelper::ConVertDeviceStatusToNapiValue(napi_env env,
+napi_value CompanionDeviceAuthNapiHelper::ConvertDeviceStatusToNapiValue(napi_env env,
     const ClientDeviceStatus &deviceStatus)
 {
     napi_value deviceStatusValue;
@@ -531,7 +531,7 @@ napi_value CompanionDeviceAuthNapiHelper::ConvertDeviceStatusListToNapiValue(nap
     }
 
     for (size_t i = 0; i < deviceStatusList.size(); ++i) {
-        napi_value element = ConVertDeviceStatusToNapiValue(env, deviceStatusList[i]);
+        napi_value element = ConvertDeviceStatusToNapiValue(env, deviceStatusList[i]);
         status = napi_set_element(env, deviceStatusListValue, i, element);
         if (status != napi_ok) {
             IAM_LOGE("napi_create_array_with_length fail at index: %{public}zu", i);

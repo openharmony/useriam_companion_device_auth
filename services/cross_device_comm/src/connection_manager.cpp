@@ -452,7 +452,7 @@ void ConnectionManager::HandleIdleMonitorTimer()
     for (const auto &pair : connectionMap_) {
         const Connection &connection = pair.second;
         // Use safe subtraction to prevent underflow
-        std::optional<SteadyTimeMs> idleTimeMsOpt = safe_sub(now.value(), connection.lastActivityTimeMs);
+        std::optional<SteadyTimeMs> idleTimeMsOpt = SafeSub(now.value(), connection.lastActivityTimeMs);
         if (!idleTimeMsOpt.has_value()) {
             IAM_LOGE("clock anomaly detected for connection %{public}s, skipping idle check",
                 connection.connectionName.c_str());
