@@ -49,6 +49,8 @@ ohos_static_library("companion_device_auth_service_fuzzer_common") {
   public_configs = [
     ":companion_device_auth_service_fuzzer_common_config",
     "${companion_device_auth_path}/services:service_config",
+    "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
+    "${companion_device_auth_path}/common:companion_device_auth_common_config",
   ]
 
   deps = companion_device_auth_service_deps
