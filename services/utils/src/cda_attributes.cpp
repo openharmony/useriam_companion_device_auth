@@ -168,7 +168,7 @@ bool EncodeNumericArrayValue(const std::vector<T> &src, std::vector<uint8_t> &ds
     }
 
     // Use safe multiplication to prevent overflow
-    auto outSize = safe_mul(src.size(), Traits::size);
+    auto outSize = SafeMul(src.size(), Traits::size);
     ENSURE_OR_RETURN_VAL(outSize.has_value(), false);
 
     std::vector<uint8_t> out(outSize.value());
@@ -213,7 +213,7 @@ bool DecodeNumericArrayValue(const std::vector<uint8_t> &src, std::vector<T> &ds
 
     for (size_t i = 0; i < count; i++) {
         // Use safe multiplication for offset calculation
-        auto offset = safe_mul(i, sizeof(LeType));
+        auto offset = SafeMul(i, sizeof(LeType));
         ENSURE_OR_RETURN_VAL(offset.has_value() && offset.value() <= src.size() - sizeof(LeType), false);
 
         LeType temp;
@@ -366,7 +366,7 @@ void Attributes::SetStringValue(AttributeKey key, const std::string &value)
 {
     std::vector<uint8_t> dest;
     // Check overflow before reserving
-    auto newCapacity = safe_add(value.size(), static_cast<size_t>(1));
+    auto newCapacity = SafeAdd(value.size(), static_cast<size_t>(1));
     ENSURE_OR_RETURN(newCapacity.has_value());
 
     dest.reserve(newCapacity.value());
@@ -429,10 +429,10 @@ void Attributes::SetAttributesArrayValue(AttributeKey key, const std::vector<Att
 
     size_t dataLen = 0;
     for (const auto &arr : serializedArray) {
-        auto sum = safe_add(dataLen, sizeof(uint32_t));
+        auto sum = SafeAdd(dataLen, sizeof(uint32_t));
         ENSURE_OR_RETURN(sum.has_value());
         dataLen = sum.value();
-        sum = safe_add(dataLen, arr.size());
+        sum = SafeAdd(dataLen, arr.size());
         ENSURE_OR_RETURN(sum.has_value());
         dataLen = sum.value();
     }
@@ -625,7 +625,7 @@ bool Attributes::GetAttributesArrayValue(AttributeKey key, std::vector<Attribute
         uint32_t arrayLen = le32toh(arrayLenLE);
 
         // Use safe addition to update position
-        auto newI = safe_add(i, sizeof(uint32_t));
+        auto newI = SafeAdd(i, sizeof(uint32_t));
         ENSURE_OR_RETURN_VAL(newI.has_value(), false);
         i = newI.value();
         if (data.size() - i < arrayLen) {
@@ -637,7 +637,7 @@ bool Attributes::GetAttributesArrayValue(AttributeKey key, std::vector<Attribute
         array.emplace_back(std::vector<uint8_t>(data.begin() + i, data.begin() + i + arrayLen));
 
         // Use safe addition to update position
-        newI = safe_add(i, static_cast<size_t>(arrayLen));
+        newI = SafeAdd(i, static_cast<size_t>(arrayLen));
         ENSURE_OR_RETURN_VAL(newI.has_value(), false);
         i = newI.value();
     }
@@ -649,13 +649,13 @@ std::vector<uint8_t> Attributes::Serialize() const
 {
     size_t size = 0;
     for (const auto &[key, value] : map_) {
-        auto sum = safe_add(size, sizeof(uint32_t));
+        auto sum = SafeAdd(size, sizeof(uint32_t));
         ENSURE_OR_RETURN_VAL(sum.has_value(), std::vector<uint8_t> {});
         size = sum.value();
-        sum = safe_add(size, sizeof(uint32_t));
+        sum = SafeAdd(size, sizeof(uint32_t));
         ENSURE_OR_RETURN_VAL(sum.has_value(), std::vector<uint8_t> {});
         size = sum.value();
-        sum = safe_add(size, value.size());
+        sum = SafeAdd(size, value.size());
         ENSURE_OR_RETURN_VAL(sum.has_value(), std::vector<uint8_t> {});
         size = sum.value();
     }

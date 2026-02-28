@@ -499,7 +499,7 @@ void MessageRouter::HandleTimeoutCheck()
     std::vector<uint32_t> timeoutMessages;
 
     for (const auto &pair : pendingReplyMessages_) {
-        auto elapsedMsOpt = safe_sub(now.value(), pair.second.sendTimeMs);
+        auto elapsedMsOpt = SafeSub(now.value(), pair.second.sendTimeMs);
         if (!elapsedMsOpt.has_value()) {
             continue;
         }

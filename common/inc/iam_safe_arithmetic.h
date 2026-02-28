@@ -32,7 +32,7 @@ namespace CompanionDeviceAuth {
  * @return std::optional<T> Returns the sum if no overflow occurs, otherwise std::nullopt.
  */
 template <typename T>
-std::optional<T> safe_add(T a, T b)
+std::optional<T> SafeAdd(T a, T b)
 {
     static_assert(std::is_integral_v<T>, "integral only");
     T result;
@@ -51,7 +51,7 @@ std::optional<T> safe_add(T a, T b)
  * @return std::optional<T> Returns the difference if no overflow occurs, otherwise std::nullopt.
  */
 template <typename T>
-std::optional<T> safe_sub(T a, T b)
+std::optional<T> SafeSub(T a, T b)
 {
     static_assert(std::is_integral_v<T>, "integral only");
     T result;
@@ -70,7 +70,7 @@ std::optional<T> safe_sub(T a, T b)
  * @return std::optional<T> Returns the product if no overflow occurs, otherwise std::nullopt.
  */
 template <typename T>
-std::optional<T> safe_mul(T a, T b)
+std::optional<T> SafeMul(T a, T b)
 {
     static_assert(std::is_integral_v<T>, "integral only");
     T result;

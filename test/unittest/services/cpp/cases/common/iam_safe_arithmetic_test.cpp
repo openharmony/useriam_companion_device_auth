@@ -28,164 +28,164 @@ namespace CompanionDeviceAuth {
 
 class IamSafeArithmeticTest : public Test {};
 
-// ===== safe_add tests =====
+// ===== SafeAdd tests =====
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_Unsigned_NoOverflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_add(100u, 200u).value(), 300u);
-    EXPECT_EQ(safe_add(0u, 0u).value(), 0u);
-    EXPECT_EQ(safe_add(UINT32_MAX, 0u).value(), UINT32_MAX);
-    EXPECT_EQ(safe_add(0u, UINT32_MAX).value(), UINT32_MAX);
+    EXPECT_EQ(SafeAdd(100u, 200u).value(), 300u);
+    EXPECT_EQ(SafeAdd(0u, 0u).value(), 0u);
+    EXPECT_EQ(SafeAdd(UINT32_MAX, 0u).value(), UINT32_MAX);
+    EXPECT_EQ(SafeAdd(0u, UINT32_MAX).value(), UINT32_MAX);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_Unsigned_Overflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_add(UINT32_MAX, 1u).has_value());
-    EXPECT_FALSE(safe_add(UINT32_MAX, UINT32_MAX).has_value());
-    EXPECT_FALSE(safe_add(1u, UINT32_MAX).has_value());
+    EXPECT_FALSE(SafeAdd(UINT32_MAX, 1u).has_value());
+    EXPECT_FALSE(SafeAdd(UINT32_MAX, UINT32_MAX).has_value());
+    EXPECT_FALSE(SafeAdd(1u, UINT32_MAX).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_Signed_NoOverflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_add(100, 200).value(), 300);
-    EXPECT_EQ(safe_add(-100, 200).value(), 100);
-    EXPECT_EQ(safe_add(-100, -200).value(), -300);
-    EXPECT_EQ(safe_add(0, 0).value(), 0);
-    EXPECT_EQ(safe_add(INT32_MAX, 0).value(), INT32_MAX);
-    EXPECT_EQ(safe_add(0, INT32_MAX).value(), INT32_MAX);
-    EXPECT_EQ(safe_add(INT32_MIN, 0).value(), INT32_MIN);
+    EXPECT_EQ(SafeAdd(100, 200).value(), 300);
+    EXPECT_EQ(SafeAdd(-100, 200).value(), 100);
+    EXPECT_EQ(SafeAdd(-100, -200).value(), -300);
+    EXPECT_EQ(SafeAdd(0, 0).value(), 0);
+    EXPECT_EQ(SafeAdd(INT32_MAX, 0).value(), INT32_MAX);
+    EXPECT_EQ(SafeAdd(0, INT32_MAX).value(), INT32_MAX);
+    EXPECT_EQ(SafeAdd(INT32_MIN, 0).value(), INT32_MIN);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_Signed_Overflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_add(INT32_MAX, 1).has_value());
-    EXPECT_FALSE(safe_add(1, INT32_MAX).has_value());
-    EXPECT_FALSE(safe_add(INT32_MAX, INT32_MAX).has_value());
+    EXPECT_FALSE(SafeAdd(INT32_MAX, 1).has_value());
+    EXPECT_FALSE(SafeAdd(1, INT32_MAX).has_value());
+    EXPECT_FALSE(SafeAdd(INT32_MAX, INT32_MAX).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_Signed_Underflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_add(INT32_MIN, -1).has_value());
-    EXPECT_FALSE(safe_add(-1, INT32_MIN).has_value());
-    EXPECT_FALSE(safe_add(INT32_MIN, INT32_MIN).has_value());
+    EXPECT_FALSE(SafeAdd(INT32_MIN, -1).has_value());
+    EXPECT_FALSE(SafeAdd(-1, INT32_MIN).has_value());
+    EXPECT_FALSE(SafeAdd(INT32_MIN, INT32_MIN).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeAdd_DifferentTypes, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_add(static_cast<uint8_t>(100), static_cast<uint8_t>(200)).has_value(), false); // overflow
-    EXPECT_EQ(safe_add(static_cast<uint8_t>(100), static_cast<uint8_t>(50)).value(), static_cast<uint8_t>(150));
-    EXPECT_EQ(safe_add(static_cast<uint16_t>(1000), static_cast<uint16_t>(2000)).value(), static_cast<uint16_t>(3000));
-    EXPECT_EQ(safe_add(static_cast<uint64_t>(1000), static_cast<uint64_t>(2000)).value(), static_cast<uint64_t>(3000));
+    EXPECT_EQ(SafeAdd(static_cast<uint8_t>(100), static_cast<uint8_t>(200)).has_value(), false); // overflow
+    EXPECT_EQ(SafeAdd(static_cast<uint8_t>(100), static_cast<uint8_t>(50)).value(), static_cast<uint8_t>(150));
+    EXPECT_EQ(SafeAdd(static_cast<uint16_t>(1000), static_cast<uint16_t>(2000)).value(), static_cast<uint16_t>(3000));
+    EXPECT_EQ(SafeAdd(static_cast<uint64_t>(1000), static_cast<uint64_t>(2000)).value(), static_cast<uint64_t>(3000));
 }
 
-// ===== safe_sub tests =====
+// ===== SafeSub tests =====
 
 HWTEST_F(IamSafeArithmeticTest, SafeSub_Unsigned_NoUnderflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_sub(300u, 200u).value(), 100u);
-    EXPECT_EQ(safe_sub(200u, 200u).value(), 0u);
-    EXPECT_EQ(safe_sub(UINT32_MAX, 0u).value(), UINT32_MAX);
-    EXPECT_EQ(safe_sub(UINT32_MAX, 1u).value(), UINT32_MAX - 1);
+    EXPECT_EQ(SafeSub(300u, 200u).value(), 100u);
+    EXPECT_EQ(SafeSub(200u, 200u).value(), 0u);
+    EXPECT_EQ(SafeSub(UINT32_MAX, 0u).value(), UINT32_MAX);
+    EXPECT_EQ(SafeSub(UINT32_MAX, 1u).value(), UINT32_MAX - 1);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeSub_Unsigned_Underflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_sub(100u, 200u).has_value());
-    EXPECT_FALSE(safe_sub(0u, 1u).has_value());
-    EXPECT_FALSE(safe_sub(0u, UINT32_MAX).has_value());
+    EXPECT_FALSE(SafeSub(100u, 200u).has_value());
+    EXPECT_FALSE(SafeSub(0u, 1u).has_value());
+    EXPECT_FALSE(SafeSub(0u, UINT32_MAX).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeSub_Signed_NoUnderflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_sub(300, 200).value(), 100);
-    EXPECT_EQ(safe_sub(200, 200).value(), 0);
-    EXPECT_EQ(safe_sub(-100, -200).value(), 100);
-    EXPECT_EQ(safe_sub(100, -200).value(), 300);
-    EXPECT_EQ(safe_sub(INT32_MAX, INT32_MIN).value(), -1); // INT32_MAX - INT32_MIN = -1 (overflow wraps)
-    EXPECT_EQ(safe_sub(INT32_MIN, INT32_MIN).value(), 0);
+    EXPECT_EQ(SafeSub(300, 200).value(), 100);
+    EXPECT_EQ(SafeSub(200, 200).value(), 0);
+    EXPECT_EQ(SafeSub(-100, -200).value(), 100);
+    EXPECT_EQ(SafeSub(100, -200).value(), 300);
+    EXPECT_EQ(SafeSub(INT32_MAX, INT32_MIN).value(), -1); // INT32_MAX - INT32_MIN = -1 (overflow wraps)
+    EXPECT_EQ(SafeSub(INT32_MIN, INT32_MIN).value(), 0);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeSub_Signed_Underflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_sub(INT32_MIN, 1).has_value());
-    EXPECT_FALSE(safe_sub(-100, 100).has_value());            // -100 - 100 = -200, but this should work
-    EXPECT_FALSE(safe_sub(INT32_MIN, INT32_MAX).has_value()); // INT32_MIN - INT32_MAX = 1 (would underflow)
+    EXPECT_FALSE(SafeSub(INT32_MIN, 1).has_value());
+    EXPECT_FALSE(SafeSub(-100, 100).has_value());            // -100 - 100 = -200, but this should work
+    EXPECT_FALSE(SafeSub(INT32_MIN, INT32_MAX).has_value()); // INT32_MIN - INT32_MAX = 1 (would underflow)
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeSub_DifferentTypes, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_sub(static_cast<uint8_t>(200), static_cast<uint8_t>(100)).value(), static_cast<uint8_t>(100));
-    EXPECT_FALSE(safe_sub(static_cast<uint8_t>(100), static_cast<uint8_t>(200)).has_value());
-    EXPECT_EQ(safe_sub(static_cast<uint16_t>(3000), static_cast<uint16_t>(2000)).value(), static_cast<uint16_t>(1000));
+    EXPECT_EQ(SafeSub(static_cast<uint8_t>(200), static_cast<uint8_t>(100)).value(), static_cast<uint8_t>(100));
+    EXPECT_FALSE(SafeSub(static_cast<uint8_t>(100), static_cast<uint8_t>(200)).has_value());
+    EXPECT_EQ(SafeSub(static_cast<uint16_t>(3000), static_cast<uint16_t>(2000)).value(), static_cast<uint16_t>(1000));
 }
 
-// ===== safe_mul tests =====
+// ===== SafeMul tests =====
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_Unsigned_NoOverflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_mul(100u, 200u).value(), 20000u);
-    EXPECT_EQ(safe_mul(0u, 200u).value(), 0u);
-    EXPECT_EQ(safe_mul(200u, 0u).value(), 0u);
-    EXPECT_EQ(safe_mul(UINT32_MAX, 1u).value(), UINT32_MAX);
-    EXPECT_EQ(safe_mul(1u, UINT32_MAX).value(), UINT32_MAX);
+    EXPECT_EQ(SafeMul(100u, 200u).value(), 20000u);
+    EXPECT_EQ(SafeMul(0u, 200u).value(), 0u);
+    EXPECT_EQ(SafeMul(200u, 0u).value(), 0u);
+    EXPECT_EQ(SafeMul(UINT32_MAX, 1u).value(), UINT32_MAX);
+    EXPECT_EQ(SafeMul(1u, UINT32_MAX).value(), UINT32_MAX);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_Unsigned_Overflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_mul(UINT32_MAX, 2u).has_value());
-    EXPECT_FALSE(safe_mul(2u, UINT32_MAX).has_value());
-    EXPECT_FALSE(safe_mul(0x80000000u, 2u).has_value());
-    EXPECT_FALSE(safe_mul(UINT32_MAX, UINT32_MAX).has_value());
+    EXPECT_FALSE(SafeMul(UINT32_MAX, 2u).has_value());
+    EXPECT_FALSE(SafeMul(2u, UINT32_MAX).has_value());
+    EXPECT_FALSE(SafeMul(0x80000000u, 2u).has_value());
+    EXPECT_FALSE(SafeMul(UINT32_MAX, UINT32_MAX).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_Signed_NoOverflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_mul(100, 200).value(), 20000);
-    EXPECT_EQ(safe_mul(100, -200).value(), -20000);
-    EXPECT_EQ(safe_mul(-100, -200).value(), 20000);
-    EXPECT_EQ(safe_mul(0, 200).value(), 0);
-    EXPECT_EQ(safe_mul(200, 0).value(), 0);
-    EXPECT_EQ(safe_mul(INT32_MAX, 1).value(), INT32_MAX);
-    EXPECT_EQ(safe_mul(1, INT32_MAX).value(), INT32_MAX);
-    EXPECT_EQ(safe_mul(INT32_MIN, 1).value(), INT32_MIN);
-    EXPECT_EQ(safe_mul(1, INT32_MIN).value(), INT32_MIN);
+    EXPECT_EQ(SafeMul(100, 200).value(), 20000);
+    EXPECT_EQ(SafeMul(100, -200).value(), -20000);
+    EXPECT_EQ(SafeMul(-100, -200).value(), 20000);
+    EXPECT_EQ(SafeMul(0, 200).value(), 0);
+    EXPECT_EQ(SafeMul(200, 0).value(), 0);
+    EXPECT_EQ(SafeMul(INT32_MAX, 1).value(), INT32_MAX);
+    EXPECT_EQ(SafeMul(1, INT32_MAX).value(), INT32_MAX);
+    EXPECT_EQ(SafeMul(INT32_MIN, 1).value(), INT32_MIN);
+    EXPECT_EQ(SafeMul(1, INT32_MIN).value(), INT32_MIN);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_Signed_Overflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_mul(INT32_MAX, 2).has_value());
-    EXPECT_FALSE(safe_mul(2, INT32_MAX).has_value());
-    EXPECT_FALSE(safe_mul(INT32_MIN, -1).has_value()); // Would overflow to INT32_MAX+1
+    EXPECT_FALSE(SafeMul(INT32_MAX, 2).has_value());
+    EXPECT_FALSE(SafeMul(2, INT32_MAX).has_value());
+    EXPECT_FALSE(SafeMul(INT32_MIN, -1).has_value()); // Would overflow to INT32_MAX+1
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_Signed_Underflow, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_FALSE(safe_mul(INT32_MIN, 2).has_value());
-    EXPECT_FALSE(safe_mul(2, INT32_MIN).has_value());
+    EXPECT_FALSE(SafeMul(INT32_MIN, 2).has_value());
+    EXPECT_FALSE(SafeMul(2, INT32_MIN).has_value());
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeMul_DifferentTypes, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_mul(static_cast<uint8_t>(10), static_cast<uint8_t>(20)).value(), static_cast<uint8_t>(200));
-    EXPECT_FALSE(safe_mul(static_cast<uint8_t>(20), static_cast<uint8_t>(20)).has_value()); // overflow
-    EXPECT_EQ(safe_mul(static_cast<uint16_t>(100), static_cast<uint16_t>(200)).value(), static_cast<uint16_t>(20000));
+    EXPECT_EQ(SafeMul(static_cast<uint8_t>(10), static_cast<uint8_t>(20)).value(), static_cast<uint8_t>(200));
+    EXPECT_FALSE(SafeMul(static_cast<uint8_t>(20), static_cast<uint8_t>(20)).has_value()); // overflow
+    EXPECT_EQ(SafeMul(static_cast<uint16_t>(100), static_cast<uint16_t>(200)).value(), static_cast<uint16_t>(20000));
 }
 
 // ===== Edge cases and combinations =====
@@ -193,11 +193,11 @@ HWTEST_F(IamSafeArithmeticTest, SafeMul_DifferentTypes, TestSize.Level0)
 HWTEST_F(IamSafeArithmeticTest, SafeOperations_LargeValues, TestSize.Level0)
 {
     MockGuard guard;
-    EXPECT_EQ(safe_add(static_cast<uint64_t>(10000000000ULL), static_cast<uint64_t>(20000000000ULL)).value(),
+    EXPECT_EQ(SafeAdd(static_cast<uint64_t>(10000000000ULL), static_cast<uint64_t>(20000000000ULL)).value(),
         static_cast<uint64_t>(30000000000ULL));
-    EXPECT_EQ(safe_sub(static_cast<uint64_t>(30000000000ULL), static_cast<uint64_t>(20000000000ULL)).value(),
+    EXPECT_EQ(SafeSub(static_cast<uint64_t>(30000000000ULL), static_cast<uint64_t>(20000000000ULL)).value(),
         static_cast<uint64_t>(10000000000ULL));
-    EXPECT_EQ(safe_mul(static_cast<uint64_t>(100000), static_cast<uint64_t>(200000)).value(),
+    EXPECT_EQ(SafeMul(static_cast<uint64_t>(100000), static_cast<uint64_t>(200000)).value(),
         static_cast<uint64_t>(20000000000ULL));
 }
 
@@ -206,19 +206,19 @@ HWTEST_F(IamSafeArithmeticTest, SafeOperations_SizeT, TestSize.Level0)
     MockGuard guard;
     size_t a = 1000;
     size_t b = 2000;
-    EXPECT_EQ(safe_add(a, b).value(), 3000ULL);
-    EXPECT_EQ(safe_sub(b, a).value(), 1000ULL);
-    EXPECT_EQ(safe_mul(a, b).value(), 2000000ULL);
+    EXPECT_EQ(SafeAdd(a, b).value(), 3000ULL);
+    EXPECT_EQ(SafeSub(b, a).value(), 1000ULL);
+    EXPECT_EQ(SafeMul(a, b).value(), 2000000ULL);
 }
 
 HWTEST_F(IamSafeArithmeticTest, SafeOperations_OptionalUsage, TestSize.Level0)
 {
     MockGuard guard;
-    auto result1 = safe_add(100u, 200u);
+    auto result1 = SafeAdd(100u, 200u);
     EXPECT_TRUE(result1.has_value());
     EXPECT_EQ(result1.value(), 300u);
 
-    auto result2 = safe_add(UINT32_MAX, 1u);
+    auto result2 = SafeAdd(UINT32_MAX, 1u);
     EXPECT_FALSE(result2.has_value());
 }
 

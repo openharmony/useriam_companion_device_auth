@@ -55,8 +55,8 @@ public:
 
     explicit StatusMonitor(int32_t userId)
         : userId_(userId),
-          templateStatusCallbackHodler_(std::make_shared<TemplateStatusCallbackHolder<T>>()),
-          availableDeviceStatusCallbackHodler_(std::make_shared<AvailableDeviceStatusCallbackHolder<A>>())
+          templateStatusCallbackHolder_(std::make_shared<TemplateStatusCallbackHolder<T>>()),
+          availableDeviceStatusCallbackHolder_(std::make_shared<AvailableDeviceStatusCallbackHolder<A>>())
     {
     }
     ~StatusMonitor() = default;
@@ -76,9 +76,9 @@ public:
     int32_t OnTemplateChange(const std::shared_ptr<TemplateStatusCallbackWrapper<T>> &callback)
     {
         IAM_LOGI("start");
-        return templateStatusCallbackHodler_->AddCallback(callback, [this]() {
+        return templateStatusCallbackHolder_->AddCallback(callback, [this]() {
             int32_t ret = CompanionDeviceAuthClient::GetInstance().SubscribeTemplateStatusChange(userId_,
-                templateStatusCallbackHodler_);
+                templateStatusCallbackHolder_);
             if (ret != SUCCESS) {
                 IAM_LOGE("SubscribeTemplateStatusChange fail, ret:%{public}d", ret);
             }
@@ -89,9 +89,9 @@ public:
     int32_t OffTemplateChange(const std::shared_ptr<TemplateStatusCallbackWrapper<T>> &callback)
     {
         IAM_LOGI("start");
-        return templateStatusCallbackHodler_->RemoveCallback(callback, [this]() {
+        return templateStatusCallbackHolder_->RemoveCallback(callback, [this]() {
             int32_t ret =
-                CompanionDeviceAuthClient::GetInstance().UnsubscribeTemplateStatusChange(templateStatusCallbackHodler_);
+                CompanionDeviceAuthClient::GetInstance().UnsubscribeTemplateStatusChange(templateStatusCallbackHolder_);
             if (ret != SUCCESS) {
                 IAM_LOGE("UnsubscribeAvailableDeviceStatus fail, ret:%{public}d", ret);
             }
@@ -102,9 +102,9 @@ public:
     int32_t OnAvailableDeviceChange(const std::shared_ptr<AvailableDeviceStatusCallbackWrapper<A>> &callback)
     {
         IAM_LOGI("start");
-        return availableDeviceStatusCallbackHodler_->AddCallback(callback, [this]() {
+        return availableDeviceStatusCallbackHolder_->AddCallback(callback, [this]() {
             int32_t ret = CompanionDeviceAuthClient::GetInstance().SubscribeAvailableDeviceStatus(userId_,
-                availableDeviceStatusCallbackHodler_);
+                availableDeviceStatusCallbackHolder_);
             if (ret != SUCCESS) {
                 IAM_LOGE("SubscribeAvailableDeviceStatus fail, ret:%{public}d", ret);
             }
@@ -115,9 +115,9 @@ public:
     int32_t OffAvailableDeviceChange(const std::shared_ptr<AvailableDeviceStatusCallbackWrapper<A>> &callback)
     {
         IAM_LOGI("start");
-        return availableDeviceStatusCallbackHodler_->RemoveCallback(callback, [this]() {
+        return availableDeviceStatusCallbackHolder_->RemoveCallback(callback, [this]() {
             int32_t ret = CompanionDeviceAuthClient::GetInstance().UnsubscribeAvailableDeviceStatus(
-                availableDeviceStatusCallbackHodler_);
+                availableDeviceStatusCallbackHolder_);
             if (ret != SUCCESS) {
                 IAM_LOGE("UnsubscribeAvailableDeviceStatus fail, ret:%{public}d", ret);
             }
@@ -193,8 +193,8 @@ public:
 private:
     mutable std::recursive_mutex mutex_;
     int32_t userId_;
-    std::shared_ptr<TemplateStatusCallbackHolder<T>> templateStatusCallbackHodler_;
-    std::shared_ptr<AvailableDeviceStatusCallbackHolder<A>> availableDeviceStatusCallbackHodler_;
+    std::shared_ptr<TemplateStatusCallbackHolder<T>> templateStatusCallbackHolder_;
+    std::shared_ptr<AvailableDeviceStatusCallbackHolder<A>> availableDeviceStatusCallbackHolder_;
     std::unordered_map<std::optional<uint64_t>, std::shared_ptr<ContinuousAuthStatusCallbackHolder<C>>>
         continuousAuthStatusCallbackMap_;
 };

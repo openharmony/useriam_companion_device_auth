@@ -46,14 +46,14 @@ std::optional<SystemTimeMs> TimeKeeperImpl::GetSystemTimeMs()
         return std::nullopt;
     }
 
-    auto secMs = safe_mul(static_cast<uint64_t>(ts.tv_sec), static_cast<uint64_t>(MS_PER_SEC));
+    auto secMs = SafeMul(static_cast<uint64_t>(ts.tv_sec), static_cast<uint64_t>(MS_PER_SEC));
     if (!secMs.has_value()) {
         IAM_LOGE("System time overflow: tv_sec=%{public}" PRId64, static_cast<int64_t>(ts.tv_sec));
         return std::nullopt;
     }
 
     uint64_t ms = static_cast<uint64_t>(ts.tv_nsec) / static_cast<uint64_t>(NS_PER_MS);
-    auto totalMs = safe_add(secMs.value(), ms);
+    auto totalMs = SafeAdd(secMs.value(), ms);
     if (!totalMs.has_value()) {
         IAM_LOGE("System time overflow when adding nanoseconds");
         return std::nullopt;
@@ -70,14 +70,14 @@ std::optional<SteadyTimeMs> TimeKeeperImpl::GetSteadyTimeMs()
         return std::nullopt;
     }
 
-    auto secMs = safe_mul(static_cast<uint64_t>(ts.tv_sec), static_cast<uint64_t>(MS_PER_SEC));
+    auto secMs = SafeMul(static_cast<uint64_t>(ts.tv_sec), static_cast<uint64_t>(MS_PER_SEC));
     if (!secMs.has_value()) {
         IAM_LOGE("Steady time overflow: tv_sec=%{public}" PRId64, static_cast<int64_t>(ts.tv_sec));
         return std::nullopt;
     }
 
     uint64_t ms = static_cast<uint64_t>(ts.tv_nsec) / static_cast<uint64_t>(NS_PER_MS);
-    auto totalMs = safe_add(secMs.value(), ms);
+    auto totalMs = SafeAdd(secMs.value(), ms);
     if (!totalMs.has_value()) {
         IAM_LOGE("Steady time overflow when adding nanoseconds");
         return std::nullopt;
