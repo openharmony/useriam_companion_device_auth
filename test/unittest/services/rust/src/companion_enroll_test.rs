@@ -46,7 +46,7 @@ fn genereate_companion_init_key_negotiation_input_ffi() -> CompanionInitKeyNegot
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     }
 }
 
@@ -109,7 +109,7 @@ fn companion_enroll_request_prepare_test_wrong_input_type() {
     let wrong_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::default(),
+        sec_message: DataArray20000Ffi::default(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -137,7 +137,7 @@ fn companion_enroll_request_prepare_test_algorithm_not_supported() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
     };
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
 
@@ -167,7 +167,7 @@ fn companion_enroll_request_prepare_test_generate_key_pair_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
     };
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
 
@@ -216,7 +216,7 @@ fn companion_enroll_request_begin_test_get_key_pair_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -246,7 +246,7 @@ fn companion_enroll_request_begin_test_x25519_ecdh_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -277,7 +277,7 @@ fn companion_enroll_request_begin_test_hkdf_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -311,7 +311,7 @@ fn companion_enroll_request_begin_test_decrypt_sec_message_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -337,7 +337,7 @@ fn companion_enroll_request_begin_test_device_id_mismatch() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -364,7 +364,7 @@ fn companion_enroll_request_begin_test_user_id_mismatch() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -392,7 +392,7 @@ fn companion_enroll_request_begin_test_challenge_mismatch() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -432,7 +432,7 @@ fn companion_enroll_request_begin_test_encrypt_sec_message_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -466,7 +466,7 @@ fn companion_enroll_request_begin_test_generate_unique_binding_id_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -506,7 +506,7 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -550,7 +550,7 @@ fn companion_enroll_request_begin_test_add_host_device_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -595,7 +595,7 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
     let begin_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(sec_message).unwrap(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
@@ -620,7 +620,7 @@ fn companion_enroll_request_end_test_wrong_input_type() {
     let wrong_input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::default(),
+        sec_message: DataArray20000Ffi::default(),
     };
 
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();

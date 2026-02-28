@@ -2698,7 +2698,7 @@ fn companion_init_key_negotiation_test_success() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
+        sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
     let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
     let result = companion_init_key_negotiation(&input, &mut output);
@@ -2723,7 +2723,7 @@ fn companion_init_key_negotiation_test_request_new_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
     let result = companion_init_key_negotiation(&input, &mut output);
@@ -2746,7 +2746,7 @@ fn companion_init_key_negotiation_test_request_prepare_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
     let result = companion_init_key_negotiation(&input, &mut output);
@@ -2781,7 +2781,7 @@ fn companion_init_key_negotiation_test_add_request_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
+        sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
     let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
     let result = companion_init_key_negotiation(&input, &mut output);
@@ -2833,7 +2833,7 @@ fn companion_begin_add_host_binding_test_success() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let mut enroll_request = CompanionDeviceEnrollRequest::new(&init_input).unwrap();
     enroll_request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -2859,7 +2859,7 @@ fn companion_begin_add_host_binding_test_success() {
     let input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
+        sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
@@ -2883,7 +2883,7 @@ fn companion_begin_add_host_binding_test_get_request_fail() {
     let input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::default(),
+        sec_message: DataArray20000Ffi::default(),
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
@@ -2913,7 +2913,7 @@ fn companion_begin_add_host_binding_test_request_begin_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let enroll_request = CompanionDeviceEnrollRequest::new(&init_input).unwrap();
     RequestManagerRegistry::get_mut().add_request(Box::new(enroll_request)).unwrap();
@@ -2921,7 +2921,7 @@ fn companion_begin_add_host_binding_test_request_begin_fail() {
     let input = CompanionBeginAddHostBindingInputFfi {
         request_id: 1,
         secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::default(),
+        sec_message: DataArray20000Ffi::default(),
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
@@ -2966,7 +2966,7 @@ fn companion_end_add_host_binding_test_success() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let enroll_request = CompanionDeviceEnrollRequest::new(&init_input).unwrap();
 
@@ -3026,7 +3026,7 @@ fn companion_end_add_host_binding_test_request_end_fail() {
         capability_list: Uint16Array64Ffi::default(),
         companion_device_key: DeviceKeyFfi::default(),
         host_device_key: DeviceKeyFfi::default(),
-        sec_message: DataArray20000Ffi::default(),
+        sec_message: DataArray1024Ffi::default(),
     };
     let enroll_request = CompanionDeviceEnrollRequest::new(&init_input).unwrap();
 

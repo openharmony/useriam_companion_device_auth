@@ -810,7 +810,7 @@ pub struct CompanionInitKeyNegotiationInputFfi {
     pub capability_list: Uint16Array64Ffi,
     pub companion_device_key: DeviceKeyFfi,
     pub host_device_key: DeviceKeyFfi,
-    pub sec_message: DataArray20000Ffi, /* algorithm_list */
+    pub sec_message: DataArray1024Ffi, /* algorithm_list */
 }
 assert_max_size!(CompanionInitKeyNegotiationInputFfi);
 
@@ -829,7 +829,7 @@ assert_max_size!(CompanionInitKeyNegotiationOutputFfi);
 pub struct CompanionBeginAddHostBindingInputFfi {
     pub request_id: i32,
     pub secure_protocol_id: u16,
-    pub sec_message: DataArray1024Ffi, /* device_id, user_id, pub_key, salt, tag, iv, encrypt_data(challenge, device_id, user_id) */
+    pub sec_message: DataArray20000Ffi, /* device_id, user_id, pub_key, salt, tag, iv, encrypt_data(challenge, device_id, user_id) */
 }
 assert_max_size!(CompanionBeginAddHostBindingInputFfi);
 
