@@ -56,8 +56,9 @@ int32_t IpcTemplateStatusCallbackService::OnTemplateStatusChange(
 
         IAM_LOGI("deviceUserName:%{public}s, deviceModelInfo:%{public}s, deviceName:%{public}s, isOnline:%{public}d, "
                  "supportedBusinessIds size:%{public}zu",
-            templateStatus.deviceStatus.deviceUserName.c_str(), templateStatus.deviceStatus.deviceModelInfo.c_str(),
-            templateStatus.deviceStatus.deviceName.c_str(), templateStatus.deviceStatus.isOnline,
+            GET_MASKED_STR_CSTR(templateStatus.deviceStatus.deviceUserName),
+            GET_MASKED_STR_CSTR(templateStatus.deviceStatus.deviceModelInfo),
+            GET_MASKED_STR_CSTR(templateStatus.deviceStatus.deviceName), templateStatus.deviceStatus.isOnline,
             templateStatus.deviceStatus.supportedBusinessIds.size());
         ClientDeviceStatus clientDeviceStatus;
         clientDeviceStatus.deviceKey = clientDeviceKey;
@@ -68,9 +69,10 @@ int32_t IpcTemplateStatusCallbackService::OnTemplateStatusChange(
         clientDeviceStatus.supportedBusinessIds = templateStatus.deviceStatus.supportedBusinessIds;
 
         IAM_LOGI("templateId:%{public}s, isConfirmed:%{public}d, isValid:%{public}d, localUserId:%{public}d, "
-                 "addedTime:%{public}" PRId64 ", enabledBusinessIds size:%{public}zu",
+                 "addedTime:%{public}" PRId64 ", enabledBusinessIds:%{public}s",
             GET_MASKED_NUM_CSTR(templateStatus.templateId), templateStatus.isConfirmed, templateStatus.isValid,
-            templateStatus.localUserId, templateStatus.addedTime, templateStatus.enabledBusinessIds.size());
+            templateStatus.localUserId, templateStatus.addedTime,
+            GetVectorString(templateStatus.enabledBusinessIds).c_str());
         ClientTemplateStatus clientTemplateStatus;
         clientTemplateStatus.templateId = templateStatus.templateId;
         clientTemplateStatus.isConfirmed = templateStatus.isConfirmed;

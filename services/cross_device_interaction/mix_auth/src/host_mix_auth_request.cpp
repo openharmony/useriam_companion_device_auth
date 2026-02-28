@@ -37,6 +37,7 @@ HostMixAuthRequest::HostMixAuthRequest(const HostMixAuthParams &params, FwkResul
       hostUserId_(params.hostUserId),
       templateIdList_(params.templateIdList),
       tokenId_(params.tokenId),
+      businessId_(params.businessId),
       requestCallback_(std::move(requestCallback))
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateIdList_));
@@ -91,9 +92,22 @@ std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::v
         }
 
         TemplateId templateId = companionStatus->templateId;
-        if (std::find(templateIdList_.begin(), templateIdList_.end(), templateId) != templateIdList_.end()) {
-            result.push_back(templateId);
+        if (std::find(templateIdList_.begin(), templateIdList_.end(), templateId) == templateIdList_.end()) {
+            continue;
         }
+
+        bool businessIdOk = true;
+        if (businessId_.has_value()) {
+            const auto &enabledBusinessIds = companionStatus->enabledBusinessIds;
+            businessIdOk = std::find(enabledBusinessIds.begin(), enabledBusinessIds.end(), businessId_.value()) !=
+                enabledBusinessIds.end();
+        }
+        if (!businessIdOk) {
+            IAM_LOGE("%{public}s templateId:%{public}s business id not enabled", GetDescription(),
+                GET_MASKED_NUM_CSTR(templateId));
+            continue;
+        }
+        result.push_back(templateId);
     }
 
     return result;

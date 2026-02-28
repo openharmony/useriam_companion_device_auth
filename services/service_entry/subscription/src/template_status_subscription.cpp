@@ -136,6 +136,10 @@ void TemplateStatusSubscription::HandleCompanionStatusChange(const std::vector<C
     IAM_LOGI("NotifyTemplateStatus start, callback count:%{public}zu, template status count:%{public}zu",
         callbacks.size(), templateStatusList.size());
 
+    if (callbacks.empty()) {
+        return;
+    }
+
     TaskRunnerManager::GetInstance().PostTaskOnResident([callbacks = std::move(callbacks), templateStatusList]() {
         for (const auto &callback : callbacks) {
             ENSURE_OR_CONTINUE(callback != nullptr);

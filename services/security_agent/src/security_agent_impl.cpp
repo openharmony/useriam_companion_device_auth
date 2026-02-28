@@ -49,7 +49,7 @@ std::shared_ptr<ISecurityAgent> SecurityAgentImpl::Create()
 bool SecurityAgentImpl::Initialize()
 {
     auto &userIdManager = GetUserIdManager();
-    auto activeUserSubscription_ = userIdManager.SubscribeActiveUserId([this](UserId userId) {
+    activeUserSubscription_ = userIdManager.SubscribeActiveUserId([this](UserId userId) {
         auto result = SetActiveUser(SetActiveUserInput { userId });
         if (result != SUCCESS) {
             IAM_LOGE("failed to update active user %{public}d", result);

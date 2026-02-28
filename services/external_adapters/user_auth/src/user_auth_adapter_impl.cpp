@@ -87,7 +87,7 @@ private:
 };
 } // namespace
 
-uint64_t UserAuthAdapterImpl::BeginDelegateAuth(uint32_t userId, const std::vector<uint8_t> &challenge,
+uint64_t UserAuthAdapterImpl::BeginDelegateAuth(int32_t userId, const std::vector<uint8_t> &challenge,
     uint32_t authTrustLevel, AuthResultCallback callback)
 {
     if (!callback) {

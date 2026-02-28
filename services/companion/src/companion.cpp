@@ -71,6 +71,8 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
 
 Companion::~Companion()
 {
+    IAM_LOGI("%{public}s destroyed", GetDescription());
+    SetCompanionTokenAtl(std::nullopt);
 }
 
 bool Companion::Initialize()
