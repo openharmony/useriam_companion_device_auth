@@ -118,7 +118,7 @@ void PrintUint8ArrayStr(const char *prefix, const std::vector<uint8_t> &val)
         prefix = "";
     }
 
-    constexpr size_t maxLogLength = 3900;
+    constexpr size_t maxLogLength = 1900;
     std::string arrayStr = GetUint8ArrayStr(val);
     if (arrayStr.length() <= maxLogLength) {
         IAM_LOGI("%{public}s%{public}s", prefix, arrayStr.c_str());
