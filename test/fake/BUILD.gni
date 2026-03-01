@@ -29,3 +29,9 @@ companion_device_auth_fake_include_dirs = [
   "${companion_device_auth_fake_dir}/softbus",
   "${companion_device_auth_fake_dir}/system",
 ]
+
+# Test-only deps without Rust library - uses rust_ffi_stub.cpp instead
+companion_device_auth_service_deps_for_test = [
+  "${companion_device_auth_path}/common:companion_device_auth_common",
+  "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_stub",
+]

@@ -18,8 +18,6 @@ import("BUILD.gni")
 
 config("service_config") {
   include_dirs = companion_device_auth_service_include_dirs
-
-  cflags = companion_device_auth_service_flags
 }
 
 ohos_shared_library("companiondeviceauthservice") {
@@ -32,6 +30,7 @@ ohos_shared_library("companiondeviceauthservice") {
 
   configs = [ ":service_config" ]
 
+  cflags = companion_device_auth_service_flags
   deps = companion_device_auth_service_deps
   external_deps = companion_device_auth_service_external_deps
 
@@ -62,6 +61,7 @@ ohos_static_library("companion_device_auth_service_static") {
   public_configs = [
     ":service_config",
     "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
+    "${companion_device_auth_path}/common:companion_device_auth_common_config",
   ]
 
   # Add flag for static library compilation
