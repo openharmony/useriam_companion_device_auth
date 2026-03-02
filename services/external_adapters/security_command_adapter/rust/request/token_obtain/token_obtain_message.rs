@@ -54,7 +54,7 @@ impl SecPreObtainTokenRequest {
 
         let message_attribute = Attribute::try_from_bytes(message_data).map_err(|e| p!(e))?;
         let salt_slice = message_attribute.get_u8_slice(AttributeKey::AttrSalt).map_err(|e| p!(e))?;
-        let challenge = message_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
+        let challenge = message_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
         Ok(Box::new(Self {
             salt: salt_slice.try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
@@ -68,7 +68,7 @@ impl SecPreObtainTokenRequest {
         let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
         let mut attribute = Attribute::new();
         attribute.set_u8_slice(AttributeKey::AttrSalt, &self.salt);
-        attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+        attribute.set_u64(AttributeKey::AttrCompanionChallenge, self.challenge);
 
         let mut final_attribute = Attribute::new();
         final_attribute.set_u8_slice(message_type, attribute.to_bytes()?.as_slice());

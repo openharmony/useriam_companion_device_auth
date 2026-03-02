@@ -279,6 +279,9 @@ impl TryFrom<Vec<Event>> for EventArrayFfi {
     type Error = ErrorCode;
 
     fn try_from(value: Vec<Event>) -> core::result::Result<Self, ErrorCode> {
+        if value.len() > MAX_EVENT_NUM_FFI {
+            return Err(ErrorCode::BadParam);
+        }
         let mut data = [EventFfi::default(); MAX_EVENT_NUM_FFI];
         for (i, item) in value.iter().enumerate() {
             data[i] = item.clone().try_into().map_err(|e| p!(e))?;

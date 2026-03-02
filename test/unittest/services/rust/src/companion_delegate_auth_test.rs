@@ -46,7 +46,7 @@ fn companion_delegate_auth_request_new_test_success() {
     let request = result.unwrap();
     assert_eq!(request.get_request_id(), 1);
     assert_eq!(request.binding_id, 123);
-    assert_eq!(request.challenge, 0);
+    assert_eq!(request.host_challenge, 0);
     assert_eq!(request.atl, AuthTrustLevel::Atl2);
     assert_eq!(request.auth_type, 1);
     assert_eq!(request.salt, [0u8; HKDF_SALT_SIZE]);
@@ -150,13 +150,11 @@ fn parse_begin_sec_message_test_get_session_key_fail() {
     log_i!("parse_begin_sec_message_test_get_session_key_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut attr = Attribute::new();
-    attr.set_u64(AttributeKey::AttrChallenge, 0);
+    attr.set_u64(AttributeKey::AttrHostChallenge, 0);
     attr.set_i32(AttributeKey::AttrAuthTrustLevel, 30000);
 
     let sec_common_request = SecCommonRequest {
@@ -188,20 +186,16 @@ fn parse_begin_sec_message_test_decrypt_sec_message_fail() {
     log_i!("parse_begin_sec_message_test_decrypt_sec_message_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut attr = Attribute::new();
-    attr.set_u64(AttributeKey::AttrChallenge, 0);
+    attr.set_u64(AttributeKey::AttrHostChallenge, 0);
     attr.set_i32(AttributeKey::AttrAuthTrustLevel, 30000);
 
     let sec_common_request = SecCommonRequest {
@@ -233,16 +227,12 @@ fn parse_begin_sec_message_test_try_from_bytes_fail() {
     log_i!("parse_begin_sec_message_test_try_from_bytes_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let sec_common_request = SecCommonRequest {
@@ -274,16 +264,12 @@ fn parse_begin_sec_message_test_get_challenge_fail() {
     log_i!("parse_begin_sec_message_test_get_challenge_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut attr = Attribute::new();
@@ -318,20 +304,16 @@ fn parse_begin_sec_message_test_get_atl_fail() {
     log_i!("parse_begin_sec_message_test_get_atl_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut attr = Attribute::new();
-    attr.set_u64(AttributeKey::AttrChallenge, 0);
+    attr.set_u64(AttributeKey::AttrHostChallenge, 0);
 
     let sec_common_request = SecCommonRequest {
         salt: [0u8; HKDF_SALT_SIZE],
@@ -362,20 +344,16 @@ fn parse_begin_sec_message_test_atl_try_from_fail() {
     log_i!("parse_begin_sec_message_test_atl_try_from_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut attr = Attribute::new();
-    attr.set_u64(AttributeKey::AttrChallenge, 0);
+    attr.set_u64(AttributeKey::AttrHostChallenge, 0);
     attr.set_i32(AttributeKey::AttrAuthTrustLevel, 99999);
 
     let sec_common_request = SecCommonRequest {

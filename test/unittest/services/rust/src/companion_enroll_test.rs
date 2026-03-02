@@ -59,34 +59,28 @@ fn create_valid_binding_request(pub_key: &[u8], challenge: u64) -> Vec<u8> {
     let mut encrypt_attribute = Attribute::new();
     encrypt_attribute.set_string(AttributeKey::AttrDeviceId, "host_device".to_string());
     encrypt_attribute.set_i32(AttributeKey::AttrUserId, 100);
-    encrypt_attribute.set_u64(AttributeKey::AttrChallenge, challenge);
+    encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, challenge);
 
     let encrypt_data = encrypt_attribute.to_bytes().unwrap();
     let salt = [1u8; HKDF_SALT_SIZE];
     let tag = [2u8; AES_GCM_TAG_SIZE];
     let iv = [3u8; AES_GCM_IV_SIZE];
 
-    let request = SecBindingRequest { pub_key: pub_key.to_vec(), salt, tag, iv, encrypt_data };
+    let request = SecBindingRequest { pub_key: pub_key.to_vec(), challenge: 0, salt, tag, iv, encrypt_data };
     request.encode(DeviceType::Default).unwrap()
 }
 
 fn create_valid_issue_token_message(challenge: u64, atl: i32) -> Vec<u8> {
     let issue_token = SecIssueToken { challenge, atl, token: vec![1u8; TOKEN_KEY_LEN] };
-    issue_token
-        .encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], DeviceType::Default, &[])
-        .unwrap()
+    issue_token.encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], DeviceType::Default, &[]).unwrap()
 }
 
 fn mock_set_crypto_engine() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     mock_crypto_engine.expect_aes_gcm_encrypt().returning(|data, _| {
         Ok(AesGcmResult { ciphertext: data.to_vec(), authentication_tag: [0u8; AES_GCM_TAG_SIZE] })
     });
@@ -154,9 +148,7 @@ fn companion_enroll_request_prepare_test_generate_key_pair_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let sec_message = create_valid_key_nego_request();
@@ -232,9 +224,7 @@ fn companion_enroll_request_begin_test_x25519_ecdh_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
@@ -262,9 +252,7 @@ fn companion_enroll_request_begin_test_hkdf_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -293,13 +281,9 @@ fn companion_enroll_request_begin_test_decrypt_sec_message_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
@@ -386,7 +370,7 @@ fn companion_enroll_request_begin_test_challenge_mismatch() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 999);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -408,16 +392,10 @@ fn companion_enroll_request_begin_test_encrypt_sec_message_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
-    mock_crypto_engine
-        .expect_aes_gcm_encrypt()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
@@ -426,7 +404,7 @@ fn companion_enroll_request_begin_test_encrypt_sec_message_fail() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 0);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -449,9 +427,7 @@ fn companion_enroll_request_begin_test_generate_unique_binding_id_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_generate_unique_binding_id()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
@@ -460,7 +436,7 @@ fn companion_enroll_request_begin_test_generate_unique_binding_id_fail() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 0);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -483,15 +459,11 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_generate_unique_binding_id()
-        .returning(|| Ok(1));
+    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
-    mock_time_keeper
-        .expect_get_rtc_time()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
@@ -500,7 +472,7 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 0);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -523,15 +495,9 @@ fn companion_enroll_request_begin_test_add_host_device_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_generate_unique_binding_id()
-        .returning(|| Ok(1));
-    mock_companion_db_manager
-        .expect_get_device_by_device_key()
-        .returning(|| Err(ErrorCode::NotFound));
-    mock_companion_db_manager
-        .expect_add_device()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
+    mock_companion_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
@@ -544,7 +510,7 @@ fn companion_enroll_request_begin_test_add_host_device_fail() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 0);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -567,16 +533,10 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_generate_unique_binding_id()
-        .returning(|| Ok(1));
-    mock_companion_db_manager
-        .expect_get_device_by_device_key()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
+    mock_companion_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
     mock_companion_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_companion_db_manager
-        .expect_get_device_by_binding_id()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_get_device_by_binding_id().returning(|| Err(ErrorCode::NotFound));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
@@ -589,7 +549,7 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
     request.key_nego_param.host_device_key.device_id = "host_device".to_string();
     request.key_nego_param.host_device_key.user_id = 100;
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_binding_request(&create_mock_key_pair().pub_key, 0);
     let begin_input = CompanionBeginAddHostBindingInputFfi {
@@ -601,7 +561,7 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
     let mut output = crate::entry::companion_device_auth_ffi::CompanionBeginAddHostBindingOutputFfi::default();
     let param = RequestParam::CompanionEnrollBegin(&begin_input, &mut output);
     let result = request.begin(param);
-    assert_eq!(result, Err(ErrorCode::NotFound));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -639,7 +599,7 @@ fn companion_enroll_request_end_test_challenge_mismatch() {
     let input = genereate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
-    request.key_nego_param.challenge = 1;
+    request.key_nego_param.companion_challenge = 1;
 
     let sec_message = create_valid_issue_token_message(0, AuthTrustLevel::Atl2 as i32);
     let end_input = CompanionEndAddHostBindingInputFfi {
@@ -664,7 +624,7 @@ fn companion_enroll_request_end_test_atl_try_from_fail() {
     let input = genereate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_issue_token_message(0, 99999);
     let end_input = CompanionEndAddHostBindingInputFfi {
@@ -687,15 +647,13 @@ fn companion_enroll_request_end_test_store_token_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_write_device_token()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let input = genereate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
-    request.key_nego_param.challenge = 0;
+    request.key_nego_param.companion_challenge = 0;
 
     let sec_message = create_valid_issue_token_message(0, AuthTrustLevel::Atl2 as i32);
     let end_input = CompanionEndAddHostBindingInputFfi {

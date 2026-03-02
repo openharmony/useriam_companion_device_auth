@@ -75,6 +75,34 @@ impl SecPreIssueRequest {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct SecPreIssueReply {
+    pub challenge: u64,
+}
+
+impl SecPreIssueReply {
+    pub fn encode(&self, device_type: DeviceType) -> Result<Vec<u8>, ErrorCode> {
+        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+        let mut attribute = Attribute::new();
+        attribute.set_u64(AttributeKey::AttrCompanionChallenge, self.challenge);
+
+        let mut final_attribute = Attribute::new();
+        final_attribute.set_u8_slice(message_type, attribute.to_bytes()?.as_slice());
+        final_attribute.to_bytes()
+    }
+
+    pub fn decode(message: &[u8], device_type: DeviceType) -> Result<Box<Self>, ErrorCode> {
+        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+        let attribute = Attribute::try_from_bytes(message).map_err(|e| p!(e))?;
+        let message_data = attribute.get_u8_slice(message_type).map_err(|e| p!(e))?;
+
+        let message_attribute = Attribute::try_from_bytes(message_data).map_err(|e| p!(e))?;
+        let challenge = message_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
+
+        Ok(Box::new(Self { challenge }))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct SecIssueTokenReply {
     pub result: i32,
 }

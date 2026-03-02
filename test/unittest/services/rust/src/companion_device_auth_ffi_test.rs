@@ -127,9 +127,7 @@ fn invoke_rust_command_test_success() {
     log_i!("invoke_rust_command_test_success start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_generate_ed25519_key_pair()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_generate_ed25519_key_pair().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input_data = Box::new([1u8; size_of::<InitInputFfi>()]);
