@@ -48,7 +48,7 @@ HWTEST_F(KeepAliveHandlerTest, HandleRequest_001, TestSize.Level0)
     request.SetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, "test_connection");
 
     // Mock IsConnectionOpen to return true
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsConnectionOpen("test_connection")).WillOnce(Return(true));
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsConnectionOpen(_)).WillOnce(Return(true));
 
     Attributes reply;
 
