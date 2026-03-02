@@ -34,7 +34,7 @@ fn create_test_device_info(binding_id: i32, device_id: &str, user_id: i32) -> Ho
     }
 }
 
-fn create_test_sk_info(sk: Vec<u8>) -> HostDeviceSk {
+fn create_test_sk_info(_sk: Vec<u8>) -> HostDeviceSk {
     HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }
 }
 
@@ -296,9 +296,7 @@ fn default_companion_db_manager_remove_device_test_write_db_fail() {
 
     // Set up mock to fail on write
     let mut mock_storage_io_fail = MockStorageIo::new();
-    mock_storage_io_fail
-        .expect_write()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_storage_io_fail.expect_write().returning(|_, _| Err(ErrorCode::GeneralError));
     mock_storage_io_fail.expect_delete().returning(|| Ok(()));
     mock_storage_io_fail.expect_read().returning(|| Ok(Vec::new()));
     mock_storage_io_fail.expect_exists().returning(|| Ok(true));
@@ -405,9 +403,7 @@ fn default_companion_db_manager_update_device_test_write_db_fail() {
 
     // Set up mock to fail on write
     let mut mock_storage_io_fail = MockStorageIo::new();
-    mock_storage_io_fail
-        .expect_write()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_storage_io_fail.expect_write().returning(|_, _| Err(ErrorCode::GeneralError));
     mock_storage_io_fail.expect_delete().returning(|| Ok(()));
     mock_storage_io_fail.expect_read().returning(|| Ok(Vec::new()));
     mock_storage_io_fail.expect_exists().returning(|| Ok(true));
@@ -442,9 +438,7 @@ fn default_companion_db_manager_generate_unique_binding_id_test_crypto_fail() {
     log_i!("default_companion_db_manager_generate_unique_binding_id_test_crypto_fail start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_buf| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_buf| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let manager = DefaultCompanionDbManager::new();

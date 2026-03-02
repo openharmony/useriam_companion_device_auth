@@ -85,9 +85,7 @@ pub fn update_device_business_id(template_id: u64, business_ids: Vec<i32>) -> Re
 }
 
 pub fn get_session_key(template_id: u64, device_type: DeviceType, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {
-    let sk_infos = HostDbManagerRegistry::get_mut()
-        .read_device_sk(template_id)
-        .map_err(|e| p!(e))?;
+    let sk_infos = HostDbManagerRegistry::get_mut().read_device_sk(template_id).map_err(|e| p!(e))?;
     for sk_info in sk_infos {
         if sk_info.device_type == device_type {
             return CryptoEngineRegistry::get().hkdf(salt, &sk_info.sk).map_err(|e| p!(e));

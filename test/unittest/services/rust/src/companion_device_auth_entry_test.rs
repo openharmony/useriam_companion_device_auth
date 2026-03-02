@@ -58,9 +58,7 @@ fn handle_rust_command_test() {
     log_i!("handle_rust_command_test start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_generate_ed25519_key_pair()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_generate_ed25519_key_pair().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = [0u8; size_of::<InitInputFfi>()];

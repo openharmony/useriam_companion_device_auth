@@ -21,6 +21,7 @@ use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::{SecCommonRequest, SecIssueToken};
 use crate::request::token_obtain::token_obtain_message::{FwkObtainTokenRequest, SecPreObtainTokenRequest};
 use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
+use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::HostTokenInfo;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
@@ -29,7 +30,7 @@ use crate::{log_e, log_i, p, Box, Vec};
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObtainParam {
     pub salt: [u8; HKDF_SALT_SIZE],
-    pub challenge: u64,
+    pub host_challenge: u64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -39,18 +40,26 @@ pub struct CompanionDeviceObtainTokenRequest {
     pub secure_protocol_id: u16,
     pub obtain_param: ObtainParam,
     pub token: Vec<u8>,
+    pub companion_challenge: u64,
     pub atl: AuthTrustLevel,
     pub session_key: Vec<u8>,
 }
 
 impl CompanionDeviceObtainTokenRequest {
     pub fn new(input: &CompanionBeginObtainTokenInputFfi) -> Result<Self, ErrorCode> {
+        let mut challenge = [0u8; CHALLENGE_LEN];
+        CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
+            log_e!("secure_random challenge fail");
+            ErrorCode::GeneralError
+        })?;
+
         Ok(CompanionDeviceObtainTokenRequest {
             request_id: input.request_id,
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
-            obtain_param: ObtainParam { salt: [0u8; HKDF_SALT_SIZE], challenge: 0 },
+            obtain_param: ObtainParam { salt: [0u8; HKDF_SALT_SIZE], host_challenge: 0 },
             token: Vec::new(),
+            companion_challenge: u64::from_ne_bytes(challenge),
             atl: AuthTrustLevel::Atl0,
             session_key: Vec::new(),
         })
@@ -80,26 +89,11 @@ impl CompanionDeviceObtainTokenRequest {
         Ok(())
     }
 
-    fn decode_sec_token_pre_obtaion_request_message(
-        &mut self,
-        device_type: DeviceType,
-        sec_message: &[u8],
-    ) -> Result<(), ErrorCode> {
+    fn decode_sec_token_pre_obtaion_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
+        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecPreObtainTokenRequest::decode(sec_message, device_type)?;
         self.obtain_param.salt = output.salt;
-        self.obtain_param.challenge = output.challenge;
-        Ok(())
-    }
-
-    fn decode_sec_token_pre_obtaion_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        if let Err(e) = self.decode_sec_token_pre_obtaion_request_message(
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
-            sec_message,
-        ) {
-            log_e!("parse obtain token request message fail: {:?}", e);
-            return Err(ErrorCode::GeneralError);
-        }
-
+        self.obtain_param.host_challenge = output.challenge;
         Ok(())
     }
 
@@ -107,7 +101,7 @@ impl CompanionDeviceObtainTokenRequest {
         self.session_key = companion_db_helper::get_session_key(self.binding_id, &self.obtain_param.salt)?;
 
         let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.obtain_param.challenge);
+        encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.obtain_param.host_challenge);
         encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, self.atl as i32);
 
         let (encrypt_data, tag, iv) =
@@ -120,14 +114,11 @@ impl CompanionDeviceObtainTokenRequest {
         Ok(output)
     }
 
-    fn parse_obtain_token_reply_message(
-        &mut self,
-        device_type: DeviceType,
-        sec_message: &[u8],
-    ) -> Result<(), ErrorCode> {
+    fn parse_obtain_token_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
+        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
 
-        if issue_token.challenge != self.obtain_param.challenge {
+        if issue_token.challenge != self.obtain_param.host_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }
@@ -137,18 +128,6 @@ impl CompanionDeviceObtainTokenRequest {
             log_e!("Invalid ATL value: {}", issue_token.atl);
             ErrorCode::GeneralError
         })?;
-
-        Ok(())
-    }
-
-    fn parse_obtain_token_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        if let Err(e) = self.parse_obtain_token_reply_message(
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
-            sec_message,
-        ) {
-            log_e!("parse obtain token reply message fail: {:?}", e);
-            return Err(ErrorCode::GeneralError);
-        }
 
         Ok(())
     }

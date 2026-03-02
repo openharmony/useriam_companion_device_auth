@@ -40,8 +40,6 @@ pub fn update_host_device_last_used_time(binding_id: i32) -> Result<(), ErrorCod
 }
 
 pub fn get_session_key(binding_id: i32, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {
-    let sk = CompanionDbManagerRegistry::get_mut()
-        .read_device_sk(binding_id)
-        .map_err(|e| p!(e))?;
+    let sk = CompanionDbManagerRegistry::get_mut().read_device_sk(binding_id).map_err(|e| p!(e))?;
     CryptoEngineRegistry::get().hkdf(salt, &sk.sk).map_err(|e| p!(e))
 }

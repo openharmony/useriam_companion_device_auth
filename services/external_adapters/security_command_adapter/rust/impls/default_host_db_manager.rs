@@ -53,9 +53,7 @@ impl DefaultHostDbManager {
     }
 
     fn get_device_index_by_template_id(&self, template_id: u64) -> Option<usize> {
-        self.companion_device_infos
-            .iter()
-            .position(|device_info| template_id == device_info.template_id)
+        self.companion_device_infos.iter().position(|device_info| template_id == device_info.template_id)
     }
 
     fn get_token_index_by_template_info(&self, template_id: u64, device_type: DeviceType) -> Option<usize> {
@@ -278,9 +276,7 @@ impl DefaultHostDbManager {
         log_i!("write_device_db start");
         let mut parcel = Parcel::new();
         self.serialize_device_db(&mut parcel);
-        StorageIoRegistry::get()
-            .write(HOST_DEVICE_DB, parcel.as_slice())
-            .map_err(|e| p!(e))?;
+        StorageIoRegistry::get().write(HOST_DEVICE_DB, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 
@@ -340,11 +336,7 @@ impl HostDbManager for DefaultHostDbManager {
             return result;
         }
         log_e!("write_device_db fail");
-        if let Some(index) = self
-            .companion_device_infos
-            .iter()
-            .position(|d| d.template_id == device_info.template_id)
-        {
+        if let Some(index) = self.companion_device_infos.iter().position(|d| d.template_id == device_info.template_id) {
             self.companion_device_infos.remove(index);
         }
         result
@@ -362,11 +354,7 @@ impl HostDbManager for DefaultHostDbManager {
 
     fn get_device_list(&self, filter: CompanionDeviceFilter) -> Vec<CompanionDeviceInfo> {
         log_i!("get_device_list start");
-        self.companion_device_infos
-            .iter()
-            .filter(|device_info| filter(device_info))
-            .cloned()
-            .collect()
+        self.companion_device_infos.iter().filter(|device_info| filter(device_info)).cloned().collect()
     }
 
     fn remove_device(&mut self, template_id: u64) -> Result<CompanionDeviceInfo, ErrorCode> {
@@ -379,7 +367,7 @@ impl HostDbManager for DefaultHostDbManager {
                 device
             })
             .ok_or_else(|| {
-                log_i!("No device matching filter found for removal");
+                log_i!("No device matching filter found for remove");
                 ErrorCode::NotFound
             })?;
         if let Err(err) = self.write_device_db() {
@@ -388,8 +376,7 @@ impl HostDbManager for DefaultHostDbManager {
             return Err(err);
         }
         self.remove_device_extra_file(device_info.template_id);
-        self.companion_token_infos
-            .retain(|token| token.template_id != device_info.template_id);
+        self.companion_token_infos.retain(|token| token.template_id != device_info.template_id);
         Ok(device_info)
     }
 
@@ -467,7 +454,7 @@ impl HostDbManager for DefaultHostDbManager {
             })
             .ok_or_else(|| {
                 log_i!(
-                    "Token not found for removal, template_id: {:x}, device_type: {:?}",
+                    "Token not found for remove, template_id: {:x}, device_type: {:?}",
                     template_id as u16,
                     device_type
                 );
@@ -530,9 +517,7 @@ impl HostDbManager for DefaultHostDbManager {
         let filename = format!("{:x}_{}", template_id, HOST_DEVICE_BASE_INFO);
         let mut parcel = Parcel::new();
         Self::serialize_device_base_info(base_info, &mut parcel);
-        StorageIoRegistry::get()
-            .write(&filename, parcel.as_slice())
-            .map_err(|e| p!(e))?;
+        StorageIoRegistry::get().write(&filename, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 
@@ -565,9 +550,7 @@ impl HostDbManager for DefaultHostDbManager {
         let filename = format!("{:x}_{}", template_id, HOST_DEVICE_CAPABILTY_INFO);
         let mut parcel = Parcel::new();
         Self::serialize_device_capability_info(capability_info, &mut parcel);
-        StorageIoRegistry::get()
-            .write(&filename, parcel.as_slice())
-            .map_err(|e| p!(e))?;
+        StorageIoRegistry::get().write(&filename, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 
@@ -596,9 +579,7 @@ impl HostDbManager for DefaultHostDbManager {
         let filename = format!("{:x}_{}", template_id, HOST_DEVICE_SK);
         let mut parcel = Parcel::new();
         Self::serialize_device_sk(sk_info, &mut parcel);
-        StorageIoRegistry::get()
-            .write(&filename, parcel.as_slice())
-            .map_err(|e| p!(e))?;
+        StorageIoRegistry::get().write(&filename, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 

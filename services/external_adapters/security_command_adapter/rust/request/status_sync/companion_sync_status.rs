@@ -26,7 +26,7 @@ use crate::{log_e, log_i, p, Box, Vec};
 pub struct CompanionDeviceSyncStatusRequest {
     pub binding_id: i32,
     pub secure_protocol_id: u16,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub salt: Vec<u8>,
     pub expected_protocol_list: Vec<u16>,
     pub expected_capability_list: Vec<u16>,
@@ -52,11 +52,7 @@ impl CompanionDeviceSyncStatusRequest {
         // Validate that SA's protocol_list is a subset of TA's SUPPORTED_PROTOCOL_VERSIONS
         for protocol in &protocol_list {
             if !SUPPORTED_PROTOCOL_VERSIONS.contains(protocol) {
-                log_e!(
-                    "protocol {} is not supported by TA, supported: {:?}",
-                    protocol,
-                    SUPPORTED_PROTOCOL_VERSIONS
-                );
+                log_e!("protocol {} is not supported by TA, supported: {:?}", protocol, SUPPORTED_PROTOCOL_VERSIONS);
                 return Err(ErrorCode::GeneralError);
             }
         }
@@ -64,7 +60,7 @@ impl CompanionDeviceSyncStatusRequest {
         Ok(CompanionDeviceSyncStatusRequest {
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
-            challenge: input.challenge,
+            host_challenge: input.challenge,
             salt: input.salt.data[..input.salt.len as usize].to_vec(),
             expected_protocol_list: protocol_list,
             expected_capability_list: capability_list,
@@ -73,7 +69,7 @@ impl CompanionDeviceSyncStatusRequest {
 
     fn encode_sec_status_sync_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+        encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
         encrypt_attribute.set_u16_slice(AttributeKey::AttrProtocolList, &self.expected_protocol_list);
         encrypt_attribute.set_u16_slice(AttributeKey::AttrCapabilityList, &self.expected_capability_list);
 

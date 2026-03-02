@@ -39,7 +39,7 @@ use token_helper::DeviceTokenInfo;
 pub struct KeyNegotialParam {
     pub device_type: DeviceType,
     pub algorithm: u16,
-    pub challenge: u64,
+    pub companion_challenge: u64,
     pub key_pair: Option<KeyPair>,
     pub sk: Vec<u8>, /* host pub_key or sk */
 }
@@ -67,6 +67,7 @@ pub struct HostDeviceEnrollRequest {
     pub device_capability: Vec<DeviceCapability>,
     pub token_infos: Vec<DeviceTokenInfo>,
     pub salt: [u8; HKDF_SALT_SIZE],
+    pub host_challenge: u64,
     pub acl: AuthCapabilityLevel,
     pub atl: AuthTrustLevel,
     pub expected_protocol_list: Vec<u16>,
@@ -77,7 +78,13 @@ impl HostDeviceEnrollRequest {
     pub fn new(input: &HostGetInitKeyNegotiationInputFfi) -> Result<Self, ErrorCode> {
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
+            ErrorCode::GeneralError
+        })?;
+
+        let mut challenge = [0u8; CHALLENGE_LEN];
+        CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
 
@@ -92,6 +99,7 @@ impl HostDeviceEnrollRequest {
             key_negotial_param: Vec::new(),
             device_capability: Vec::new(),
             token_infos: Vec::new(),
+            host_challenge: u64::from_ne_bytes(challenge),
             salt,
             acl: AuthCapabilityLevel::Acl0,
             atl: AuthTrustLevel::Atl0,
@@ -112,6 +120,23 @@ impl HostDeviceEnrollRequest {
         }
         log_e!("get_aes_gcm_param fail");
         Err(ErrorCode::GeneralError)
+    }
+
+    fn update_aes_gcm_param(
+        &mut self,
+        device_type: DeviceType,
+        key_nego_param: &KeyNegotialParam,
+    ) -> Result<(), ErrorCode> {
+        let index = self
+            .key_negotial_param
+            .iter()
+            .position(|key_nego_param| device_type == key_nego_param.device_type)
+            .ok_or_else(|| {
+                log_e!("no device_type matching");
+                ErrorCode::NotFound
+            })?;
+        self.key_negotial_param[index] = key_nego_param.clone();
+        Ok(())
     }
 
     fn encode_sec_algo_nego_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
@@ -147,16 +172,14 @@ impl HostDeviceEnrollRequest {
     ) -> Result<(), ErrorCode> {
         let output = SecKeyNegoReply::decode(sec_message, device_type)?;
         let key_pair = CryptoEngineRegistry::get().generate_x25519_key_pair().map_err(|e| p!(e))?;
-        let sk = CryptoEngineRegistry::get()
-            .x25519_ecdh(&key_pair, &output.pub_key)
-            .map_err(|e| {
-                log_e!("x25519 computation failed for {:?}: {:?}", device_type, e);
-                ErrorCode::GeneralError
-            })?;
+        let sk = CryptoEngineRegistry::get().x25519_ecdh(&key_pair, &output.pub_key).map_err(|e| {
+            log_e!("x25519 computation failed for {:?}: {:?}", device_type, e);
+            ErrorCode::GeneralError
+        })?;
         let key_nego_param = KeyNegotialParam {
             device_type,
             algorithm: output.algorithm,
-            challenge: output.challenge,
+            companion_challenge: output.challenge,
             key_pair: Some(key_pair.clone()),
             sk,
         };
@@ -193,21 +216,20 @@ impl HostDeviceEnrollRequest {
                 log_e!("x25519 key pair not set");
                 return Err(ErrorCode::GeneralError);
             };
-            let session_key = CryptoEngineRegistry::get()
-                .hkdf(&self.salt, &key_nego_param.sk)
-                .map_err(|e| p!(e))?;
+            let session_key = CryptoEngineRegistry::get().hkdf(&self.salt, &key_nego_param.sk).map_err(|e| p!(e))?;
 
             let mut encrypt_attribute = Attribute::new();
             encrypt_attribute
                 .set_string(AttributeKey::AttrDeviceId, self.enroll_param.host_device_key.device_id.clone());
             encrypt_attribute.set_i32(AttributeKey::AttrUserId, self.enroll_param.host_device_key.user_id);
-            encrypt_attribute.set_u64(AttributeKey::AttrChallenge, key_nego_param.challenge);
+            encrypt_attribute.set_u64(AttributeKey::AttrCompanionChallenge, key_nego_param.companion_challenge);
             let (encrypt_data, tag, iv) =
                 message_crypto::encrypt_sec_message(encrypt_attribute.to_bytes()?.as_slice(), &session_key)
                     .map_err(|e| p!(e))?;
 
             let binding_request = Box::new(SecBindingRequest {
                 pub_key: key_pair.pub_key.clone(),
+                challenge: self.host_challenge,
                 salt: self.salt,
                 tag,
                 iv,
@@ -227,14 +249,17 @@ impl HostDeviceEnrollRequest {
     ) -> Result<(), ErrorCode> {
         let output = SecBindingReply::decode(sec_message, device_type)?;
 
-        let key_nego_param = self.get_aes_gcm_param(device_type).map_err(|e| p!(e))?;
-        let session_key = CryptoEngineRegistry::get()
-            .hkdf(&self.salt, &key_nego_param.sk)
-            .map_err(|e| p!(e))?;
+        let mut key_nego_param = self.get_aes_gcm_param(device_type).map_err(|e| p!(e))?;
+        let session_key = CryptoEngineRegistry::get().hkdf(&self.salt, &key_nego_param.sk).map_err(|e| p!(e))?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
         let reply_info = SecBindingReplyInfo::decode(&decrypt_data)?;
+
+        if self.host_challenge != reply_info.challenge {
+            log_e!("challenge check fail, {}, {}", self.host_challenge, reply_info.challenge);
+            return Err(ErrorCode::GeneralError);
+        }
 
         if self.enroll_param.companion_device_key.device_id != reply_info.device_id {
             log_e!(
@@ -268,6 +293,9 @@ impl HostDeviceEnrollRequest {
             return Err(ErrorCode::GeneralError);
         }
 
+        key_nego_param.companion_challenge = output.challenge;
+        self.update_aes_gcm_param(device_type, &key_nego_param)?;
+
         let esl = ExecutorSecurityLevel::try_from(reply_info.esl).map_err(|e| p!(e))?;
         let device_capability = DeviceCapability {
             device_type,
@@ -275,8 +303,7 @@ impl HostDeviceEnrollRequest {
             track_ability_level: TrackAbilityLevel::try_from(reply_info.track_ability_level).map_err(|e| p!(e))?,
         };
         self.device_capability.push(device_capability);
-        self.token_infos
-            .push(token_helper::generate_token(device_type, reply_info.challenge, self.atl)?);
+        self.token_infos.push(token_helper::generate_token(device_type, reply_info.challenge, self.atl)?);
 
         let acl = match esl {
             ExecutorSecurityLevel::Esl0 => AuthCapabilityLevel::Acl0,

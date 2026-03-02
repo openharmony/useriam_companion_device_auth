@@ -16,22 +16,18 @@
 use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::CompanionPreIssueTokenInputFfi;
 use crate::jobs::companion_db_helper;
-use crate::jobs::message_crypto;
-use crate::request::jobs::common_message::{SecCommonReply, SecIssueToken};
-use crate::request::token_issue::token_issue_message::SecIssueTokenReply;
-use crate::request::token_issue::token_issue_message::SecPreIssueRequest;
+use crate::request::jobs::common_message::SecIssueToken;
+use crate::request::token_issue::token_issue_message::{SecIssueTokenReply, SecPreIssueReply, SecPreIssueRequest};
 use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::HostTokenInfo;
 use crate::traits::request_manager::{Request, RequestParam};
-
-use crate::utils::{Attribute, AttributeKey};
-use crate::{log_e, log_i, p, Box, Vec};
+use crate::{log_e, log_i, Box, Vec};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PreIssueParam {
     pub salt: [u8; HKDF_SALT_SIZE],
-    pub challenge: u64,
+    pub companion_challenge: u64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -54,7 +50,7 @@ impl CompanionDeviceIssueTokenRequest {
     pub fn new(input: &CompanionPreIssueTokenInputFfi) -> Result<Self, ErrorCode> {
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
 
@@ -62,7 +58,10 @@ impl CompanionDeviceIssueTokenRequest {
             request_id: input.request_id,
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
-            pre_issue_param: PreIssueParam { salt: [0u8; HKDF_SALT_SIZE], challenge: u64::from_ne_bytes(challenge) },
+            pre_issue_param: PreIssueParam {
+                salt: [0u8; HKDF_SALT_SIZE],
+                companion_challenge: u64::from_ne_bytes(challenge),
+            },
             token_info: TokenInfo { token: Vec::new(), atl: AuthTrustLevel::Atl0 },
             session_key: Vec::new(),
         })
@@ -72,52 +71,26 @@ impl CompanionDeviceIssueTokenRequest {
         self.request_id
     }
 
-    fn decode_sec_token_pre_issue_request_message(
-        &mut self,
-        device_type: DeviceType,
-        sec_message: &[u8],
-    ) -> Result<(), ErrorCode> {
+    fn decode_sec_token_pre_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
+        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecPreIssueRequest::decode(sec_message, device_type)?;
         self.pre_issue_param.salt = output.salt;
         Ok(())
     }
 
-    fn decode_sec_token_pre_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        if let Err(e) = self.decode_sec_token_pre_issue_request_message(
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
-            sec_message,
-        ) {
-            log_e!("parse pre-issue request message fail: {:?}", e);
-            return Err(ErrorCode::GeneralError);
-        }
-
-        Ok(())
-    }
-
     fn encode_sec_token_pre_issue_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         self.session_key = companion_db_helper::get_session_key(self.binding_id, &self.pre_issue_param.salt)?;
-
-        let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.pre_issue_param.challenge);
-
-        let (encrypt_data, tag, iv) =
-            message_crypto::encrypt_sec_message(encrypt_attribute.to_bytes()?.as_slice(), &self.session_key)
-                .map_err(|e| p!(e))?;
-
-        let sec_pre_issue_reply = Box::new(SecCommonReply { tag, iv, encrypt_data });
+        let sec_pre_issue_reply = Box::new(SecPreIssueReply { challenge: self.pre_issue_param.companion_challenge });
         let output =
             sec_pre_issue_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
-    fn decode_sec_token_issue_request_message(
-        &mut self,
-        device_type: DeviceType,
-        sec_message: &[u8],
-    ) -> Result<(), ErrorCode> {
+    fn decode_sec_token_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
+        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
 
-        if issue_token.challenge != self.pre_issue_param.challenge {
+        if issue_token.challenge != self.pre_issue_param.companion_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }
@@ -132,20 +105,8 @@ impl CompanionDeviceIssueTokenRequest {
         Ok(())
     }
 
-    fn decode_sec_token_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        if let Err(e) = self.decode_sec_token_issue_request_message(
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
-            sec_message,
-        ) {
-            log_e!("parse issue token request message fail: {:?}", e);
-            return Err(ErrorCode::GeneralError);
-        }
-
-        Ok(())
-    }
-
     fn encode_sec_token_issue_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        let issue_token_reply = Box::new(SecIssueTokenReply { result: 0 });
+        let issue_token_reply = Box::new(SecIssueTokenReply { result: ErrorCode::Success as i32 });
         let output =
             issue_token_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)

@@ -36,18 +36,14 @@ fn create_valid_pre_issue_request(salt: &[u8; HKDF_SALT_SIZE]) -> Vec<u8> {
 
 fn create_valid_issue_token_message(challenge: u64, atl: i32, session_key: &[u8]) -> Vec<u8> {
     let issue_token = SecIssueToken { challenge, atl, token: vec![1u8; TOKEN_KEY_LEN] };
-    issue_token
-        .encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], DeviceType::Default, session_key)
-        .unwrap()
+    issue_token.encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], DeviceType::Default, session_key).unwrap()
 }
 
 fn mock_set_crypto_engine() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     mock_crypto_engine.expect_aes_gcm_encrypt().returning(|data, _| {
         Ok(AesGcmResult { ciphertext: data.to_vec(), authentication_tag: [0u8; AES_GCM_TAG_SIZE] })
     });
@@ -138,9 +134,7 @@ fn companion_issue_token_request_begin_test_get_session_key_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let salt = [1u8; HKDF_SALT_SIZE];
@@ -171,45 +165,7 @@ fn companion_issue_token_request_begin_test_hkdf_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
-
-    let salt = [1u8; HKDF_SALT_SIZE];
-    let sec_message = create_valid_pre_issue_request(&salt);
-
-    let input = CompanionPreIssueTokenInputFfi {
-        request_id: 1,
-        binding_id: 123,
-        secure_protocol_id: 1,
-        sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
-    };
-    let mut request = CompanionDeviceIssueTokenRequest::new(&input).unwrap();
-
-    let mut output = crate::entry::companion_device_auth_ffi::CompanionPreIssueTokenOutputFfi::default();
-    let param = RequestParam::CompanionIssueTokenBegin(&input, &mut output);
-    let result = request.begin(param);
-    assert_eq!(result, Err(ErrorCode::GeneralError));
-}
-
-#[test]
-fn companion_issue_token_request_begin_test_aes_gcm_encrypt_fail() {
-    let _guard = ut_registry_guard!();
-    log_i!("companion_issue_token_request_begin_test_aes_gcm_encrypt_fail start");
-
-    let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_encrypt()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
-    CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
-
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let salt = [1u8; HKDF_SALT_SIZE];
@@ -268,7 +224,7 @@ fn companion_issue_token_request_end_test_challenge_mismatch() {
     };
 
     let mut request = CompanionDeviceIssueTokenRequest::new(&input).unwrap();
-    request.pre_issue_param.challenge = 999;
+    request.pre_issue_param.companion_challenge = 999;
 
     let sec_message = create_valid_issue_token_message(0, AuthTrustLevel::Atl3 as i32, &request.session_key);
     let end_input = CompanionProcessIssueTokenInputFfi {
@@ -298,7 +254,7 @@ fn companion_issue_token_request_end_test_atl_try_from_fail() {
     };
 
     let mut request = CompanionDeviceIssueTokenRequest::new(&input).unwrap();
-    request.pre_issue_param.challenge = 0;
+    request.pre_issue_param.companion_challenge = 0;
 
     let sec_message = create_valid_issue_token_message(0, 99999, &request.session_key);
     let end_input = CompanionProcessIssueTokenInputFfi {
@@ -321,9 +277,7 @@ fn companion_issue_token_request_end_test_store_token_fail() {
     mock_set_crypto_engine();
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_write_device_token()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let input = CompanionPreIssueTokenInputFfi {
@@ -334,7 +288,7 @@ fn companion_issue_token_request_end_test_store_token_fail() {
     };
 
     let mut request = CompanionDeviceIssueTokenRequest::new(&input).unwrap();
-    request.pre_issue_param.challenge = 0;
+    request.pre_issue_param.companion_challenge = 0;
 
     let sec_message = create_valid_issue_token_message(0, AuthTrustLevel::Atl3 as i32, &request.session_key);
     let end_input = CompanionProcessIssueTokenInputFfi {

@@ -17,16 +17,16 @@ use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::HostPreIssueTokenInputFfi;
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
 use crate::jobs::host_db_helper;
-use crate::jobs::message_crypto;
-use crate::request::jobs::common_message::{SecCommonReply, SecIssueToken};
+use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
 use crate::request::jobs::token_helper::DeviceTokenInfo;
-use crate::request::token_issue::token_issue_message::{FwkIssueTokenRequest, SecIssueTokenReply, SecPreIssueRequest};
+use crate::request::token_issue::token_issue_message::{
+    FwkIssueTokenRequest, SecIssueTokenReply, SecPreIssueReply, SecPreIssueRequest,
+};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
-use crate::utils::{Attribute, AttributeKey};
-use crate::{log_e, log_i, p, Box, Vec};
+use crate::{log_e, log_i, Box, Vec};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TokenIssueParam {
@@ -43,18 +43,15 @@ pub struct HostDeviceIssueTokenRequest {
 }
 
 impl HostDeviceIssueTokenRequest {
-    pub fn new(issue_token_param: &HostPreIssueTokenInputFfi) -> Result<Self, ErrorCode> {
+    pub fn new(input: &HostPreIssueTokenInputFfi) -> Result<Self, ErrorCode> {
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
             ErrorCode::GeneralError
         })?;
 
         Ok(HostDeviceIssueTokenRequest {
-            token_issue_param: TokenIssueParam {
-                request_id: issue_token_param.request_id,
-                template_id: issue_token_param.template_id,
-            },
+            token_issue_param: TokenIssueParam { request_id: input.request_id, template_id: input.template_id },
             token_infos: Vec::new(),
             salt,
             atl: AuthTrustLevel::Atl0,
@@ -105,16 +102,8 @@ impl HostDeviceIssueTokenRequest {
         device_type: DeviceType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonReply::decode(sec_message, device_type)?;
-
-        let session_key = host_db_helper::get_session_key(self.token_issue_param.template_id, device_type, &self.salt)?;
-        let decrypt_data =
-            message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
-                .map_err(|e| p!(e))?;
-        let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
-        self.token_infos
-            .push(token_helper::generate_token(device_type, challenge, self.atl)?);
+        let output = SecPreIssueReply::decode(sec_message, device_type)?;
+        self.token_infos.push(token_helper::generate_token(device_type, output.challenge, self.atl)?);
         Ok(())
     }
 
@@ -167,7 +156,7 @@ impl HostDeviceIssueTokenRequest {
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
         let output = SecIssueTokenReply::decode(sec_message, device_type)?;
-        if output.result != 0 {
+        if output.result != ErrorCode::Success as i32 {
             log_e!("issue token returned error: {}", output.result);
             return Err(ErrorCode::GeneralError);
         }
@@ -188,6 +177,10 @@ impl HostDeviceIssueTokenRequest {
     }
 
     fn store_token(&self) -> Result<(), ErrorCode> {
+        if self.token_infos.is_empty() {
+            log_e!("token info is null");
+            return Err(ErrorCode::GeneralError);
+        }
         token_helper::add_companion_device_token(self.token_issue_param.template_id, &self.token_infos)?;
         Ok(())
     }

@@ -69,7 +69,8 @@ fn create_valid_binding_reply(
     };
 
     let encrypt_data = reply_info.encode().unwrap();
-    let reply = SecBindingReply { tag: [2u8; AES_GCM_TAG_SIZE], iv: [3u8; AES_GCM_IV_SIZE], encrypt_data };
+    let reply =
+        SecBindingReply { challenge: 0, tag: [2u8; AES_GCM_TAG_SIZE], iv: [3u8; AES_GCM_IV_SIZE], encrypt_data };
     reply.encode(DeviceType::Default).unwrap()
 }
 
@@ -77,7 +78,7 @@ fn create_key_negotial_param() -> KeyNegotialParam {
     KeyNegotialParam {
         device_type: DeviceType::Default,
         algorithm: AlgoType::X25519 as u16,
-        challenge: 0,
+        companion_challenge: 0,
         key_pair: Some(create_mock_key_pair()),
         sk: vec![1u8; 32],
     }
@@ -91,12 +92,8 @@ fn mock_set_crypto_engine() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 }
 
@@ -108,12 +105,8 @@ fn mock_set_time_keeper() {
 
 fn mock_set_misc_manager() {
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_fwk_pub_key()
-        .returning(|| Ok(create_mock_key_pair().pub_key.clone()));
-    mock_misc_manager
-        .expect_get_local_key_pair()
-        .returning(|| Ok(create_mock_key_pair()));
+    mock_misc_manager.expect_get_fwk_pub_key().returning(|| Ok(create_mock_key_pair().pub_key.clone()));
+    mock_misc_manager.expect_get_local_key_pair().returning(|| Ok(create_mock_key_pair()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 }
 
@@ -183,16 +176,10 @@ fn host_enroll_request_begin_test_wrong_input_type() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Ok(create_mock_key_pair()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Ok(create_mock_key_pair()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
     mock_crypto_engine
         .expect_aes_gcm_encrypt()
@@ -230,9 +217,7 @@ fn host_enroll_request_begin_test_schedule_id_mismatch() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -266,9 +251,7 @@ fn host_enroll_request_begin_test_atl_try_from_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -302,9 +285,7 @@ fn host_enroll_request_begin_test_secure_protocol_id_try_from_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -338,9 +319,7 @@ fn host_enroll_request_begin_test_secure_protocol_id_invalid() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -374,9 +353,7 @@ fn host_enroll_request_begin_test_sec_message_decode_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -410,13 +387,9 @@ fn host_enroll_request_begin_test_generate_key_pair_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -451,16 +424,10 @@ fn host_enroll_request_begin_test_x25519_ecdh_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Ok(create_mock_key_pair()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Ok(create_mock_key_pair()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -495,16 +462,10 @@ fn host_enroll_request_begin_test_hkdf_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Ok(create_mock_key_pair()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Ok(create_mock_key_pair()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -540,20 +501,12 @@ fn host_enroll_request_begin_test_encrypt_sec_message_fail() {
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
-    mock_crypto_engine
-        .expect_generate_x25519_key_pair()
-        .returning(|| Ok(create_mock_key_pair()));
-    mock_crypto_engine
-        .expect_x25519_ecdh()
-        .returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_generate_x25519_key_pair().returning(|| Ok(create_mock_key_pair()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_encrypt()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -682,9 +635,7 @@ fn host_enroll_request_end_test_decrypt_sec_message_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -832,8 +783,13 @@ fn host_enroll_request_end_test_capability_list_mismatch() {
     request.enroll_param.companion_device_key = create_device_key("companion_device", 100);
     request.key_negotial_param.push(create_key_negotial_param());
 
-    let sec_message =
-        create_valid_binding_reply("companion_device", 100, SUPPORTED_PROTOCOL_VERSIONS, &[], ExecutorSecurityLevel::Esl2 as i32);
+    let sec_message = create_valid_binding_reply(
+        "companion_device",
+        100,
+        SUPPORTED_PROTOCOL_VERSIONS,
+        &[],
+        ExecutorSecurityLevel::Esl2 as i32,
+    );
     let end_input = HostEndAddCompanionInputFfi {
         request_id: 1,
         companion_status: PersistedCompanionStatusFfi::default(),
@@ -865,13 +821,9 @@ fn host_enroll_request_end_test_secure_random_fail() {
     request.key_negotial_param.push(create_key_negotial_param());
 
     mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_buf| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_buf| Err(ErrorCode::GeneralError));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let sec_message = create_valid_binding_reply(
@@ -908,9 +860,7 @@ fn host_enroll_request_end_test_get_rtc_time_fail() {
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
-    mock_time_keeper
-        .expect_get_rtc_time()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -954,9 +904,7 @@ fn host_enroll_request_end_test_add_device_fail() {
 
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager
-        .expect_add_device()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_host_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -1001,9 +949,7 @@ fn host_enroll_request_end_test_add_token_fail() {
     let mut mock_host_db_manager = MockHostDbManager::new();
     mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
     mock_host_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_host_db_manager
-        .expect_add_token()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_host_db_manager.expect_add_token().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -1052,9 +998,7 @@ fn host_enroll_request_end_test_fwk_message_encode_fail() {
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_local_key_pair()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_misc_manager.expect_get_local_key_pair().returning(|| Err(ErrorCode::GeneralError));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -1101,9 +1045,7 @@ fn host_enroll_request_end_test_get_session_key_fail() {
     mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
     mock_host_db_manager.expect_add_device().returning(|| Ok(()));
     mock_host_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_host_db_manager
-        .expect_read_device_sk()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
@@ -1150,15 +1092,9 @@ fn host_enroll_request_end_test_encrypt_issue_token_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
-    mock_crypto_engine
-        .expect_aes_gcm_encrypt()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_host_db_manager = MockHostDbManager::new();

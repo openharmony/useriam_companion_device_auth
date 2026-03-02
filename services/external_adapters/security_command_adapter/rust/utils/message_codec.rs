@@ -44,9 +44,8 @@ impl MessageCodec {
         match &self.sign_param {
             MessageSignParam::NoSign => {},
             MessageSignParam::Executor(key_pair) => {
-                let signature_bytes = CryptoEngineRegistry::get()
-                    .ed25519_sign(&key_pair.pri_key, &data_attr_bytes)
-                    .map_err(|e| p!(e))?;
+                let signature_bytes =
+                    CryptoEngineRegistry::get().ed25519_sign(&key_pair.pri_key, &data_attr_bytes).map_err(|e| p!(e))?;
                 data_and_sign_attr.set_u8_slice(AttributeKey::AttrSignature, &signature_bytes);
             },
             MessageSignParam::Framework(_) => {
@@ -70,20 +69,16 @@ impl MessageCodec {
         match &self.sign_param {
             MessageSignParam::NoSign => {},
             MessageSignParam::Executor(key_pair) => {
-                let signature_bytes = data_and_sign_attr
-                    .get_u8_slice(AttributeKey::AttrSignature)
-                    .map_err(|e| p!(e))?;
+                let signature_bytes =
+                    data_and_sign_attr.get_u8_slice(AttributeKey::AttrSignature).map_err(|e| p!(e))?;
                 CryptoEngineRegistry::get()
                     .ed25519_verify(&key_pair.pub_key, data_bytes, signature_bytes)
                     .map_err(|e| p!(e))?;
             },
             MessageSignParam::Framework(pub_key) => {
-                let signature_bytes = data_and_sign_attr
-                    .get_u8_slice(AttributeKey::AttrSignature)
-                    .map_err(|e| p!(e))?;
-                CryptoEngineRegistry::get()
-                    .ed25519_verify(pub_key, data_bytes, signature_bytes)
-                    .map_err(|e| p!(e))?;
+                let signature_bytes =
+                    data_and_sign_attr.get_u8_slice(AttributeKey::AttrSignature).map_err(|e| p!(e))?;
+                CryptoEngineRegistry::get().ed25519_verify(pub_key, data_bytes, signature_bytes).map_err(|e| p!(e))?;
             },
         }
 

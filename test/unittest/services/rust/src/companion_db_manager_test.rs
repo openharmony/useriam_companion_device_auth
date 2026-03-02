@@ -37,9 +37,7 @@ fn dummy_companion_db_manager_test() {
 
     assert_eq!(dummy_companion_db_manager.add_device(&device_info, &sk_info), Err(ErrorCode::GeneralError));
     assert!(dummy_companion_db_manager.get_device_by_binding_id(0).is_err());
-    assert!(dummy_companion_db_manager
-        .get_device_by_device_key(100, &DeviceKey::default())
-        .is_err());
+    assert!(dummy_companion_db_manager.get_device_by_device_key(100, &DeviceKey::default()).is_err());
     assert!(dummy_companion_db_manager.remove_device(0).is_err());
     assert!(dummy_companion_db_manager.update_device(&device_info).is_err());
     assert!(dummy_companion_db_manager.generate_unique_binding_id().is_err());

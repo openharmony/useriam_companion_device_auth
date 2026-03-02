@@ -39,7 +39,7 @@ pub struct AuthParam {
 #[derive(Debug, Clone, PartialEq)]
 pub struct HostTokenAuthRequest {
     pub auth_param: AuthParam,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub atl: AuthTrustLevel,
     pub acl: AuthCapabilityLevel,
     pub salt: [u8; HKDF_SALT_SIZE],
@@ -50,13 +50,13 @@ impl HostTokenAuthRequest {
     pub fn new(input: &HostBeginTokenAuthInputFfi) -> Result<Self, ErrorCode> {
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
 
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
             ErrorCode::GeneralError
         })?;
 
@@ -67,7 +67,7 @@ impl HostTokenAuthRequest {
                 template_id: input.template_id,
                 secure_protocol_id: input.secure_protocol_id,
             },
-            challenge: u64::from_ne_bytes(challenge),
+            host_challenge: u64::from_ne_bytes(challenge),
             atl: AuthTrustLevel::Atl0,
             acl: AuthCapabilityLevel::Acl0,
             salt,
@@ -95,7 +95,6 @@ impl HostTokenAuthRequest {
     }
 
     fn encode_sec_token_auth_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        let device_info = HostDbManagerRegistry::get().get_device(self.auth_param.template_id)?;
         self.device_type = if self.auth_param.secure_protocol_id == SecureProtocolId::Default as u16 {
             self.acl = AuthCapabilityLevel::Acl3;
             DeviceType::Default
@@ -105,12 +104,13 @@ impl HostTokenAuthRequest {
         };
         let token_info = HostDbManagerRegistry::get().get_token(self.auth_param.template_id, self.device_type)?;
         let current_time = TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?;
-        if current_time < token_info.added_time {
+        if let Some(time_period) = current_time.checked_sub(token_info.added_time) {
+            if time_period > TOKEN_VALID_PERIOD {
+                log_e!("token is expired, current_time:{}, added_time:{}", current_time, token_info.added_time);
+                return Err(ErrorCode::GeneralError);
+            }
+        } else {
             log_e!("bad time, current_time:{}, added_time:{}", current_time, token_info.added_time);
-            return Err(ErrorCode::GeneralError);
-        }
-        if current_time - token_info.added_time > TOKEN_VALID_PERIOD {
-            log_e!("token is expired, current_time:{}, added_time:{}", current_time, token_info.added_time);
             return Err(ErrorCode::GeneralError);
         }
 
@@ -118,7 +118,7 @@ impl HostTokenAuthRequest {
             host_db_helper::get_session_key(self.auth_param.template_id, token_info.device_type, &self.salt)?;
 
         let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+        encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
 
         let (encrypt_data, tag, iv) =
             message_crypto::encrypt_sec_message(encrypt_attribute.to_bytes()?.as_slice(), &session_key)
@@ -135,20 +135,26 @@ impl HostTokenAuthRequest {
     ) -> Result<(), ErrorCode> {
         let output = SecAuthReply::decode(sec_message, device_type)?;
 
-        let token_info = HostDbManagerRegistry::get()
-            .get_token(self.auth_param.template_id, device_type)
-            .map_err(|e| p!(e))?;
+        let token_info =
+            HostDbManagerRegistry::get().get_token(self.auth_param.template_id, device_type).map_err(|e| p!(e))?;
         let atl = token_info.atl as i32;
         let atl_bytes = atl.to_le_bytes();
-        let challenge_bytes = self.challenge.to_le_bytes();
+        let challenge_bytes = self.host_challenge.to_le_bytes();
         let mut data = Vec::with_capacity(atl_bytes.len() + challenge_bytes.len());
         data.extend_from_slice(&atl_bytes);
         data.extend_from_slice(&challenge_bytes);
 
-        let expected_hmac = CryptoEngineRegistry::get()
-            .hmac_sha256(&token_info.token, &data)
-            .map_err(|e| p!(e))?;
-        if output.hmac != expected_hmac.as_slice() {
+        let expected_hmac = CryptoEngineRegistry::get().hmac_sha256(&token_info.token, &data).map_err(|e| p!(e))?;
+        if output.hmac.len() != expected_hmac.len() {
+            log_e!("mac len not mathc, {}:{}", output.hmac.len(), expected_hmac.len());
+            return Err(ErrorCode::Fail);
+        }
+        let mut result = 0u8;
+        for (x, y) in output.hmac.iter().zip(expected_hmac.iter()) {
+            result |= x ^ y;
+        }
+
+        if result != 0 {
             log_e!("hmac verification failed");
             return Err(ErrorCode::Fail);
         }
@@ -165,14 +171,14 @@ impl HostTokenAuthRequest {
         Ok(())
     }
 
-    fn encode_fwk_token_auth_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
+    fn encode_fwk_token_auth_reply(&mut self, result: ErrorCode) -> Result<Vec<u8>, ErrorCode> {
         let fwk_auth_reply = Box::new(FwkAuthReply {
             schedule_id: self.auth_param.schedule_id,
             template_id: self.auth_param.template_id,
-            result_code: 0,
+            result_code: result as i32,
             acl: self.acl as i32,
             pin_sub_type: 0,
-            remain_attempts: 0,
+            remain_attempts: i32::MAX,
             lock_duration: 0,
         });
         let output = fwk_auth_reply.encode()?;
@@ -212,9 +218,18 @@ impl Request for HostTokenAuthRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        self.decode_sec_token_auth_reply(ffi_input.sec_message.as_slice()?)?;
-        let fwk_message = self.encode_fwk_token_auth_reply()?;
+        let result = match self.decode_sec_token_auth_reply(ffi_input.sec_message.as_slice()?) {
+            Ok(_) => ErrorCode::Success,
+            Err(result) => {
+                log_e!("decode secure token auth reply fail: {:?}", result);
+                result
+            },
+        };
+        let fwk_message = self.encode_fwk_token_auth_reply(result)?;
         ffi_output.fwk_message.copy_from_vec(&fwk_message)?;
+        if result != ErrorCode::Success {
+            return Err(result);
+        }
         Ok(())
     }
 }
