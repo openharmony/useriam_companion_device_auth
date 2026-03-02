@@ -20,7 +20,7 @@ import("../../test_config.gni")
 
 ohos_fuzztest("CompanionDeviceAuthClientFuzzer") {
   branch_protector_ret = "pac_ret"
-  module_out_path = "companion_device_auth/client"
+  module_out_path = "${companion_device_auth_subsystem_name}/${companion_device_auth_part_name}"
   fuzz_config_file =
       "${companion_device_auth_path}/test/fuzztest/common_fuzzer_config"
 
