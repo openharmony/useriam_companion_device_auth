@@ -155,7 +155,8 @@ public:
             deviceModelInfo == other.deviceModelInfo && deviceUserName == other.deviceUserName &&
             deviceName == other.deviceName && protocolId == other.protocolId &&
             secureProtocolId == other.secureProtocolId && capabilities == other.capabilities &&
-            supportedBusinessIds == other.supportedBusinessIds && isOnline == other.isOnline;
+            supportedBusinessIds == other.supportedBusinessIds && isOnline == other.isOnline &&
+            isAuthMaintainActive == other.isAuthMaintainActive;
     }
 
     DeviceKey deviceKey {};
@@ -260,7 +261,7 @@ struct SecureExecutorInfo {
 };
 
 struct SyncDeviceStatus {
-    DeviceKey deviceKey {};
+    bool needSync { false };
     std::vector<ProtocolId> protocolIdList;
     std::vector<Capability> capabilityList;
     SecureProtocolId secureProtocolId;

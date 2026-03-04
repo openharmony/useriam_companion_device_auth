@@ -55,8 +55,9 @@ static void FuzzGetAllDeviceStatus(std::shared_ptr<DeviceStatusManager> &mgr, Fu
 static void FuzzSubscribeDeviceStatus(std::shared_ptr<DeviceStatusManager> &mgr, FuzzedDataProvider &fuzzData)
 {
     DeviceKey deviceKey = GenerateFuzzDeviceKey(fuzzData);
+    bool needSync = fuzzData.ConsumeBool();
     auto callback = [](const std::vector<DeviceStatus> &statusList) { (void)statusList; };
-    auto subscription = mgr->SubscribeDeviceStatus(deviceKey, std::move(callback));
+    auto subscription = mgr->SubscribeDeviceStatus(deviceKey, needSync, std::move(callback));
     (void)subscription;
 }
 
@@ -100,11 +101,15 @@ static void FuzzHandleSyncResult(std::shared_ptr<DeviceStatusManager> &mgr, Fuzz
     DeviceKey deviceKey = GenerateFuzzDeviceKey(fuzzData);
     int32_t resultCode = fuzzData.ConsumeIntegral<int32_t>();
     SyncDeviceStatus syncStatus;
-    syncStatus.deviceKey = deviceKey;
-    syncStatus.protocolIdList.push_back(static_cast<ProtocolId>(fuzzData.ConsumeIntegral<uint8_t>()));
-    syncStatus.capabilityList.push_back(static_cast<Capability>(fuzzData.ConsumeIntegral<uint8_t>()));
-    syncStatus.secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint8_t>());
-    syncStatus.deviceUserName = GenerateFuzzString(fuzzData, TEST_VAL64);
+    syncStatus.needSync = fuzzData.ConsumeBool();
+    // Randomly decide whether to add protocols (to test empty protocol list scenario)
+    if (fuzzData.ConsumeBool()) {
+        syncStatus.protocolIdList.push_back(static_cast<ProtocolId>(fuzzData.ConsumeIntegral<uint8_t>()));
+        syncStatus.capabilityList.push_back(static_cast<Capability>(fuzzData.ConsumeIntegral<uint8_t>()));
+        syncStatus.secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint8_t>());
+        syncStatus.deviceUserName = GenerateFuzzString(fuzzData, TEST_VAL64);
+    }
+    // else: empty syncStatus to test needSync=false scenario
     mgr->HandleSyncResult(deviceKey, resultCode, syncStatus);
 }
 

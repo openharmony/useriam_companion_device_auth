@@ -84,7 +84,7 @@ std::string SoftBusDeviceStatusManager::GenerateDeviceModelInfo(DmDeviceType dev
     json deviceInfo;
     deviceInfo["type"] = "deviceType";
     deviceInfo["deviceType"] = DeviceTypeIdToString(deviceTypeId);
-    return deviceInfo.dump();
+    return deviceInfo.dump(-1, ' ', false, json::error_handler_t::replace);
 }
 
 class DeviceStatusCallbackImpl : public DeviceStatusCallback {

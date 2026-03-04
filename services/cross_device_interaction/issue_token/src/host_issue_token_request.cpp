@@ -242,7 +242,7 @@ bool HostIssueTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &d
         IAM_LOGE("%{public}s device not in auth maintain active state", GetDescription());
         return false;
     }
-    deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey,
+    deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey, false,
         [weakSelf = weak_from_this(), description = GetDescription()](
             const std::vector<DeviceStatus> &deviceStatusList) {
             auto self = weakSelf.lock();

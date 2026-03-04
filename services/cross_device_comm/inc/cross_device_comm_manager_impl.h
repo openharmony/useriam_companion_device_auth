@@ -60,7 +60,7 @@ public:
     std::optional<DeviceStatus> GetDeviceStatus(const DeviceKey &deviceKey) override;
     std::vector<DeviceStatus> GetAllDeviceStatus() override;
     std::unique_ptr<Subscription> SubscribeAllDeviceStatus(OnDeviceStatusChange &&onDeviceStatusChange) override;
-    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey,
+    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey, bool needSync,
         OnDeviceStatusChange &&onDeviceStatusChange) override;
     void SetSubscribeMode(SubscribeMode subscribeMode) override;
     std::optional<SteadyTimeMs> GetManageSubscribeTime() const override;

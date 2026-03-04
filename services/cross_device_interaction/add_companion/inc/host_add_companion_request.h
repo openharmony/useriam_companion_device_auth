@@ -66,7 +66,6 @@ private:
     TemplateId templateId_ {};                 // TemplateId after successful binding
     Atl tokenAtl_ = 0;                         // ATL level of token
     bool needCancelCompanionAdd_ = false;
-    bool needCancelIssueToken_ = false;
     FwkResultCallback requestCallback_;
     DeviceKey hostDeviceKey_ {};
     SecureProtocolId secureProtocolId_ = SecureProtocolId::INVALID;

@@ -76,7 +76,7 @@ HWTEST_F(HostBindingTest, Create_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -108,7 +108,7 @@ HWTEST_F(HostBindingTest, Create_001, TestSize.Level0)
 
     auto persistedStatus = MakePersistedStatus(UINT32_12345, INT32_100, "test_device_id", INT32_200);
 
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _)).WillOnce(Return(ByMove(MakeSubscription())));
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _)).WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_)).WillOnce(Return(ByMove(MakeSubscription())));
 
     auto binding = HostBinding::Create(persistedStatus);
@@ -124,7 +124,7 @@ HWTEST_F(HostBindingTest, Create_002, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -156,7 +156,7 @@ HWTEST_F(HostBindingTest, Create_002, TestSize.Level0)
 
     auto persistedStatus = MakePersistedStatus(UINT32_12345, INT32_100, "test_device_id", INT32_200);
 
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _)).WillOnce(Return(nullptr));
 
     auto binding = HostBinding::Create(persistedStatus);
 
@@ -168,7 +168,7 @@ HWTEST_F(HostBindingTest, Create_003, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -200,7 +200,7 @@ HWTEST_F(HostBindingTest, Create_003, TestSize.Level0)
 
     auto persistedStatus = MakePersistedStatus(UINT32_12345, INT32_100, "test_device_id", INT32_200);
 
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _)).WillOnce(Return(ByMove(MakeSubscription())));
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _)).WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_)).WillOnce(Return(nullptr));
 
     auto binding = HostBinding::Create(persistedStatus);
@@ -213,7 +213,7 @@ HWTEST_F(HostBindingTest, HandleDeviceStatusChanged_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -261,7 +261,7 @@ HWTEST_F(HostBindingTest, HandleDeviceStatusChanged_002, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -310,7 +310,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceStatusUpdate_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -358,7 +358,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceOffline_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -406,7 +406,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceOffline_002, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -452,7 +452,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -496,7 +496,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -544,7 +544,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_003, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -590,7 +590,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -634,7 +634,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_002, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -681,7 +681,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_003, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -732,7 +732,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_004, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -783,7 +783,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_005, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))
@@ -829,7 +829,7 @@ HWTEST_F(HostBindingTest, Destructor_001, TestSize.Level0)
     MockGuard guard;
 
     auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
-    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_))

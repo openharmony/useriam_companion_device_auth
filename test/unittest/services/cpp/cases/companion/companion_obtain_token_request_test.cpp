@@ -29,38 +29,33 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 namespace {
 
+// 测试数据常量
+const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "companion_device_id",
+    .deviceUserId = 200 };
+const DeviceKey HOST_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "host_device_id",
+    .deviceUserId = 100 };
+const std::vector<uint8_t> FWK_UNLOCK_MSG = {};
+const HostBindingStatus HOST_BINDING_STATUS = {};
+
 std::unique_ptr<Subscription> MakeSubscription()
 {
     return std::make_unique<Subscription>([]() {});
 }
 
 class CompanionObtainTokenRequestTest : public Test {
-public:
-    void CreateDefaultRequest()
-    {
-        request_ = std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey_, fwkUnlockMsg_);
-    }
-
 protected:
-    std::shared_ptr<CompanionObtainTokenRequest> request_;
-
-    DeviceKey companionDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "companion_device_id",
-        .deviceUserId = 200 };
-    DeviceKey hostDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "host_device_id",
-        .deviceUserId = 100 };
-    std::vector<uint8_t> fwkUnlockMsg_ = {};
-    HostBindingStatus hostBindingStatus_;
+    // 无成员变量，每个测试用例创建局部 request
 };
 
 HWTEST_F(CompanionObtainTokenRequestTest, OnStart_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -77,10 +72,10 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_001, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_TRUE(result);
 }
@@ -89,9 +84,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -108,12 +103,12 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_002, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(false));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -122,9 +117,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_003, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -141,12 +136,12 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_003, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_)).WillOnce(Return(nullptr));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -155,9 +150,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_004, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -174,12 +169,12 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnStart_004, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(false));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -188,9 +183,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -207,20 +202,20 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_001, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request_->OnConnected();
+    request->OnConnected();
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -237,20 +232,20 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_002, TestSize.Level0)
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request_->OnConnected();
+    request->OnConnected();
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -267,7 +262,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_001, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     PreObtainTokenReply preObtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
@@ -275,20 +270,20 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_001, TestSiz
     EncodePreObtainTokenReply(preObtainTokenReply, reply);
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request_->HandlePreObtainTokenReply(reply);
+    request->HandlePreObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -305,19 +300,19 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_002, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
-    request_->HandlePreObtainTokenReply(reply);
+    request->HandlePreObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_003, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -334,23 +329,23 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_003, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     PreObtainTokenReply preObtainTokenReply = { .result = static_cast<int32_t>(ResultCode::GENERAL_ERROR),
         .extraInfo = { 1, 2, 3 } };
     EncodePreObtainTokenReply(preObtainTokenReply, reply);
 
-    request_->HandlePreObtainTokenReply(reply);
+    request->HandlePreObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_004, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -367,7 +362,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_004, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     PreObtainTokenReply preObtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
@@ -376,16 +371,16 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_004, TestSiz
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
-    request_->HandlePreObtainTokenReply(reply);
+    request->HandlePreObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -402,16 +397,16 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_001, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     PreObtainTokenReply preObtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
         .extraInfo = { 1, 2, 3 } };
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    bool result = request_->CompanionBeginObtainToken(preObtainTokenReply);
+    bool result = request->CompanionBeginObtainToken(preObtainTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -420,9 +415,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_002, TestSiz
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -439,17 +434,17 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_002, TestSiz
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     PreObtainTokenReply preObtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
         .extraInfo = { 1, 2, 3 } };
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    bool result = request_->CompanionBeginObtainToken(preObtainTokenReply);
+    bool result = request->CompanionBeginObtainToken(preObtainTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -458,9 +453,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_001, TestSize.L
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -477,7 +472,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_001, TestSize.L
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     ObtainTokenReply obtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
@@ -486,16 +481,16 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_001, TestSize.L
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request_->HandleObtainTokenReply(reply);
+    request->HandleObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -512,19 +507,19 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_002, TestSize.L
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
-    request_->HandleObtainTokenReply(reply);
+    request->HandleObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_003, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -541,23 +536,23 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_003, TestSize.L
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     ObtainTokenReply obtainTokenReply = { .result = static_cast<int32_t>(ResultCode::GENERAL_ERROR),
         .extraInfo = { 1, 2, 3 } };
     EncodeObtainTokenReply(obtainTokenReply, reply);
 
-    request_->HandleObtainTokenReply(reply);
+    request->HandleObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_004, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -574,7 +569,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_004, TestSize.L
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     Attributes reply;
     ObtainTokenReply obtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
@@ -583,16 +578,16 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_004, TestSize.L
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request_->HandleObtainTokenReply(reply);
+    request->HandleObtainTokenReply(reply);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -609,21 +604,21 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_001, TestSize.Level0
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
-    request_->needCancelObtainToken_ = true;
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
+    request->needCancelObtainToken_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -640,21 +635,21 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
-    request_->needCancelObtainToken_ = true;
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
+    request->needCancelObtainToken_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompanionEndObtainToken_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -671,13 +666,13 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionEndObtainToken_001, TestSize.
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
     EXPECT_CALL(guard.GetHostBindingManager(), SetHostBindingTokenValid(_, _)).WillOnce(Return(true));
 
     ObtainTokenReply obtainTokenReply = { .result = static_cast<int32_t>(ResultCode::SUCCESS),
         .extraInfo = { 1, 2, 3 } };
-    bool result = request_->CompanionEndObtainToken(obtainTokenReply);
+    bool result = request->CompanionEndObtainToken(obtainTokenReply);
 
     EXPECT_TRUE(result);
 }
@@ -686,9 +681,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, GetMaxConcurrency_001, TestSize.Level0
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -705,18 +700,18 @@ HWTEST_F(CompanionObtainTokenRequestTest, GetMaxConcurrency_001, TestSize.Level0
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
-    EXPECT_EQ(request_->GetMaxConcurrency(), 10);
+    EXPECT_EQ(request->GetMaxConcurrency(), 10);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -733,9 +728,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, ShouldCancelOnNewRequest_001, TestSize
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
 
     EXPECT_FALSE(result);
 }
@@ -744,9 +739,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, ShouldCancelOnNewRequest_002, TestSize
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -763,10 +758,10 @@ HWTEST_F(CompanionObtainTokenRequestTest, ShouldCancelOnNewRequest_002, TestSize
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
-    auto peerDeviceKey = request_->peerDeviceKey_;
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_OBTAIN_TOKEN_REQUEST, peerDeviceKey, 0);
+    auto peerDeviceKey = request->peerDeviceKey_;
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_OBTAIN_TOKEN_REQUEST, peerDeviceKey, 0);
 
     EXPECT_TRUE(result);
 }
@@ -775,9 +770,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_001, T
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -794,18 +789,18 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_001, T
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
-    request_->HandleAuthMaintainActiveChanged(true);
+    request->HandleAuthMaintainActiveChanged(true);
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
 {
     MockGuard guard;
     ON_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillByDefault(Return(std::make_optional(hostBindingStatus_)));
+        .WillByDefault(Return(std::make_optional(HOST_BINDING_STATUS)));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillByDefault(Return(std::make_optional(companionDeviceKey_)));
+        .WillByDefault(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
@@ -822,9 +817,9 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_002, T
     ON_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
 
-    CreateDefaultRequest();
+    auto request = std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, FWK_UNLOCK_MSG);
 
-    request_->HandleAuthMaintainActiveChanged(false);
+    request->HandleAuthMaintainActiveChanged(false);
 }
 
 } // namespace

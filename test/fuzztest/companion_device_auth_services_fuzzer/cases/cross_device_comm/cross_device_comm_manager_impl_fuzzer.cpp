@@ -138,8 +138,9 @@ static void FuzzGetManageSubscribeTime(ICrossDeviceCommManager &manager, FuzzedD
 static void FuzzSubscribeDeviceStatus(ICrossDeviceCommManager &manager, FuzzedDataProvider &fuzzData)
 {
     DeviceKey deviceKey = GenerateFuzzDeviceKey(fuzzData);
-    auto subscription =
-        manager.SubscribeDeviceStatus(deviceKey, [](const std::vector<DeviceStatus> &statusList) { (void)statusList; });
+    bool needSync = fuzzData.ConsumeBool();
+    auto subscription = manager.SubscribeDeviceStatus(deviceKey, needSync,
+        [](const std::vector<DeviceStatus> &statusList) { (void)statusList; });
     (void)subscription;
 }
 
