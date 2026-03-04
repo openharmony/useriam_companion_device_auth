@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
 use crate::jobs::message_crypto;
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, p, Box, Vec};

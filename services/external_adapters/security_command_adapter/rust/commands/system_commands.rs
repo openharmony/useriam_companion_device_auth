@@ -16,8 +16,40 @@
 extern crate alloc;
 
 use crate::commands::common_command::{companion_status_vec_to_ffi, host_binding_status_vec_to_ffi};
-use crate::common::constants::*;
-use crate::entry::companion_device_auth_ffi::*;
+use crate::common::constants::{AuthCapabilityLevel, Capability, ErrorCode, ExecutorSecurityLevel};
+use crate::entry::companion_device_auth_ffi::{
+    CompanionBeginAddHostBindingInputFfi, CompanionBeginAddHostBindingOutputFfi, CompanionBeginDelegateAuthInputFfi,
+    CompanionBeginDelegateAuthOutputFfi, CompanionBeginObtainTokenInputFfi, CompanionBeginObtainTokenOutputFfi,
+    CompanionCancelIssueTokenInputFfi, CompanionCancelIssueTokenOutputFfi, CompanionCancelObtainTokenInputFfi,
+    CompanionCancelObtainTokenOutputFfi, CompanionEndAddHostBindingInputFfi, CompanionEndAddHostBindingOutputFfi,
+    CompanionEndDelegateAuthInputFfi, CompanionEndDelegateAuthOutputFfi, CompanionEndObtainTokenInputFfi,
+    CompanionEndObtainTokenOutputFfi, CompanionGetPersistedStatusInputFfi, CompanionGetPersistedStatusOutputFfi,
+    CompanionInitKeyNegotiationInputFfi, CompanionInitKeyNegotiationOutputFfi, CompanionPreIssueTokenInputFfi,
+    CompanionPreIssueTokenOutputFfi, CompanionProcessCheckInputFfi, CompanionProcessCheckOutputFfi,
+    CompanionProcessIssueTokenInputFfi, CompanionProcessIssueTokenOutputFfi, CompanionProcessTokenAuthInputFfi,
+    CompanionProcessTokenAuthOutputFfi, CompanionRemoveHostBindingInputFfi, CompanionRemoveHostBindingOutputFfi,
+    CompanionRevokeTokenInputFfi, CompanionRevokeTokenOutputFfi, DataArray256Ffi, DeviceKeyFfi,
+    GetExecutorInfoInputFfi, GetExecutorInfoOutputFfi, HostBeginAddCompanionInputFfi, HostBeginAddCompanionOutputFfi,
+    HostBeginCompanionCheckInputFfi, HostBeginCompanionCheckOutputFfi, HostBeginDelegateAuthInputFfi,
+    HostBeginDelegateAuthOutputFfi, HostBeginIssueTokenInputFfi, HostBeginIssueTokenOutputFfi,
+    HostBeginTokenAuthInputFfi, HostBeginTokenAuthOutputFfi, HostCancelAddCompanionInputFfi,
+    HostCancelAddCompanionOutputFfi, HostCancelCompanionCheckInputFfi, HostCancelCompanionCheckOutputFfi,
+    HostCancelDelegateAuthInputFfi, HostCancelDelegateAuthOutputFfi, HostCancelIssueTokenInputFfi,
+    HostCancelIssueTokenOutputFfi, HostCancelObtainTokenInputFfi, HostCancelObtainTokenOutputFfi,
+    HostCheckTemplateEnrolledInputFfi, HostCheckTemplateEnrolledOutputFfi, HostEndAddCompanionInputFfi,
+    HostEndAddCompanionOutputFfi, HostEndCompanionCheckInputFfi, HostEndCompanionCheckOutputFfi,
+    HostEndDelegateAuthInputFfi, HostEndDelegateAuthOutputFfi, HostEndIssueTokenInputFfi, HostEndIssueTokenOutputFfi,
+    HostEndTokenAuthInputFfi, HostEndTokenAuthOutputFfi, HostGetInitKeyNegotiationInputFfi,
+    HostGetInitKeyNegotiationOutputFfi, HostGetPersistedStatusInputFfi, HostGetPersistedStatusOutputFfi,
+    HostPreIssueTokenInputFfi, HostPreIssueTokenOutputFfi, HostProcessObtainTokenInputFfi,
+    HostProcessObtainTokenOutputFfi, HostProcessPreObtainTokenInputFfi, HostProcessPreObtainTokenOutputFfi,
+    HostRegisterFinishInputFfi, HostRegisterFinishOutputFfi, HostRemoveCompanionInputFfi, HostRemoveCompanionOutputFfi,
+    HostRevokeTokenInputFfi, HostRevokeTokenOutputFfi, HostUpdateCompanionEnabledBusinessIdsInputFfi,
+    HostUpdateCompanionEnabledBusinessIdsOutputFfi, HostUpdateCompanionStatusInputFfi,
+    HostUpdateCompanionStatusOutputFfi, HostUpdateTokenInputFfi, HostUpdateTokenOutputFfi, InitInputFfi, InitOutputFfi,
+    Int32Array64Ffi, PersistedCompanionStatusFfi, PersistedHostBindingStatusFfi, SetActiveUserInputFfi,
+    SetActiveUserOutputFfi,
+};
 use crate::jobs::host_db_helper;
 use crate::request::delegate_auth::companion_delegate_auth::CompanionDelegateAuthRequest;
 use crate::request::delegate_auth::host_delegate_auth::HostDelegateAuthRequest;

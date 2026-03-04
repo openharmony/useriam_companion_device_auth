@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS};
 use crate::entry::companion_device_auth_ffi::CompanionProcessCheckInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;

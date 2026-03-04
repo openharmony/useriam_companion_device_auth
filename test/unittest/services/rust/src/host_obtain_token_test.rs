@@ -19,8 +19,8 @@ use crate::entry::companion_device_auth_ffi::{
     HostProcessPreObtainTokenInputFfi, HostProcessPreObtainTokenOutputFfi,
 };
 use crate::log_i;
-use crate::request::jobs::common_message::SecCommonRequest;
 use crate::request::token_obtain::host_obtain_token::HostDeviceObtainTokenRequest;
+use crate::request::token_obtain::token_obtain_message::SecPreObtainTokenReply;
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, MockCryptoEngine};
 use crate::traits::db_manager::{
     CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, DeviceKey, UserInfo,
@@ -34,17 +34,16 @@ use crate::String;
 use crate::Vec;
 use std::boxed::Box;
 
-fn create_valid_obtain_token_request(challenge: u64, atl: i32) -> Vec<u8> {
+fn create_valid_obtain_token_request(challenge_server: u64, challenge_client: u64, atl: i32) -> Vec<u8> {
     let mut encrypt_attribute = Attribute::new();
-    encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, challenge);
+    encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, challenge_client);
     encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, atl);
 
     let encrypt_data = encrypt_attribute.to_bytes().unwrap();
     let tag = [1u8; AES_GCM_TAG_SIZE];
     let iv = [2u8; AES_GCM_IV_SIZE];
-    let salt = [3u8; HKDF_SALT_SIZE];
 
-    let request = SecCommonRequest { salt, tag, iv, encrypt_data };
+    let request = SecPreObtainTokenReply { challenge: challenge_server, tag, iv, encrypt_data };
     request.encode(DeviceType::Default).unwrap()
 }
 
@@ -302,7 +301,7 @@ fn host_obtain_token_request_end_test_get_session_key_fail() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -333,7 +332,7 @@ fn host_obtain_token_request_end_test_decrypt_fail() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -360,7 +359,7 @@ fn host_obtain_token_request_end_test_challenge_mismatch() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 999;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -387,7 +386,7 @@ fn host_obtain_token_request_end_test_atl_try_from_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, 99999);
+    let sec_message = create_valid_obtain_token_request(1, 0, 99999);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -421,7 +420,7 @@ fn host_obtain_token_request_end_test_secure_random_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -455,7 +454,7 @@ fn host_obtain_token_request_end_test_generate_token_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -488,7 +487,7 @@ fn host_obtain_token_request_end_test_sec_message_get_session_key_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -521,7 +520,7 @@ fn host_obtain_token_request_end_test_sec_message_encrypt_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -552,7 +551,7 @@ fn host_obtain_token_request_end_test_get_rtc_time_fail() {
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
     request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -588,7 +587,7 @@ fn host_obtain_token_request_end_test_add_token_fail() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -615,7 +614,7 @@ fn host_obtain_token_request_end_test_success() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,

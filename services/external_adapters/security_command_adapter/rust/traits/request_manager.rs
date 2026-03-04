@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::ErrorCode;
 use crate::entry::companion_device_auth_ffi::{
     CompanionBeginAddHostBindingInputFfi, CompanionBeginAddHostBindingOutputFfi, CompanionBeginDelegateAuthInputFfi,
     CompanionBeginDelegateAuthOutputFfi, CompanionBeginObtainTokenInputFfi, CompanionBeginObtainTokenOutputFfi,

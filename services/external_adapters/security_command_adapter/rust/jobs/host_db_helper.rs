@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{Capability, DeviceType, ErrorCode};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::CompanionDeviceInfo;
 use crate::traits::host_db_manager::HostDbManagerRegistry;

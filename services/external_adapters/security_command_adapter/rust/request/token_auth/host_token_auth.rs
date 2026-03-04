@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AuthCapabilityLevel, AuthTrustLevel, Capability, DeviceType, ErrorCode, SecureProtocolId, CHALLENGE_LEN,
+    HKDF_SALT_SIZE,
+};
 use crate::entry::companion_device_auth_ffi::HostBeginTokenAuthInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
@@ -146,7 +149,7 @@ impl HostTokenAuthRequest {
 
         let expected_hmac = CryptoEngineRegistry::get().hmac_sha256(&token_info.token, &data).map_err(|e| p!(e))?;
         if output.hmac.len() != expected_hmac.len() {
-            log_e!("mac len not mathc, {}:{}", output.hmac.len(), expected_hmac.len());
+            log_e!("mac len not match, {}:{}", output.hmac.len(), expected_hmac.len());
             return Err(ErrorCode::Fail);
         }
         let mut result = 0u8;

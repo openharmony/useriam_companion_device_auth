@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::ErrorCode;
 use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo};
 use crate::{log_e, singleton_registry, Box, Vec};
 

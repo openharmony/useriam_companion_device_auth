@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::ErrorCode;
 use crate::traits::request_manager::{DynRequest, RequestManager};
 use crate::{log_e, log_i, Box, Vec};
 

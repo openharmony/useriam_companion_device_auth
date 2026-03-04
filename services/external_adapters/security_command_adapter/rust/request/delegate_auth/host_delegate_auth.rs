@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AuthCapabilityLevel, AuthTrustLevel, Capability, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE,
+};
 use crate::entry::companion_device_auth_ffi::HostBeginDelegateAuthInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;

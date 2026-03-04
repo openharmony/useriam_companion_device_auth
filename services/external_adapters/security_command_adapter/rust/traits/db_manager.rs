@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AuthTrustLevel, DeviceType, ErrorCode, ExecutorSecurityLevel, TrackAbilityLevel, SHARE_KEY_LEN, TOKEN_KEY_LEN,
+};
 use crate::entry::companion_device_auth_ffi::DeviceKeyFfi;
 use crate::String;
 use crate::Vec;

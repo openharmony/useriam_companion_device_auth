@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, TOKEN_KEY_LEN};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::CompanionTokenInfo;
 use crate::traits::host_db_manager::HostDbManagerRegistry;

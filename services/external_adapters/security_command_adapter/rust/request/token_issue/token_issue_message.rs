@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, HKDF_SALT_SIZE};
 use crate::traits::misc_manager::MiscManagerRegistry;
 use crate::utils::message_codec::MessageCodec;
 use crate::utils::message_codec::MessageSignParam;
