@@ -33,41 +33,38 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 namespace {
 
+// 测试数据常量
+constexpr UserId HOST_USER_ID = 100;
+constexpr TemplateId TEMPLATE_ID = 1;
+const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "companion_device_id",
+    .deviceUserId = 200 };
+const DeviceKey HOST_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "host_device_id",
+    .deviceUserId = 100 };
+
 std::unique_ptr<Subscription> MakeSubscription()
 {
     return std::make_unique<Subscription>([]() {});
 }
 
 class HostRemoveHostBindingRequestTest : public Test {
-public:
-    void CreateDefaultRequest()
-    {
-        UserId hostUserId = 100;
-        TemplateId templateId = 1;
-        DeviceKey companionDeviceKey = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-            .deviceId = "companion_device_id",
-            .deviceUserId = 200 };
-        request_ = std::make_shared<HostRemoveHostBindingRequest>(hostUserId, templateId, companionDeviceKey);
-    }
-
 protected:
-    std::shared_ptr<HostRemoveHostBindingRequest> request_;
-    DeviceKey hostDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "host_device_id",
-        .deviceUserId = 100 };
+    // 无成员变量，每个测试用例创建局部 request
 };
 
 HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(true));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_TRUE(result);
 }
@@ -75,12 +72,13 @@ HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_001, TestSize.Level0)
 HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(false));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -88,7 +86,8 @@ HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_002, TestSize.Level0)
 HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _))
@@ -96,7 +95,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_003, TestSize.Level0)
         .WillOnce(Return(nullptr));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -104,91 +103,100 @@ HWTEST_F(HostRemoveHostBindingRequestTest, OnStart_003, TestSize.Level0)
 HWTEST_F(HostRemoveHostBindingRequestTest, OnConnected_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->SetPeerDeviceKey(hostDeviceKey_);
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+    request->SetPeerDeviceKey(HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillOnce(Return(std::make_optional(hostDeviceKey_)));
+        .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request_->OnConnected();
+    request->OnConnected();
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->SendRemoveHostBindingRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+    request->SendRemoveHostBindingRequest();
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->SetPeerDeviceKey(hostDeviceKey_);
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+    request->SetPeerDeviceKey(HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).Times(AtMost(1)).WillOnce(Return(false));
 
-    request_->SendRemoveHostBindingRequest();
+    request->SendRemoveHostBindingRequest();
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     Attributes message;
     RemoveHostBindingReply reply = { .result = ResultCode::SUCCESS };
     EncodeRemoveHostBindingReply(reply, message);
 
-    request_->HandleRemoveHostBindingReply(message);
+    request->HandleRemoveHostBindingReply(message);
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     Attributes message;
-    request_->HandleRemoveHostBindingReply(message);
+    request->HandleRemoveHostBindingReply(message);
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     Attributes message;
     RemoveHostBindingReply reply = { .result = ResultCode::GENERAL_ERROR };
     EncodeRemoveHostBindingReply(reply, message);
 
-    request_->HandleRemoveHostBindingReply(message);
+    request->HandleRemoveHostBindingReply(message);
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    EXPECT_EQ(request_->GetMaxConcurrency(), 10);
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+
+    EXPECT_EQ(request->GetMaxConcurrency(), 10);
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::HOST_REMOVE_HOST_BINDING_REQUEST, std::nullopt, 0);
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+
+    bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_REMOVE_HOST_BINDING_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::HOST_ADD_COMPANION_REQUEST, std::nullopt, 0);
+    auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
+
+    bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
 }
 

@@ -848,10 +848,11 @@ public:
         return std::optional<SteadyTimeMs>();
     }
 
-    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey,
+    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey, bool needSync,
         OnDeviceStatusChange &&onDeviceStatusChange) override
     {
         (void)deviceKey;
+        (void)needSync;
         if (onDeviceStatusChange && fuzzData_.ConsumeBool()) {
             std::vector<DeviceStatus> deviceStatuses;
             FillDeviceStatusVector(fuzzData_, deviceStatuses, SIZE_100);

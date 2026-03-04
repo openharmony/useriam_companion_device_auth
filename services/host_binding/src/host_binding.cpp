@@ -72,13 +72,14 @@ HostBinding::~HostBinding()
 
 bool HostBinding::Initialize()
 {
-    deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.hostDeviceStatus.deviceKey,
-        [weakSelf = weak_from_this(), description = GetDescription()](
-            const std::vector<DeviceStatus> &deviceStatusList) {
-            auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
-            self->HandleDeviceStatusChanged(deviceStatusList);
-        });
+    deviceStatusSubscription_ =
+        GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.hostDeviceStatus.deviceKey, false,
+            [weakSelf = weak_from_this(), description = GetDescription()](
+                const std::vector<DeviceStatus> &deviceStatusList) {
+                auto self = weakSelf.lock();
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                self->HandleDeviceStatusChanged(deviceStatusList);
+            });
     if (deviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe device status", GetDescription());
         return false;

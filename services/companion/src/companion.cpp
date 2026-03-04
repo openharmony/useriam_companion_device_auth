@@ -78,7 +78,7 @@ Companion::~Companion()
 bool Companion::Initialize()
 {
     deviceStatusSubscription_ =
-        GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.companionDeviceStatus.deviceKey,
+        GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.companionDeviceStatus.deviceKey, true,
             [weakSelf = weak_from_this(), description = GetDescription()](
                 const std::vector<DeviceStatus> &deviceStatusList) {
                 auto self = weakSelf.lock();
@@ -167,7 +167,7 @@ void Companion::SetCompanionTokenAtl(std::optional<Atl> tokenAtl)
         GetOptionalString(oldTokenAtl).c_str(), GetOptionalString(tokenAtl).c_str());
 
     tokenTimeoutSubscription_.reset();
-    if (!tokenAtl.has_value()) {
+    if (oldTokenAtl.has_value() && !tokenAtl.has_value()) {
         HostRevokeTokenInput input = { status_.templateId };
         (void)GetSecurityAgent().HostRevokeToken(input);
     } else if (tokenAtl.has_value()) {
@@ -223,9 +223,11 @@ void Companion::SetDeviceNames(const std::string &deviceName, const std::string 
 
 void Companion::NotifySubscribers()
 {
-    auto manager = weakManager_.lock();
-    ENSURE_OR_RETURN_DESC(GetDescription(), manager != nullptr);
-    manager->NotifyCompanionStatusChange();
+    TaskRunnerManager::GetInstance().PostTaskOnResident([weakManager = weakManager_, description = GetDescription()]() {
+        auto manager = weakManager.lock();
+        ENSURE_OR_RETURN_DESC(description, manager != nullptr);
+        manager->NotifyCompanionStatusChange();
+    });
 }
 
 void Companion::SetAddedToIdm(bool addedToIdm)

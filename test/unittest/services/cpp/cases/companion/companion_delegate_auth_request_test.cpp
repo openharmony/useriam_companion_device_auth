@@ -1,14 +1,13 @@
 /*
  * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * you may not this file except in compliance with the * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY kind, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -29,46 +28,42 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 namespace {
 
+// 测试数据常量
+const std::string CONNECTION_NAME = "test_connection";
+constexpr int32_t COMPANION_USER_ID = 200;
+const DeviceKey HOST_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "host_device_id",
+    .deviceUserId = 100 };
+const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "companion_device_id",
+    .deviceUserId = 200 };
+const std::vector<uint8_t> START_DELEGATE_AUTH_REQUEST = { 1, 2, 3, 4 };
+constexpr BindingId BINDING_ID = 1;
+const HostBindingStatus HOST_BINDING_STATUS = { .bindingId = BINDING_ID };
+
 class CompanionDelegateAuthRequestTest : public Test {
-public:
-    void CreateDefaultRequest()
-    {
-        request_ = std::make_shared<CompanionDelegateAuthRequest>(connectionName_, companionUserId_, hostDeviceKey_,
-            startDelegateAuthRequest_);
-    }
-
 protected:
-    std::shared_ptr<CompanionDelegateAuthRequest> request_;
-
-    std::string connectionName_ = "test_connection";
-    int32_t companionUserId_ = 200;
-    DeviceKey hostDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "host_device_id",
-        .deviceUserId = 100 };
-    DeviceKey companionDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "companion_device_id",
-        .deviceUserId = 200 };
-    std::vector<uint8_t> startDelegateAuthRequest_ = { 1, 2, 3, 4 };
-    BindingId bindingId_ = 1;
-    HostBindingStatus hostBindingStatus_ = { .bindingId = bindingId_ };
+    // 无成员变量，每个测试用例创建局部 request
 };
 
 HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
-        .WillOnce(Return(std::make_optional(companionDeviceKey_)));
+        .WillOnce(Return(std::make_optional(COMPANION_DEVICE_KEY)));
     EXPECT_CALL(guard.GetUserAuthAdapter(), BeginDelegateAuth(_, _, _, _)).WillOnce(Return(12345));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_TRUE(result);
 }
@@ -76,17 +71,19 @@ HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_001, TestSize.Level0)
 HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -94,13 +91,15 @@ HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_002, TestSize.Level0)
 HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::INVALID));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -108,14 +107,16 @@ HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_003, TestSize.Level0)
 HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_004, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
 }
@@ -123,14 +124,16 @@ HWTEST_F(CompanionDelegateAuthRequestTest, OnStart_004, TestSize.Level0)
 HWTEST_F(CompanionDelegateAuthRequestTest, CompanionBeginDelegateAuth_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
 
-    bool result = request_->CompanionBeginDelegateAuth();
+    bool result = request->CompanionBeginDelegateAuth();
 
     EXPECT_FALSE(result);
 }
@@ -138,15 +141,17 @@ HWTEST_F(CompanionDelegateAuthRequestTest, CompanionBeginDelegateAuth_001, TestS
 HWTEST_F(CompanionDelegateAuthRequestTest, SecureAgentBeginDelegateAuth_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginDelegateAuth(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     uint64_t challenge = 0;
     Atl atl = 0;
-    bool result = request_->SecureAgentBeginDelegateAuth(challenge, atl);
+    bool result = request->SecureAgentBeginDelegateAuth(challenge, atl);
 
     EXPECT_FALSE(result);
 }
@@ -154,7 +159,9 @@ HWTEST_F(CompanionDelegateAuthRequestTest, SecureAgentBeginDelegateAuth_001, Tes
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     Attributes extraInfoAttrs;
     std::vector<uint8_t> authToken = { 1, 2, 3 };
@@ -163,7 +170,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_001, TestSiz
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _))
-        .WillOnce(Invoke([this](const std::string &, MessageType, const Attributes &, OnMessageReply callback) {
+        .WillOnce(Invoke([](const std::string &, MessageType, const Attributes &, OnMessageReply callback) {
             SendDelegateAuthResultReply reply = { .result = ResultCode::SUCCESS };
             Attributes message;
             EncodeSendDelegateAuthResultReply(reply, message);
@@ -171,23 +178,27 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_001, TestSiz
             return true;
         }));
 
-    request_->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     std::vector<uint8_t> badExtraInfo = { 1, 2, 3 };
 
-    request_->HandleDelegateAuthResult(ResultCode::SUCCESS, badExtraInfo);
+    request->HandleDelegateAuthResult(ResultCode::SUCCESS, badExtraInfo);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     Attributes extraInfoAttrs;
     std::vector<uint8_t> authToken = { 1, 2, 3 };
@@ -196,13 +207,15 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_003, TestSiz
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request_->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_004, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     Attributes extraInfoAttrs;
     std::vector<uint8_t> authToken = { 1, 2, 3 };
@@ -212,101 +225,121 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_004, TestSiz
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request_->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     SendDelegateAuthResultReply reply = { .result = ResultCode::SUCCESS };
     Attributes message;
     EncodeSendDelegateAuthResultReply(reply, message);
 
-    request_->HandleSendDelegateAuthResultReply(message);
+    request->HandleSendDelegateAuthResultReply(message);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     SendDelegateAuthResultReply reply = { .result = ResultCode::GENERAL_ERROR };
     Attributes message;
     EncodeSendDelegateAuthResultReply(reply, message);
 
-    request_->HandleSendDelegateAuthResultReply(message);
+    request->HandleSendDelegateAuthResultReply(message);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
 
     Attributes badMessage;
 
-    request_->HandleSendDelegateAuthResultReply(badMessage);
+    request->HandleSendDelegateAuthResultReply(badMessage);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->contextId_ = 12345;
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+    request->contextId_ = 12345;
+
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->contextId_ = std::nullopt;
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+    request->contextId_ = std::nullopt;
+
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    request_->CompleteWithSuccess();
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+
+    request->CompleteWithSuccess();
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, GetWeakPtr_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    auto weakPtr = request_->GetWeakPtr();
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+
+    auto weakPtr = request->GetWeakPtr();
     EXPECT_FALSE(weakPtr.expired());
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    EXPECT_EQ(request_->GetMaxConcurrency(), 1);
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+
+    EXPECT_EQ(request->GetMaxConcurrency(), 1);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID,
+        HOST_DEVICE_KEY, START_DELEGATE_AUTH_REQUEST);
+
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
 }
 

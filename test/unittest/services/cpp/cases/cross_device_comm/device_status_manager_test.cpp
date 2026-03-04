@@ -166,6 +166,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResultSuccessPropagatesNegotiatedSta
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
     SyncDeviceStatus syncStatus;
+    syncStatus.needSync = true;
     syncStatus.protocolIdList = { ProtocolId::VERSION_1 };
     syncStatus.capabilityList = { Capability::TOKEN_AUTH };
     syncStatus.deviceUserName = "tester";
@@ -263,6 +264,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResultFailureMarksEntryAndSkipsNotif
     (void)subscription;
 
     SyncDeviceStatus syncStatus;
+    syncStatus.needSync = true;
     syncStatus.protocolIdList = { ProtocolId::VERSION_1 };
     syncStatus.capabilityList = { Capability::TOKEN_AUTH };
     syncStatus.deviceUserName = "tester";
@@ -287,7 +289,7 @@ HWTEST_F(DeviceStatusManagerTest, ShouldMonitorDeviceRespectsModeAndSubscription
     otherKey.deviceId = "device-other";
 
     auto deviceKey = MakeDeviceKey(targetKey);
-    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, [](const std::vector<DeviceStatus> &) {});
+    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
     EXPECT_TRUE(ctx.manager->ShouldMonitorDevice(targetKey));
     EXPECT_FALSE(ctx.manager->ShouldMonitorDevice(otherKey));
 
@@ -335,7 +337,7 @@ HWTEST_F(DeviceStatusManagerTest, SpecificDeviceSubscriptionTriggersRefreshOnSub
         .WillRepeatedly(Return(std::vector<PhysicalDeviceStatus> {}));
 
     auto subscription =
-        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), [](const std::vector<DeviceStatus> &) {});
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
     subscription.reset();
 }
 
@@ -497,6 +499,45 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_DeviceNotInCache, TestSize.Le
     ctx.manager->HandleSyncResult(nonExistentKey, SUCCESS, syncStatus);
 }
 
+HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_EmptySyncStatus, TestSize.Level0)
+{
+    auto ctx = SetupTestContext();
+    auto physicalStatus = MakePhysicalStatus("device-empty-sync", ChannelId::SOFTBUS, "Device");
+    DeviceStatusEntry entry(physicalStatus, []() {});
+    entry.isSyncInProgress = true;
+    ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
+
+    auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
+
+    bool callbackInvoked = false;
+    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &statusList) {
+        callbackInvoked = true;
+        ASSERT_EQ(1u, statusList.size());
+        EXPECT_EQ("device-empty-sync", statusList[0].deviceKey.deviceId);
+        // Empty sync result should have default/empty values
+        EXPECT_EQ(ProtocolId::INVALID, statusList[0].protocolId);
+        EXPECT_TRUE(statusList[0].capabilities.empty());
+    });
+    (void)subscription;
+
+    // Empty SyncDeviceStatus (needSync=false scenario)
+    SyncDeviceStatus emptySyncStatus;
+    emptySyncStatus.needSync = false; // Explicitly set to skip protocol negotiation
+    ctx.manager->HandleSyncResult(deviceKey, SUCCESS, emptySyncStatus);
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    EXPECT_TRUE(callbackInvoked);
+    const auto &syncedEntry = ctx.manager->deviceStatusMap_.at(physicalStatus.physicalDeviceKey);
+    EXPECT_TRUE(syncedEntry.isSynced);
+    EXPECT_FALSE(syncedEntry.isSyncInProgress);
+    // Verify default values for empty sync
+    EXPECT_EQ(ProtocolId::INVALID, syncedEntry.protocolId);
+    EXPECT_TRUE(syncedEntry.capabilities.empty());
+    auto result = ctx.manager->GetDeviceStatus(deviceKey);
+    ASSERT_TRUE(result.has_value());
+}
+
 HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_NoCommonProtocol, TestSize.Level0)
 {
     auto ctx = SetupTestContext();
@@ -512,6 +553,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_NoCommonProtocol, TestSize.Le
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
     SyncDeviceStatus syncStatus;
+    syncStatus.needSync = true;
     syncStatus.protocolIdList = { static_cast<ProtocolId>(INT32_999) };
     syncStatus.capabilityList = { Capability::TOKEN_AUTH };
     syncStatus.deviceUserName = "user";
@@ -539,6 +581,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_NoCommonCapabilities, TestSiz
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
     SyncDeviceStatus syncStatus;
+    syncStatus.needSync = true;
     // Use incompatible protocol to trigger sync failure
     syncStatus.protocolIdList = { static_cast<ProtocolId>(INT32_999) };
     syncStatus.capabilityList = { Capability::DELEGATE_AUTH };
@@ -591,6 +634,139 @@ HWTEST_F(DeviceStatusManagerTest, UnsubscribeDeviceStatus_Success, TestSize.Leve
 
     bool result = ctx.manager->UnsubscribeDeviceStatus(subscriptionId);
     EXPECT_TRUE(result);
+}
+
+HWTEST_F(DeviceStatusManagerTest, ShouldSyncDevice_NeedSyncTrue, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    PhysicalDeviceKey targetKey;
+    targetKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    targetKey.deviceId = "device-sync-true";
+
+    auto deviceKey = MakeDeviceKey(targetKey);
+    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
+
+    EXPECT_TRUE(ctx.manager->NeedSyncDevice(targetKey));
+
+    subscription.reset();
+}
+
+HWTEST_F(DeviceStatusManagerTest, ShouldSyncDevice_NeedSyncFalse, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    PhysicalDeviceKey targetKey;
+    targetKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    targetKey.deviceId = "device-sync-false";
+
+    auto deviceKey = MakeDeviceKey(targetKey);
+    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, false, [](const std::vector<DeviceStatus> &) {});
+
+    EXPECT_FALSE(ctx.manager->NeedSyncDevice(targetKey));
+
+    // MANAGE mode should always sync regardless of needSync
+    ctx.manager->SetSubscribeMode(SUBSCRIBE_MODE_MANAGE);
+    EXPECT_TRUE(ctx.manager->NeedSyncDevice(targetKey));
+}
+
+HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_SkippedWhenNeedSyncFalse, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    auto physicalStatus = MakePhysicalStatus("device-skip-sync", ChannelId::SOFTBUS, "Device");
+    DeviceStatusEntry entry(physicalStatus, []() {});
+    entry.isSynced = false;
+    entry.isSyncInProgress = false;
+    ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
+
+    auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
+    bool callbackInvoked = false;
+    auto subscription =
+        ctx.manager->SubscribeDeviceStatus(deviceKey, false, [&](const std::vector<DeviceStatus> &statusList) {
+            callbackInvoked = true;
+            ASSERT_EQ(1u, statusList.size());
+            EXPECT_EQ("device-skip-sync", statusList[0].deviceKey.deviceId);
+            // Empty sync result should have default/empty values
+            EXPECT_EQ(ProtocolId::INVALID, statusList[0].protocolId);
+            EXPECT_TRUE(statusList[0].capabilities.empty());
+        });
+
+    // Should not create sync request when needSync is false
+    EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _)).Times(0);
+    EXPECT_CALL(ctx.guard->GetRequestManager(), Start).Times(0);
+
+    ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey);
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // Verify that HandleSyncResult was called with empty sync status
+    EXPECT_TRUE(callbackInvoked);
+    const auto &syncedEntry = ctx.manager->deviceStatusMap_.at(physicalStatus.physicalDeviceKey);
+    EXPECT_TRUE(syncedEntry.isSynced);
+    EXPECT_FALSE(syncedEntry.isSyncInProgress);
+}
+
+HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_ProceedsWhenNeedSyncTrue, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    auto physicalStatus = MakePhysicalStatus("device-proceed-sync", ChannelId::SOFTBUS, "Device");
+    DeviceStatusEntry entry(physicalStatus, []() {});
+    entry.isSynced = false;
+    entry.isSyncInProgress = false;
+    ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
+
+    auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
+    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
+
+    // Should create sync request when needSync is true
+    EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _))
+        .WillOnce(Return(nullptr));                              // Request creation fails, but the call should happen
+    EXPECT_CALL(ctx.guard->GetRequestManager(), Start).Times(0); // Won't start due to null request
+
+    ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey);
+}
+
+HWTEST_F(DeviceStatusManagerTest, NeedSyncDevice_MultipleSubscriptions, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    PhysicalDeviceKey targetKey;
+    targetKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    targetKey.deviceId = "device-multi-sub";
+
+    PhysicalDeviceKey otherKey;
+    otherKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    otherKey.deviceId = "device-other";
+
+    // Subscribe to target with needSync=false
+    auto sub1 =
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), false, [](const std::vector<DeviceStatus> &) {});
+    EXPECT_FALSE(ctx.manager->NeedSyncDevice(targetKey));
+
+    // Subscribe to another device with needSync=true (should not affect targetKey)
+    auto sub2 =
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(otherKey), true, [](const std::vector<DeviceStatus> &) {});
+    EXPECT_FALSE(ctx.manager->NeedSyncDevice(targetKey));
+    EXPECT_TRUE(ctx.manager->NeedSyncDevice(otherKey));
+
+    // Subscribe to target with needSync=true (now targetKey should need sync)
+    auto sub3 =
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
+    EXPECT_TRUE(ctx.manager->NeedSyncDevice(targetKey));
+}
+
+HWTEST_F(DeviceStatusManagerTest, NeedSyncDevice_GlobalSubscriptionDoesNotAffectSpecific, TestSize.Level1)
+{
+    auto ctx = SetupTestContext();
+    PhysicalDeviceKey targetKey;
+    targetKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    targetKey.deviceId = "device-global-sub";
+
+    // Global subscription (no deviceKey) should not affect NeedSyncDevice
+    auto globalSub = ctx.manager->SubscribeDeviceStatus([](const std::vector<DeviceStatus> &) {});
+    EXPECT_FALSE(ctx.manager->NeedSyncDevice(targetKey));
+
+    // Even with needSync=true on specific device subscription
+    auto specificSub =
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
+    EXPECT_TRUE(ctx.manager->NeedSyncDevice(targetKey));
 }
 
 HWTEST_F(DeviceStatusManagerTest, SetSubscribeMode_SameMode, TestSize.Level0)
@@ -742,7 +918,7 @@ HWTEST_F(DeviceStatusManagerTest, SubscribeDeviceStatus_SpecificDevice_RefreshTr
         .WillRepeatedly(Return(std::vector<PhysicalDeviceStatus> {}));
 
     auto subscription =
-        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), [](const std::vector<DeviceStatus> &) {});
+        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
 }
 
 HWTEST_F(DeviceStatusManagerTest, NotifySubscribers_WithNullCallback, TestSize.Level0)

@@ -59,12 +59,11 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
         GetHostBindingManager().GetHostBindingStatus(tokenRequest.companionUserId, tokenRequest.hostDeviceKey);
     ENSURE_OR_RETURN(hostBindingStatus.has_value());
 
-    auto secureProtocolId = GetCrossDeviceCommManager().HostGetSecureProtocolId(tokenRequest.hostDeviceKey);
-    ENSURE_OR_RETURN(secureProtocolId.has_value());
+    auto secureProtocolId = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
 
     CompanionProcessTokenAuthInput input = {};
     input.bindingId = hostBindingStatus->bindingId;
-    input.secureProtocolId = secureProtocolId.value();
+    input.secureProtocolId = secureProtocolId;
     input.tokenAuthRequest = tokenRequest.extraInfo;
 
     CompanionProcessTokenAuthOutput output = {};

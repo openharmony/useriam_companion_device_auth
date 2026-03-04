@@ -47,7 +47,7 @@ public:
     virtual std::optional<DeviceStatus> GetDeviceStatus(const DeviceKey &deviceKey) = 0;
     virtual std::vector<DeviceStatus> GetAllDeviceStatus() = 0;
     virtual std::unique_ptr<Subscription> SubscribeAllDeviceStatus(OnDeviceStatusChange &&onDeviceStatusChange) = 0;
-    virtual std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey,
+    virtual std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey, bool needSync,
         OnDeviceStatusChange &&onDeviceStatusChange) = 0;
     virtual void SetSubscribeMode(SubscribeMode subscribeMode) = 0;
     virtual std::optional<SteadyTimeMs> GetManageSubscribeTime() const = 0;
