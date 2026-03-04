@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AlgoType, AuthTrustLevel, DeviceType, ErrorCode, ExecutorSecurityLevel, TrackAbilityLevel, CHALLENGE_LEN,
+    HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS,
+};
 use crate::entry::companion_device_auth_ffi::{
     CompanionInitKeyNegotiationInputFfi, DeviceKeyFfi, PersistedHostBindingStatusFfi,
 };
@@ -130,7 +133,7 @@ impl CompanionDeviceEnrollRequest {
         let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecKeyNegoRequest::decode(sec_message, device_type)?;
         if !output.algorithm_list.contains(&(AlgoType::X25519 as u16)) {
-            log_e!("algorithm list is contain X25519");
+            log_e!("algorithm list is not contain X25519");
             return Err(ErrorCode::GeneralError);
         }
         Ok(())

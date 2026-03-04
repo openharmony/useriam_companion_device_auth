@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, Capability, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostProcessPreObtainTokenInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
-use crate::request::jobs::common_message::{SecCommonRequest, SecIssueToken};
+use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
 use crate::request::jobs::token_helper::DeviceTokenInfo;
-use crate::request::token_obtain::token_obtain_message::SecPreObtainTokenRequest;
+use crate::request::token_obtain::token_obtain_message::{SecPreObtainTokenReply, SecPreObtainTokenRequest};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
@@ -92,7 +92,7 @@ impl HostDeviceObtainTokenRequest {
         device_type: DeviceType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonRequest::decode(sec_message, device_type)?;
+        let output = SecPreObtainTokenReply::decode(sec_message, device_type)?;
         let session_key = host_db_helper::get_session_key(self.obtain_param.template_id, device_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
@@ -126,10 +126,6 @@ impl HostDeviceObtainTokenRequest {
                 );
                 return Err(ErrorCode::GeneralError);
             }
-        }
-        if self.token_infos.is_empty() {
-            log_e!("obtain token parameters not found");
-            return Err(ErrorCode::GeneralError);
         }
 
         Ok(())

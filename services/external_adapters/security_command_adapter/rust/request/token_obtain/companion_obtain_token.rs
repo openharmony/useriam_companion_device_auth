@@ -13,13 +13,15 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, AuthType, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
 use crate::entry::companion_device_auth_ffi::{CompanionBeginObtainTokenInputFfi, CompanionEndObtainTokenOutputFfi};
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
-use crate::request::jobs::common_message::{SecCommonRequest, SecIssueToken};
-use crate::request::token_obtain::token_obtain_message::{FwkObtainTokenRequest, SecPreObtainTokenRequest};
+use crate::request::jobs::common_message::SecIssueToken;
+use crate::request::token_obtain::token_obtain_message::{
+    FwkObtainTokenRequest, SecPreObtainTokenReply, SecPreObtainTokenRequest,
+};
 use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::HostTokenInfo;
@@ -92,6 +94,10 @@ impl CompanionDeviceObtainTokenRequest {
     fn decode_sec_token_pre_obtaion_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecPreObtainTokenRequest::decode(sec_message, device_type)?;
+        if output.salt.len() != HKDF_SALT_SIZE {
+            log_e!("salt len is err: {}", output.salt.len());
+            return Err(ErrorCode::GeneralError);
+        }
         self.obtain_param.salt = output.salt;
         self.obtain_param.host_challenge = output.challenge;
         Ok(())
@@ -108,9 +114,10 @@ impl CompanionDeviceObtainTokenRequest {
             message_crypto::encrypt_sec_message(encrypt_attribute.to_bytes()?.as_slice(), &self.session_key)
                 .map_err(|e| p!(e))?;
 
-        let obtain_token_request = Box::new(SecCommonRequest { salt: self.obtain_param.salt, tag, iv, encrypt_data });
+        let pre_obtain_token_reply =
+            Box::new(SecPreObtainTokenReply { challenge: self.companion_challenge, tag, iv, encrypt_data });
         let output =
-            obtain_token_request.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+            pre_obtain_token_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
@@ -118,7 +125,7 @@ impl CompanionDeviceObtainTokenRequest {
         let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
         let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
 
-        if issue_token.challenge != self.obtain_param.host_challenge {
+        if issue_token.challenge != self.companion_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }

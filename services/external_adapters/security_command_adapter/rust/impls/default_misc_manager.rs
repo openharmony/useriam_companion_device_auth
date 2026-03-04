@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::ErrorCode;
 use crate::common::types::Udid;
 use crate::log_e;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};

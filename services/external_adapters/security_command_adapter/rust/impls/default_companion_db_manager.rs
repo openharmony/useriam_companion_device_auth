@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, ErrorCode, SECURE_RANDOM_MAX_ATTEMPTS, SHARE_KEY_LEN, TOKEN_KEY_LEN};
 use crate::traits::companion_db_manager::CompanionDbManager;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo, UserInfo};
@@ -341,8 +341,8 @@ impl CompanionDbManager for DefaultCompanionDbManager {
             .filter_map(|device_info| {
                 if let Err(err) = self.read_device_sk(device_info.binding_id) {
                     log_e!(
-                        "Devvice sk validation failed for binding_id:{:x}, removing device, error:{:?}",
-                        device_info.binding_id,
+                        "Device sk validation failed for binding_id:{:x}, removing device, error:{:?}",
+                        device_info.binding_id as u16,
                         err
                     );
                     Some(device_info.binding_id)

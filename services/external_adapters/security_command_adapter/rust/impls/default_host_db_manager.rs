@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    DeviceType, ErrorCode, ExecutorSecurityLevel, TrackAbilityLevel, SECURE_RANDOM_MAX_ATTEMPTS, SHARE_KEY_LEN,
+};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::{
     CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo,

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, AuthType, Capability, DeviceType, ErrorCode, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostPreIssueTokenInputFfi;
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
 use crate::jobs::host_db_helper;

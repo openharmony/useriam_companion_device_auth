@@ -17,7 +17,7 @@ use crate::common::constants::ErrorCode;
 
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};
 
-use crate::utils::attribute::{Attribute, AttributeKey};
+use crate::utils::{Attribute, AttributeKey};
 use crate::Vec;
 use crate::{log_e, p};
 

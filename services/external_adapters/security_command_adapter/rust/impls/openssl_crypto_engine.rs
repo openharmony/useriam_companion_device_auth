@@ -15,7 +15,7 @@
 
 // This file uses std:: and can override the no_std config
 
-use crate::common::ErrorCode;
+use crate::common::constants::ErrorCode;
 use crate::log_e;
 use crate::traits::crypto_engine::{AesGcmParam, AesGcmResult, CryptoEngine, KeyPair, RandomChecker};
 use crate::vec;

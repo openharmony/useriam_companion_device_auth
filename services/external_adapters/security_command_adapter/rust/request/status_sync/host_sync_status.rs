@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
+};
 use crate::entry::companion_device_auth_ffi::HostBeginCompanionCheckInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
@@ -34,8 +36,6 @@ pub struct HostDeviceSyncStatusRequest {
 
 impl HostDeviceSyncStatusRequest {
     pub fn new(input: &HostBeginCompanionCheckInputFfi) -> Result<Self, ErrorCode> {
-        log_i!("HostDeviceSyncStatusRequest::new with request_id: {}, user_id: {}", input.request_id, input.user_id);
-
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
             log_e!("secure_random challenge fail");

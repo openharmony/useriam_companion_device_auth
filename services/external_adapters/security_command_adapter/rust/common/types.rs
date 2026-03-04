@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{ErrorCode, UDID_LEN};
 use crate::log_e;
 use crate::String;
 use crate::Vec;

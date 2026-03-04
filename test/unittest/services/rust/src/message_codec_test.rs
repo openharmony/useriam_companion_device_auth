@@ -18,8 +18,8 @@ use crate::log_i;
 use crate::traits::crypto_engine::MockCryptoEngine;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};
 use crate::ut_registry_guard;
-use crate::utils::attribute::{Attribute, AttributeKey};
 use crate::utils::message_codec::{MessageCodec, MessageSignParam};
+use crate::utils::{Attribute, AttributeKey};
 
 #[test]
 fn serialize_attribute_test() {

@@ -61,7 +61,7 @@ impl EventManager for DefaultEventManager {
 
     fn has_fatal_error(&self) -> bool {
         if self.has_fatal_error {
-            log_e!("has fatal error")
+            log_e!("has fatal error");
         }
         self.has_fatal_error
     }

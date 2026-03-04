@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionPreIssueTokenInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::request::jobs::common_message::SecIssueToken;

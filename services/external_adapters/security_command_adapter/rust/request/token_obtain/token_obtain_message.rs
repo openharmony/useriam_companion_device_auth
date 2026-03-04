@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
 use crate::traits::misc_manager::MiscManagerRegistry;
 use crate::utils::message_codec::MessageCodec;
 use crate::utils::message_codec::MessageSignParam;
@@ -54,7 +54,7 @@ impl SecPreObtainTokenRequest {
 
         let message_attribute = Attribute::try_from_bytes(message_data).map_err(|e| p!(e))?;
         let salt_slice = message_attribute.get_u8_slice(AttributeKey::AttrSalt).map_err(|e| p!(e))?;
-        let challenge = message_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
+        let challenge = message_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
         Ok(Box::new(Self {
             salt: salt_slice.try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
@@ -68,7 +68,54 @@ impl SecPreObtainTokenRequest {
         let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
         let mut attribute = Attribute::new();
         attribute.set_u8_slice(AttributeKey::AttrSalt, &self.salt);
+        attribute.set_u64(AttributeKey::AttrHostChallenge, self.challenge);
+
+        let mut final_attribute = Attribute::new();
+        final_attribute.set_u8_slice(message_type, attribute.to_bytes()?.as_slice());
+        final_attribute.to_bytes()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SecPreObtainTokenReply {
+    pub challenge: u64,
+    pub tag: [u8; AES_GCM_TAG_SIZE],
+    pub iv: [u8; AES_GCM_IV_SIZE],
+    pub encrypt_data: Vec<u8>,
+}
+
+impl SecPreObtainTokenReply {
+    pub fn decode(message: &[u8], device_type: DeviceType) -> Result<Box<Self>, ErrorCode> {
+        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+        let attribute = Attribute::try_from_bytes(message).map_err(|e| p!(e))?;
+        let message_data = attribute.get_u8_slice(message_type).map_err(|e| p!(e))?;
+
+        let message_attribute = Attribute::try_from_bytes(message_data).map_err(|e| p!(e))?;
+        let challenge = message_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
+        let tag_slice = message_attribute.get_u8_slice(AttributeKey::AttrTag).map_err(|e| p!(e))?;
+        let iv_slice = message_attribute.get_u8_slice(AttributeKey::AttrIv).map_err(|e| p!(e))?;
+        let encrypt_data_slice = message_attribute.get_u8_slice(AttributeKey::AttrEncryptData).map_err(|e| p!(e))?;
+        Ok(Box::new(Self {
+            challenge,
+            tag: tag_slice.try_into().map_err(|e| {
+                log_e!("try_into fail: {:?}", e);
+                ErrorCode::GeneralError
+            })?,
+            iv: iv_slice.try_into().map_err(|e| {
+                log_e!("try_into fail: {:?}", e);
+                ErrorCode::GeneralError
+            })?,
+            encrypt_data: encrypt_data_slice.to_vec(),
+        }))
+    }
+
+    pub fn encode(&self, device_type: DeviceType) -> Result<Vec<u8>, ErrorCode> {
+        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+        let mut attribute = Attribute::new();
         attribute.set_u64(AttributeKey::AttrCompanionChallenge, self.challenge);
+        attribute.set_u8_slice(AttributeKey::AttrTag, &self.tag);
+        attribute.set_u8_slice(AttributeKey::AttrIv, &self.iv);
+        attribute.set_u8_slice(AttributeKey::AttrEncryptData, &self.encrypt_data);
 
         let mut final_attribute = Attribute::new();
         final_attribute.set_u8_slice(message_type, attribute.to_bytes()?.as_slice());

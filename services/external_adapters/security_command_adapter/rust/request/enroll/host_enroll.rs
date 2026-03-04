@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AlgoType, AuthCapabilityLevel, AuthTrustLevel, DeviceType, ErrorCode, ExecutorSecurityLevel, SecureProtocolId,
+    TrackAbilityLevel, CHALLENGE_LEN, HKDF_SALT_SIZE,
+};
 use crate::entry::companion_device_auth_ffi::HostGetInitKeyNegotiationInputFfi;
 use crate::jobs::{host_db_helper, message_crypto};
 use crate::request::enroll::enroll_message::{
@@ -41,7 +44,7 @@ pub struct KeyNegotialParam {
     pub algorithm: u16,
     pub companion_challenge: u64,
     pub key_pair: Option<KeyPair>,
-    pub sk: Vec<u8>, /* host pub_key or sk */
+    pub sk: Vec<u8>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -303,7 +306,7 @@ impl HostDeviceEnrollRequest {
             track_ability_level: TrackAbilityLevel::try_from(reply_info.track_ability_level).map_err(|e| p!(e))?,
         };
         self.device_capability.push(device_capability);
-        self.token_infos.push(token_helper::generate_token(device_type, reply_info.challenge, self.atl)?);
+        self.token_infos.push(token_helper::generate_token(device_type, key_nego_param.companion_challenge, self.atl)?);
 
         let acl = match esl {
             ExecutorSecurityLevel::Esl0 => AuthCapabilityLevel::Acl0,
