@@ -19,8 +19,8 @@ use crate::entry::companion_device_auth_ffi::{
     HostProcessPreObtainTokenInputFfi, HostProcessPreObtainTokenOutputFfi,
 };
 use crate::log_i;
-use crate::request::jobs::common_message::SecCommonRequest;
 use crate::request::token_obtain::host_obtain_token::HostDeviceObtainTokenRequest;
+use crate::request::token_obtain::token_obtain_message::SecPreObtainTokenReply;
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, MockCryptoEngine};
 use crate::traits::db_manager::{
     CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, DeviceKey, UserInfo,
@@ -34,17 +34,16 @@ use crate::String;
 use crate::Vec;
 use std::boxed::Box;
 
-fn create_valid_obtain_token_request(challenge: u64, atl: i32) -> Vec<u8> {
+fn create_valid_obtain_token_request(challenge_server: u64, challenge_client: u64, atl: i32) -> Vec<u8> {
     let mut encrypt_attribute = Attribute::new();
-    encrypt_attribute.set_u64(AttributeKey::AttrChallenge, challenge);
+    encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, challenge_client);
     encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, atl);
 
     let encrypt_data = encrypt_attribute.to_bytes().unwrap();
     let tag = [1u8; AES_GCM_TAG_SIZE];
     let iv = [2u8; AES_GCM_IV_SIZE];
-    let salt = [3u8; HKDF_SALT_SIZE];
 
-    let request = SecCommonRequest { salt, tag, iv, encrypt_data };
+    let request = SecPreObtainTokenReply { challenge: challenge_server, tag, iv, encrypt_data };
     request.encode(DeviceType::Default).unwrap()
 }
 
@@ -59,15 +58,8 @@ fn create_mock_companion_device_capability() -> CompanionDeviceCapability {
 fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id,
-        device_key: DeviceKey {
-            device_id: String::from("test_device"),
-            device_id_type: 1,
-            user_id: 100,
-        },
-        user_info: UserInfo {
-            user_id: 100,
-            user_type: 0,
-        },
+        device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
+        user_info: UserInfo { user_id: 100, user_type: 0 },
         added_time: 123456,
         is_valid: true,
         capability_list: vec![1, 2, 3], // Includes both DelegateAuth(1) and TokenAuth(2)
@@ -78,9 +70,7 @@ fn mock_set_crypto_engine() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     mock_crypto_engine.expect_aes_gcm_encrypt().returning(|data, _| {
         Ok(AesGcmResult { ciphertext: data.to_vec(), authentication_tag: [0u8; AES_GCM_TAG_SIZE] })
     });
@@ -96,9 +86,7 @@ fn mock_set_host_db_manager() {
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     mock_host_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 }
 
@@ -114,9 +102,7 @@ fn host_obtain_token_request_new_test_secure_random_challenge_fail() {
     log_i!("host_obtain_token_request_new_test_secure_random_challenge_fail start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
@@ -195,9 +181,7 @@ fn host_obtain_token_request_begin_test_success() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
@@ -244,9 +228,7 @@ fn host_obtain_token_request_end_test_read_device_capability_info_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager
-        .expect_read_device_capability_info()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_host_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
@@ -276,9 +258,7 @@ fn host_obtain_token_request_end_test_decode_sec_message_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
     mock_host_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
@@ -314,16 +294,14 @@ fn host_obtain_token_request_end_test_get_session_key_fail() {
     mock_host_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
-    mock_host_db_manager
-        .expect_read_device_sk()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -345,9 +323,7 @@ fn host_obtain_token_request_end_test_decrypt_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     mock_set_host_db_manager();
@@ -356,7 +332,7 @@ fn host_obtain_token_request_end_test_decrypt_fail() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -381,9 +357,9 @@ fn host_obtain_token_request_end_test_challenge_mismatch() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 999;
+    request.host_challenge = 999;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -408,9 +384,9 @@ fn host_obtain_token_request_end_test_atl_try_from_fail() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, 99999);
+    let sec_message = create_valid_obtain_token_request(1, 0, 99999);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -432,13 +408,9 @@ fn host_obtain_token_request_end_test_secure_random_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_| Err(ErrorCode::GeneralError));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     mock_set_host_db_manager();
@@ -446,9 +418,9 @@ fn host_obtain_token_request_end_test_secure_random_fail() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -470,13 +442,9 @@ fn host_obtain_token_request_end_test_generate_token_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_| Err(ErrorCode::GeneralError));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     mock_set_host_db_manager();
@@ -484,9 +452,9 @@ fn host_obtain_token_request_end_test_generate_token_fail() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -509,9 +477,7 @@ fn host_obtain_token_request_end_test_sec_message_get_session_key_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Err(ErrorCode::GeneralError));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     mock_set_host_db_manager();
@@ -519,9 +485,9 @@ fn host_obtain_token_request_end_test_sec_message_get_session_key_fail() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -543,12 +509,8 @@ fn host_obtain_token_request_end_test_sec_message_encrypt_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
-    mock_crypto_engine
-        .expect_aes_gcm_encrypt()
-        .returning(|_, _| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     mock_set_host_db_manager();
@@ -556,9 +518,9 @@ fn host_obtain_token_request_end_test_sec_message_encrypt_fail() {
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -581,17 +543,15 @@ fn host_obtain_token_request_end_test_get_rtc_time_fail() {
     mock_set_host_db_manager();
 
     let mut mock_time_keeper = MockTimeKeeper::new();
-    mock_time_keeper
-        .expect_get_rtc_time()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -620,16 +580,14 @@ fn host_obtain_token_request_end_test_add_token_fail() {
     mock_host_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager
-        .expect_add_token()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_host_db_manager.expect_add_token().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostProcessPreObtainTokenInputFfi { request_id: 1, template_id: 123, secure_protocol_id: 1 };
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,
@@ -656,7 +614,7 @@ fn host_obtain_token_request_end_test_success() {
 
     let mut request = HostDeviceObtainTokenRequest::new(&input).unwrap();
 
-    let sec_message = create_valid_obtain_token_request(0, AuthTrustLevel::Atl3 as i32);
+    let sec_message = create_valid_obtain_token_request(1, 0, AuthTrustLevel::Atl3 as i32);
     let end_input = HostProcessObtainTokenInputFfi {
         request_id: 1,
         template_id: 123,

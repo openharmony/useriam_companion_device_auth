@@ -37,12 +37,8 @@ fn add_host_device_test() {
     log_i!("add_host_device_test start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_get_device_by_device_key()
-        .returning(|| Ok(create_mock_host_device_info(123)));
-    mock_companion_db_manager
-        .expect_remove_device()
-        .returning(|| Ok(create_mock_host_device_info(123)));
+    mock_companion_db_manager.expect_get_device_by_device_key().returning(|| Ok(create_mock_host_device_info(123)));
+    mock_companion_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_device_info(123)));
     mock_companion_db_manager.expect_add_device().returning(|| Ok(()));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
@@ -59,9 +55,7 @@ fn update_host_device_last_used_time_test_get_device_by_binding_id_fail() {
     log_i!("update_host_device_last_used_time_test_get_device_by_binding_id_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_get_device_by_binding_id()
-        .returning(|| Err(ErrorCode::NotFound));
+    mock_companion_db_manager.expect_get_device_by_binding_id().returning(|| Err(ErrorCode::NotFound));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let result = update_host_device_last_used_time(123);
@@ -74,15 +68,11 @@ fn update_host_device_last_used_time_test_get_rtc_time_fail() {
     log_i!("update_host_device_last_used_time_test_get_rtc_time_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_get_device_by_binding_id()
-        .returning(|| Ok(create_mock_host_device_info(123)));
+    mock_companion_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(123)));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
-    mock_time_keeper
-        .expect_get_rtc_time()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
     let result = update_host_device_last_used_time(123);
@@ -95,12 +85,8 @@ fn update_host_device_last_used_time_test_update_device_fail() {
     log_i!("update_host_device_last_used_time_test_update_device_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_get_device_by_binding_id()
-        .returning(|| Ok(create_mock_host_device_info(123)));
-    mock_companion_db_manager
-        .expect_update_device()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(123)));
+    mock_companion_db_manager.expect_update_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();

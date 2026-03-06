@@ -59,7 +59,7 @@ fn companion_sync_status_request_new_test_success() {
 
     let request = result.unwrap();
     assert_eq!(request.get_request_id(), 123);
-    assert_eq!(request.challenge, 0);
+    assert_eq!(request.host_challenge, 0);
     assert_eq!(request.expected_protocol_list, SUPPORTED_PROTOCOL_VERSIONS.to_vec());
     assert_eq!(request.expected_capability_list, vec![0x01, 0x02]);
 }
@@ -125,16 +125,12 @@ fn companion_sync_status_request_begin_test_encrypt_sec_message_fail() {
     log_i!("companion_sync_status_request_begin_test_encrypt_sec_message_fail start");
 
     let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager
-        .expect_read_device_sk()
-        .returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
+    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_buf| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_buf| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = create_valid_input(123, 0);

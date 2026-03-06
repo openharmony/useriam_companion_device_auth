@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionProcessTokenAuthInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
@@ -29,7 +29,7 @@ use crate::{log_e, log_i, p, Box, Vec};
 pub struct CompanionTokenAuthRequest {
     pub binding_id: i32,
     pub secure_protocol_id: u16,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub salt: [u8; HKDF_SALT_SIZE],
 }
 
@@ -38,7 +38,7 @@ impl CompanionTokenAuthRequest {
         Ok(CompanionTokenAuthRequest {
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
-            challenge: 0,
+            host_challenge: 0,
             salt: [0u8; HKDF_SALT_SIZE],
         })
     }
@@ -59,9 +59,9 @@ impl CompanionTokenAuthRequest {
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
 
-        self.challenge = challenge;
+        self.host_challenge = challenge;
         self.salt = output.salt;
         Ok(())
     }
@@ -78,19 +78,15 @@ impl CompanionTokenAuthRequest {
     }
 
     fn encode_sec_token_auth_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        let token_info = CompanionDbManagerRegistry::get_mut()
-            .read_device_token(self.binding_id)
-            .map_err(|e| p!(e))?;
+        let token_info = CompanionDbManagerRegistry::get_mut().read_device_token(self.binding_id).map_err(|e| p!(e))?;
         let atl = token_info.atl as i32;
         let atl_bytes = atl.to_le_bytes();
-        let challenge_bytes = self.challenge.to_le_bytes();
+        let challenge_bytes = self.host_challenge.to_le_bytes();
         let mut data = Vec::with_capacity(atl_bytes.len() + challenge_bytes.len());
         data.extend_from_slice(&atl_bytes);
         data.extend_from_slice(&challenge_bytes);
 
-        let hmac = CryptoEngineRegistry::get()
-            .hmac_sha256(&token_info.token, &data)
-            .map_err(|e| p!(e))?;
+        let hmac = CryptoEngineRegistry::get().hmac_sha256(&token_info.token, &data).map_err(|e| p!(e))?;
 
         let sec_auth_reply = Box::new(SecAuthReply { hmac: hmac.to_vec() });
         let output = sec_auth_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
@@ -117,6 +113,7 @@ impl Request for CompanionTokenAuthRequest {
 
         self.decode_sec_token_auth_request(ffi_input.sec_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_auth_reply()?;
+        companion_db_helper::update_host_device_last_used_time(self.binding_id)?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         Ok(())
     }

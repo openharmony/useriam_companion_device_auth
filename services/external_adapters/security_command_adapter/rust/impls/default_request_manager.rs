@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::ErrorCode;
 use crate::traits::request_manager::{DynRequest, RequestManager};
 use crate::{log_e, log_i, Box, Vec};
 
@@ -49,11 +49,7 @@ impl RequestManager for DefaultRequestManager {
 
     fn remove_request(&mut self, request_id: i32) -> Result<Box<DynRequest>, ErrorCode> {
         log_i!("remove_request start");
-        let pos = self
-            .requests
-            .iter()
-            .position(|req| req.get_request_id() == request_id)
-            .ok_or(ErrorCode::NotFound)?;
+        let pos = self.requests.iter().position(|req| req.get_request_id() == request_id).ok_or(ErrorCode::NotFound)?;
 
         Ok(self.requests.remove(pos))
     }

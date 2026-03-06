@@ -79,12 +79,19 @@ mod event_manager_test;
 mod host_db_manager_test;
 mod misc_manager_test;
 mod request_manager_test;
+#[cfg(test)]
 mod storage_io_test;
+#[cfg(test)]
 mod time_keeper_test;
 
 // utils
+#[cfg(test)]
 mod attribute_test;
+#[cfg(test)]
 mod auth_token_test;
+#[cfg(test)]
 mod message_codec_test;
+#[cfg(test)]
 mod parcel_test;
+#[cfg(test)]
 mod scope_guard_test;

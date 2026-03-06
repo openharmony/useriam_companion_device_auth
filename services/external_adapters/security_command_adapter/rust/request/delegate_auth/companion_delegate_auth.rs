@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionBeginDelegateAuthInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
@@ -28,7 +28,7 @@ pub struct CompanionDelegateAuthRequest {
     pub request_id: i32,
     pub binding_id: i32,
     pub secure_protocol_id: u16,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub atl: AuthTrustLevel,
     pub auth_type: i32,
     pub salt: [u8; HKDF_SALT_SIZE],
@@ -41,7 +41,7 @@ impl CompanionDelegateAuthRequest {
             request_id: input.request_id,
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
-            challenge: 0,
+            host_challenge: 0,
             atl: AuthTrustLevel::Atl2,
             auth_type: 1,
             salt: [0u8; HKDF_SALT_SIZE],
@@ -64,10 +64,10 @@ impl CompanionDelegateAuthRequest {
             message_crypto::decrypt_sec_message(&output.encrypt_data, &self.session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
         let atl_value = decrypt_attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
         self.salt = output.salt;
-        self.challenge = challenge;
+        self.host_challenge = challenge;
         self.atl = AuthTrustLevel::try_from(atl_value).map_err(|_| {
             log_e!("Invalid ATL value: {}", atl_value);
             ErrorCode::GeneralError
@@ -78,7 +78,7 @@ impl CompanionDelegateAuthRequest {
 
     fn encode_sec_delegate_auth_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+        encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
         encrypt_attribute.set_i32(AttributeKey::AttrType, self.auth_type);
         encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, self.atl as i32);
 
@@ -111,7 +111,7 @@ impl Request for CompanionDelegateAuthRequest {
 
         self.decode_sec_delegate_auth_request(ffi_input.sec_message.as_slice()?)?;
 
-        ffi_output.challenge = self.challenge;
+        ffi_output.challenge = self.host_challenge;
         ffi_output.atl = self.atl as i32;
         Ok(())
     }

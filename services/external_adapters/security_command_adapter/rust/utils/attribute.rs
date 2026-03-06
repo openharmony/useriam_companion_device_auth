@@ -41,7 +41,6 @@ pub enum AttributeKey {
     AttrToken = 100042,
     AttrEsl = 100044,
     AttrPublicKey = 100065,
-    AttrChallenge = 100066,
     AttrAuthTrustLevel = 100089,
 
     AttrMessage = 300001,
@@ -55,6 +54,8 @@ pub enum AttributeKey {
     AttrEncryptData = 300009,
     AttrTrackAbilityLevel = 300010,
     AttrHmac = 300011,
+    AttrHostChallenge = 300016,
+    AttrCompanionChallenge = 300017,
 }
 
 impl TryFrom<i32> for AttributeKey {
@@ -78,7 +79,6 @@ impl TryFrom<i32> for AttributeKey {
             100042 => Ok(AttributeKey::AttrToken),
             100044 => Ok(AttributeKey::AttrEsl),
             100065 => Ok(AttributeKey::AttrPublicKey),
-            100066 => Ok(AttributeKey::AttrChallenge),
             100089 => Ok(AttributeKey::AttrAuthTrustLevel),
             300001 => Ok(AttributeKey::AttrMessage),
             300002 => Ok(AttributeKey::AttrProtocolList),
@@ -91,6 +91,8 @@ impl TryFrom<i32> for AttributeKey {
             300009 => Ok(AttributeKey::AttrEncryptData),
             300010 => Ok(AttributeKey::AttrTrackAbilityLevel),
             300011 => Ok(AttributeKey::AttrHmac),
+            300016 => Ok(AttributeKey::AttrHostChallenge),
+            300017 => Ok(AttributeKey::AttrCompanionChallenge),
             _ => Err(ErrorCode::GeneralError),
         }
     }

@@ -15,10 +15,16 @@
 
 extern crate alloc;
 
-use crate::common::constants::*;
-use crate::entry::companion_device_auth_ffi::*;
+use crate::common::constants::ErrorCode;
+use crate::entry::companion_device_auth_ffi::{
+    CommonOutputFfi, CompanionStatusArrayFfi, DataArray1024Ffi, DataArray128Ffi, DataArray20000Ffi, DataArray256Ffi,
+    DataArray64Ffi, DeviceKeyFfi, EventArrayFfi, EventFfi, HostBindingStatusArrayFfi, Int32Array64Ffi,
+    PersistedCompanionStatusFfi, PersistedHostBindingStatusFfi, TemplateIdArrayFfi, Uint16Array64Ffi,
+    MAX_DATA_LEN_1024, MAX_DATA_LEN_128, MAX_DATA_LEN_20000, MAX_DATA_LEN_256, MAX_DATA_LEN_64, MAX_EVENT_NUM_FFI,
+    MAX_TEMPLATE_ID_NUM_PER_USER_FFI,
+};
 use crate::traits::db_manager::DeviceKey;
-use crate::traits::event_manager::*;
+use crate::traits::event_manager::Event;
 use crate::CString;
 use crate::String;
 use crate::Vec;
@@ -279,6 +285,9 @@ impl TryFrom<Vec<Event>> for EventArrayFfi {
     type Error = ErrorCode;
 
     fn try_from(value: Vec<Event>) -> core::result::Result<Self, ErrorCode> {
+        if value.len() > MAX_EVENT_NUM_FFI {
+            return Err(ErrorCode::BadParam);
+        }
         let mut data = [EventFfi::default(); MAX_EVENT_NUM_FFI];
         for (i, item) in value.iter().enumerate() {
             data[i] = item.clone().try_into().map_err(|e| p!(e))?;

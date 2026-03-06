@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
+};
 use crate::entry::companion_device_auth_ffi::HostBeginCompanionCheckInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
@@ -22,35 +24,33 @@ use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
-use crate::{log_e, log_i, p, Vec};
+use crate::{log_e, log_i, p};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct HostDeviceSyncStatusRequest {
     pub request_id: i32,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub salt: [u8; HKDF_SALT_SIZE],
     pub template_id: u64,
 }
 
 impl HostDeviceSyncStatusRequest {
     pub fn new(input: &HostBeginCompanionCheckInputFfi) -> Result<Self, ErrorCode> {
-        log_i!("HostDeviceSyncStatusRequest::new with request_id: {}, user_id: {}", input.request_id, input.user_id);
-
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
 
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
             ErrorCode::GeneralError
         })?;
 
         Ok(HostDeviceSyncStatusRequest {
             request_id: input.request_id,
-            challenge: u64::from_ne_bytes(challenge),
+            host_challenge: u64::from_ne_bytes(challenge),
             salt,
             template_id: 0,
         })
@@ -67,36 +67,24 @@ impl HostDeviceSyncStatusRequest {
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
-        if challenge != self.challenge {
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
+        if challenge != self.host_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }
-        let protocol_list = decrypt_attribute
-            .get_u16_vec(AttributeKey::AttrProtocolList)
-            .map_err(|e| p!(e))?;
+        let protocol_list = decrypt_attribute.get_u16_vec(AttributeKey::AttrProtocolList).map_err(|e| p!(e))?;
         // Validate that TA's protocol_list is a subset of CA's SUPPORTED_PROTOCOL_VERSIONS
         for protocol in &protocol_list {
             if !SUPPORTED_PROTOCOL_VERSIONS.contains(protocol) {
-                log_e!(
-                    "protocol {} is not supported by CA, supported: {:?}",
-                    protocol,
-                    SUPPORTED_PROTOCOL_VERSIONS
-                );
+                log_e!("protocol {} is not supported by CA, supported: {:?}", protocol, SUPPORTED_PROTOCOL_VERSIONS);
                 return Err(ErrorCode::GeneralError);
             }
         }
-        let capabilities = decrypt_attribute
-            .get_u16_vec(AttributeKey::AttrCapabilityList)
-            .map_err(|e| p!(e))?;
+        let capabilities = decrypt_attribute.get_u16_vec(AttributeKey::AttrCapabilityList).map_err(|e| p!(e))?;
         // Validate that TA's capabilities is a subset of CA's SUPPORT_CAPABILITIES
         for capability in &capabilities {
             if !SUPPORT_CAPABILITIES.contains(capability) {
-                log_e!(
-                    "capability {} is not supported by CA, supported: {:?}",
-                    capability,
-                    SUPPORT_CAPABILITIES
-                );
+                log_e!("capability {} is not supported by CA, supported: {:?}", capability, SUPPORT_CAPABILITIES);
                 return Err(ErrorCode::GeneralError);
             }
         }
@@ -106,7 +94,7 @@ impl HostDeviceSyncStatusRequest {
 
     fn decode_sec_status_sync_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let device_capabilitys = HostDbManagerRegistry::get_mut().read_device_capability_info(self.template_id)?;
-        for device_capability in device_capabilitys {
+        for device_capability in &device_capabilitys {
             if let Err(e) = self.decode_sec_status_sync_reply_message(device_capability.device_type, sec_message) {
                 log_e!(
                     "parse sync status reply message fail: device_type: {:?}, result: {:?}",
@@ -136,7 +124,7 @@ impl Request for HostDeviceSyncStatusRequest {
             log_e!("param type is error");
             return Err(ErrorCode::BadParam);
         };
-        ffi_output.challenge = self.challenge;
+        ffi_output.challenge = self.host_challenge;
         ffi_output.salt.data.copy_from_slice(&self.salt);
         ffi_output.salt.len = self.salt.len() as u32;
         Ok(())
@@ -155,6 +143,8 @@ impl Request for HostDeviceSyncStatusRequest {
             host_db_helper::update_companion_device_valid_flag(self.template_id, true)?;
         } else {
             host_db_helper::update_companion_device_valid_flag(self.template_id, false)?;
+            log_e!("proc status sync reply fail");
+            return Err(ErrorCode::GeneralError);
         }
 
         Ok(())

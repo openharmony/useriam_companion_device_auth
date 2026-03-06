@@ -41,7 +41,6 @@ fn attribute_key_test() {
     assert_eq!(AttributeKey::try_from(100042).unwrap(), AttributeKey::AttrToken);
     assert_eq!(AttributeKey::try_from(100044).unwrap(), AttributeKey::AttrEsl);
     assert_eq!(AttributeKey::try_from(100065).unwrap(), AttributeKey::AttrPublicKey);
-    assert_eq!(AttributeKey::try_from(100066).unwrap(), AttributeKey::AttrChallenge);
     assert_eq!(AttributeKey::try_from(100089).unwrap(), AttributeKey::AttrAuthTrustLevel);
     assert_eq!(AttributeKey::try_from(300001).unwrap(), AttributeKey::AttrMessage);
     assert_eq!(AttributeKey::try_from(300002).unwrap(), AttributeKey::AttrProtocolList);
@@ -54,6 +53,8 @@ fn attribute_key_test() {
     assert_eq!(AttributeKey::try_from(300009).unwrap(), AttributeKey::AttrEncryptData);
     assert_eq!(AttributeKey::try_from(300010).unwrap(), AttributeKey::AttrTrackAbilityLevel);
     assert_eq!(AttributeKey::try_from(300011).unwrap(), AttributeKey::AttrHmac);
+    assert_eq!(AttributeKey::try_from(300016).unwrap(), AttributeKey::AttrHostChallenge);
+    assert_eq!(AttributeKey::try_from(300017).unwrap(), AttributeKey::AttrCompanionChallenge);
     assert_eq!(AttributeKey::try_from(0), Err(ErrorCode::GeneralError));
 }
 

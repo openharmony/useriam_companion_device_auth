@@ -15,8 +15,8 @@
 
 use crate::common::constants::*;
 use crate::entry::companion_device_auth_ffi::{
-    DataArray1024Ffi, HostBeginCompanionCheckInputFfi, HostBeginCompanionCheckOutputFfi,
-    HostEndCompanionCheckInputFfi, HostEndCompanionCheckOutputFfi, Uint16Array64Ffi,
+    DataArray1024Ffi, HostBeginCompanionCheckInputFfi, HostBeginCompanionCheckOutputFfi, HostEndCompanionCheckInputFfi,
+    HostEndCompanionCheckOutputFfi, Uint16Array64Ffi,
 };
 use crate::log_i;
 use crate::request::jobs::common_message::SecCommonReply;
@@ -33,7 +33,7 @@ use std::boxed::Box;
 
 fn create_valid_sync_reply_message(challenge: u64, protocol_list: &[u16], capability_list: &[u16]) -> Vec<u8> {
     let mut encrypt_attribute = Attribute::new();
-    encrypt_attribute.set_u64(AttributeKey::AttrChallenge, challenge);
+    encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, challenge);
     encrypt_attribute.set_u16_slice(AttributeKey::AttrProtocolList, protocol_list);
     encrypt_attribute.set_u16_slice(AttributeKey::AttrCapabilityList, capability_list);
 
@@ -48,15 +48,8 @@ fn create_valid_sync_reply_message(challenge: u64, protocol_list: &[u16], capabi
 fn create_mock_companion_device_info() -> CompanionDeviceInfo {
     CompanionDeviceInfo {
         template_id: 123,
-        device_key: DeviceKey {
-            device_id: String::from("test_device"),
-            device_id_type: 1,
-            user_id: 100,
-        },
-        user_info: UserInfo {
-            user_id: 100,
-            user_type: 0,
-        },
+        device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
+        user_info: UserInfo { user_id: 100, user_type: 0 },
         added_time: 123456,
         is_valid: true,
         capability_list: vec![1, 2, 3],
@@ -67,9 +60,7 @@ fn mock_set_crypto_engine() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 }
 
@@ -85,9 +76,7 @@ fn mock_set_host_db_manager() {
     mock_host_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 }
@@ -115,9 +104,7 @@ fn host_sync_status_request_new_test_secure_random_salt_fail() {
     log_i!("host_sync_status_request_new_test_secure_random_salt_fail start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_secure_random()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_secure_random().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
@@ -205,9 +192,7 @@ fn host_sync_status_request_end_test_protocol_list_convert_fail() {
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
@@ -229,7 +214,7 @@ fn host_sync_status_request_end_test_protocol_list_convert_fail() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert_eq!(result, Ok(()));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -249,9 +234,7 @@ fn host_sync_status_request_end_test_capability_list_convert_fail() {
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
@@ -273,7 +256,7 @@ fn host_sync_status_request_end_test_capability_list_convert_fail() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert_eq!(result, Ok(()));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -286,12 +269,8 @@ fn host_sync_status_request_end_test_read_device_capability_info_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager
-        .expect_read_device_capability_info()
-        .returning(|| Err(ErrorCode::NotFound));
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
@@ -316,7 +295,7 @@ fn host_sync_status_request_end_test_read_device_capability_info_fail() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert!(result.is_ok());
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -339,9 +318,7 @@ fn host_sync_status_request_end_test_decode_sec_message_fail() {
     mock_host_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
     mock_host_db_manager.expect_update_device().returning(|| Ok(()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
@@ -361,7 +338,7 @@ fn host_sync_status_request_end_test_decode_sec_message_fail() {
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
     // When message decoding fails, the device is marked as invalid but the operation succeeds
-    assert_eq!(result, Ok(()));
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -381,15 +358,9 @@ fn host_sync_status_request_end_test_get_session_key_fail() {
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
-        .expect_read_device_sk()
-        .returning(|| Err(ErrorCode::NotFound));
-    mock_host_db_manager
-        .expect_get_device()
-        .returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager
-        .expect_update_device()
-        .returning(|| Err(ErrorCode::GeneralError));
+    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
+    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_host_db_manager.expect_update_device().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
@@ -421,9 +392,7 @@ fn host_sync_status_request_end_test_decrypt_sec_message_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_| Err(ErrorCode::GeneralError));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
@@ -447,7 +416,7 @@ fn host_sync_status_request_end_test_decrypt_sec_message_fail() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert!(result.is_ok());
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -460,9 +429,7 @@ fn host_sync_status_request_end_test_attribute_try_from_bytes_fail() {
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
-    mock_crypto_engine
-        .expect_aes_gcm_decrypt()
-        .returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
@@ -499,7 +466,7 @@ fn host_sync_status_request_end_test_challenge_mismatch() {
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
-    request.challenge = 999;
+    request.host_challenge = 999;
 
     let sec_message = create_valid_sync_reply_message(0, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES);
     let mut capability_list = Uint16Array64Ffi::default();
@@ -519,7 +486,7 @@ fn host_sync_status_request_end_test_challenge_mismatch() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert!(result.is_ok());
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -532,11 +499,7 @@ fn host_sync_status_request_end_test_protocol_list_mismatch() {
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
-    request.challenge = 0;
-
-    let mut protocol_list = Uint16Array64Ffi::default();
-    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
-    protocol_list.len = 1;
+    request.host_challenge = 0;
 
     let wrong_protocol = vec![0xFFFF];
     let sec_message = create_valid_sync_reply_message(0, &wrong_protocol, SUPPORT_CAPABILITIES);
@@ -557,7 +520,7 @@ fn host_sync_status_request_end_test_protocol_list_mismatch() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert!(result.is_ok());
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -570,11 +533,7 @@ fn host_sync_status_request_end_test_capability_list_mismatch() {
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
-    request.challenge = 0;
-
-    let mut protocol_list = Uint16Array64Ffi::default();
-    protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
-    protocol_list.len = 1;
+    request.host_challenge = 0;
 
     let mut capability_list = Uint16Array64Ffi::default();
     capability_list.data[0] = SUPPORT_CAPABILITIES[0];
@@ -596,7 +555,7 @@ fn host_sync_status_request_end_test_capability_list_mismatch() {
     let mut output = HostEndCompanionCheckOutputFfi::default();
     let param = RequestParam::HostSyncStatusEnd(&end_input, &mut output);
     let result = request.end(param);
-    assert!(result.is_ok());
+    assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
@@ -609,7 +568,7 @@ fn host_sync_status_request_end_test_success() {
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
-    request.challenge = 0;
+    request.host_challenge = 0;
 
     let mut capability_list = Uint16Array64Ffi::default();
     capability_list.data[0] = SUPPORT_CAPABILITIES[0];

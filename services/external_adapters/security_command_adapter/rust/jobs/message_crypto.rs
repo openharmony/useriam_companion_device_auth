@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
-use crate::common::types::*;
+use crate::common::constants::{ErrorCode, AES_GCM_AAD, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE};
+use crate::common::types::Udid;
 use crate::traits::crypto_engine::AesGcmParam;
 use crate::traits::crypto_engine::AesGcmResult;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
@@ -41,9 +41,7 @@ pub fn encrypt_sec_message(message: &[u8], key: &[u8]) -> Result<EncryptedMessag
         ErrorCode::GeneralError
     })?;
     let aes_gcm_param = init_aes_gcm_param(key, iv)?;
-    let aes_gcm_result = CryptoEngineRegistry::get()
-        .aes_gcm_encrypt(message, &*aes_gcm_param)
-        .map_err(|e| p!(e))?;
+    let aes_gcm_result = CryptoEngineRegistry::get().aes_gcm_encrypt(message, &aes_gcm_param).map_err(|e| p!(e))?;
 
     tag.copy_from_slice(&aes_gcm_result.authentication_tag);
     Ok((aes_gcm_result.ciphertext.clone(), tag, iv))
@@ -65,9 +63,7 @@ pub fn decrypt_sec_message(sec_message: &[u8], key: &[u8], tag: &[u8], iv: &[u8]
     let aes_gcm_param = init_aes_gcm_param(key, iv_array)?;
     let aes_gcm_result = AesGcmResult::new(sec_message.to_vec(), tag_array);
 
-    CryptoEngineRegistry::get()
-        .aes_gcm_decrypt(&*aes_gcm_param, &aes_gcm_result)
-        .map_err(|e| p!(e))
+    CryptoEngineRegistry::get().aes_gcm_decrypt(&aes_gcm_param, &aes_gcm_result).map_err(|e| p!(e))
 }
 
 pub fn get_distribute_key(local_device_id: &str, peer_device_id: &str) -> Result<Vec<u8>, ErrorCode> {

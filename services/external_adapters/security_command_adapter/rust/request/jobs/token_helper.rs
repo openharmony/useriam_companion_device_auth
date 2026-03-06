@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, TOKEN_KEY_LEN};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::CompanionTokenInfo;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
@@ -35,7 +35,7 @@ pub fn generate_token(
 ) -> Result<DeviceTokenInfo, ErrorCode> {
     let mut token = [0u8; TOKEN_KEY_LEN];
     CryptoEngineRegistry::get().secure_random(&mut token).map_err(|_| {
-        log_e!("secure_random fail");
+        log_e!("secure_random token fail");
         ErrorCode::GeneralError
     })?;
 

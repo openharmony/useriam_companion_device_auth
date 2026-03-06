@@ -33,9 +33,7 @@ fn fwk_obtain_token_request_decode_test_invalid_message() {
     log_i!("fwk_obtain_token_request_decode_test_invalid_message start");
 
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_fwk_pub_key()
-        .returning(|| Ok(create_mock_key_pair().pub_key.clone()));
+    mock_misc_manager.expect_get_fwk_pub_key().returning(|| Ok(create_mock_key_pair().pub_key.clone()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let invalid_message = vec![1, 2, 3];
@@ -49,15 +47,11 @@ fn fwk_obtain_token_request_decode_test_missing_property_mode() {
     log_i!("fwk_obtain_token_request_decode_test_missing_property_mode start");
 
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_fwk_pub_key()
-        .returning(|| Ok(create_mock_key_pair().pub_key.clone()));
+    mock_misc_manager.expect_get_fwk_pub_key().returning(|| Ok(create_mock_key_pair().pub_key.clone()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -77,15 +71,11 @@ fn fwk_obtain_token_request_decode_test_missing_type() {
     log_i!("fwk_obtain_token_request_decode_test_missing_type start");
 
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_fwk_pub_key()
-        .returning(|| Ok(create_mock_key_pair().pub_key.clone()));
+    mock_misc_manager.expect_get_fwk_pub_key().returning(|| Ok(create_mock_key_pair().pub_key.clone()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -105,15 +95,11 @@ fn fwk_obtain_token_request_decode_test_missing_atl() {
     log_i!("fwk_obtain_token_request_decode_test_missing_atl start");
 
     let mut mock_misc_manager = MockMiscManager::new();
-    mock_misc_manager
-        .expect_get_fwk_pub_key()
-        .returning(|| Ok(create_mock_key_pair().pub_key.clone()));
+    mock_misc_manager.expect_get_fwk_pub_key().returning(|| Ok(create_mock_key_pair().pub_key.clone()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
-    mock_crypto_engine
-        .expect_ed25519_sign()
-        .returning(|_, bytes| Ok(bytes.to_vec()));
+    mock_crypto_engine.expect_ed25519_sign().returning(|_, bytes| Ok(bytes.to_vec()));
     mock_crypto_engine.expect_ed25519_verify().returning(|_, _| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
@@ -192,7 +178,7 @@ fn sec_pre_obtain_token_request_decode_test_salt_convert_fail() {
 
     let mut attribute = Attribute::new();
     attribute.set_u8_slice(AttributeKey::AttrSalt, &[]);
-    attribute.set_u64(AttributeKey::AttrChallenge, 0);
+    attribute.set_u64(AttributeKey::AttrHostChallenge, 0);
     let mut final_attribute = Attribute::new();
     final_attribute.set_u8_slice(AttributeKey::AttrMessage, attribute.to_bytes().unwrap().as_slice());
     let message = final_attribute.to_bytes().unwrap();
