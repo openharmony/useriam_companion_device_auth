@@ -50,22 +50,19 @@ impl EventManager for DefaultEventManager {
         }
 
         self.events.push(event.clone());
-        while self.events.len() > MAX_EVENT_NUM {
-            // avoid infinite loop
-            let mut removed = false;
+        if self.events.len() > MAX_EVENT_NUM {
             for event_type in [EventType::Command, EventType::Error, EventType::BigData, EventType::FatalError] {
                 if let Some(_event) = self.remove_first_event(event_type) {
-                    removed = true;
                     break;
                 }
-            }
-            if !removed {
-                break;
             }
         }
     }
 
     fn has_fatal_error(&self) -> bool {
+        if self.has_fatal_error {
+            log_e!("has fatal error");
+        }
         self.has_fatal_error
     }
 

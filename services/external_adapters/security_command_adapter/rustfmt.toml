@@ -22,4 +22,4 @@ tab_spaces = 4
 use_try_shorthand = true
 
 # Chain calls
-chain_width = 80
+chain_width = 120

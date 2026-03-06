@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, ErrorCode, SECURE_RANDOM_MAX_ATTEMPTS, SHARE_KEY_LEN, TOKEN_KEY_LEN};
 use crate::traits::companion_db_manager::CompanionDbManager;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo, UserInfo};
@@ -45,9 +45,7 @@ impl DefaultCompanionDbManager {
     }
 
     fn get_index_by_binding_id(&self, binding_id: i32) -> Option<usize> {
-        self.host_device_infos
-            .iter()
-            .position(|device_info| device_info.binding_id == binding_id)
+        self.host_device_infos.iter().position(|device_info| device_info.binding_id == binding_id)
     }
 
     fn get_index_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Option<usize> {
@@ -190,39 +188,27 @@ impl DefaultCompanionDbManager {
         log_i!("write_device_db start");
         let mut parcel = Parcel::new();
         self.serialize_device_db(&mut parcel);
-        StorageIoRegistry::get()
-            .write(COMPANION_DEVICE_DB, parcel.as_slice())
-            .map_err(|e| p!(e))?;
+        StorageIoRegistry::get().write(COMPANION_DEVICE_DB, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 
     fn get_device_num_by_user_id(&self, user_id: i32) -> usize {
-        self.host_device_infos
-            .iter()
-            .filter(|device| device.user_info.user_id == user_id)
-            .count()
+        self.host_device_infos.iter().filter(|device| device.user_info.user_id == user_id).count()
     }
 
     fn remove_oldest_unused_device(&mut self, user_id: i32) -> Result<(), ErrorCode> {
-        let user_devices: Vec<(usize, &HostDeviceInfo)> = self
-            .host_device_infos
-            .iter()
-            .enumerate()
-            .filter(|(_, info)| info.user_info.user_id == user_id)
-            .collect();
+        let user_devices: Vec<&HostDeviceInfo> =
+            self.host_device_infos.iter().filter(|info| info.user_info.user_id == user_id).collect();
 
         if user_devices.is_empty() {
             log_i!("No devices found for user_id: {}", user_id);
             return Ok(());
         }
 
-        let oldest_index = user_devices
-            .iter()
-            .min_by_key(|(_, info)| info.last_used_time)
-            .map(|(index, _)| *index)
-            .unwrap();
+        if let Some(oldest_device) = user_devices.iter().min_by_key(|info| info.last_used_time) {
+            self.remove_device(oldest_device.binding_id)?;
+        }
 
-        let _ = self.remove_device(self.host_device_infos[oldest_index].binding_id)?;
         Ok(())
     }
 }
@@ -235,10 +221,7 @@ impl CompanionDbManager for DefaultCompanionDbManager {
             return Err(ErrorCode::BadParam);
         }
 
-        if self
-            .get_index_by_device_key(device_info.user_info.user_id, &device_info.device_key)
-            .is_some()
-        {
+        if self.get_index_by_device_key(device_info.user_info.user_id, &device_info.device_key).is_some() {
             log_e!("device key already exists");
             return Err(ErrorCode::BadParam);
         }
@@ -269,35 +252,33 @@ impl CompanionDbManager for DefaultCompanionDbManager {
 
     fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostDeviceInfo, ErrorCode> {
         log_i!("get_device_by_binding_id start");
-        self.get_index_by_binding_id(binding_id)
-            .map(|index| self.host_device_infos[index].clone())
-            .ok_or_else(|| {
-                log_e!("No device matching filter found");
-                ErrorCode::NotFound
-            })
+        self.get_index_by_binding_id(binding_id).map(|index| self.host_device_infos[index].clone()).ok_or_else(|| {
+            log_e!("No device matching filter found");
+            ErrorCode::NotFound
+        })
     }
 
     fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostDeviceInfo, ErrorCode> {
         log_i!("get_device_by_device_key start");
-        self.get_index_by_device_key(user_id, device_key)
-            .map(|index| self.host_device_infos[index].clone())
-            .ok_or_else(|| {
+        self.get_index_by_device_key(user_id, device_key).map(|index| self.host_device_infos[index].clone()).ok_or_else(
+            || {
                 log_e!("No device matching filter found");
                 ErrorCode::NotFound
-            })
+            },
+        )
     }
 
     fn remove_device(&mut self, binding_id: i32) -> Result<HostDeviceInfo, ErrorCode> {
         log_i!("remove_device start");
         match self.get_index_by_binding_id(binding_id) {
             None => {
-                log_i!("No device matching filter found for removal");
+                log_i!("No device matching filter found for remove");
                 Err(ErrorCode::NotFound)
             },
             Some(index) => {
                 let device = self.host_device_infos.remove(index);
                 if let Err(err) = self.write_device_db() {
-                    log_e!("Failed to write device db after removal: {:?}", err);
+                    log_e!("Failed to write device db after remove: {:?}", err);
                     self.host_device_infos.push(device);
                     return Err(err);
                 }
@@ -315,9 +296,8 @@ impl CompanionDbManager for DefaultCompanionDbManager {
             log_i!("No binding id matching");
             ErrorCode::NotFound
         })?;
-        let index2 = self
-            .get_index_by_device_key(device_info.user_info.user_id, &device_info.device_key)
-            .ok_or_else(|| {
+        let index2 =
+            self.get_index_by_device_key(device_info.user_info.user_id, &device_info.device_key).ok_or_else(|| {
                 log_i!("No device key matching");
                 ErrorCode::NotFound
             })?;
@@ -353,6 +333,29 @@ impl CompanionDbManager for DefaultCompanionDbManager {
             log_e!("deserialize_device_db fail:{:?}", err);
             self.host_device_infos.clear();
             return Err(err);
+        }
+
+        let invalid_devices: Vec<i32> = self
+            .host_device_infos
+            .iter()
+            .filter_map(|device_info| {
+                if let Err(err) = self.read_device_sk(device_info.binding_id) {
+                    log_e!(
+                        "Device sk validation failed for binding_id:{:x}, removing device, error:{:?}",
+                        device_info.binding_id as u16,
+                        err
+                    );
+                    Some(device_info.binding_id)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for &binding_id in invalid_devices.iter().rev() {
+            if let Err(err) = self.remove_device(binding_id) {
+                log_e!("Failed to remove device with binding_id:{:x}, error:{:?}", binding_id as u16, err);
+            }
         }
         Ok(())
     }
@@ -419,11 +422,7 @@ impl CompanionDbManager for DefaultCompanionDbManager {
 
     fn get_device_list(&self, user_id: i32) -> Vec<HostDeviceInfo> {
         log_i!("get_device_list start");
-        self.host_device_infos
-            .iter()
-            .filter(|device_info| device_info.user_info.user_id == user_id)
-            .cloned()
-            .collect()
+        self.host_device_infos.iter().filter(|device_info| device_info.user_info.user_id == user_id).cloned().collect()
     }
 }
 

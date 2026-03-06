@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
-use crate::common::types::*;
+use crate::common::constants::ErrorCode;
+use crate::common::types::Udid;
 use crate::log_e;
 use crate::singleton_registry;
 use crate::traits::crypto_engine::KeyPair;

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{DeviceType, ErrorCode, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
 use crate::jobs::message_crypto;
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, p, Box, Vec};
@@ -36,9 +36,7 @@ impl SecCommonRequest {
         let salt_slice = message_attribute.get_u8_slice(AttributeKey::AttrSalt).map_err(|e| p!(e))?;
         let tag_slice = message_attribute.get_u8_slice(AttributeKey::AttrTag).map_err(|e| p!(e))?;
         let iv_slice = message_attribute.get_u8_slice(AttributeKey::AttrIv).map_err(|e| p!(e))?;
-        let encrypt_data_slice = message_attribute
-            .get_u8_slice(AttributeKey::AttrEncryptData)
-            .map_err(|e| p!(e))?;
+        let encrypt_data_slice = message_attribute.get_u8_slice(AttributeKey::AttrEncryptData).map_err(|e| p!(e))?;
 
         Ok(Box::new(Self {
             salt: salt_slice.try_into().map_err(|e| {
@@ -87,9 +85,7 @@ impl SecCommonReply {
         let message_attribute = Attribute::try_from_bytes(message_data).map_err(|e| p!(e))?;
         let tag_slice = message_attribute.get_u8_slice(AttributeKey::AttrTag).map_err(|e| p!(e))?;
         let iv_slice = message_attribute.get_u8_slice(AttributeKey::AttrIv).map_err(|e| p!(e))?;
-        let encrypt_data_slice = message_attribute
-            .get_u8_slice(AttributeKey::AttrEncryptData)
-            .map_err(|e| p!(e))?;
+        let encrypt_data_slice = message_attribute.get_u8_slice(AttributeKey::AttrEncryptData).map_err(|e| p!(e))?;
         Ok(Box::new(Self {
             tag: tag_slice.try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
@@ -136,7 +132,7 @@ impl SecIssueToken {
                 .map_err(|e| p!(e))?;
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
 
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
         let token = decrypt_attribute.get_u8_slice(AttributeKey::AttrToken).map_err(|e| p!(e))?;
         let atl = decrypt_attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
 
@@ -150,7 +146,7 @@ impl SecIssueToken {
         session_key: &[u8],
     ) -> Result<Vec<u8>, ErrorCode> {
         let mut encrypt_attribute = Attribute::new();
-        encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+        encrypt_attribute.set_u64(AttributeKey::AttrCompanionChallenge, self.challenge);
         encrypt_attribute.set_u8_slice(AttributeKey::AttrToken, &self.token);
         encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, self.atl);
 

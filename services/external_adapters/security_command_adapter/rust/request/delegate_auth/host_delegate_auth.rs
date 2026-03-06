@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{
+    AuthCapabilityLevel, AuthTrustLevel, Capability, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE,
+};
 use crate::entry::companion_device_auth_ffi::HostBeginDelegateAuthInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
@@ -35,7 +37,7 @@ pub struct AuthParam {
 #[derive(Debug, Clone, PartialEq)]
 pub struct HostDelegateAuthRequest {
     pub auth_param: AuthParam,
-    pub challenge: u64,
+    pub host_challenge: u64,
     pub atl: AuthTrustLevel,
     pub acl: AuthCapabilityLevel,
     pub salt: [u8; HKDF_SALT_SIZE],
@@ -46,13 +48,13 @@ impl HostDelegateAuthRequest {
     pub fn new(input: &HostBeginDelegateAuthInputFfi) -> Result<Self, ErrorCode> {
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
 
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
             ErrorCode::GeneralError
         })?;
 
@@ -62,7 +64,7 @@ impl HostDelegateAuthRequest {
                 schedule_id: input.schedule_id,
                 template_id: input.template_id,
             },
-            challenge: u64::from_ne_bytes(challenge),
+            host_challenge: u64::from_ne_bytes(challenge),
             atl: AuthTrustLevel::Atl2,
             acl: AuthCapabilityLevel::Acl0,
             salt,
@@ -89,7 +91,7 @@ impl HostDelegateAuthRequest {
         let mut output = Vec::new();
         let device_capabilitys =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
-        for device_capability in device_capabilitys {
+        for device_capability in &device_capabilitys {
             let session_key = host_db_helper::get_session_key(
                 self.auth_param.template_id,
                 device_capability.device_type,
@@ -97,7 +99,7 @@ impl HostDelegateAuthRequest {
             )?;
 
             let mut encrypt_attribute = Attribute::new();
-            encrypt_attribute.set_u64(AttributeKey::AttrChallenge, self.challenge);
+            encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
             encrypt_attribute.set_i32(AttributeKey::AttrAuthTrustLevel, self.atl as i32);
 
             let (encrypt_data, tag, iv) =
@@ -123,25 +125,30 @@ impl HostDelegateAuthRequest {
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
         let auth_type = decrypt_attribute.get_i32(AttributeKey::AttrType).map_err(|e| p!(e))?;
         let atl_value = decrypt_attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
-        if challenge != self.challenge {
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
+        if challenge != self.host_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }
 
         self.auth_type = auth_type;
-        self.atl = AuthTrustLevel::try_from(atl_value).map_err(|_| {
+        let atl = AuthTrustLevel::try_from(atl_value).map_err(|_| {
             log_e!("Invalid ATL value: {}", atl_value);
             ErrorCode::GeneralError
         })?;
 
+        if self.atl > atl {
+            log_e!("atl verification failed: {}, {}", self.atl as i32, atl as i32);
+            return Err(ErrorCode::GeneralError);
+        }
+        self.atl = atl;
         Ok(())
     }
 
     fn decode_sec_delegate_auth_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let device_capabilitys =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
-        for device_capability in device_capabilitys {
+        for device_capability in &device_capabilitys {
             if let Err(e) = self.decode_sec_delegate_auth_reply_message(device_capability.device_type, sec_message) {
                 log_e!(
                     "parse auth reply message fail: device_type: {:?}, result: {:?}",
@@ -155,11 +162,11 @@ impl HostDelegateAuthRequest {
         Ok(())
     }
 
-    fn encode_fwk_delegate_auth_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
+    fn encode_fwk_delegate_auth_reply(&mut self, result: ErrorCode) -> Result<Vec<u8>, ErrorCode> {
         let fwk_auth_reply = Box::new(FwkAuthReply {
             schedule_id: self.auth_param.schedule_id,
             template_id: self.auth_param.template_id,
-            result_code: 0,
+            result_code: result as i32,
             acl: AuthCapabilityLevel::Acl3 as i32,
             pin_sub_type: 0,
             remain_attempts: 0,
@@ -202,11 +209,20 @@ impl Request for HostDelegateAuthRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        self.decode_sec_delegate_auth_reply(ffi_input.sec_message.as_slice()?)?;
-        let fwk_message = self.encode_fwk_delegate_auth_reply()?;
+        let result = match self.decode_sec_delegate_auth_reply(ffi_input.sec_message.as_slice()?) {
+            Ok(_) => ErrorCode::Success,
+            Err(result) => {
+                log_e!("Decoding delagate auth reply failed: {:?}", result);
+                result
+            },
+        };
+        let fwk_message = self.encode_fwk_delegate_auth_reply(result)?;
         ffi_output.fwk_message.copy_from_vec(&fwk_message)?;
         ffi_output.auth_type = self.auth_type;
         ffi_output.atl = self.atl as i32;
+        if result != ErrorCode::Success {
+            return Err(result);
+        }
         Ok(())
     }
 }

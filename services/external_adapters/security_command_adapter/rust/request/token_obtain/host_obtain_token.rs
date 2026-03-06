@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-use crate::common::constants::*;
+use crate::common::constants::{AuthTrustLevel, Capability, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostProcessPreObtainTokenInputFfi;
 use crate::jobs::host_db_helper;
 use crate::jobs::message_crypto;
-use crate::request::jobs::common_message::{SecCommonRequest, SecIssueToken};
+use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
 use crate::request::jobs::token_helper::DeviceTokenInfo;
-use crate::request::token_obtain::token_obtain_message::SecPreObtainTokenRequest;
+use crate::request::token_obtain::token_obtain_message::{SecPreObtainTokenReply, SecPreObtainTokenRequest};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
@@ -38,26 +38,26 @@ pub struct HostDeviceObtainTokenRequest {
     pub obtain_param: TokenObtainParam,
     pub token_infos: Vec<DeviceTokenInfo>,
     pub salt: [u8; HKDF_SALT_SIZE],
-    pub challenge: u64,
+    pub host_challenge: u64,
 }
 
 impl HostDeviceObtainTokenRequest {
     pub fn new(input: &HostProcessPreObtainTokenInputFfi) -> Result<Self, ErrorCode> {
         let mut salt = [0u8; HKDF_SALT_SIZE];
         CryptoEngineRegistry::get().secure_random(&mut salt).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random salt fail");
             ErrorCode::GeneralError
         })?;
         let mut challenge = [0u8; CHALLENGE_LEN];
         CryptoEngineRegistry::get().secure_random(&mut challenge).map_err(|_| {
-            log_e!("secure_random fail");
+            log_e!("secure_random challenge fail");
             ErrorCode::GeneralError
         })?;
         Ok(HostDeviceObtainTokenRequest {
             obtain_param: TokenObtainParam { request_id: input.request_id, template_id: input.template_id },
             token_infos: Vec::new(),
             salt,
-            challenge: u64::from_ne_bytes(challenge),
+            host_challenge: u64::from_ne_bytes(challenge),
         })
     }
 
@@ -67,11 +67,21 @@ impl HostDeviceObtainTokenRequest {
 
     fn encode_sec_token_pre_obtain_requset(&self) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
-        let obtain_token_request = Box::new(SecPreObtainTokenRequest { salt: self.salt, challenge: self.challenge });
+        let obtain_token_request =
+            Box::new(SecPreObtainTokenRequest { salt: self.salt, challenge: self.host_challenge });
         let capability_infos =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.obtain_param.template_id)?;
         for capability_info in capability_infos {
-            output.extend(obtain_token_request.encode(capability_info.device_type)?);
+            if capability_info.device_type != DeviceType::Default {
+                log_i!("device type is not support obtain token, {:?}", capability_info.device_type);
+            } else {
+                output.extend(obtain_token_request.encode(capability_info.device_type)?);
+            }
+        }
+
+        if output.is_empty() {
+            log_e!("proc obtain token fail");
+            return Err(ErrorCode::GeneralError);
         }
 
         Ok(output)
@@ -82,26 +92,20 @@ impl HostDeviceObtainTokenRequest {
         device_type: DeviceType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonRequest::decode(sec_message, device_type)?;
+        let output = SecPreObtainTokenReply::decode(sec_message, device_type)?;
         let session_key = host_db_helper::get_session_key(self.obtain_param.template_id, device_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
         let decrypt_attribute = Attribute::try_from_bytes(&decrypt_data).map_err(|e| p!(e))?;
-        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrChallenge).map_err(|e| p!(e))?;
-        if challenge != self.challenge {
+        let challenge = decrypt_attribute.get_u64(AttributeKey::AttrHostChallenge).map_err(|e| p!(e))?;
+        if challenge != self.host_challenge {
             log_e!("Challenge verification failed");
             return Err(ErrorCode::GeneralError);
         }
         let atl_value = decrypt_attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
         let atl = AuthTrustLevel::try_from(atl_value).map_err(|_| {
             log_e!("Invalid ATL value: {}", atl_value);
-            ErrorCode::GeneralError
-        })?;
-
-        let mut token = [0u8; TOKEN_KEY_LEN];
-        CryptoEngineRegistry::get().secure_random(&mut token).map_err(|_| {
-            log_e!("secure_random fail");
             ErrorCode::GeneralError
         })?;
 
@@ -122,10 +126,6 @@ impl HostDeviceObtainTokenRequest {
                 );
                 return Err(ErrorCode::GeneralError);
             }
-        }
-        if self.token_infos.is_empty() {
-            log_e!("obtain token parameters not found");
-            return Err(ErrorCode::GeneralError);
         }
 
         Ok(())
@@ -148,6 +148,10 @@ impl HostDeviceObtainTokenRequest {
     }
 
     fn store_token(&self) -> Result<(), ErrorCode> {
+        if self.token_infos.is_empty() {
+            log_e!("token info is null");
+            return Err(ErrorCode::GeneralError);
+        }
         token_helper::add_companion_device_token(self.obtain_param.template_id, &self.token_infos)?;
         Ok(())
     }
@@ -187,12 +191,7 @@ impl Request for HostDeviceObtainTokenRequest {
         self.decode_sec_token_obtain_request(ffi_input.sec_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_obtaion_reply()?;
         self.store_token()?;
-        let max_atl = self
-            .token_infos
-            .iter()
-            .map(|info| info.atl as i32)
-            .max()
-            .unwrap_or(AuthTrustLevel::Atl0 as i32);
+        let max_atl = self.token_infos.iter().map(|info| info.atl as i32).max().unwrap_or(AuthTrustLevel::Atl0 as i32);
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         ffi_output.atl = max_atl;
         Ok(())
