@@ -146,10 +146,10 @@ std::optional<SteadyTimeMs> CrossDeviceCommManagerImpl::GetManageSubscribeTime()
 }
 
 std::unique_ptr<Subscription> CrossDeviceCommManagerImpl::SubscribeDeviceStatus(const DeviceKey &deviceKey,
-    OnDeviceStatusChange &&onDeviceStatusChange)
+    bool needSync, OnDeviceStatusChange &&onDeviceStatusChange)
 {
     ENSURE_OR_RETURN_VAL(deviceStatusMgr_ != nullptr, nullptr);
-    return deviceStatusMgr_->SubscribeDeviceStatus(deviceKey, std::move(onDeviceStatusChange));
+    return deviceStatusMgr_->SubscribeDeviceStatus(deviceKey, needSync, std::move(onDeviceStatusChange));
 }
 
 bool CrossDeviceCommManagerImpl::OpenConnection(const DeviceKey &deviceKey, std::string &outConnectionName)

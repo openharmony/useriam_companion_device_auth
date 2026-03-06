@@ -153,7 +153,7 @@ void HostSyncDeviceStatusRequest::HandleSyncDeviceStatusReply(const Attributes &
     ENSURE_OR_RETURN_DESC(GetDescription(), handleRet);
 
     SyncDeviceStatus syncDeviceStatus = {};
-    syncDeviceStatus.deviceKey = replyData.companionDeviceKey;
+    syncDeviceStatus.needSync = true;
     syncDeviceStatus.protocolIdList = replyData.protocolIdList;
     syncDeviceStatus.capabilityList = replyData.capabilityList;
     syncDeviceStatus.secureProtocolId = replyData.secureProtocolId;

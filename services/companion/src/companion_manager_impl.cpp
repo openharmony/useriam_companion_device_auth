@@ -102,7 +102,7 @@ std::optional<CompanionStatus> CompanionManagerImpl::GetCompanionStatus(Template
 {
     auto companion = FindCompanionByTemplateId(templateId);
     if (companion == nullptr) {
-        IAM_LOGE("template id %{public}s not found", GET_MASKED_NUM_CSTR(templateId));
+        IAM_LOGI("template id %{public}s not found", GET_MASKED_NUM_CSTR(templateId));
         return std::nullopt;
     }
 
@@ -119,7 +119,7 @@ std::optional<CompanionStatus> CompanionManagerImpl::GetCompanionStatus(UserId h
 {
     auto companion = FindCompanionByDeviceUser(hostUserId, companionDeviceKey);
     if (companion == nullptr) {
-        IAM_LOGE("companion not found for device-user combination");
+        IAM_LOGI("companion not found for device-user combination");
         return std::nullopt;
     }
 
@@ -268,6 +268,11 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
 
 ResultCode CompanionManagerImpl::RemoveCompanion(TemplateId templateId)
 {
+    auto companion = FindCompanionByTemplateId(templateId);
+    if (companion != nullptr) {
+        companion->SetCompanionTokenAtl(std::nullopt);
+    }
+
     HostRemoveCompanionInput input { templateId };
     HostRemoveCompanionOutput output {};
     ResultCode ret = GetSecurityAgent().HostRemoveCompanion(input, output);
@@ -277,8 +282,9 @@ ResultCode CompanionManagerImpl::RemoveCompanion(TemplateId templateId)
         return ret;
     }
 
-    auto companion = FindCompanionByTemplateId(templateId);
-    ENSURE_OR_RETURN_VAL(companion != nullptr, ResultCode::GENERAL_ERROR);
+    if (companion == nullptr) {
+        return ResultCode::SUCCESS;
+    }
     companion->SetAddedToIdm(false);
     NotifyCompanionStatusChange();
     ScopeGuard guard([this, templateId]() { HandleRemoveHostBindingComplete(templateId); });
@@ -485,7 +491,7 @@ void CompanionManagerImpl::NotifyCompanionStatusChange()
         ENSURE_OR_CONTINUE(companion != nullptr);
 
         if (!companion->IsAddedToIdm()) {
-            IAM_LOGE("template id %{public}s is not added to IDM", GET_MASKED_NUM_CSTR(companion->GetTemplateId()));
+            IAM_LOGI("template id %{public}s is not added to IDM", GET_MASKED_NUM_CSTR(companion->GetTemplateId()));
             continue;
         }
         statusList.push_back(companion->GetStatus());

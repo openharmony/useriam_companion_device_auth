@@ -194,11 +194,14 @@ void DeviceStatusManager::HandleSyncResult(const DeviceKey &deviceKey, int32_t r
     }
 
     deviceStatus.OnSyncSuccess();
-    auto negotiatedProtocol = NegotiateProtocol(syncDeviceStatus.protocolIdList);
-    ENSURE_OR_RETURN(negotiatedProtocol.has_value());
+
+    if (syncDeviceStatus.needSync) {
+        auto negotiatedProtocol = NegotiateProtocol(syncDeviceStatus.protocolIdList);
+        ENSURE_OR_RETURN(negotiatedProtocol.has_value());
+        deviceStatus.protocolId = negotiatedProtocol.value();
+    }
 
     deviceStatus.deviceUserName = syncDeviceStatus.deviceUserName;
-    deviceStatus.protocolId = negotiatedProtocol.value();
     deviceStatus.secureProtocolId = syncDeviceStatus.secureProtocolId;
     deviceStatus.capabilities = syncDeviceStatus.capabilityList;
     deviceStatus.supportedBusinessIds = defaultBusinessIds_;
@@ -237,7 +240,7 @@ std::optional<SteadyTimeMs> DeviceStatusManager::GetManageSubscribeTime() const
     return manageSubscribeTime_;
 }
 
-std::unique_ptr<Subscription> DeviceStatusManager::SubscribeDeviceStatus(const DeviceKey &deviceKey,
+std::unique_ptr<Subscription> DeviceStatusManager::SubscribeDeviceStatus(const DeviceKey &deviceKey, bool needSync,
     OnDeviceStatusChange &&callback)
 {
     SubscribeId subscriptionId = GetMiscManager().GetNextGlobalId();
@@ -245,10 +248,11 @@ std::unique_ptr<Subscription> DeviceStatusManager::SubscribeDeviceStatus(const D
     info.subscriptionId = subscriptionId;
     info.deviceKey = deviceKey; // specific device
     info.callback = std::move(callback);
+    info.needSync = needSync;
     subscriptions_.push_back(info);
 
-    IAM_LOGD("device status subscription added: id=0x%{public}016" PRIX64 " for device %{public}s", subscriptionId,
-        deviceKey.GetDesc().c_str());
+    IAM_LOGD("device status subscription added: id=0x%{public}016" PRIX64 " for device %{public}s, needSync=%{public}d",
+        subscriptionId, deviceKey.GetDesc().c_str(), needSync);
     RefreshDeviceList(false);
 
     return std::make_unique<Subscription>([weakSelf = weak_from_this(), subscriptionId]() {
@@ -287,6 +291,14 @@ void DeviceStatusManager::TriggerDeviceSync(const PhysicalDeviceKey &physicalKey
 
     DeviceStatusEntry &entry = it->second;
     DeviceKey companionDeviceKey = entry.BuildDeviceKey(activeUserId_);
+
+    if (!NeedSyncDevice(physicalKey)) {
+        IAM_LOGI("device does not need sync, skip and notify with empty sync result");
+        SyncDeviceStatus emptySyncStatus {};
+        emptySyncStatus.needSync = false;
+        HandleSyncResult(companionDeviceKey, SUCCESS, emptySyncStatus);
+        return;
+    }
 
     entry.isSyncInProgress = true;
     ScopeGuard guard([&entry, &companionDeviceKey]() {
@@ -386,6 +398,26 @@ bool DeviceStatusManager::ShouldMonitorDevice(const PhysicalDeviceKey &physicalK
 
     for (const auto &sub : subscriptions_) {
         if (!sub.deviceKey.has_value()) {
+            continue;
+        }
+        const DeviceKey &subscribedDevice = sub.deviceKey.value();
+        if (subscribedDevice.deviceUserId == activeUserId_ && subscribedDevice.idType == physicalKey.idType &&
+            subscribedDevice.deviceId == physicalKey.deviceId) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool DeviceStatusManager::NeedSyncDevice(const PhysicalDeviceKey &physicalKey)
+{
+    if (currentMode_ == SUBSCRIBE_MODE_MANAGE) {
+        return true;
+    }
+
+    for (const auto &sub : subscriptions_) {
+        if (!sub.deviceKey.has_value() || !sub.needSync) {
             continue;
         }
         const DeviceKey &subscribedDevice = sub.deviceKey.value();

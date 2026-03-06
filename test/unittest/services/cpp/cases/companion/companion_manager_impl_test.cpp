@@ -84,7 +84,7 @@ HWTEST_F(CompanionManagerImplTest, Create_001, TestSize.Level0)
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillByDefault(Return(activeUserId_));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
@@ -126,7 +126,7 @@ HWTEST_F(CompanionManagerImplTest, Create_002, TestSize.Level0)
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillByDefault(Return(activeUserId_));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
@@ -168,7 +168,7 @@ HWTEST_F(CompanionManagerImplTest, Reload_001, TestSize.Level0)
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillByDefault(Return(activeUserId_));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
@@ -214,7 +214,7 @@ HWTEST_F(CompanionManagerImplTest, Reload_002, TestSize.Level0)
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillByDefault(Return(activeUserId_));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
@@ -261,7 +261,7 @@ HWTEST_F(CompanionManagerImplTest, Reload_003, TestSize.Level0)
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillByDefault(Return(activeUserId_));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .Times(AtMost(1))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
@@ -290,7 +290,7 @@ HWTEST_F(CompanionManagerImplTest, Reload_003, TestSize.Level0)
     auto manager = CompanionManagerImpl::Create();
     ASSERT_NE(nullptr, manager);
 
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _)).WillOnce(Return(nullptr));
 
     auto status = MakePersistedStatus(TEMPLATE_ID_12345, activeUserId_, "device-1", USER_ID_200);
     std::vector<PersistedCompanionStatus> persistedList = { status };
@@ -569,7 +569,7 @@ HWTEST_F(CompanionManagerImplTest, EndAddCompanion_004, TestSize.Level0)
             secOutput.fwkMsg = { UINT32_4, 6, 7, 8 };
         }),
             Return(ResultCode::SUCCESS)));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _))
         .WillOnce(Return(ByMove(MakeSubscription())));
     ON_CALL(guard.GetCrossDeviceCommManager(), GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
     // Add mock for UpdateCompanionStatus which is called during AddCompanionInternal
@@ -595,7 +595,7 @@ HWTEST_F(CompanionManagerImplTest, EndAddCompanion_005, TestSize.Level0)
     EndAddCompanionOutput output;
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostEndAddCompanion(_, _)).WillOnce(Return(ResultCode::SUCCESS));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeDeviceStatus(_, _, _)).WillOnce(Return(nullptr));
 
     ResultCode ret = manager->EndAddCompanion(input, output);
 

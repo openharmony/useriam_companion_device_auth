@@ -253,7 +253,6 @@ bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &re
         return false;
     }
     needCancelCompanionAdd_ = false;
-    needCancelIssueToken_ = true;
     templateId_ = output.templateId;
     UpdateDescription(GenerateDescription(requestType_, requestId_, GetConnectionName(), templateId_));
 
@@ -290,8 +289,6 @@ bool HostAddCompanionRequest::SendEndAddHostBindingMsg(ResultCode result)
 
 void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &reply)
 {
-    ErrorGuard errorGuard([this](ResultCode result) { CompleteWithError(result); });
-
     IAM_LOGI("%{public}s start", GetDescription());
     auto replyMsgOpt = DecodeEndAddHostBindingReply(reply);
     ENSURE_OR_RETURN_DESC(GetDescription(), replyMsgOpt.has_value());
@@ -299,18 +296,16 @@ void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &rep
     const auto &replyMsg = *replyMsgOpt;
 
     if (replyMsg.result != ResultCode::SUCCESS) {
-        IAM_LOGE("%{public}s token distribution failed result=%{public}d", GetDescription(),
+        IAM_LOGE("%{public}s token distribution failed result=%{public}d, but enrollment succeeded", GetDescription(),
             static_cast<int32_t>(replyMsg.result));
-        errorGuard.UpdateErrorCode(replyMsg.result);
+        CompleteWithSuccess();
         return;
     }
 
     ENSURE_OR_RETURN_DESC(GetDescription(), templateId_ != 0);
     GetCompanionManager().SetCompanionTokenAtl(templateId_, tokenAtl_);
-    needCancelIssueToken_ = false;
     IAM_LOGI("%{public}s token activated successfully", GetDescription());
 
-    errorGuard.Cancel();
     CompleteWithSuccess();
 }
 
@@ -335,14 +330,6 @@ void HostAddCompanionRequest::CompleteWithError(ResultCode result)
             IAM_LOGE("%{public}s HostCancelAddCompanion failed ret=%{public}d", GetDescription(), ret);
         }
         needCancelCompanionAdd_ = false;
-    }
-    if (needCancelIssueToken_) {
-        HostCancelIssueTokenInput cancelInput = { .requestId = GetRequestId() };
-        ResultCode ret = GetSecurityAgent().HostCancelIssueToken(cancelInput);
-        if (ret != ResultCode::SUCCESS) {
-            IAM_LOGE("%{public}s HostCancelIssueToken failed ret=%{public}d", GetDescription(), ret);
-        }
-        needCancelIssueToken_ = false;
     }
     InvokeCallback(result, {});
     Destroy();

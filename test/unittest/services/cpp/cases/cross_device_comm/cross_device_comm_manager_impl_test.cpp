@@ -276,7 +276,7 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeDeviceStatus_001, TestSize.Lev
     deviceKey.deviceUserId = 100;
 
     bool callbackInvoked = false;
-    auto subscription = manager->SubscribeDeviceStatus(deviceKey,
+    auto subscription = manager->SubscribeDeviceStatus(deviceKey, true,
         [&callbackInvoked](const std::vector<DeviceStatus> &) { callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }

@@ -148,9 +148,9 @@ void MockGuard::SetupCrossDeviceCommManagerDefaults()
     }));
     ON_CALL(*crossDeviceCommManager_, SetSubscribeMode(_)).WillByDefault(Return());
     ON_CALL(*crossDeviceCommManager_, GetManageSubscribeTime()).WillByDefault(Return(std::nullopt));
-    ON_CALL(*crossDeviceCommManager_, SubscribeDeviceStatus(_, _))
-        .WillByDefault(
-            Invoke([](const DeviceKey &, OnDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
+    ON_CALL(*crossDeviceCommManager_, SubscribeDeviceStatus(_, _, _))
+        .WillByDefault(Invoke(
+            [](const DeviceKey &, bool, OnDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
     ON_CALL(*crossDeviceCommManager_, OpenConnection(_, _)).WillByDefault(Return(false));
     ON_CALL(*crossDeviceCommManager_, CloseConnection(_)).WillByDefault(Return());
     ON_CALL(*crossDeviceCommManager_, IsConnectionOpen(_)).WillByDefault(Return(false));

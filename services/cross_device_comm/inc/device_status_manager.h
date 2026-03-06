@@ -62,7 +62,8 @@ public:
     std::optional<SteadyTimeMs> GetManageSubscribeTime() const;
 
     std::unique_ptr<Subscription> SubscribeDeviceStatus(OnDeviceStatusChange &&callback);
-    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey, OnDeviceStatusChange &&callback);
+    std::unique_ptr<Subscription> SubscribeDeviceStatus(const DeviceKey &deviceKey, bool needSync,
+        OnDeviceStatusChange &&callback);
 
     void SetSubscribeMode(SubscribeMode mode);
 
@@ -73,6 +74,7 @@ private:
         SubscribeId subscriptionId;
         std::optional<DeviceKey> deviceKey;
         OnDeviceStatusChange callback;
+        bool needSync { false };
     };
 
     DeviceStatusManager(const std::vector<BusinessId> &defaultBusinessIds,
@@ -95,6 +97,7 @@ private:
     DeviceKey MakeTemporaryDeviceKey(const PhysicalDeviceKey &physicalKey);
 
     bool ShouldMonitorDevice(const PhysicalDeviceKey &physicalKey);
+    bool NeedSyncDevice(const PhysicalDeviceKey &physicalKey);
 
     void HandleUserIdChange(UserId userId);
     void HandleChannelDeviceStatusChange(ChannelId channelId, const std::vector<PhysicalDeviceStatus> &statusList);
