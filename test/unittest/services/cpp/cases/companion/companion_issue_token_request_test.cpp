@@ -30,35 +30,33 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 namespace {
 
+// 测试数据常量
+const std::string CONNECTION_NAME = "test_connection";
+constexpr int32_t COMPANION_USER_ID = 200;
+const DeviceKey HOST_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "host_device_id",
+    .deviceUserId = 100 };
+const HostBindingStatus HOST_BINDING_STATUS = {};
+
 std::unique_ptr<Subscription> MakeSubscription()
 {
     return std::make_unique<Subscription>([]() {});
 }
 
-class CompanionIssueTokenRequestTest : public Test {
-public:
-    void CreateDefaultRequest()
-    {
-        // Populate preIssueTokenRequest_ with valid data
-        EncodeHostDeviceKey(hostDeviceKey_, preIssueTokenRequest_);
-        PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = hostDeviceKey_,
-            .companionUserId = companionUserId_,
-            .extraInfo = { 1, 2, 3 } };
-        EncodePreIssueTokenRequest(preIssueRequest, preIssueTokenRequest_);
-        request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-            std::move(replyCallback_), hostDeviceKey_);
-    }
+Attributes MakePreIssueTokenRequest()
+{
+    Attributes attrs;
+    EncodeHostDeviceKey(HOST_DEVICE_KEY, attrs);
+    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = HOST_DEVICE_KEY,
+        .companionUserId = COMPANION_USER_ID,
+        .extraInfo = { 1, 2, 3 } };
+    EncodePreIssueTokenRequest(preIssueRequest, attrs);
+    return attrs;
+}
 
+class CompanionIssueTokenRequestTest : public Test {
 protected:
-    std::shared_ptr<CompanionIssueTokenRequest> request_;
-    std::string connectionName_ = "test_connection";
-    Attributes preIssueTokenRequest_;
-    OnMessageReply replyCallback_ = [](const Attributes &reply) {};
-    int32_t companionUserId_ = 200;
-    DeviceKey hostDeviceKey_ = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
-        .deviceId = "host_device_id",
-        .deviceUserId = 100 };
-    HostBindingStatus hostBindingStatus_;
+    // 无成员变量，每个测试用例创建局部 request
 };
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_001, TestSize.Level0)
@@ -66,28 +64,22 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_001, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
         receivedResult = static_cast<int32_t>(result.value().result);
     };
 
-    // Populate preIssueTokenRequest_ with valid data
-    EncodeHostDeviceKey(hostDeviceKey_, preIssueTokenRequest_);
-    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
-        .extraInfo = { 1, 2, 3 } };
-    EncodePreIssueTokenRequest(preIssueRequest, preIssueTokenRequest_);
-
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), hostDeviceKey_);
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -95,7 +87,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_001, TestSize.Level0)
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_TRUE(result);
     EXPECT_TRUE(replyCalled);
@@ -107,7 +99,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_002, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
@@ -115,7 +107,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_002, TestSize.Level0)
     };
 
     Attributes emptyRequest;
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, emptyRequest, std::move(replyCallback_),
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, emptyRequest, std::move(replyCallback),
         DeviceKey {});
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
@@ -123,7 +115,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_002, TestSize.Level0)
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
     EXPECT_TRUE(replyCalled);
@@ -135,22 +127,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_003, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
         receivedResult = static_cast<int32_t>(result.value().result);
     };
 
-    // Populate preIssueTokenRequest_ with valid data
-    EncodeHostDeviceKey(hostDeviceKey_, preIssueTokenRequest_);
-    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
-        .extraInfo = { 1, 2, 3 } };
-    EncodePreIssueTokenRequest(preIssueRequest, preIssueTokenRequest_);
-
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), hostDeviceKey_);
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
@@ -159,7 +145,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_003, TestSize.Level0)
         .WillOnce(Return(SecureProtocolId::INVALID));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
     EXPECT_TRUE(replyCalled);
@@ -171,35 +157,29 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_004, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
         receivedResult = static_cast<int32_t>(result.value().result);
     };
 
-    // Populate preIssueTokenRequest_ with valid data
-    EncodeHostDeviceKey(hostDeviceKey_, preIssueTokenRequest_);
-    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
-        .extraInfo = { 1, 2, 3 } };
-    EncodePreIssueTokenRequest(preIssueRequest, preIssueTokenRequest_);
-
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), hostDeviceKey_);
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeMessage(_, _, _)).WillOnce(Return(nullptr));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
     EXPECT_FALSE(replyCalled);
@@ -210,20 +190,21 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_005, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
         receivedResult = static_cast<int32_t>(result.value().result);
     };
 
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), hostDeviceKey_);
+    Attributes attrs;
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(false));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
     EXPECT_TRUE(replyCalled);
@@ -235,21 +216,22 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_006, TestSize.Level0)
     MockGuard guard;
     bool replyCalled = false;
     int32_t receivedResult = -1;
-    replyCallback_ = [&replyCalled, &receivedResult](const Attributes &reply) {
+    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
         replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
         receivedResult = static_cast<int32_t>(result.value().result);
     };
 
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), hostDeviceKey_);
+    Attributes attrs;
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_)).WillOnce(Return(nullptr));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    bool result = request_->OnStart(errorGuard);
+    bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
     EXPECT_TRUE(replyCalled);
@@ -259,12 +241,13 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_006, TestSize.Level0)
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_001, TestSize.Level0)
 {
     MockGuard guard;
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
     Attributes badRequest;
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, badRequest, std::move(replyCallback_),
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, badRequest, std::move(replyCallback),
         DeviceKey {});
 
     std::vector<uint8_t> preIssueTokenReply;
-    bool result = request_->CompanionPreIssueToken(preIssueTokenReply);
+    bool result = request->CompanionPreIssueToken(preIssueTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -272,20 +255,22 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_001, TestSize.Le
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_002, TestSize.Level0)
 {
     MockGuard guard;
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
     // Create request with a different peer device key to trigger mismatch
     DeviceKey differentDeviceKey = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
         .deviceId = "different_device_id",
         .deviceUserId = 100 };
-    // Populate preIssueTokenRequest_ with valid data (with hostDeviceKey, not differentDeviceKey)
-    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
+    // Populate preIssueTokenRequest with valid data (with HOST_DEVICE_KEY, not differentDeviceKey)
+    Attributes attrs;
+    PreIssueTokenRequest preIssueRequest = { .hostDeviceKey = HOST_DEVICE_KEY,
+        .companionUserId = COMPANION_USER_ID,
         .extraInfo = { 1, 2, 3 } };
-    EncodePreIssueTokenRequest(preIssueRequest, preIssueTokenRequest_);
-    request_ = std::make_shared<CompanionIssueTokenRequest>(connectionName_, preIssueTokenRequest_,
-        std::move(replyCallback_), differentDeviceKey);
+    EncodePreIssueTokenRequest(preIssueRequest, attrs);
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
+        std::move(replyCallback), differentDeviceKey);
 
     std::vector<uint8_t> preIssueTokenReply;
-    bool result = request_->CompanionPreIssueToken(preIssueTokenReply);
+    bool result = request->CompanionPreIssueToken(preIssueTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -293,13 +278,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_002, TestSize.Le
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::INVALID));
 
     std::vector<uint8_t> preIssueTokenReply;
-    bool result = request_->CompanionPreIssueToken(preIssueTokenReply);
+    bool result = request->CompanionPreIssueToken(preIssueTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -307,14 +295,17 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_003, TestSize.Le
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_004, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
     std::vector<uint8_t> preIssueTokenReply;
-    bool result = request_->CompanionPreIssueToken(preIssueTokenReply);
+    bool result = request->CompanionPreIssueToken(preIssueTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -322,16 +313,19 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_004, TestSize.Le
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_005, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     std::vector<uint8_t> preIssueTokenReply;
-    bool result = request_->CompanionPreIssueToken(preIssueTokenReply);
+    bool result = request->CompanionPreIssueToken(preIssueTokenReply);
 
     EXPECT_FALSE(result);
 }
@@ -339,13 +333,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_005, TestSize.Le
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -353,16 +350,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.L
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    EXPECT_TRUE(request_->OnStart(errorGuard));
+    EXPECT_TRUE(request->OnStart(errorGuard));
 
-    IssueTokenRequest issueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
+    IssueTokenRequest issueRequest = { .hostDeviceKey = HOST_DEVICE_KEY,
+        .companionUserId = COMPANION_USER_ID,
         .extraInfo = { 1, 2, 3 } };
-    Attributes request;
-    EncodeIssueTokenRequest(issueRequest, request);
-    request.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
+    Attributes attrs;
+    EncodeIssueTokenRequest(issueRequest, attrs);
+    attrs.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
-    request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
+    attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
     bool replyCalled = false;
     int32_t receivedResult = -1;
@@ -376,7 +373,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.L
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetHostBindingManager(), SetHostBindingTokenValid(_, _)).WillOnce(Return(true));
 
-    request_->HandleIssueTokenMessage(request, onMessageReply);
+    request->HandleIssueTokenMessage(attrs, onMessageReply);
 
     EXPECT_TRUE(replyCalled);
     EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
@@ -385,13 +382,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.L
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -399,7 +399,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.L
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    EXPECT_TRUE(request_->OnStart(errorGuard));
+    EXPECT_TRUE(request->OnStart(errorGuard));
 
     bool replyCalled = false;
     int32_t receivedResult = -1;
@@ -411,7 +411,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.L
     };
 
     Attributes badRequest;
-    request_->HandleIssueTokenMessage(badRequest, onMessageReply);
+    request->HandleIssueTokenMessage(badRequest, onMessageReply);
 
     EXPECT_TRUE(replyCalled);
     EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
@@ -420,13 +420,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.L
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -434,16 +437,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.L
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    EXPECT_TRUE(request_->OnStart(errorGuard));
+    EXPECT_TRUE(request->OnStart(errorGuard));
 
-    IssueTokenRequest issueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
+    IssueTokenRequest issueRequest = { .hostDeviceKey = HOST_DEVICE_KEY,
+        .companionUserId = COMPANION_USER_ID,
         .extraInfo = { 1, 2, 3 } };
-    Attributes request;
-    EncodeIssueTokenRequest(issueRequest, request);
-    request.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
+    Attributes attrs;
+    EncodeIssueTokenRequest(issueRequest, attrs);
+    attrs.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
-    request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
+    attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
     bool replyCalled = false;
     int32_t receivedResult = -1;
@@ -456,7 +459,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.L
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request_->HandleIssueTokenMessage(request, onMessageReply);
+    request->HandleIssueTokenMessage(attrs, onMessageReply);
 
     EXPECT_TRUE(replyCalled);
     EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
@@ -465,13 +468,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.L
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_))
         .WillOnce(Return(ByMove(MakeSubscription())));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
-        .WillOnce(Return(std::make_optional(hostBindingStatus_)));
+        .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionPreIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -479,16 +485,16 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.L
         .WillOnce(Return(ByMove(MakeSubscription())));
 
     ErrorGuard errorGuard([](ResultCode) {});
-    EXPECT_TRUE(request_->OnStart(errorGuard));
+    EXPECT_TRUE(request->OnStart(errorGuard));
 
-    IssueTokenRequest issueRequest = { .hostDeviceKey = hostDeviceKey_,
-        .companionUserId = companionUserId_,
+    IssueTokenRequest issueRequest = { .hostDeviceKey = HOST_DEVICE_KEY,
+        .companionUserId = COMPANION_USER_ID,
         .extraInfo = { 1, 2, 3 } };
-    Attributes request;
-    EncodeIssueTokenRequest(issueRequest, request);
-    request.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
+    Attributes attrs;
+    EncodeIssueTokenRequest(issueRequest, attrs);
+    attrs.SetInt32Value(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER_TYPE,
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
-    request.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
+    attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
     bool replyCalled = false;
     int32_t receivedResult = -1;
@@ -502,7 +508,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.L
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetHostBindingManager(), SetHostBindingTokenValid(_, _)).WillOnce(Return(false));
 
-    request_->HandleIssueTokenMessage(request, onMessageReply);
+    request->HandleIssueTokenMessage(attrs, onMessageReply);
 
     EXPECT_TRUE(replyCalled);
     EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
@@ -511,86 +517,113 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.L
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->needCancelIssueToken_ = true;
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
+    request->needCancelIssueToken_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->needCancelIssueToken_ = true;
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
+    request->needCancelIssueToken_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_003, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
-    request_->needCancelIssueToken_ = false;
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
+    request->needCancelIssueToken_ = false;
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).Times(0);
 
-    request_->CompleteWithError(ResultCode::GENERAL_ERROR);
+    request->CompleteWithError(ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, GetWeakPtr_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
-    auto weakPtr = request_->GetWeakPtr();
+    auto weakPtr = request->GetWeakPtr();
     EXPECT_FALSE(weakPtr.expired());
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
-    EXPECT_EQ(request_->GetMaxConcurrency(), 10);
+    EXPECT_EQ(request->GetMaxConcurrency(), 10);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
     // std::nullopt doesn't match any device, so shouldn't cancel
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_ISSUE_TOKEN_REQUEST, std::nullopt, 0);
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ISSUE_TOKEN_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
-    bool result = request_->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
+    bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleAuthMaintainActiveChanged_001, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
-    request_->HandleAuthMaintainActiveChanged(true);
+    request->HandleAuthMaintainActiveChanged(true);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
 {
     MockGuard guard;
-    CreateDefaultRequest();
+    OnMessageReply replyCallback = [](const Attributes &reply) {};
+    auto preIssueTokenRequest = MakePreIssueTokenRequest();
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
+        std::move(replyCallback), HOST_DEVICE_KEY);
 
-    request_->HandleAuthMaintainActiveChanged(false);
+    request->HandleAuthMaintainActiveChanged(false);
 }
 
 } // namespace

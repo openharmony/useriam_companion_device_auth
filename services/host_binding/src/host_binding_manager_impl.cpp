@@ -100,7 +100,7 @@ std::optional<HostBindingStatus> HostBindingManagerImpl::GetHostBindingStatus(Bi
 {
     auto binding = FindBindingById(bindingId);
     if (binding == nullptr) {
-        IAM_LOGE("binding id %{public}s not found", GET_MASKED_NUM_STRING(bindingId).c_str());
+        IAM_LOGI("binding id %{public}s not found", GET_MASKED_NUM_STRING(bindingId).c_str());
         return std::nullopt;
     }
 
@@ -112,7 +112,7 @@ std::optional<HostBindingStatus> HostBindingManagerImpl::GetHostBindingStatus(Us
 {
     auto binding = FindBindingByDeviceUser(companionUserId, hostDeviceKey);
     if (binding == nullptr) {
-        IAM_LOGE("binding not found for device-user combination");
+        IAM_LOGI("binding not found for device-user combination");
         return std::nullopt;
     }
 
@@ -212,6 +212,7 @@ ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, Result
         }
         return ResultCode::SUCCESS;
     }
+    SetHostBindingTokenValid(output.bindingId, true);
 
     // Token data received and stored in the binding by SecurityAgent
     if (!tokenData.empty()) {

@@ -19,8 +19,6 @@
 #include <map>
 #include <string>
 
-#include "nlohmann/json.hpp"
-
 #include "iam_check.h"
 #include "iam_logger.h"
 #include "iam_para2str.h"
