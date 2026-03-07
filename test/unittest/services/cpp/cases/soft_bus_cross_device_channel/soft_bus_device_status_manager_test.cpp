@@ -169,9 +169,9 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, SubscribePhysicalDeviceStatus_001, Test
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribePhysicalDeviceStatus(
-        [&callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 }
@@ -194,8 +194,8 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, SubscribeAuthMaintainActive_001, TestSi
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    auto subscription = manager->SubscribeAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 }
@@ -218,18 +218,18 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, HandleLocalIsAuthMaintainActiveChange_0
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    bool receivedValue = false;
-    auto subscription = manager->SubscribeAuthMaintainActive([&callbackInvoked, &receivedValue](bool isActive) {
-        callbackInvoked = true;
-        receivedValue = isActive;
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto receivedValue = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeAuthMaintainActive([callbackInvoked, receivedValue](bool isActive) {
+        *callbackInvoked = true;
+        *receivedValue = isActive;
     });
 
     manager->HandleLocalIsAuthMaintainActiveChange(true);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
-    EXPECT_TRUE(receivedValue);
+    EXPECT_TRUE(*callbackInvoked);
+    EXPECT_TRUE(*receivedValue);
 }
 
 HWTEST_F(SoftBusDeviceStatusManagerTest, HandleLocalIsAuthMaintainActiveChange_002, TestSize.Level0)
@@ -240,13 +240,13 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, HandleLocalIsAuthMaintainActiveChange_0
     ASSERT_NE(manager, nullptr);
     manager->isLocalAuthMaintainActive_ = true;
 
-    bool callbackInvoked = false;
-    auto subscription = manager->SubscribeAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
 
     manager->HandleLocalIsAuthMaintainActiveChange(true);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_FALSE(callbackInvoked);
+    EXPECT_FALSE(*callbackInvoked);
 }
 
 HWTEST_F(SoftBusDeviceStatusManagerTest, HandleLocalIsAuthMaintainActiveChange_003, TestSize.Level0)
@@ -269,10 +269,10 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, UnsubscribePhysicalDeviceStatus_001, Te
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     {
         auto subscription = manager->SubscribePhysicalDeviceStatus(
-            [&callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { callbackInvoked = true; });
+            [callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { *callbackInvoked = true; });
         EXPECT_NE(subscription, nullptr);
         EXPECT_FALSE(manager->physicalDeviceStatusSubscribers_.empty());
     }
@@ -287,9 +287,9 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, UnsubscribeAuthMaintainActive_001, Test
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     {
-        auto subscription = manager->SubscribeAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+        auto subscription = manager->SubscribeAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
         EXPECT_NE(subscription, nullptr);
         EXPECT_FALSE(manager->authMaintainActiveSubscribers_.empty());
     }
@@ -314,15 +314,15 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, NotifyDeviceStatusChange_002, TestSize.
     auto manager = SoftBusDeviceStatusManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribePhysicalDeviceStatus(
-        [&callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::vector<PhysicalDeviceStatus> &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 
     manager->NotifyDeviceStatusChange();
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(SoftBusDeviceStatusManagerTest, NotifyDeviceStatusChange_003, TestSize.Level0)

@@ -181,13 +181,13 @@ HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_001, TestSize.Level0)
     uint32_t tokenId = 12345;
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
 
-    bool callbackCalled = false;
-    DeviceSelectResultHandler resultHandler = [&callbackCalled](
-                                                  const std::vector<DeviceKey> &devices) { callbackCalled = true; };
+    auto callbackCalled = std::make_shared<bool>(false);
+    DeviceSelectResultHandler resultHandler = [callbackCalled](
+                                                  const std::vector<DeviceKey> &devices) { *callbackCalled = true; };
 
     bool result = manager->GetDeviceDeviceSelectResult(tokenId, selectPurpose, std::move(resultHandler));
     EXPECT_FALSE(result);
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_002, TestSize.Level0)
@@ -224,9 +224,9 @@ HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_003, TestSize.Level0)
     EXPECT_TRUE(setResult);
 
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
-    bool callbackCalled = false;
-    DeviceSelectResultHandler resultHandler = [&callbackCalled](
-                                                  const std::vector<DeviceKey> &devices) { callbackCalled = true; };
+    auto callbackCalled = std::make_shared<bool>(false);
+    DeviceSelectResultHandler resultHandler = [callbackCalled](
+                                                  const std::vector<DeviceKey> &devices) { *callbackCalled = true; };
 
     EXPECT_CALL(*callback, OnDeviceSelect(_, _)).WillOnce(Return(ERR_OK));
 

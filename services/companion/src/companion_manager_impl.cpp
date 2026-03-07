@@ -242,7 +242,7 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
     updatedStatus.templateId = secOutput.templateId;
     updatedStatus.addedTime = secOutput.addedTime;
 
-    auto companion = Companion::Create(updatedStatus, true, weak_from_this());
+    auto companion = Companion::Create(updatedStatus, false, weak_from_this());
     if (companion == nullptr) {
         IAM_LOGE("failed to create Companion for %{public}s", GET_MASKED_NUM_CSTR(secOutput.templateId));
         return ResultCode::GENERAL_ERROR;
@@ -485,6 +485,7 @@ void CompanionManagerImpl::OnTemplateListChanged(UserId userId, const std::vecto
 
 void CompanionManagerImpl::NotifyCompanionStatusChange()
 {
+    IAM_LOGI("start");
     std::vector<CompanionStatus> statusList;
     statusList.reserve(companions_.size());
     for (const auto &companion : companions_) {
