@@ -83,9 +83,9 @@ HWTEST_F(SoftBusConnectionManagerTest, SubscribeRawMessage_001, TestSize.Level0)
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeRawMessage(
-        [&callbackInvoked](const std::string &, const std::vector<uint8_t> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const std::vector<uint8_t> &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 }
@@ -108,9 +108,9 @@ HWTEST_F(SoftBusConnectionManagerTest, SubscribeConnectionStatus_001, TestSize.L
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeConnectionStatus(
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 }
@@ -133,9 +133,9 @@ HWTEST_F(SoftBusConnectionManagerTest, SubscribeIncomingConnection_001, TestSize
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeIncomingConnection(
-        [&callbackInvoked](const std::string &, const PhysicalDeviceKey &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const PhysicalDeviceKey &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 }
@@ -284,18 +284,18 @@ HWTEST_F(SoftBusConnectionManagerTest, ReportConnectionEstablished_002, TestSize
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeConnectionStatus(
-        [&callbackInvoked](const std::string &name, ConnectionStatus status, const std::string &) {
+        [callbackInvoked](const std::string &name, ConnectionStatus status, const std::string &) {
             if (name == "test-connection" && status == ConnectionStatus::CONNECTED) {
-                callbackInvoked = true;
+                *callbackInvoked = true;
             }
         });
 
     manager->ReportConnectionEstablished("test-connection");
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(SoftBusConnectionManagerTest, ReportConnectionClosed_001, TestSize.Level0)
@@ -315,21 +315,21 @@ HWTEST_F(SoftBusConnectionManagerTest, ReportConnectionClosed_002, TestSize.Leve
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    std::string receivedReason;
-    auto subscription = manager->SubscribeConnectionStatus([&callbackInvoked, &receivedReason](const std::string &name,
-                                                               ConnectionStatus status, const std::string &reason) {
-        if (name == "test-connection" && status == ConnectionStatus::DISCONNECTED) {
-            callbackInvoked = true;
-            receivedReason = reason;
-        }
-    });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto receivedReason = std::make_shared<std::string>();
+    auto subscription = manager->SubscribeConnectionStatus(
+        [callbackInvoked, receivedReason](const std::string &name, ConnectionStatus status, const std::string &reason) {
+            if (name == "test-connection" && status == ConnectionStatus::DISCONNECTED) {
+                *callbackInvoked = true;
+                *receivedReason = reason;
+            }
+        });
 
     manager->ReportConnectionClosed("test-connection", "test-reason");
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
-    EXPECT_EQ(receivedReason, "test-reason");
+    EXPECT_TRUE(*callbackInvoked);
+    EXPECT_EQ(*receivedReason, "test-reason");
 }
 
 HWTEST_F(SoftBusConnectionManagerTest, HandleBind_001, TestSize.Level0)
@@ -488,9 +488,9 @@ HWTEST_F(SoftBusConnectionManagerTest, HandleBytes_005, TestSize.Level0)
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeRawMessage(
-        [&callbackInvoked](const std::string &, const std::vector<uint8_t> &data) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const std::vector<uint8_t> &data) { *callbackInvoked = true; });
 
     PhysicalDeviceKey key;
     key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
@@ -507,7 +507,7 @@ HWTEST_F(SoftBusConnectionManagerTest, HandleBytes_005, TestSize.Level0)
     manager->HandleBytes(100, data.data(), data.size());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(SoftBusConnectionManagerTest, HandleBytes_006, TestSize.Level0)
@@ -517,9 +517,9 @@ HWTEST_F(SoftBusConnectionManagerTest, HandleBytes_006, TestSize.Level0)
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeRawMessage(
-        [&callbackInvoked](const std::string &, const std::vector<uint8_t> &data) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const std::vector<uint8_t> &data) { *callbackInvoked = true; });
 
     PhysicalDeviceKey key;
     key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
@@ -533,7 +533,7 @@ HWTEST_F(SoftBusConnectionManagerTest, HandleBytes_006, TestSize.Level0)
     manager->HandleBytes(100, data.data(), data.size());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(SoftBusConnectionManagerTest, UnsubscribeRawMessage_001, TestSize.Level0)
@@ -543,9 +543,9 @@ HWTEST_F(SoftBusConnectionManagerTest, UnsubscribeRawMessage_001, TestSize.Level
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeRawMessage(
-        [&callbackInvoked](const std::string &, const std::vector<uint8_t> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const std::vector<uint8_t> &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 
     manager->UnsubscribeRawMessage(1);
@@ -560,9 +560,9 @@ HWTEST_F(SoftBusConnectionManagerTest, UnsubscribeConnectionStatus_001, TestSize
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeConnectionStatus(
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 
     manager->UnsubscribeConnectionStatus(1);
@@ -577,9 +577,9 @@ HWTEST_F(SoftBusConnectionManagerTest, UnsubscribeIncomingConnection_001, TestSi
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeIncomingConnection(
-        [&callbackInvoked](const std::string &, const PhysicalDeviceKey &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, const PhysicalDeviceKey &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 
     manager->UnsubscribeIncomingConnection(1);

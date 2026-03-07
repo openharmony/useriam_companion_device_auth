@@ -138,10 +138,10 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, OnConnected_001, TestSize.Level0)
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_001, TestSize.Level0)
 {
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::FAIL) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -152,15 +152,15 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_001, TestSize.Leve
     request->BeginCompanionCheck();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_002, TestSize.Level0)
 {
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::COMMUNICATION_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -172,15 +172,15 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_002, TestSize.Leve
     request->BeginCompanionCheck();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_003, TestSize.Level0)
 {
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::COMMUNICATION_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -193,7 +193,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_003, TestSize.Leve
     request->BeginCompanionCheck();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, SendSyncDeviceStatusRequest_001, TestSize.Level0)
@@ -216,10 +216,10 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, SendSyncDeviceStatusRequest_001, TestS
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_001, TestSize.Level0)
 {
-    bool successCalled = false;
-    auto callback = [&successCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto successCalled = std::make_shared<bool>(false);
+    auto callback = [successCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::SUCCESS) {
-            successCalled = true;
+            *successCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -242,15 +242,15 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_001, TestS
     request->HandleSyncDeviceStatusReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(successCalled);
+    EXPECT_TRUE(*successCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_002, TestSize.Level0)
 {
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -260,15 +260,15 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_002, TestS
     request->HandleSyncDeviceStatusReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_003, TestSize.Level0)
 {
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -285,15 +285,15 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_003, TestS
     request->HandleSyncDeviceStatusReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_004, TestSize.Level0)
 {
-    bool successCalled = false;
-    auto callback = [&successCalled](ResultCode result, const SyncDeviceStatus &) {
+    auto successCalled = std::make_shared<bool>(false);
+    auto callback = [successCalled](ResultCode result, const SyncDeviceStatus &) {
         if (result == ResultCode::SUCCESS) {
-            successCalled = true;
+            *successCalled = true;
         }
     };
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
@@ -317,7 +317,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, HandleSyncDeviceStatusReply_004, TestS
     request->HandleSyncDeviceStatusReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(successCalled);
+    EXPECT_TRUE(*successCalled);
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, EndCompanionCheck_001, TestSize.Level0)

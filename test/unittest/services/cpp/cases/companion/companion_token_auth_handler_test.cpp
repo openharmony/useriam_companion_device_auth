@@ -58,7 +58,7 @@ HWTEST_F(CompanionTokenAuthHandlerTest, HandleRequest_001, TestSize.Level0)
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
         .WillOnce(Return(std::make_optional(hostBindingStatus_)));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessTokenAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
 
@@ -129,7 +129,7 @@ HWTEST_F(CompanionTokenAuthHandlerTest, HandleRequest_004, TestSize.Level0)
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _))
         .WillOnce(Return(std::make_optional(hostBindingStatus_)));
-    EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), CompanionGetSecureProtocolId())
         .WillOnce(Return(SecureProtocolId::DEFAULT));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessTokenAuth(_, _)).WillOnce(Return(ResultCode::FAIL));
 

@@ -241,6 +241,7 @@ void Companion::SetAddedToIdm(bool addedToIdm)
     if (addedToIdm) {
         templateAddToIdmTimer_.reset();
     }
+    NotifySubscribers();
 }
 
 void Companion::StartTemplateAddToIdmTimer()
