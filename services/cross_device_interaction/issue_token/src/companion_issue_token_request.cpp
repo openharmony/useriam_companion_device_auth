@@ -20,6 +20,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "common_message.h"
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
@@ -37,7 +38,8 @@ CompanionIssueTokenRequest::CompanionIssueTokenRequest(const std::string &connec
     OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey)
     : InboundRequest(RequestType::COMPANION_ISSUE_TOKEN_REQUEST, connectionName, hostDeviceKey),
       request_(request),
-      preIssueTokenReplyCallback_(std::move(replyCallback))
+      preIssueTokenReplyCallback_(std::move(replyCallback)),
+      eventCollector_("companion issue token request")
 {
 }
 
@@ -101,6 +103,10 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
     }
     companionUserId_ = preIssueRequest.companionUserId;
     preIssueTokenRequest_ = preIssueRequest.extraInfo;
+
+    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
+    eventCollector_.UpdateCompanionUserId(companionUserId_);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
 
     SecureProtocolId secureProtocolId = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), secureProtocolId != SecureProtocolId::INVALID, false);
@@ -187,6 +193,7 @@ bool CompanionIssueTokenRequest::SecureAgentCompanionIssueToken(const std::vecto
         return false;
     }
 
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
     issueTokenReply.swap(output.issueTokenReply);
     bool setTokenValidRet = GetHostBindingManager().SetHostBindingTokenValid(bindingId_, true);
     if (!setTokenValidRet) {
@@ -210,14 +217,15 @@ void CompanionIssueTokenRequest::CompleteWithError(ResultCode result)
         (void)GetSecurityAgent().CompanionCancelIssueToken(input);
         needCancelIssueToken_ = false;
     }
+    eventCollector_.Report(result);
     Destroy();
 }
 
 void CompanionIssueTokenRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s: receive issue token request completed successfully", GetDescription());
-
     localDeviceStatusSubscription_.reset();
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

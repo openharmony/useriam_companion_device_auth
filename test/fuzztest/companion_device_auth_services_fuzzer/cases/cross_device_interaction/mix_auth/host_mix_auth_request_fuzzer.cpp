@@ -122,6 +122,7 @@ void FuzzHostMixAuthRequest(FuzzedDataProvider &fuzzData)
     for (uint8_t i = 0; i < templateCount; ++i) {
         templateIdList.push_back(fuzzData.ConsumeIntegral<TemplateId>());
     }
+    int32_t authIntent = fuzzData.ConsumeIntegral<int32_t>();
 
     uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
     std::optional<uint32_t> optionalTokenId = fuzzData.ConsumeBool() ? std::optional<uint32_t>(tokenId) : std::nullopt;
@@ -138,6 +139,7 @@ void FuzzHostMixAuthRequest(FuzzedDataProvider &fuzzData)
     params.templateIdList = templateIdList;
     params.tokenId = optionalTokenId;
     params.businessId = std::nullopt;
+    params.authIntent = authIntent;
 
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
     if (!request) {

@@ -2688,7 +2688,7 @@ fn companion_end_add_host_binding_test_success() {
         result: 0,
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert!(result.is_ok());
     assert_eq!(output.binding_id, 0);
@@ -2705,7 +2705,7 @@ fn companion_end_add_host_binding_test_remove_request_fail() {
 
     let input =
         CompanionEndAddHostBindingInputFfi { request_id: 1, result: 0, sec_message: DataArray1024Ffi::default() };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
@@ -2736,7 +2736,7 @@ fn companion_end_add_host_binding_test_request_end_fail() {
 
     let input =
         CompanionEndAddHostBindingInputFfi { request_id: 1, result: 1, sec_message: DataArray1024Ffi::default() };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -2920,7 +2920,7 @@ fn companion_process_issue_token_test_success() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionProcessIssueTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionProcessIssueTokenOutputFfi::default();
     let result = companion_process_issue_token(&input, &mut output);
     assert!(result.is_ok());
 }
@@ -2939,7 +2939,7 @@ fn companion_process_issue_token_test_remove_request_fail() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::default(),
     };
-    let mut output = CompanionProcessIssueTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionProcessIssueTokenOutputFfi::default();
     let result = companion_process_issue_token(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
@@ -2970,7 +2970,7 @@ fn companion_process_issue_token_test_request_end_fail() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::default(),
     };
-    let mut output = CompanionProcessIssueTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionProcessIssueTokenOutputFfi::default();
     let result = companion_process_issue_token(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::BadParam));
 }
@@ -3252,7 +3252,7 @@ fn companion_begin_obtain_token_test_success() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionBeginObtainTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionBeginObtainTokenOutputFfi::default();
     let result = companion_begin_obtain_token(&input, &mut output);
     assert!(result.is_ok());
 }
@@ -3277,7 +3277,7 @@ fn companion_begin_obtain_token_test_request_begin_fail() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::default(),
     };
-    let mut output = CompanionBeginObtainTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionBeginObtainTokenOutputFfi::default();
     let result = companion_begin_obtain_token(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -3327,7 +3327,7 @@ fn companion_begin_obtain_token_test_add_request_fail() {
         secure_protocol_id: 1,
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionBeginObtainTokenOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = CompanionBeginObtainTokenOutputFfi::default();
     let result = companion_begin_obtain_token(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }

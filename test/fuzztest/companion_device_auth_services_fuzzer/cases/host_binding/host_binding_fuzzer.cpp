@@ -33,7 +33,8 @@ using HostBindingFuzzFunction = void (*)(std::shared_ptr<HostBinding> &hostBindi
 static void FuzzSetTokenValid(std::shared_ptr<HostBinding> &hostBinding, FuzzedDataProvider &fuzzData)
 {
     bool isTokenValid = fuzzData.ConsumeBool();
-    hostBinding->SetTokenValid(isTokenValid);
+    std::string triggerReason = GenerateFuzzString(fuzzData, 64);
+    hostBinding->SetTokenValid(isTokenValid, triggerReason);
 }
 
 static void FuzzHandleDeviceStatusChanged(std::shared_ptr<HostBinding> &hostBinding, FuzzedDataProvider &fuzzData)

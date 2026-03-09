@@ -1,0 +1,34 @@
+# Copyright (c) 2026 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+domain: COMPANION_AUTH
+
+INTERACTION_EVENT:
+  __BASE: {type: FAULT, level: CRITICAL, desc: interaction event, preserve: true}
+  REQUEST_TYPE: {type: STRING, desc: request type}
+  RESULT: {type: STRING, desc: request result}
+  HOST_USER_ID: {type: INT32, desc: host device user ID}
+  HOST_DEVICE_KEY: {type: STRING, desc: host device key}
+  COMPANION_USER_ID: {type: INT32, desc: companion user ID}
+  COMPANION_DEVICE_KEY: {type: STRING, desc: companion device key}
+  CONNECTION_NAME: {type: STRING, desc: connection name}
+  SCHEDULE_ID: {type: UINT64, desc: schedule ID of this request}
+  TRIGGER_REASON: {type: STRING, desc: trigger reason}
+  TEMPLATE_ID_LIST: {type: STRING, desc: template ID list}
+  EXTRA_INFO: {type: STRING, desc: extra info}
+
+SYSTEM_FAULT:
+  __BASE: {type: FAULT, level: CRITICAL, desc: system fault, preserve: true}
+  FAULT_TYPE: {type: STRING, desc: fault type}
+  FAULT_ID: {type: STRING, desc: fault ID}
+  FAULT_INFO: {type: STRING, desc: fault info}

@@ -34,10 +34,12 @@ public:
             const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply),
         (override));
     MOCK_METHOD(ResultCode, EndAddHostBinding,
-        (RequestId requestId, ResultCode resultCode, const std::vector<uint8_t> &tokenData), (override));
+        (RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData),
+        (override));
     MOCK_METHOD(ResultCode, RemoveHostBinding, (UserId companionUserId, const DeviceKey &hostDeviceKey), (override));
     MOCK_METHOD(bool, SetHostBindingTokenValid, (BindingId bindingId, bool isTokenValid), (override));
-    MOCK_METHOD(void, StartObtainTokenRequests, (UserId userId, const std::vector<uint8_t> &fwkUnlockMsg), (override));
+    MOCK_METHOD(void, StartObtainTokenRequests,
+        (UserId userId, uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg), (override));
     MOCK_METHOD(void, RevokeTokens, (UserId userId), (override));
 
 private:

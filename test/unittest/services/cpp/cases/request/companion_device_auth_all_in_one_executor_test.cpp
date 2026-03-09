@@ -933,8 +933,8 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_007
 
     EXPECT_CALL(*callback, OnResult(FwkResultCode::SUCCESS, _)).Times(1);
     EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillOnce(Return(INT32_100));
-    EXPECT_CALL(guard.GetCompanionManager(), StartIssueTokenRequests(_, _)).Times(1);
-    EXPECT_CALL(guard.GetHostBindingManager(), StartObtainTokenRequests(_, _)).Times(1);
+    EXPECT_CALL(guard.GetCompanionManager(), StartIssueTokenRequests(_, _, _)).Times(1);
+    EXPECT_CALL(guard.GetHostBindingManager(), StartObtainTokenRequests(_, _, _)).Times(1);
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
@@ -1006,8 +1006,8 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_009
 
     EXPECT_CALL(*callback, OnResult(FwkResultCode::SUCCESS, _)).Times(1);
     EXPECT_CALL(guard.GetUserIdManager(), GetActiveUserId()).WillOnce(Return(INT32_100));
-    EXPECT_CALL(guard.GetCompanionManager(), StartIssueTokenRequests(_, _)).Times(1);
-    EXPECT_CALL(guard.GetHostBindingManager(), StartObtainTokenRequests(_, _)).Times(1);
+    EXPECT_CALL(guard.GetCompanionManager(), StartIssueTokenRequests(_, _, _)).Times(1);
+    EXPECT_CALL(guard.GetHostBindingManager(), StartObtainTokenRequests(_, _, _)).Times(1);
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 

@@ -1197,6 +1197,8 @@ HWTEST_F(FfiUtilTest, DecodeCompanionEndAddHostBindingOutput_001, TestSize.Level
     MockGuard guard;
     CompanionEndAddHostBindingOutputFfi ffi = {};
     ffi.bindingId = 888;
+    ffi.atl = 0;
+    ffi.esl = 0;
 
     CompanionEndAddHostBindingOutput output;
     EXPECT_TRUE(DecodeCompanionEndAddHostBindingOutput(ffi, output));
@@ -1249,6 +1251,7 @@ HWTEST_F(FfiUtilTest, DecodeCompanionProcessIssueTokenOutput_001, TestSize.Level
 {
     MockGuard guard;
     CompanionProcessIssueTokenOutputFfi ffi = {};
+    ffi.atl = 0;
     ffi.secMessage.len = 2;
     ffi.secMessage.data[0] = UINT8_0XCC;
     ffi.secMessage.data[1] = UINT8_0XDD;
@@ -1317,6 +1320,8 @@ HWTEST_F(FfiUtilTest, DecodeCompanionEndDelegateAuthOutput_001, TestSize.Level0)
 {
     MockGuard guard;
     CompanionEndDelegateAuthOutputFfi ffi = {};
+    ffi.authType = 1;
+    ffi.atl = 0;
     ffi.secMessage.len = 3;
     ffi.secMessage.data[0] = UINT8_0X22;
     ffi.secMessage.data[1] = UINT8_0X33;
@@ -1347,13 +1352,15 @@ HWTEST_F(FfiUtilTest, DecodeCompanionBeginObtainTokenOutput_001, TestSize.Level0
 {
     MockGuard guard;
     CompanionBeginObtainTokenOutputFfi ffi = {};
+    ffi.atl = 0;
     ffi.secMessage.len = 5;
     for (uint32_t i = 0; i < 5; ++i) {
         ffi.secMessage.data[i] = static_cast<uint8_t>(i * 2);
     }
 
     std::vector<uint8_t> reply;
-    EXPECT_TRUE(DecodeCompanionBeginObtainTokenOutput(ffi, reply));
+    int32_t atl;
+    EXPECT_TRUE(DecodeCompanionBeginObtainTokenOutput(ffi, reply, atl));
     EXPECT_EQ(reply.size(), 5U);
 }
 

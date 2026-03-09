@@ -79,7 +79,8 @@ static void FuzzSetTokenValid(std::shared_ptr<HostBinding> &binding, FuzzedDataP
 {
     if (binding) {
         bool isTokenValid = fuzzData.ConsumeBool();
-        binding->SetTokenValid(isTokenValid);
+        std::string triggerReason = GenerateFuzzString(fuzzData, 64);
+        binding->SetTokenValid(isTokenValid, triggerReason);
     }
 }
 

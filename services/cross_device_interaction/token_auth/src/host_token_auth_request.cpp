@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "companion_manager.h"
 #include "companion_token_auth_handler.h"
 #include "cross_device_comm_manager_impl.h"
@@ -32,15 +33,19 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostTokenAuthRequest::HostTokenAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg, UserId hostUserId,
-    TemplateId templateId, FwkResultCallback &&requestCallback)
-    : OutboundRequest(RequestType::HOST_TOKEN_AUTH_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
-      fwkMsg_(fwkMsg),
-      hostUserId_(hostUserId),
-      templateId_(templateId),
-      requestCallback_(std::move(requestCallback))
+HostTokenAuthRequest::HostTokenAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
+    : OutboundRequest(RequestType::HOST_TOKEN_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
+      fwkMsg_(params.fwkMsg),
+      hostUserId_(params.hostUserId),
+      templateId_(params.templateId),
+      requestCallback_(std::move(requestCallback)),
+      eventCollector_("host token auth request")
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateScheduleId(params.scheduleId);
+    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.UpdateTemplateIdList({ params.templateId });
 }
 
 HostTokenAuthRequest::~HostTokenAuthRequest()
@@ -62,6 +67,7 @@ bool HostTokenAuthRequest::OnStart(ErrorGuard &errorGuard)
 
     const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
     SetPeerDeviceKey(companionDeviceKey);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     companionUserId_ = companionStatus->companionDeviceStatus.deviceKey.deviceUserId;
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
@@ -72,6 +78,7 @@ bool HostTokenAuthRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
+    eventCollector_.UpdateConnectionName(GetConnectionName());
     return true;
 }
 
@@ -208,13 +215,13 @@ void HostTokenAuthRequest::InvokeCallback(ResultCode result, const std::vector<u
 void HostTokenAuthRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s: token auth request failed, result=%{public}d", GetDescription(), result);
-
     if (needEndTokenAuth_) {
         std::vector<uint8_t> fwkMsg = {};
         (void)SecureAgentEndTokenAuth({}, fwkMsg);
         needEndTokenAuth_ = false;
     }
     InvokeCallback(result, {});
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -222,6 +229,7 @@ void HostTokenAuthRequest::CompleteWithSuccess(const std::vector<uint8_t> &extra
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
     InvokeCallback(ResultCode::SUCCESS, extraInfo);
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

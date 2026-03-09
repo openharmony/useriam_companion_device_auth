@@ -20,6 +20,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "companion_manager.h"
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
@@ -35,8 +36,11 @@ HostObtainTokenRequest::HostObtainTokenRequest(const std::string &connectionName
     OnMessageReply &&replyCallback, const DeviceKey &companionDeviceKey)
     : InboundRequest(RequestType::HOST_OBTAIN_TOKEN_REQUEST, connectionName, companionDeviceKey),
       request_(request),
-      preObtainTokenReplyCallback_(std::move(replyCallback))
+      preObtainTokenReplyCallback_(std::move(replyCallback)),
+      eventCollector_("host obtain token request")
 {
+    eventCollector_.UpdateConnectionName(connectionName);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
 }
 
 bool HostObtainTokenRequest::ParsePreObtainTokenRequest(ErrorGuard &errorGuard)
@@ -77,6 +81,8 @@ bool HostObtainTokenRequest::ParsePreObtainTokenRequest(ErrorGuard &errorGuard)
         return false;
     }
     secureProtocolId_ = secureProtocolOpt.value();
+    eventCollector_.UpdateHostUserId(hostUserId_);
+    eventCollector_.UpdateTemplateIdList({ templateId_ });
     return true;
 }
 
@@ -211,6 +217,9 @@ bool HostObtainTokenRequest::HandleHostProcessObtainToken(const ObtainTokenReque
         IAM_LOGE("%{public}s HostProcessObtainToken failed ret=%{public}d", GetDescription(), ret);
         return false;
     }
+
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
+
     obtainTokenReply = output.obtainTokenReply;
     IAM_LOGI("%{public}s HostProcessObtainToken success atl=%{public}d", GetDescription(), output.atl);
 
@@ -233,6 +242,7 @@ void HostObtainTokenRequest::CompleteWithError(ResultCode result)
         }
         needCancelObtainToken_ = false;
     }
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -240,6 +250,7 @@ void HostObtainTokenRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
     needCancelObtainToken_ = false;
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

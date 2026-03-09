@@ -39,8 +39,12 @@ CompanionDelegateAuthRequest::CompanionDelegateAuthRequest(const std::string &co
     const DeviceKey &hostDeviceKey, const std::vector<uint8_t> &startDelegateAuthRequest)
     : InboundRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, connectionName, hostDeviceKey),
       companionUserId_(companionUserId),
-      startDelegateAuthRequest_(startDelegateAuthRequest)
+      startDelegateAuthRequest_(startDelegateAuthRequest),
+      eventCollector_("companion delegate auth request")
 {
+    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
+    eventCollector_.UpdateCompanionUserId(companionUserId_);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
 }
 
 CompanionDelegateAuthRequest::~CompanionDelegateAuthRequest()
@@ -89,6 +93,8 @@ bool CompanionDelegateAuthRequest::CompanionBeginDelegateAuth()
         ConvertUint64ToUint8Vec(challenge), static_cast<uint32_t>(atl), callback);
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), contextId != 0, false);
     contextId_ = contextId;
+
+    eventCollector_.AppendExtraInfo("context id", contextId);
     return true;
 }
 
@@ -168,6 +174,8 @@ bool CompanionDelegateAuthRequest::SecurityAgentEndDelegateAuth(ResultCode resul
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionEndDelegateAuth failed ret=%{public}d", GetDescription(), ret);
     }
+    eventCollector_.AppendExtraInfo("suceess auth type", output.authType);
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
     delegateAuthResult.swap(output.delegateAuthResult);
     return ret == ResultCode::SUCCESS;
 }
@@ -189,6 +197,7 @@ void CompanionDelegateAuthRequest::HandleSendDelegateAuthResultReply(const Attri
 void CompanionDelegateAuthRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
+    eventCollector_.Report(result);
     if (contextId_.has_value()) {
         IAM_LOGI("%{public}s delegate auth not completed, cancelling", GetDescription());
         int32_t ret = GetUserAuthAdapter().CancelAuthentication(*contextId_);
@@ -203,6 +212,7 @@ void CompanionDelegateAuthRequest::CompleteWithError(ResultCode result)
 void CompanionDelegateAuthRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

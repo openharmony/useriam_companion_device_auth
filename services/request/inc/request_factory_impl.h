@@ -33,16 +33,16 @@ public:
 
     std::shared_ptr<IRequest> CreateHostAddCompanionRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
         uint32_t tokenId, FwkResultCallback &&requestCallback) override;
-    std::shared_ptr<IRequest> CreateHostTokenAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override;
+    std::shared_ptr<IRequest> CreateHostTokenAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateHostRemoveHostBindingRequest(UserId hostUserId, TemplateId templateId,
         const DeviceKey &companionDeviceKey) override;
     std::shared_ptr<IRequest> CreateHostSyncDeviceStatusRequest(UserId hostUserId, const DeviceKey &companionDeviceKey,
         const std::string &companionDeviceName, SyncDeviceStatusCallback &&callback) override;
     std::shared_ptr<IRequest> CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-        const std::vector<uint8_t> &fwkUnlockMsg) override;
-    std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override;
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) override;
+    std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateCompanionAddCompanionRequest(const std::string &connectionName,
         const Attributes &request, OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey) override;
     std::shared_ptr<IRequest> CreateCompanionIssueTokenRequest(const std::string &connectionName,
@@ -50,16 +50,16 @@ public:
     std::shared_ptr<IRequest> CreateHostObtainTokenRequest(const std::string &connectionName, const Attributes &request,
         OnMessageReply &&replyCallback, const DeviceKey &companionDeviceKey) override;
     std::shared_ptr<IRequest> CreateCompanionObtainTokenRequest(const DeviceKey &hostDeviceKey,
-        const std::vector<uint8_t> &fwkUnlockMsg) override;
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) override;
     std::shared_ptr<IRequest> CreateCompanionDelegateAuthRequest(const std::string &connectionName,
         UserId companionUserId, const DeviceKey &hostDeviceKey,
         const std::vector<uint8_t> &startDelegateAuthRequest) override;
     std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
-        const DeviceKey &hostDeviceKey) override;
+        const DeviceKey &hostDeviceKey, const std::string &triggerReason) override;
     std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
         FwkResultCallback &&requestCallback) override;
-    std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override;
+    std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override;
 
 private:
     RequestFactoryImpl() = default;

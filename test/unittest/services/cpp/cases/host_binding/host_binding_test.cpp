@@ -101,7 +101,7 @@ HWTEST_F(HostBindingTest, Create_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -149,7 +149,7 @@ HWTEST_F(HostBindingTest, Create_002, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -193,7 +193,7 @@ HWTEST_F(HostBindingTest, Create_003, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -238,7 +238,7 @@ HWTEST_F(HostBindingTest, HandleDeviceStatusChanged_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -286,7 +286,7 @@ HWTEST_F(HostBindingTest, HandleDeviceStatusChanged_002, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -335,7 +335,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceStatusUpdate_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -383,7 +383,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceOffline_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -431,7 +431,7 @@ HWTEST_F(HostBindingTest, HandleHostDeviceOffline_002, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -477,7 +477,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -521,7 +521,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -569,7 +569,7 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_003, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -615,7 +615,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -624,7 +624,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_001, TestSize.Level0)
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
 
-    binding->SetTokenValid(true);
+    binding->SetTokenValid(true, "unknown");
 
     EXPECT_TRUE(binding->GetStatus().isTokenValid);
 }
@@ -659,7 +659,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_002, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -668,10 +668,10 @@ HWTEST_F(HostBindingTest, SetTokenValid_002, TestSize.Level0)
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
 
-    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillOnce(Return(nullptr));
 
     binding->status_.isTokenValid = true;
-    binding->SetTokenValid(false);
+    binding->SetTokenValid(false, "unknown");
 
     EXPECT_FALSE(binding->GetStatus().isTokenValid);
 }
@@ -706,7 +706,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_003, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -715,14 +715,15 @@ HWTEST_F(HostBindingTest, SetTokenValid_003, TestSize.Level0)
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
 
-    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _))
-        .WillOnce(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey) {
-            return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey);
-        }));
+    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
+        .WillOnce(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
+            const std::string &triggerReason) {
+                return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
+            }));
     EXPECT_CALL(requestMgr, Start(_)).WillOnce(Return(false));
 
     binding->status_.isTokenValid = true;
-    binding->SetTokenValid(false);
+    binding->SetTokenValid(false, "unknown");
 
     EXPECT_FALSE(binding->GetStatus().isTokenValid);
 }
@@ -757,7 +758,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_004, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -766,14 +767,15 @@ HWTEST_F(HostBindingTest, SetTokenValid_004, TestSize.Level0)
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
 
-    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _))
-        .WillOnce(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey) {
-            return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey);
-        }));
+    EXPECT_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
+        .WillOnce(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
+            const std::string &triggerReason) {
+                return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
+            }));
     EXPECT_CALL(requestMgr, Start(_)).WillOnce(Return(true));
 
     binding->status_.isTokenValid = true;
-    binding->SetTokenValid(false);
+    binding->SetTokenValid(false, "unknown");
 
     EXPECT_FALSE(binding->GetStatus().isTokenValid);
 }
@@ -808,7 +810,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_005, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
@@ -817,7 +819,7 @@ HWTEST_F(HostBindingTest, SetTokenValid_005, TestSize.Level0)
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
 
-    binding->SetTokenValid(true);
+    binding->SetTokenValid(true, "unknown");
 
     RelativeTimer::GetInstance().ExecuteAll();
 
@@ -854,7 +856,7 @@ HWTEST_F(HostBindingTest, Destructor_001, TestSize.Level0)
     ON_CALL(companionMgr, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
 
     auto &requestFactory = guard.GetRequestFactory();
-    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
 
     auto &requestMgr = guard.GetRequestManager();
     ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));

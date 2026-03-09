@@ -170,10 +170,12 @@ constexpr uint8_t NUM_FUZZ_OPERATIONS = sizeof(g_fuzzFuncs) / sizeof(CompanionOb
 void FuzzCompanionObtainTokenRequest(FuzzedDataProvider &fuzzData)
 {
     DeviceKey hostDeviceKey = GenerateFuzzDeviceKey(fuzzData);
+    uint32_t lockStateAuthTypeValue = fuzzData.ConsumeIntegral<uint32_t>();
     std::vector<uint8_t> fwkUnlockMsg =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
 
-    auto obtainTokenRequest = std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, fwkUnlockMsg);
+    auto obtainTokenRequest =
+        std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
     if (!obtainTokenRequest) {
         return;
     }

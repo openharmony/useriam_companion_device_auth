@@ -141,6 +141,7 @@ struct HostEndAddCompanionOutput {
     TemplateId templateId;
     std::vector<uint8_t> tokenData;
     Atl atl;
+    int32_t esl;
     int64_t addedTime;
 };
 
@@ -183,6 +184,8 @@ struct CompanionEndAddHostBindingInput {
 
 struct CompanionEndAddHostBindingOutput {
     BindingId bindingId;
+    Atl atl;
+    int32_t esl;
 };
 
 struct HostRemoveCompanionInput {
@@ -245,6 +248,8 @@ struct CompanionDelegateAuthEndInput {
 };
 
 struct CompanionDelegateAuthEndOutput {
+    int32_t authType;
+    Atl atl;
     std::vector<uint8_t> delegateAuthResult;
 };
 
@@ -301,6 +306,7 @@ struct CompanionProcessIssueTokenInput {
 };
 
 struct CompanionProcessIssueTokenOutput {
+    Atl atl;
     std::vector<uint8_t> issueTokenReply;
 };
 
@@ -328,6 +334,7 @@ struct CompanionBeginObtainTokenInput {
 };
 
 struct CompanionBeginObtainTokenOutput {
+    Atl atl;
     std::vector<uint8_t> obtainTokenRequest;
 };
 

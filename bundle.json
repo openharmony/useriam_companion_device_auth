@@ -28,6 +28,9 @@
     "features":[
       "companion_device_auth_enable_auth_state_maintain_simulation"
     ],
+    "hisysevent_config": [
+      "//base/useriam/companion_device_auth/hisysevent.yaml"
+    ],
     "rom":"3380KB",
     "ram":"7271KB",
     "deps":{
@@ -41,6 +44,7 @@
         "dsoftbus",
         "hicollie",
         "hilog",
+        "hisysevent",
         "init",
         "ipc",
         "json",
