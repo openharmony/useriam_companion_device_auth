@@ -193,7 +193,7 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(RequestId requestId, User
 }
 
 ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-    const std::vector<uint8_t> &tokenData)
+    Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData)
 {
     IAM_LOGI("end add host binding, request id 0x%{public}08X, result %{public}d", requestId, resultCode);
 
@@ -204,6 +204,9 @@ ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, Result
         IAM_LOGE("security agent failed to end add host binding, ret %{public}d", ret);
         return ret;
     }
+
+    atl = output.atl;
+    esl = output.esl;
 
     if (resultCode != ResultCode::SUCCESS) {
         if (output.bindingId != 0) {
@@ -319,14 +322,15 @@ bool HostBindingManagerImpl::SetHostBindingTokenValid(BindingId bindingId, bool 
         return false;
     }
 
-    binding->SetTokenValid(isTokenValid);
+    binding->SetTokenValid(isTokenValid, "unknown");
 
     IAM_LOGI("set host binding token valid success, binding id %{public}s, isTokenValid %{public}d",
         GET_MASKED_NUM_STRING(bindingId).c_str(), isTokenValid);
     return true;
 }
 
-void HostBindingManagerImpl::StartObtainTokenRequests(UserId userId, const std::vector<uint8_t> &fwkUnlockMsg)
+void HostBindingManagerImpl::StartObtainTokenRequests(UserId userId, uint32_t lockStateAuthTypeValue,
+    const std::vector<uint8_t> &fwkUnlockMsg)
 {
     IAM_LOGI("start, userId=%{public}d", userId);
 
@@ -344,7 +348,8 @@ void HostBindingManagerImpl::StartObtainTokenRequests(UserId userId, const std::
                  "userId=%{public}d",
             GET_MASKED_NUM_STRING(bindingId).c_str(), static_cast<int32_t>(hostDeviceKey.idType),
             hostDeviceKey.deviceUserId);
-        auto request = GetRequestFactory().CreateCompanionObtainTokenRequest(hostDeviceKey, fwkUnlockMsg);
+        auto request = GetRequestFactory().CreateCompanionObtainTokenRequest(hostDeviceKey,
+            lockStateAuthTypeValue, fwkUnlockMsg);
         ENSURE_OR_CONTINUE(request != nullptr);
 
         bool result = GetRequestManager().Start(request);
@@ -374,7 +379,7 @@ void HostBindingManagerImpl::RevokeTokens(UserId userId)
 
     for (const auto &binding : bindings_) {
         ENSURE_OR_CONTINUE(binding != nullptr);
-        binding->SetTokenValid(false);
+        binding->SetTokenValid(false, "property freeze");
     }
 
     IAM_LOGI("end");

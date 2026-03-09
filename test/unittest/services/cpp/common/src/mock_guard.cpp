@@ -31,6 +31,7 @@
 #include "mock_cross_device_comm_manager.h"
 #include "mock_driver_manager_adapter.h"
 #include "mock_executor_factory.h"
+#include "mock_event_manager_adapter.h"
 #include "mock_host_binding_manager.h"
 #include "mock_idm_adapter.h"
 #include "mock_misc_manager.h"
@@ -81,6 +82,9 @@ void MockGuard::CreateMocks()
     userIdManager_ = std::make_shared<MockUserIdManager>();
     AdapterManager::GetInstance().SetUserIdManager(userIdManager_);
 
+    eventManagerAdapter_ = std::make_shared<MockEventManagerAdapter>();
+    AdapterManager::GetInstance().SetEventManagerAdapter(eventManagerAdapter_);
+
     // SingletonManager mocks
     crossDeviceCommManager_ = std::make_shared<MockCrossDeviceCommManager>();
     SingletonManager::GetInstance().SetCrossDeviceCommManager(crossDeviceCommManager_);
@@ -118,6 +122,7 @@ void MockGuard::SetupDefaultBehaviors()
     SetupExecutorFactoryDefaults();
     SetupHostBindingManagerDefaults();
     SetupSecurityAgentDefaults();
+    SetupEventManagerAdapterDefaults();
 }
 
 void MockGuard::SetupMiscManagerDefaults()
@@ -188,7 +193,7 @@ void MockGuard::SetupCompanionManagerDefaults()
     ON_CALL(*companionManager_, SetCompanionTokenAtl(_, _)).WillByDefault(Return(true));
     ON_CALL(*companionManager_, UpdateToken(_, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*companionManager_, HandleCompanionCheckFail(_)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
-    ON_CALL(*companionManager_, StartIssueTokenRequests(_, _)).WillByDefault(Return());
+    ON_CALL(*companionManager_, StartIssueTokenRequests(_, _, _)).WillByDefault(Return());
     ON_CALL(*companionManager_, NotifyCompanionStatusChange()).WillByDefault(Return());
     ON_CALL(*companionManager_, HandleRemoveHostBindingComplete(_)).WillByDefault(Return());
 }
@@ -200,7 +205,7 @@ void MockGuard::SetupRequestManagerDefaults()
 
 void MockGuard::SetupRequestFactoryDefaults()
 {
-    ON_CALL(*requestFactory_, CreateCompanionRevokeTokenRequest(_, _)).WillByDefault(Return(nullptr));
+    ON_CALL(*requestFactory_, CreateCompanionRevokeTokenRequest(_, _, _)).WillByDefault(Return(nullptr));
     ON_CALL(*requestFactory_, CreateHostSyncDeviceStatusRequest(_, _, _, _)).WillByDefault(Return(nullptr));
 }
 
@@ -217,10 +222,10 @@ void MockGuard::SetupHostBindingManagerDefaults()
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_)).WillByDefault(Return(std::nullopt));
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_, _)).WillByDefault(Return(std::nullopt));
     ON_CALL(*hostBindingManager_, BeginAddHostBinding(_, _, _, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
-    ON_CALL(*hostBindingManager_, EndAddHostBinding(_, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
+    ON_CALL(*hostBindingManager_, EndAddHostBinding(_, _, _, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, RemoveHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, SetHostBindingTokenValid(_, _)).WillByDefault(Return(true));
-    ON_CALL(*hostBindingManager_, StartObtainTokenRequests(_, _)).WillByDefault(Return());
+    ON_CALL(*hostBindingManager_, StartObtainTokenRequests(_, _, _)).WillByDefault(Return());
     ON_CALL(*hostBindingManager_, RevokeTokens(_)).WillByDefault(Return());
 }
 
@@ -237,6 +242,12 @@ void MockGuard::SetupSecurityAgentDefaults()
     ON_CALL(*securityAgent_, CompanionProcessCheck(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(*securityAgent_, HostGetInitKeyNegotiationRequest(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
     ON_CALL(*securityAgent_, HostBeginAddCompanion(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
+}
+
+void MockGuard::SetupEventManagerAdapterDefaults()
+{
+    ON_CALL(*eventManagerAdapter_, ReportSystemFault(_, _, _)).WillByDefault(Return());
+    ON_CALL(*eventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
 }
 
 MockGuard::~MockGuard()
@@ -270,6 +281,7 @@ MockGuard::~MockGuard()
     Mock::VerifyAndClearExpectations(saManagerAdapter_.get());
     Mock::VerifyAndClearExpectations(systemParamManager_.get());
     Mock::VerifyAndClearExpectations(userIdManager_.get());
+    Mock::VerifyAndClearExpectations(eventManagerAdapter_.get());
 
     // Now it's safe to clear AdapterManager mocks (these don't have nullptr checks)
     AdapterManager::GetInstance().SetTimeKeeper(nullptr);
@@ -279,6 +291,7 @@ MockGuard::~MockGuard()
     AdapterManager::GetInstance().SetSaManagerAdapter(nullptr);
     AdapterManager::GetInstance().SetSystemParamManager(nullptr);
     AdapterManager::GetInstance().SetUserIdManager(nullptr);
+    AdapterManager::GetInstance().SetEventManagerAdapter(nullptr);
 
     // SingletonManager mocks are already reset, so no need to set to nullptr
     // The Reset() call above already cleared all shared_ptr references
@@ -319,6 +332,11 @@ MockSystemParamManager &MockGuard::GetSystemParamManager()
 MockUserIdManager &MockGuard::GetUserIdManager()
 {
     return *userIdManager_;
+}
+
+MockEventManagerAdapter &MockGuard::GetEventManagerAdapter()
+{
+    return *eventManagerAdapter_;
 }
 
 // SingletonManager mock access methods

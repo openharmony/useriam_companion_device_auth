@@ -56,6 +56,7 @@ struct EndAddCompanionOutput {
     std::vector<uint8_t> fwkMsg;
     std::vector<uint8_t> tokenData;
     Atl atl;
+    int32_t esl;
     TemplateId templateId;
 };
 
@@ -85,7 +86,7 @@ public:
 
     virtual ResultCode UpdateToken(TemplateId templateId, const std::vector<uint8_t> &fwkMsg,
         bool &needRedistribute) = 0;
-    virtual void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds,
+    virtual void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds, uint32_t lockStateAuthTypeValue,
         const std::vector<uint8_t> &fwkUnlockMsg) = 0;
     virtual ResultCode HandleCompanionCheckFail(TemplateId templateId) = 0;
     virtual bool IsCapabilitySupported(TemplateId templateId, Capability capability) = 0;

@@ -197,7 +197,15 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
         (*callback)(result, extraInfo);
     };
 
-    HostMixAuthParams params = { scheduleId, param.extraInfo, param.userId, param.templateIdList, tokenId, businessId };
+    HostMixAuthParams params = {
+        scheduleId,
+        param.extraInfo,
+        param.userId,
+        param.templateIdList,
+        tokenId,
+        businessId,
+        param.authIntent
+    };
     auto request = GetRequestFactory().CreateHostMixAuthRequest(params, std::move(requestCallback));
     if (request == nullptr) {
         IAM_LOGE("CreateHostMixAuthRequest failed");
@@ -331,8 +339,10 @@ FwkResultCode Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const
                 GetUserIdManager().GetActiveUserId());
             return FwkResultCode::SUCCESS;
         }
-        GetCompanionManager().StartIssueTokenRequests(freezeCommand.templateIdList, extraInfo);
-        GetHostBindingManager().StartObtainTokenRequests(freezeCommand.userId, extraInfo);
+        GetCompanionManager().StartIssueTokenRequests(freezeCommand.templateIdList,
+            freezeCommand.lockStateAuthTypeValue, extraInfo);
+        GetHostBindingManager().StartObtainTokenRequests(freezeCommand.userId,
+            freezeCommand.lockStateAuthTypeValue, extraInfo);
     }
 
     return FwkResultCode::SUCCESS;

@@ -195,6 +195,8 @@ static void FuzzDecodeCompanionEndAddHostBindingOutput(FuzzedDataProvider &fuzzD
 {
     CompanionEndAddHostBindingOutputFfi ffi;
     ffi.bindingId = fuzzData.ConsumeIntegral<int32_t>();
+    ffi.atl = fuzzData.ConsumeIntegral<int32_t>();
+    ffi.esl = fuzzData.ConsumeIntegral<int32_t>();
 
     CompanionEndAddHostBindingOutput output;
     (void)DecodeCompanionEndAddHostBindingOutput(ffi, output);
@@ -227,6 +229,7 @@ static void FuzzDecodeCompanionPreIssueTokenOutput(FuzzedDataProvider &fuzzData)
 static void FuzzDecodeCompanionProcessIssueTokenOutput(FuzzedDataProvider &fuzzData)
 {
     CompanionProcessIssueTokenOutputFfi ffi;
+    ffi.atl = fuzzData.ConsumeIntegral<int32_t>();
     ffi.secMessage.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL1024);
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
@@ -261,6 +264,8 @@ static void FuzzDecodeCompanionBeginDelegateAuthOutput(FuzzedDataProvider &fuzzD
 static void FuzzDecodeCompanionEndDelegateAuthOutput(FuzzedDataProvider &fuzzData)
 {
     CompanionEndDelegateAuthOutputFfi ffi;
+    ffi.authType = fuzzData.ConsumeIntegral<int32_t>();
+    ffi.atl = fuzzData.ConsumeIntegral<int32_t>();
     ffi.secMessage.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL1024);
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
@@ -273,13 +278,15 @@ static void FuzzDecodeCompanionEndDelegateAuthOutput(FuzzedDataProvider &fuzzDat
 static void FuzzDecodeCompanionBeginObtainTokenOutput(FuzzedDataProvider &fuzzData)
 {
     CompanionBeginObtainTokenOutputFfi ffi;
+    ffi.atl = fuzzData.ConsumeIntegral<int32_t>();
     ffi.secMessage.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL1024);
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
 
     std::vector<uint8_t> reply;
-    (void)DecodeCompanionBeginObtainTokenOutput(ffi, reply);
+    int32_t atl;
+    (void)DecodeCompanionBeginObtainTokenOutput(ffi, reply, atl);
 }
 
 static void FuzzDecodeCompanionProcessCheckOutput(FuzzedDataProvider &fuzzData)

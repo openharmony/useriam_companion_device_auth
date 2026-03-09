@@ -136,14 +136,21 @@ void FuzzHostSingleMixAuthRequest(FuzzedDataProvider &fuzzData)
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_FWK_MESSAGE_LENGTH));
     UserId hostUserId = fuzzData.ConsumeIntegral<UserId>();
     TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
+    int32_t authIntent = fuzzData.ConsumeIntegral<int32_t>();
 
     FwkResultCallback callback = [](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (void)result;
         (void)extraInfo;
     };
 
-    auto request =
-        std::make_shared<HostSingleMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateId, std::move(callback));
+    AuthRequestParams params = {
+        .scheduleId = scheduleId,
+        .fwkMsg = fwkMsg,
+        .hostUserId = hostUserId,
+        .templateId = templateId,
+        .authIntent = authIntent
+    };
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
     if (!request) {
         return;
     }

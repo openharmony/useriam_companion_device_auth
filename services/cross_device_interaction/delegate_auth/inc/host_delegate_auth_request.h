@@ -22,7 +22,9 @@
 #include <vector>
 
 #include "companion_manager.h"
+#include "event_manager_adapter.h"
 #include "outbound_request.h"
+#include "request_factory.h"
 #include "security_agent.h"
 #include "user_id_manager.h"
 
@@ -31,8 +33,7 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostDelegateAuthRequest : public std::enable_shared_from_this<HostDelegateAuthRequest>, public OutboundRequest {
 public:
-    HostDelegateAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg, UserId hostUserId,
-        TemplateId templateId, FwkResultCallback &&requestCallback);
+    HostDelegateAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback);
     ~HostDelegateAuthRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
@@ -64,6 +65,7 @@ private:
     std::unique_ptr<Subscription> delegateResultSubscription_;
     bool needCancelDelegateAuth_ = false;
     bool callbackInvoked_ = false;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

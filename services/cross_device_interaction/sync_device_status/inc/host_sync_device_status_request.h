@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "companion_manager.h"
+#include "event_manager_adapter.h"
 #include "outbound_request.h"
 #include "scope_guard.h"
 #include "security_agent.h"
@@ -62,6 +63,7 @@ private:
     DeviceKey companionDeviceKey_;
     std::string companionDeviceName_;
     SyncDeviceStatusCallback callback_;
+    InteractionEventCollector eventCollector_;
 
     void InvokeCallback(ResultCode result, const SyncDeviceStatus &syncDeviceStatus);
 };

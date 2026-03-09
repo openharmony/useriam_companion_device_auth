@@ -125,6 +125,7 @@ typedef struct HostEndAddCompanionOutputFfi {
     struct DataArray1024Ffi secMessage;
     uint64_t templateId;
     int32_t atl;
+    int32_t esl;
     uint64_t addedTime;
 } HostEndAddCompanionOutputFfi;
 
@@ -353,6 +354,8 @@ typedef struct CompanionEndAddHostBindingInputFfi {
 
 typedef struct CompanionEndAddHostBindingOutputFfi {
     int32_t bindingId;
+    int32_t atl;
+    int32_t esl;
 } CompanionEndAddHostBindingOutputFfi;
 
 typedef struct CompanionRemoveHostBindingInputFfi {
@@ -379,6 +382,7 @@ typedef struct CompanionProcessIssueTokenInputFfi {
 } CompanionProcessIssueTokenInputFfi;
 
 typedef struct CompanionProcessIssueTokenOutputFfi {
+    int32_t atl;
     struct DataArray1024Ffi secMessage;
 } CompanionProcessIssueTokenOutputFfi;
 
@@ -423,6 +427,8 @@ typedef struct CompanionEndDelegateAuthInputFfi {
 } CompanionEndDelegateAuthInputFfi;
 
 typedef struct CompanionEndDelegateAuthOutputFfi {
+    int32_t authType;
+    int32_t atl;
     struct DataArray1024Ffi secMessage;
 } CompanionEndDelegateAuthOutputFfi;
 
@@ -435,6 +441,7 @@ typedef struct CompanionBeginObtainTokenInputFfi {
 } CompanionBeginObtainTokenInputFfi;
 
 typedef struct CompanionBeginObtainTokenOutputFfi {
+    int32_t atl;
     struct DataArray1024Ffi secMessage;
 } CompanionBeginObtainTokenOutputFfi;
 

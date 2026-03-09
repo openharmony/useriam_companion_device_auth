@@ -35,6 +35,14 @@ namespace CompanionDeviceAuth {
 
 using SyncDeviceStatusCallback = std::function<void(ResultCode result, const SyncDeviceStatus &syncDeviceStatus)>;
 
+struct AuthRequestParams {
+    ScheduleId scheduleId;
+    std::vector<uint8_t> fwkMsg;
+    UserId hostUserId;
+    TemplateId templateId;
+    int32_t authIntent;
+};
+
 struct HostMixAuthParams {
     ScheduleId scheduleId;
     std::vector<uint8_t> fwkMsg;
@@ -42,6 +50,7 @@ struct HostMixAuthParams {
     std::vector<TemplateId> templateIdList;
     std::optional<uint32_t> tokenId;
     std::optional<BusinessId> businessId;
+    int32_t authIntent;
 };
 
 class IRequestFactory : public NoCopyable {
@@ -50,8 +59,7 @@ public:
 
     virtual std::shared_ptr<IRequest> CreateHostAddCompanionRequest(ScheduleId scheduleId,
         const std::vector<uint8_t> &fwkMsg, uint32_t tokenId, FwkResultCallback &&requestCallback) = 0;
-    virtual std::shared_ptr<IRequest> CreateHostTokenAuthRequest(ScheduleId scheduleId,
-        const std::vector<uint8_t> &fwkMsg, UserId hostUserId, TemplateId templateId,
+    virtual std::shared_ptr<IRequest> CreateHostTokenAuthRequest(const AuthRequestParams &params,
         FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostRemoveHostBindingRequest(UserId hostUserId, TemplateId templateId,
         const DeviceKey &companionDeviceKey) = 0;
@@ -59,9 +67,8 @@ public:
         const DeviceKey &companionDeviceKey, const std::string &companionDeviceName,
         SyncDeviceStatusCallback &&callback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-        const std::vector<uint8_t> &fwkUnlockMsg) = 0;
-    virtual std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(ScheduleId scheduleId,
-        const std::vector<uint8_t> &fwkMsg, UserId hostUserId, TemplateId templateId,
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) = 0;
+    virtual std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(const AuthRequestParams &params,
         FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateCompanionAddCompanionRequest(const std::string &connectionName,
         const Attributes &request, OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey) = 0;
@@ -70,16 +77,16 @@ public:
     virtual std::shared_ptr<IRequest> CreateHostObtainTokenRequest(const std::string &connectionName,
         const Attributes &request, OnMessageReply &&replyCallback, const DeviceKey &companionDeviceKey) = 0;
     virtual std::shared_ptr<IRequest> CreateCompanionObtainTokenRequest(const DeviceKey &hostDeviceKey,
-        const std::vector<uint8_t> &fwkUnlockMsg) = 0;
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) = 0;
     virtual std::shared_ptr<IRequest> CreateCompanionDelegateAuthRequest(const std::string &connectionName,
         UserId companionUserId, const DeviceKey &hostDeviceKey,
         const std::vector<uint8_t> &startDelegateAuthRequest) = 0;
     virtual std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
-        const DeviceKey &hostDeviceKey) = 0;
+        const DeviceKey &hostDeviceKey, const std::string &triggerReason) = 0;
     virtual std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
         FwkResultCallback &&requestCallback) = 0;
-    virtual std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) = 0;
+    virtual std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) = 0;
 
 protected:
     IRequestFactory() = default;

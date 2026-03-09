@@ -133,7 +133,8 @@ bool DecodeCompanionEndDelegateAuthOutput(const CompanionEndDelegateAuthOutputFf
 
 bool EncodeCompanionBeginObtainTokenInput(const CompanionBeginObtainTokenInput &input,
     CompanionBeginObtainTokenInputFfi &ffi);
-bool DecodeCompanionBeginObtainTokenOutput(const CompanionBeginObtainTokenOutputFfi &ffi, std::vector<uint8_t> &reply);
+bool DecodeCompanionBeginObtainTokenOutput(const CompanionBeginObtainTokenOutputFfi &ffi, std::vector<uint8_t> &reply,
+    Atl &atl);
 bool EncodeCompanionEndObtainTokenInput(const CompanionEndObtainTokenInput &input,
     CompanionEndObtainTokenInputFfi &ffi);
 

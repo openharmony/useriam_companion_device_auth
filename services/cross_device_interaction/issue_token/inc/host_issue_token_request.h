@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "companion_manager.h"
+#include "event_manager_adapter.h"
 #include "outbound_request.h"
 #include "security_agent.h"
 #include "user_id_manager.h"
@@ -30,7 +31,8 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostIssueTokenRequest : public std::enable_shared_from_this<HostIssueTokenRequest>, public OutboundRequest {
 public:
-    HostIssueTokenRequest(UserId hostUserId, TemplateId templateId, const std::vector<uint8_t> &fwkUnlockMsg);
+    HostIssueTokenRequest(UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
+        const std::vector<uint8_t> &fwkUnlockMsg);
     ~HostIssueTokenRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
@@ -60,6 +62,7 @@ private:
     bool needCancelIssueToken_ = false;
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     std::unique_ptr<Subscription> deviceStatusSubscription_;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

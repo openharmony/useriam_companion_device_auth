@@ -24,6 +24,7 @@
 #include "add_companion_message.h"
 #include "companion_manager.h"
 #include "error_guard.h"
+#include "event_manager_adapter.h"
 #include "outbound_request.h"
 #include "security_agent.h"
 #include "user_id_manager.h"
@@ -69,6 +70,7 @@ private:
     FwkResultCallback requestCallback_;
     DeviceKey hostDeviceKey_ {};
     SecureProtocolId secureProtocolId_ = SecureProtocolId::INVALID;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

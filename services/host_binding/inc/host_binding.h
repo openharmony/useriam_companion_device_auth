@@ -59,7 +59,7 @@ public:
     {
         return description_.c_str();
     }
-    void SetTokenValid(bool isTokenValid);
+    void SetTokenValid(bool isTokenValid, const std::string &triggerReason);
 
 private:
     explicit HostBinding(const PersistedHostBindingStatus &persistedStatus);

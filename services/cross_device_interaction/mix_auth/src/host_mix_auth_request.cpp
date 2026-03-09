@@ -16,10 +16,12 @@
 #include "host_mix_auth_request.h"
 
 #include <cinttypes>
+#include <sstream>
 
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "common_defines.h"
 #include "companion_manager.h"
 #include "misc_manager.h"
@@ -38,9 +40,15 @@ HostMixAuthRequest::HostMixAuthRequest(const HostMixAuthParams &params, FwkResul
       templateIdList_(params.templateIdList),
       tokenId_(params.tokenId),
       businessId_(params.businessId),
-      requestCallback_(std::move(requestCallback))
+      authIntent_(params.authIntent),
+      requestCallback_(std::move(requestCallback)),
+      eventCollector_("host mix auth request")
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateIdList_));
+    eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateScheduleId(params.scheduleId);
+    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.UpdateTemplateIdList(params.templateIdList);
 }
 
 bool HostMixAuthRequest::AnyTemplateValid() const
@@ -116,14 +124,20 @@ std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::v
 void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId> &templateList)
 {
     for (auto templateId : templateList) {
-        auto hostSingleMixAuthRequest =
-            GetRequestFactory().CreateHostSingleMixAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId,
-                [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
-                    const std::vector<uint8_t> &extraInfo) {
-                    auto self = weakSelf.lock();
-                    ENSURE_OR_RETURN_DESC(description, self != nullptr);
-                    self->HandleAuthResult(templateId, result, extraInfo);
-                });
+        AuthRequestParams authParams = {
+            .scheduleId = GetScheduleId(),
+            .fwkMsg = fwkMsg_,
+            .hostUserId = hostUserId_,
+            .templateId = templateId,
+            .authIntent = authIntent_
+        };
+        auto hostSingleMixAuthRequest = GetRequestFactory().CreateHostSingleMixAuthRequest(authParams,
+            [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
+                const std::vector<uint8_t> &extraInfo) {
+                auto self = weakSelf.lock();
+                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                self->HandleAuthResult(templateId, result, extraInfo);
+            });
         if (hostSingleMixAuthRequest == nullptr) {
             IAM_LOGE("%{public}s factory returned nullptr for templateId:%{public}s", GetDescription(),
                 GET_MASKED_NUM_CSTR(templateId));
@@ -194,6 +208,9 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
 {
     IAM_LOGI("%{public}s templateId:%{public}s result:%{public}d", GetDescription(), GET_MASKED_NUM_CSTR(templateId),
         result);
+    std::string templateAuthResult = std::to_string(templateId) + " " + std::to_string(static_cast<int32_t>(result));
+    eventCollector_.AppendExtraInfo("template auth result", templateAuthResult);
+
     auto it = requestMap_.find(templateId);
     if (it == requestMap_.end()) {
         IAM_LOGE("%{public}s request already released", GetDescription());
@@ -219,6 +236,7 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
             entry.second->Cancel(ResultCode::CANCELED);
         }
     }
+    eventCollector_.AppendExtraInfo("success template id", templateId);
     CompleteWithSuccess(extraInfo);
 }
 
@@ -258,6 +276,7 @@ void HostMixAuthRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
     InvokeCallback(result, {});
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -265,6 +284,7 @@ void HostMixAuthRequest::CompleteWithSuccess(const std::vector<uint8_t> &extraIn
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
     InvokeCallback(ResultCode::SUCCESS, extraInfo);
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

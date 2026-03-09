@@ -20,7 +20,9 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "add_companion_message.h"
+#include "common_message.h"
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "security_agent.h"
@@ -36,7 +38,8 @@ CompanionAddCompanionRequest::CompanionAddCompanionRequest(const std::string &co
     OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey)
     : InboundRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, connectionName, hostDeviceKey),
       initKeyNegoRequest_(request),
-      currentReply_(std::move(replyCallback))
+      currentReply_(std::move(replyCallback)),
+      eventCollector_("companion add companion request")
 {
 }
 
@@ -47,6 +50,10 @@ bool CompanionAddCompanionRequest::OnStart(ErrorGuard &errorGuard)
     auto companionKeyOpt = GetCrossDeviceCommManager().GetLocalDeviceKeyByConnectionName(GetConnectionName());
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), companionKeyOpt.has_value(), false);
     companionDeviceKey_ = *companionKeyOpt;
+
+    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
+    eventCollector_.UpdateCompanionUserId(companionDeviceKey_.deviceUserId);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
 
     secureProtocolId_ = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), secureProtocolId_ != SecureProtocolId::INVALID, false);
@@ -120,6 +127,14 @@ bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNego
     }
     needCancelAddCompanion_ = true;
 
+    std::vector<uint16_t> algorithmList;
+    uint16_t selectedAlgorithm;
+    ParseAlgorithmListFromInitKeyNegotiationRequest(request.extraInfo, algorithmList);
+    ParseSelectedAlgorithmFromInitKeyNegotiationReply(output.initKeyNegotiationReply, selectedAlgorithm);
+
+    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
+    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
+
     initKeyNegotiationReply = output.initKeyNegotiationReply;
     return true;
 }
@@ -189,13 +204,19 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
         IAM_LOGI("%{public}s receive token data from host, size=%{public}zu", GetDescription(), tokenData.size());
     }
 
-    ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), requestOpt->result, tokenData);
+    Atl atl = 0;
+    int32_t esl = 0;
+    ResultCode ret =
+        GetHostBindingManager().EndAddHostBinding(GetRequestId(), requestOpt->result, atl, esl, tokenData);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionEndAddHostBinding failed ret=%{public}d", GetDescription(), ret);
         errorGuard.UpdateErrorCode(ret);
         return;
     }
     needCancelAddCompanion_ = false;
+
+    eventCollector_.AppendExtraInfo("ATL", atl);
+    eventCollector_.AppendExtraInfo("ESL", esl);
 
     EndAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
     Attributes reply;
@@ -232,18 +253,25 @@ void CompanionAddCompanionRequest::CompleteWithError(ResultCode result)
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
     SendErrorReply(result);
     if (needCancelAddCompanion_) {
-        ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), result);
+        Atl atl = 0;
+        int32_t esl = 0;
+        ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), result, atl, esl);
         if (ret != ResultCode::SUCCESS) {
             IAM_LOGE("%{public}s EndAddHostBinding cancel failed ret=%{public}d", GetDescription(), ret);
         }
         needCancelAddCompanion_ = false;
+
+        eventCollector_.AppendExtraInfo("ATL", atl);
+        eventCollector_.AppendExtraInfo("ESL", esl);
     }
+    eventCollector_.Report(result);
     Destroy();
 }
 
 void CompanionAddCompanionRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

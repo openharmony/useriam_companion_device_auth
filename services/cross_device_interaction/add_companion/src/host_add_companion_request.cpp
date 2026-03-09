@@ -18,8 +18,10 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "add_companion_message.h"
 #include "common_defines.h"
+#include "common_message.h"
 #include "companion_manager.h"
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
@@ -39,7 +41,8 @@ HostAddCompanionRequest::HostAddCompanionRequest(ScheduleId scheduleId, const st
     : OutboundRequest(RequestType::HOST_ADD_COMPANION_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
       fwkMsg_(fwkMsg),
       tokenId_(tokenId),
-      requestCallback_(std::move(requestCallback))
+      requestCallback_(std::move(requestCallback)),
+      eventCollector_("host add companion request")
 {
 }
 
@@ -91,6 +94,11 @@ void HostAddCompanionRequest::OnConnected()
     ENSURE_OR_RETURN_DESC(GetDescription(), secureProtocolIdOpt.has_value());
     secureProtocolId_ = *secureProtocolIdOpt;
 
+    eventCollector_.UpdateHostUserId(hostDeviceKey_.deviceUserId);
+    eventCollector_.UpdateCompanionDeviceKey(*peerDeviceKeyOpt);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.UpdateScheduleId(GetScheduleId());
+
     HostGetInitKeyNegotiationRequestInput input = {
         .requestId = GetRequestId(),
         .secureProtocolId = secureProtocolId_,
@@ -103,7 +111,11 @@ void HostAddCompanionRequest::OnConnected()
         return;
     }
 
+    std::vector<uint16_t> algorithmList;
+    ParseAlgorithmListFromInitKeyNegotiationRequest(output.initKeyNegotiationRequest, algorithmList);
     needCancelCompanionAdd_ = true;
+
+    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
 
     InitKeyNegotiationRequest initRequest { .hostDeviceKey = hostDeviceKey_,
         .extraInfo = std::move(output.initKeyNegotiationRequest) };
@@ -144,6 +156,10 @@ void HostAddCompanionRequest::HandleInitKeyNegotiationReply(const Attributes &re
         errorGuard.UpdateErrorCode(initReply.result);
         return;
     }
+
+    uint16_t selectedAlgorithm;
+    ParseSelectedAlgorithmFromInitKeyNegotiationReply(initReply.extraInfo, selectedAlgorithm);
+    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
 
     auto companionDeviceKey = GetPeerDeviceKey();
     ENSURE_OR_RETURN_DESC(GetDescription(), companionDeviceKey.has_value());
@@ -259,6 +275,10 @@ bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &re
     fwkMsg = std::move(output.fwkMsg);
     pendingTokenData_ = std::move(output.tokenData);
     tokenAtl_ = output.atl;
+
+    eventCollector_.UpdateTemplateIdList({ templateId_ });
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.AppendExtraInfo("ESL", output.esl);
     return true;
 }
 
@@ -336,6 +356,7 @@ void HostAddCompanionRequest::CompleteWithError(ResultCode result)
         needCancelCompanionAdd_ = false;
     }
     InvokeCallback(result, {});
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -344,6 +365,7 @@ void HostAddCompanionRequest::CompleteWithSuccess()
     IAM_LOGI("%{public}s complete with success", GetDescription());
     InvokeCallback(ResultCode::SUCCESS, addCompanionFwkMsg_);
     needCancelCompanionAdd_ = false;
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

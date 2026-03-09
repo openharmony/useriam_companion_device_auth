@@ -17,6 +17,7 @@
 #define COMPANION_DEVICE_HOST_MIX_AUTH_REQUEST_H
 
 #include "base_request.h"
+#include "event_manager_adapter.h"
 #include "host_delegate_auth_request.h"
 #include "host_token_auth_request.h"
 #include "request_factory.h"
@@ -55,8 +56,10 @@ private:
     std::vector<TemplateId> templateIdList_;
     std::optional<uint32_t> tokenId_;
     std::optional<BusinessId> businessId_;
+    int32_t authIntent_ = 0;
     FwkResultCallback requestCallback_;
     std::unordered_map<TemplateId, std::shared_ptr<IRequest>> requestMap_;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

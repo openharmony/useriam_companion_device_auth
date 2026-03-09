@@ -23,6 +23,7 @@
 #include "mock_cross_device_comm_manager.h"
 #include "mock_driver_manager_adapter.h"
 #include "mock_executor_factory.h"
+#include "mock_event_manager_adapter.h"
 #include "mock_host_binding_manager.h"
 #include "mock_idm_adapter.h"
 #include "mock_misc_manager.h"
@@ -58,6 +59,7 @@ public:
     MockSAManagerAdapter &GetSaManagerAdapter();
     MockSystemParamManager &GetSystemParamManager();
     MockUserIdManager &GetUserIdManager();
+    MockEventManagerAdapter &GetEventManagerAdapter();
 
     // SingletonManager mock access methods
 
@@ -83,6 +85,7 @@ private:
     void SetupExecutorFactoryDefaults();
     void SetupHostBindingManagerDefaults();
     void SetupSecurityAgentDefaults();
+    void SetupEventManagerAdapterDefaults();
 
     // AdapterManager mock instances
     std::shared_ptr<MockTimeKeeper> timeKeeper_;
@@ -92,6 +95,7 @@ private:
     std::shared_ptr<MockSAManagerAdapter> saManagerAdapter_;
     std::shared_ptr<MockSystemParamManager> systemParamManager_;
     std::shared_ptr<MockUserIdManager> userIdManager_;
+    std::shared_ptr<MockEventManagerAdapter> eventManagerAdapter_;
 
     // SingletonManager mock instances
     std::shared_ptr<MockCrossDeviceCommManager> crossDeviceCommManager_;

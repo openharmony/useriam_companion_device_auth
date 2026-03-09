@@ -378,6 +378,7 @@ bool DecodeHostEndAddCompanionOutput(const HostEndAddCompanionOutputFfi &ffi, Ho
 {
     output.templateId = ffi.templateId;
     output.atl = ffi.atl;
+    output.esl = ffi.esl;
     output.addedTime = ffi.addedTime;
     if (!DecodeMessageArray(ffi.fwkMessage, output.fwkMsg) || !DecodeMessageArray(ffi.secMessage, output.tokenData)) {
         return false;
@@ -653,6 +654,8 @@ bool DecodeCompanionEndAddHostBindingOutput(const CompanionEndAddHostBindingOutp
     CompanionEndAddHostBindingOutput &output)
 {
     output.bindingId = ffi.bindingId;
+    output.atl = ffi.atl;
+    output.esl = ffi.esl;
     return true;
 }
 
@@ -683,6 +686,7 @@ bool EncodeCompanionProcessIssueTokenInput(const CompanionProcessIssueTokenInput
 bool DecodeCompanionProcessIssueTokenOutput(const CompanionProcessIssueTokenOutputFfi &ffi,
     CompanionProcessIssueTokenOutput &output)
 {
+    output.atl = ffi.atl;
     return DecodeMessageArray(ffi.secMessage, output.issueTokenReply);
 }
 
@@ -731,6 +735,8 @@ bool EncodeCompanionEndDelegateAuthInput(const CompanionDelegateAuthEndInput &in
 bool DecodeCompanionEndDelegateAuthOutput(const CompanionEndDelegateAuthOutputFfi &ffi,
     CompanionDelegateAuthEndOutput &output)
 {
+    output.authType = ffi.authType;
+    output.atl = ffi.atl;
     return DecodeMessageArray(ffi.secMessage, output.delegateAuthResult);
 }
 
@@ -749,8 +755,10 @@ bool EncodeCompanionBeginObtainTokenInput(const CompanionBeginObtainTokenInput &
     return true;
 }
 
-bool DecodeCompanionBeginObtainTokenOutput(const CompanionBeginObtainTokenOutputFfi &ffi, std::vector<uint8_t> &reply)
+bool DecodeCompanionBeginObtainTokenOutput(const CompanionBeginObtainTokenOutputFfi &ffi, std::vector<uint8_t> &reply,
+    Atl &atl)
 {
+    atl = ffi.atl;
     return DecodeMessageArray(ffi.secMessage, reply);
 }
 

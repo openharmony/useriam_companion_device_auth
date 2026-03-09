@@ -129,9 +129,10 @@ static void FuzzStartIssueTokenRequests(std::shared_ptr<CompanionManagerImpl> &m
     for (uint8_t j = 0; j < count; ++j) {
         templateIds.push_back(fuzzData.ConsumeIntegral<TemplateId>());
     }
+    uint32_t lockStateAuthTypeValue = fuzzData.ConsumeIntegral<uint32_t>();
     uint32_t msgSize = fuzzData.ConsumeIntegralInRange<uint32_t>(0, FUZZ_MAX_FWK_MESSAGE_LENGTH);
     std::vector<uint8_t> fwkMsg = fuzzData.ConsumeBytes<uint8_t>(msgSize);
-    manager->StartIssueTokenRequests(templateIds, fwkMsg);
+    manager->StartIssueTokenRequests(templateIds, lockStateAuthTypeValue, fwkMsg);
 }
 
 static void FuzzRevokeTokens(std::shared_ptr<CompanionManagerImpl> &manager, FuzzedDataProvider &fuzzData)

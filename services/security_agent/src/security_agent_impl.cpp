@@ -26,6 +26,7 @@
 #include "common_defines.h"
 #include "companion_device_auth_ffi.h"
 #include "companion_device_auth_ffi_util.h"
+#include "event_manager_adapter.h"
 #include "security_agent_imp.h"
 #include "singleton_manager.h"
 
@@ -52,13 +53,25 @@ bool SecurityAgentImpl::Initialize()
     activeUserSubscription_ = userIdManager.SubscribeActiveUserId([this](UserId userId) {
         auto result = SetActiveUser(SetActiveUserInput { userId });
         if (result != SUCCESS) {
+            std::string faultInfo =
+                "SetActiveUser " + std::to_string(userId) + " failed, result: " + std::to_string(result);
+            ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
             IAM_LOGE("failed to update active user %{public}d", result);
         }
     });
-    ENSURE_OR_RETURN_VAL(activeUserSubscription_ != nullptr, false);
+    if (activeUserSubscription_ == nullptr) {
+        std::string faultInfo = "SubscribeActiveUserId failed";
+        ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
+        return false;
+    }
 
     auto result = SetActiveUser(SetActiveUserInput { userIdManager.GetActiveUserId() });
-    ENSURE_OR_RETURN_VAL(result == SUCCESS, false);
+    if (result != SUCCESS) {
+        std::string faultInfo = "SetActiveUser " +
+            std::to_string(userIdManager.GetActiveUserId()) + " failed, result: " + std::to_string(result);
+        ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
+        return false;
+    }
 
     return true;
 }
@@ -769,7 +782,7 @@ ResultCode SecurityAgentImpl::CompanionBeginObtainToken(const CompanionBeginObta
         reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(CompanionBeginObtainTokenOutputFfi));
     ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
 
-    bool decodeRet = DecodeCompanionBeginObtainTokenOutput(*ffiOutput, output.obtainTokenRequest);
+    bool decodeRet = DecodeCompanionBeginObtainTokenOutput(*ffiOutput, output.obtainTokenRequest, output.atl);
     ENSURE_OR_RETURN_VAL(decodeRet, INVALID_PARAMETERS);
 
     IAM_LOGI("success");

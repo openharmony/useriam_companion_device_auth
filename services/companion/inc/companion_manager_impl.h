@@ -63,7 +63,7 @@ public:
     ResultCode HandleCompanionCheckFail(TemplateId templateId) override;
     bool IsCapabilitySupported(TemplateId templateId, Capability capability) override;
 
-    void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds,
+    void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds, uint32_t lockStateAuthTypeValue,
         const std::vector<uint8_t> &fwkUnlockMsg) override;
 
     void NotifyCompanionStatusChange() override;

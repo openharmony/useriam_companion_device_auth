@@ -67,8 +67,12 @@ static void FuzzEndAddHostBinding(std::shared_ptr<HostBindingManagerImpl> &manag
     ResultCode resultCode = GenerateFuzzResultCode(fuzzData);
     std::vector<uint8_t> tokenData =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
-    auto result = manager->EndAddHostBinding(requestId, resultCode, tokenData);
+    Atl atl = 0;
+    int32_t esl = 0;
+    auto result = manager->EndAddHostBinding(requestId, resultCode, atl, esl, tokenData);
     (void)result;
+    (void)atl;
+    (void)esl;
 }
 
 static void FuzzRemoveHostBinding(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)
@@ -90,9 +94,10 @@ static void FuzzSetHostBindingTokenValid(std::shared_ptr<HostBindingManagerImpl>
 static void FuzzStartObtainTokenRequests(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)
 {
     UserId userId = fuzzData.ConsumeIntegral<UserId>();
+    uint32_t lockStateAuthTypeValue = fuzzData.ConsumeIntegral<uint32_t>();
     std::vector<uint8_t> fwkUnlockMsg =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
-    manager->StartObtainTokenRequests(userId, fwkUnlockMsg);
+    manager->StartObtainTokenRequests(userId, lockStateAuthTypeValue, fwkUnlockMsg);
 }
 
 static void FuzzRevokeTokens(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)

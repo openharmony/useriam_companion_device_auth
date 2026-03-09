@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "companion_manager.h"
+#include "event_manager_adapter.h"
 #include "inbound_request.h"
 #include "obtain_token_message.h"
 #include "security_agent.h"
@@ -63,6 +64,7 @@ private:
     TemplateId templateId_ = 0;
     SecureProtocolId secureProtocolId_ = SecureProtocolId::INVALID;
     bool needCancelObtainToken_ = false;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

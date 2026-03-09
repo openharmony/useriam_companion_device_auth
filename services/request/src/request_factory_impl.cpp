@@ -56,11 +56,10 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostAddCompanionRequest(Sche
     return request;
 }
 
-std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostTokenAuthRequest(ScheduleId scheduleId,
-    const std::vector<uint8_t> &fwkMsg, UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback)
+std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostTokenAuthRequest(const AuthRequestParams &params,
+    FwkResultCallback &&requestCallback)
 {
-    auto request =
-        std::make_shared<HostTokenAuthRequest>(scheduleId, fwkMsg, hostUserId, templateId, std::move(requestCallback));
+    auto request = std::make_shared<HostTokenAuthRequest>(params, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -83,18 +82,18 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSyncDeviceStatusRequest(
 }
 
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-    const std::vector<uint8_t> &fwkUnlockMsg)
+    uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
 {
-    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, fwkUnlockMsg);
+    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+        fwkUnlockMsg);
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
 
-std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostDelegateAuthRequest(ScheduleId scheduleId,
-    const std::vector<uint8_t> &fwkMsg, UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback)
+std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostDelegateAuthRequest(const AuthRequestParams &params,
+    FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostDelegateAuthRequest>(scheduleId, fwkMsg, hostUserId, templateId,
-        std::move(requestCallback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -127,9 +126,9 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostObtainTokenRequest(const
 }
 
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateCompanionObtainTokenRequest(const DeviceKey &hostDeviceKey,
-    const std::vector<uint8_t> &fwkUnlockMsg)
+    uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
 {
-    auto request = std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, fwkUnlockMsg);
+    auto request = std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -144,9 +143,9 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateCompanionDelegateAuthRequest
 }
 
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateCompanionRevokeTokenRequest(UserId companionUserId,
-    const DeviceKey &hostDeviceKey)
+    const DeviceKey &hostDeviceKey, const std::string &triggerReason)
 {
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -159,11 +158,10 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostMixAuthRequest(const Hos
     return request;
 }
 
-std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSingleMixAuthRequest(ScheduleId scheduleId,
-    std::vector<uint8_t> fwkMsg, UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback)
+std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
+    FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostSingleMixAuthRequest>(scheduleId, fwkMsg, hostUserId, templateId,
-        std::move(requestCallback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
