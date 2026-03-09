@@ -110,10 +110,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_002, TestSize.Lev
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::COMMUNICATION_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -124,17 +124,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_002, TestSize.Lev
     request->HandleDeviceSelectResult(selectedDevices);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_003, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -143,7 +143,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_003, TestSize.Lev
     request->HandleDeviceSelectResult(selectedDevices);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, OnConnected_001, TestSize.Level0)
@@ -178,10 +178,10 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_002, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -192,17 +192,17 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_002, TestSize.Level0)
     request->OnConnected();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, OnConnected_003, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -222,17 +222,17 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_003, TestSize.Level0)
     request->OnConnected();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, OnConnected_004, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::COMMUNICATION_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -258,7 +258,7 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_004, TestSize.Level0)
     request->OnConnected();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_001, TestSize.Level0)
@@ -288,10 +288,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_002, TestSiz
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -301,17 +301,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_002, TestSiz
     request->HandleInitKeyNegotiationReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_003, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -324,17 +324,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_003, TestSiz
     request->HandleInitKeyNegotiationReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_004, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -349,17 +349,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_004, TestSiz
     request->HandleInitKeyNegotiationReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_005, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::COMMUNICATION_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -380,7 +380,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_005, TestSiz
     request->HandleInitKeyNegotiationReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_001, TestSize.Level0)
@@ -413,10 +413,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_002, TestSi
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -426,17 +426,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_002, TestSi
     request->HandleBeginAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_003, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -449,17 +449,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_003, TestSi
     request->HandleBeginAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_004, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -476,7 +476,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_004, TestSi
     request->HandleBeginAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_005, TestSize.Level0)
@@ -509,10 +509,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_001, TestSize
 {
     MockGuard guard;
 
-    bool successCalled = false;
-    auto callback = [&successCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto successCalled = std::make_shared<bool>(false);
+    auto callback = [successCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::SUCCESS) {
-            successCalled = true;
+            *successCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -527,17 +527,17 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_001, TestSize
     request->HandleEndAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(successCalled);
+    EXPECT_TRUE(*successCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_002, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool errorCalled = false;
-    auto callback = [&errorCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto errorCalled = std::make_shared<bool>(false);
+    auto callback = [errorCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::GENERAL_ERROR) {
-            errorCalled = true;
+            *errorCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -546,7 +546,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_002, TestSize
     request->HandleEndAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(errorCalled);
+    EXPECT_TRUE(*errorCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_003, TestSize.Level0)
@@ -554,10 +554,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_003, TestSize
     // Token distribution failed but enrollment succeeded - should complete with success
     MockGuard guard;
 
-    bool successCalled = false;
-    auto callback = [&successCalled](ResultCode result, const std::vector<uint8_t> &) {
+    auto successCalled = std::make_shared<bool>(false);
+    auto callback = [successCalled](ResultCode result, const std::vector<uint8_t> &) {
         if (result == ResultCode::SUCCESS) {
-            successCalled = true;
+            *successCalled = true;
         }
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -569,16 +569,16 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_003, TestSize
     request->HandleEndAddHostBindingReply(reply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(successCalled);
+    EXPECT_TRUE(*successCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_001, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool callbackCalled = false;
+    auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [&callbackCalled](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
+        *callbackCalled = true;
         EXPECT_EQ(result, ResultCode::GENERAL_ERROR);
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -586,16 +586,16 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_001, TestSize.Level0)
     request->CompleteWithError(ResultCode::GENERAL_ERROR);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
+    EXPECT_TRUE(*callbackCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_002, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool callbackCalled = false;
+    auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [&callbackCalled](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
+        *callbackCalled = true;
         EXPECT_EQ(result, ResultCode::GENERAL_ERROR);
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -606,18 +606,18 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_002, TestSize.Level0)
     request->CompleteWithError(ResultCode::GENERAL_ERROR);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
+    EXPECT_TRUE(*callbackCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, CompleteWithSuccess_001, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool callbackCalled = false;
-    std::vector<uint8_t> receivedData;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto receivedData = std::make_shared<std::vector<uint8_t>>();
     auto callback = [&callbackCalled, &receivedData](ResultCode result, const std::vector<uint8_t> &data) {
-        callbackCalled = true;
-        receivedData = data;
+        *callbackCalled = true;
+        *receivedData = data;
         EXPECT_EQ(result, ResultCode::SUCCESS);
     };
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
@@ -625,7 +625,7 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithSuccess_001, TestSize.Level0)
     request->CompleteWithSuccess();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
+    EXPECT_TRUE(*callbackCalled);
 }
 
 HWTEST_F(HostAddCompanionRequestTest, EndAddCompanion_001, TestSize.Level0)

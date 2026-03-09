@@ -290,6 +290,8 @@ bool HostAddCompanionRequest::SendEndAddHostBindingMsg(ResultCode result)
 void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &reply)
 {
     IAM_LOGI("%{public}s start", GetDescription());
+    ErrorGuard errorGuard([this](ResultCode result) { CompleteWithError(result); });
+
     auto replyMsgOpt = DecodeEndAddHostBindingReply(reply);
     ENSURE_OR_RETURN_DESC(GetDescription(), replyMsgOpt.has_value());
 
@@ -298,6 +300,7 @@ void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &rep
     if (replyMsg.result != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s token distribution failed result=%{public}d, but enrollment succeeded", GetDescription(),
             static_cast<int32_t>(replyMsg.result));
+        errorGuard.Cancel();
         CompleteWithSuccess();
         return;
     }
@@ -306,6 +309,7 @@ void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &rep
     GetCompanionManager().SetCompanionTokenAtl(templateId_, tokenAtl_);
     IAM_LOGI("%{public}s token activated successfully", GetDescription());
 
+    errorGuard.Cancel();
     CompleteWithSuccess();
 }
 

@@ -179,8 +179,8 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeIsAuthMaintainActive_001, Test
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    auto subscription = manager->SubscribeIsAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeIsAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -227,9 +227,9 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeAllDeviceStatus_001, TestSize.
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeAllDeviceStatus(
-        [&callbackInvoked](const std::vector<DeviceStatus> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::vector<DeviceStatus> &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -275,9 +275,9 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeDeviceStatus_001, TestSize.Lev
     deviceKey.deviceId = "test-device";
     deviceKey.deviceUserId = 100;
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeDeviceStatus(deviceKey, true,
-        [&callbackInvoked](const std::vector<DeviceStatus> &) { callbackInvoked = true; });
+        [callbackInvoked](const std::vector<DeviceStatus> &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -380,9 +380,9 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeConnectionStatus_001, TestSize
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeConnectionStatus("test-connection",
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -396,9 +396,9 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeIncomingConnection_001, TestSi
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeIncomingConnection(MessageType::TOKEN_AUTH,
-        [&callbackInvoked](const Attributes &, OnMessageReply &) { callbackInvoked = true; });
+        [callbackInvoked](const Attributes &, OnMessageReply &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -427,9 +427,9 @@ HWTEST_F(CrossDeviceCommManagerImplTest, SubscribeMessage_001, TestSize.Level0)
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = manager->SubscribeMessage("test-connection", MessageType::TOKEN_AUTH,
-        [&callbackInvoked](const Attributes &, OnMessageReply &) { callbackInvoked = true; });
+        [callbackInvoked](const Attributes &, OnMessageReply &) { *callbackInvoked = true; });
     EXPECT_NE(subscription, nullptr);
 }
 
@@ -467,8 +467,8 @@ HWTEST_F(CrossDeviceCommManagerImplTest, CheckOperationIntent_002, TestSize.Leve
     deviceKey.deviceId = "test-device";
     deviceKey.deviceUserId = 100;
 
-    bool callbackInvoked = false;
-    bool result = manager->CheckOperationIntent(deviceKey, 123, [&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    bool result = manager->CheckOperationIntent(deviceKey, 123, [callbackInvoked](bool) { *callbackInvoked = true; });
     EXPECT_FALSE(result);
 }
 

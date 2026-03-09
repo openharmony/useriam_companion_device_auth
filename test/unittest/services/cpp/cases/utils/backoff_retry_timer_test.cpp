@@ -81,9 +81,9 @@ public:
 
 HWTEST_F(BackoffRetryTimerTest, OnFailure_IncreasesCount, TestSize.Level0)
 {
-    int callbackCount = 0;
+    auto callbackCount = std::make_shared<int>(0);
     BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_60000 },
-        [&callbackCount]() { callbackCount++; });
+        [callbackCount]() { (*callbackCount)++; });
 
     EXPECT_EQ(timer.GetFailureCount(), 0);
 
@@ -96,16 +96,16 @@ HWTEST_F(BackoffRetryTimerTest, OnFailure_IncreasesCount, TestSize.Level0)
 
 HWTEST_F(BackoffRetryTimerTest, Destructor_CancelsTimer, TestSize.Level0)
 {
-    int callbackCount = 0;
+    auto callbackCount = std::make_shared<int>(0);
 
     {
         BackoffRetryTimer timer({ .baseDelayMs = NUM_100, .maxDelayMs = NUM_60000 },
-            [&callbackCount]() { callbackCount++; });
+            [callbackCount]() { (*callbackCount)++; });
         timer.OnFailure();
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(NUM_200));
-    EXPECT_EQ(callbackCount, 0);
+    EXPECT_EQ(*callbackCount, 0);
 }
 
 HWTEST_F(BackoffRetryTimerTest, MultipleFailures_ExponentialBackoff, TestSize.Level0)
@@ -167,9 +167,9 @@ HWTEST_F(BackoffRetryTimerTest, Reset_ResetsFailureCount, TestSize.Level0)
 
 HWTEST_F(BackoffRetryTimerTest, Reset_CancelsPendingTimer, TestSize.Level0)
 {
-    int callbackCount = 0;
+    auto callbackCount = std::make_shared<int>(0);
     BackoffRetryTimer timer({ .baseDelayMs = NUM_100, .maxDelayMs = NUM_60000 },
-        [&callbackCount]() { callbackCount++; });
+        [callbackCount]() { (*callbackCount)++; });
 
     timer.OnFailure();
     EXPECT_EQ(timer.GetFailureCount(), 1);
@@ -179,7 +179,7 @@ HWTEST_F(BackoffRetryTimerTest, Reset_CancelsPendingTimer, TestSize.Level0)
 
     // Wait for the original timer to expire (should not execute)
     std::this_thread::sleep_for(std::chrono::milliseconds(NUM_200));
-    EXPECT_EQ(callbackCount, 0);
+    EXPECT_EQ(*callbackCount, 0);
     EXPECT_EQ(timer.GetFailureCount(), 0);
 }
 

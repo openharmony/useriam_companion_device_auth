@@ -490,9 +490,9 @@ HWTEST_F(ConnectionManagerTest, OpenConnection_007, TestSize.Level0)
         }));
 
     // Set up GetNextGlobalId to return incrementing values
-    uint32_t globalIdCounter = 0;
-    ON_CALL(guard.GetMiscManager(), GetNextGlobalId()).WillByDefault(Invoke([&globalIdCounter]() -> uint32_t {
-        return ++globalIdCounter;
+    auto globalIdCounter = std::make_shared<uint32_t>(0);
+    ON_CALL(guard.GetMiscManager(), GetNextGlobalId()).WillByDefault(Invoke([globalIdCounter]() -> uint32_t {
+        return ++(*globalIdCounter);
     }));
 
     std::vector<std::shared_ptr<ICrossDeviceChannel>> channels = { mockChannel };
@@ -555,18 +555,18 @@ HWTEST_F(ConnectionManagerTest, CloseConnection_001, TestSize.Level0)
     bool result = connectionMgr->OpenConnection(remoteKey, ChannelId::SOFTBUS, connectionName);
     ASSERT_TRUE(result);
 
-    bool notified = false;
+    auto notified = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus(connectionName,
-        [&notified](const std::string &, ConnectionStatus status, const std::string &) {
+        [notified](const std::string &, ConnectionStatus status, const std::string &) {
             if (status == ConnectionStatus::DISCONNECTED) {
-                notified = true;
+                *notified = true;
             }
         });
 
     connectionMgr->CloseConnection(connectionName, "test_close");
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(notified);
+    EXPECT_TRUE(*notified);
     auto connection = connectionMgr->GetConnection(connectionName);
     EXPECT_FALSE(connection.has_value());
 }
@@ -945,9 +945,9 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_001, TestSize.Level0)
     connectionMgr = ConnectionManager::Create(channelMgr, localDeviceStatusMgr);
     ASSERT_NE(connectionMgr, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus("test-conn",
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 
@@ -958,7 +958,7 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_001, TestSize.Level0)
     connectionMgr->HandleIncomingConnection("test-conn", remoteKey);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_002, TestSize.Level0)
@@ -1021,10 +1021,10 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_003, TestSize.Level0)
     connectionMgr = ConnectionManager::Create(channelMgr, localDeviceStatusMgr);
     ASSERT_NE(connectionMgr, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     {
         auto subscription = connectionMgr->SubscribeConnectionStatus("test-conn",
-            [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+            [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
         EXPECT_NE(subscription, nullptr);
     }
 
@@ -1035,7 +1035,7 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_003, TestSize.Level0)
     connectionMgr->HandleIncomingConnection("test-conn", remoteKey);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_FALSE(callbackInvoked);
+    EXPECT_FALSE(*callbackInvoked);
 }
 
 HWTEST_F(ConnectionManagerTest, HandleChannelConnectionStatusChange_001, TestSize.Level0)
@@ -1074,11 +1074,11 @@ HWTEST_F(ConnectionManagerTest, HandleChannelConnectionStatusChange_001, TestSiz
     bool result = connectionMgr->OpenConnection(remoteKey, ChannelId::SOFTBUS, connectionName);
     ASSERT_TRUE(result);
 
-    bool notified = false;
+    auto notified = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus(connectionName,
-        [&notified](const std::string &, ConnectionStatus status, const std::string &) {
+        [notified](const std::string &, ConnectionStatus status, const std::string &) {
             if (status == ConnectionStatus::CONNECTED) {
-                notified = true;
+                *notified = true;
             }
         });
 
@@ -1086,7 +1086,7 @@ HWTEST_F(ConnectionManagerTest, HandleChannelConnectionStatusChange_001, TestSiz
     connectionStatusCallback(connectionName, ConnectionStatus::CONNECTED, "established");
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(notified);
+    EXPECT_TRUE(*notified);
     auto connection = connectionMgr->GetConnection(connectionName);
     ASSERT_TRUE(connection.has_value());
     EXPECT_EQ(connection->connectionStatus, ConnectionStatus::CONNECTED);
@@ -1128,11 +1128,11 @@ HWTEST_F(ConnectionManagerTest, HandleChannelConnectionStatusChange_002, TestSiz
     bool result = connectionMgr->OpenConnection(remoteKey, ChannelId::SOFTBUS, connectionName);
     ASSERT_TRUE(result);
 
-    bool notified = false;
+    auto notified = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus(connectionName,
-        [&notified](const std::string &, ConnectionStatus status, const std::string &) {
+        [notified](const std::string &, ConnectionStatus status, const std::string &) {
             if (status == ConnectionStatus::DISCONNECTED) {
-                notified = true;
+                *notified = true;
             }
         });
 
@@ -1140,7 +1140,7 @@ HWTEST_F(ConnectionManagerTest, HandleChannelConnectionStatusChange_002, TestSiz
     connectionStatusCallback(connectionName, ConnectionStatus::DISCONNECTED, "peer_closed");
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(notified);
+    EXPECT_TRUE(*notified);
     auto connection = connectionMgr->GetConnection(connectionName);
     EXPECT_FALSE(connection.has_value());
 }
@@ -1217,11 +1217,11 @@ HWTEST_F(ConnectionManagerTest, HandleIncomingConnectionFromChannel_001, TestSiz
     remoteKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
     remoteKey.deviceId = "remote-device";
 
-    bool notified = false;
+    auto notified = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus("incoming-from-channel",
-        [&notified](const std::string &, ConnectionStatus status, const std::string &) {
+        [notified](const std::string &, ConnectionStatus status, const std::string &) {
             if (status == ConnectionStatus::CONNECTED) {
-                notified = true;
+                *notified = true;
             }
         });
 
@@ -1229,7 +1229,7 @@ HWTEST_F(ConnectionManagerTest, HandleIncomingConnectionFromChannel_001, TestSiz
     incomingConnectionCallback("incoming-from-channel", remoteKey);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(notified);
+    EXPECT_TRUE(*notified);
     auto connection = connectionMgr->GetConnection("incoming-from-channel");
     ASSERT_TRUE(connection.has_value());
     EXPECT_TRUE(connection->isInbound);
@@ -1574,11 +1574,11 @@ HWTEST_F(ConnectionManagerTest, HandlePhysicalDeviceStatusChange_001, TestSize.L
     bool result = connectionMgr->OpenConnection(remoteKey, ChannelId::SOFTBUS, connectionName);
     ASSERT_TRUE(result);
 
-    bool notified = false;
+    auto notified = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus(connectionName,
-        [&notified](const std::string &, ConnectionStatus status, const std::string &) {
+        [notified](const std::string &, ConnectionStatus status, const std::string &) {
             if (status == ConnectionStatus::DISCONNECTED) {
-                notified = true;
+                *notified = true;
             }
         });
 
@@ -1586,7 +1586,7 @@ HWTEST_F(ConnectionManagerTest, HandlePhysicalDeviceStatusChange_001, TestSize.L
     connectionMgr->HandlePhysicalDeviceStatusChange(ChannelId::SOFTBUS, statusList);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(notified);
+    EXPECT_TRUE(*notified);
     EXPECT_FALSE(connectionMgr->GetConnection(connectionName).has_value());
 }
 
@@ -1757,9 +1757,9 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_004, TestSize.Level0)
     connectionMgr = ConnectionManager::Create(channelMgr, localDeviceStatusMgr);
     ASSERT_NE(connectionMgr, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus("",
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 
@@ -1770,7 +1770,7 @@ HWTEST_F(ConnectionManagerTest, SubscribeConnectionStatus_004, TestSize.Level0)
     connectionMgr->HandleIncomingConnection("any-conn", remoteKey);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(ConnectionManagerTest, CheckIdleMonitoring_001, TestSize.Level0)
@@ -1894,9 +1894,9 @@ HWTEST_F(ConnectionManagerTest, UnsubscribeConnectionStatus_001, TestSize.Level0
     connectionMgr = ConnectionManager::Create(channelMgr, localDeviceStatusMgr);
     ASSERT_NE(connectionMgr, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     auto subscription = connectionMgr->SubscribeConnectionStatus("test",
-        [&callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { callbackInvoked = true; });
+        [callbackInvoked](const std::string &, ConnectionStatus, const std::string &) { *callbackInvoked = true; });
 
     SubscribeId subscriptionId = connectionMgr->connectionStatusSubscribers_.begin()->first;
 
@@ -1909,7 +1909,7 @@ HWTEST_F(ConnectionManagerTest, UnsubscribeConnectionStatus_001, TestSize.Level0
     connectionMgr->HandleIncomingConnection("test", remoteKey);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_FALSE(callbackInvoked);
+    EXPECT_FALSE(*callbackInvoked);
 }
 
 } // namespace

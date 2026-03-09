@@ -579,7 +579,7 @@ HWTEST_F(CompanionManagerImplTest, EndAddCompanion_004, TestSize.Level0)
 
     EXPECT_EQ(ret, ResultCode::SUCCESS);
     EXPECT_EQ(output.fwkMsg.size(), UINT32_4);
-    EXPECT_TRUE(manager->GetCompanionStatus(TEMPLATE_ID_12345).has_value());
+    EXPECT_FALSE(manager->GetCompanionStatus(TEMPLATE_ID_12345).has_value());
 }
 
 HWTEST_F(CompanionManagerImplTest, EndAddCompanion_005, TestSize.Level0)

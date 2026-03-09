@@ -108,13 +108,13 @@ HWTEST_F(SystemParamManagerImplTest, WatchParam_001, TestSize.Level0)
     auto manager = SystemParamManagerImpl::Create();
     ASSERT_NE(nullptr, manager);
 
-    bool callbackCalled = false;
-    std::string receivedValue;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto receivedValue = std::make_shared<std::string>();
 
     auto subscription =
-        manager->WatchParam("test.watch.key", [&callbackCalled, &receivedValue](const std::string &value) {
-            callbackCalled = true;
-            receivedValue = value;
+        manager->WatchParam("test.watch.key", [callbackCalled, receivedValue](const std::string &value) {
+            *callbackCalled = true;
+            *receivedValue = value;
         });
 
     EXPECT_NE(nullptr, subscription);
@@ -144,14 +144,14 @@ HWTEST_F(SystemParamManagerImplTest, WatchParam_003, TestSize.Level0)
     auto manager = SystemParamManagerImpl::Create();
     ASSERT_NE(nullptr, manager);
 
-    bool callbackCalled1 = false;
-    bool callbackCalled2 = false;
+    auto callbackCalled1 = std::make_shared<bool>(false);
+    auto callbackCalled2 = std::make_shared<bool>(false);
 
     auto subscription1 =
-        manager->WatchParam("test.watch.key", [&callbackCalled1](const std::string &value) { callbackCalled1 = true; });
+        manager->WatchParam("test.watch.key", [callbackCalled1](const std::string &value) { *callbackCalled1 = true; });
 
     auto subscription2 =
-        manager->WatchParam("test.watch.key", [&callbackCalled2](const std::string &value) { callbackCalled2 = true; });
+        manager->WatchParam("test.watch.key", [callbackCalled2](const std::string &value) { *callbackCalled2 = true; });
 
     EXPECT_NE(nullptr, subscription1);
     EXPECT_NE(nullptr, subscription2);
@@ -189,13 +189,13 @@ HWTEST_F(SystemParamManagerImplTest, OnParamChange_001, TestSize.Level0)
     auto manager = SystemParamManagerImpl::Create();
     ASSERT_NE(nullptr, manager);
 
-    bool callbackCalled = false;
-    std::string receivedValue;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto receivedValue = std::make_shared<std::string>();
 
     auto subscription =
-        manager->WatchParam("test.watch.key", [&callbackCalled, &receivedValue](const std::string &value) {
-            callbackCalled = true;
-            receivedValue = value;
+        manager->WatchParam("test.watch.key", [callbackCalled, receivedValue](const std::string &value) {
+            *callbackCalled = true;
+            *receivedValue = value;
         });
 
     ASSERT_NE(nullptr, subscription);
@@ -204,8 +204,8 @@ HWTEST_F(SystemParamManagerImplTest, OnParamChange_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ("new_value", receivedValue);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ("new_value", *receivedValue);
 }
 
 HWTEST_F(SystemParamManagerImplTest, OnParamChange_002, TestSize.Level0)
@@ -233,11 +233,11 @@ HWTEST_F(SystemParamManagerImplTest, OnParamChange_003, TestSize.Level0)
     auto manager = SystemParamManagerImpl::Create();
     ASSERT_NE(nullptr, manager);
 
-    bool callbackCalled = false;
+    auto callbackCalled = std::make_shared<bool>(false);
 
     {
         auto subscription = manager->WatchParam("test.watch.key",
-            [&callbackCalled](const std::string &value) { callbackCalled = true; });
+            [callbackCalled](const std::string &value) { *callbackCalled = true; });
 
         ASSERT_NE(nullptr, subscription);
     }
@@ -246,7 +246,7 @@ HWTEST_F(SystemParamManagerImplTest, OnParamChange_003, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 } // namespace CompanionDeviceAuth

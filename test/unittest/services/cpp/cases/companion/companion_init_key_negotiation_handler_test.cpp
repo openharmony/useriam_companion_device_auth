@@ -70,20 +70,20 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_001, TestSize.Lev
     // Set up mock for RequestManager::Start
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
-    int replyCallCount = 0;
-    int32_t lastResult = -1;
-    OnMessageReply onMessageReply = [&replyCallCount, &lastResult](const Attributes &reply) {
-        ++replyCallCount;
+    auto replyCallCount = std::make_shared<int>(0);
+    auto lastResult = std::make_shared<int32_t>(-1);
+    OnMessageReply onMessageReply = [replyCallCount, lastResult](const Attributes &reply) {
+        ++(*replyCallCount);
         int32_t result = 0;
         EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result));
-        lastResult = result;
+        *lastResult = result;
     };
 
     handler_->HandleRequest(request, onMessageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     // Request is started asynchronously, we don't expect an immediate reply in the handler
-    EXPECT_EQ(replyCallCount, 0);
+    EXPECT_EQ(*replyCallCount, 0);
 }
 
 HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_002, TestSize.Level0)
@@ -92,9 +92,9 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_002, TestSize.Lev
     handler_ = std::make_unique<CompanionInitKeyNegotiationHandler>();
     Attributes request;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result));
         EXPECT_NE(result, static_cast<int32_t>(ResultCode::SUCCESS));
@@ -102,7 +102,7 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_002, TestSize.Lev
 
     handler_->HandleRequest(request, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
+    EXPECT_TRUE(*replyCalled);
 }
 
 HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_003, TestSize.Level0)
@@ -123,9 +123,9 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_003, TestSize.Lev
 
     EXPECT_CALL(guard.GetRequestFactory(), CreateCompanionAddCompanionRequest(_, _, _, _)).WillOnce(Return(nullptr));
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result));
         EXPECT_NE(result, static_cast<int32_t>(ResultCode::SUCCESS));
@@ -133,7 +133,7 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_003, TestSize.Lev
 
     handler_->HandleRequest(request, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
+    EXPECT_TRUE(*replyCalled);
 }
 
 HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_004, TestSize.Level0)
@@ -160,9 +160,9 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_004, TestSize.Lev
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(false));
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result));
         EXPECT_NE(result, static_cast<int32_t>(ResultCode::SUCCESS));
@@ -170,7 +170,7 @@ HWTEST_F(CompanionInitKeyNegotiationHandlerTest, HandleRequest_004, TestSize.Lev
 
     handler_->HandleRequest(request, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
+    EXPECT_TRUE(*replyCalled);
 }
 
 } // namespace

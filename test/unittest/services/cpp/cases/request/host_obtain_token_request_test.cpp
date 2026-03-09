@@ -130,13 +130,13 @@ protected:
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_001, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     auto preObtainTokenRequest = MakePreObtainTokenRequest();
@@ -155,19 +155,19 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_TRUE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_002, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     Attributes emptyRequest;
@@ -180,19 +180,19 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_002, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_003, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     auto preObtainTokenRequest = MakePreObtainTokenRequest();
@@ -206,19 +206,19 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_003, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_004, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     auto preObtainTokenRequest = MakePreObtainTokenRequest();
@@ -234,19 +234,19 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_004, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_005, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     auto preObtainTokenRequest = MakePreObtainTokenRequest();
@@ -264,19 +264,19 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_005, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_006, TestSize.Level0)
 {
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+        *replyCalled = true;
         auto decodedReply = DecodePreObtainTokenReply(reply);
         EXPECT_TRUE(decodedReply.has_value());
-        receivedResult = decodedReply.value().result;
+        *receivedResult = decodedReply.value().result;
     };
 
     auto preObtainTokenRequest = MakePreObtainTokenRequest();
@@ -295,8 +295,8 @@ HWTEST_F(HostObtainTokenRequestTest, OnStart_006, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_001, TestSize.Level0)
@@ -318,11 +318,11 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_001, TestSize.Leve
         static_cast<int32_t>(obtainTokenRequest.companionDeviceKey.idType));
     req.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, obtainTokenRequest.companionDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     EXPECT_CALL(mockSecurityAgent_, HostProcessObtainToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -331,8 +331,8 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_001, TestSize.Leve
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_002, TestSize.Level0)
@@ -357,19 +357,19 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_003, TestSize.Leve
     ErrorGuard errorGuard([](ResultCode) {});
     EXPECT_TRUE(request->OnStart(errorGuard));
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     Attributes req;
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_004, TestSize.Level0)
@@ -391,18 +391,18 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_004, TestSize.Leve
         static_cast<int32_t>(obtainTokenRequest.companionDeviceKey.idType));
     req.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, obtainTokenRequest.companionDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_005, TestSize.Level0)
@@ -425,18 +425,18 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_005, TestSize.Leve
         static_cast<int32_t>(obtainTokenRequest.companionDeviceKey.idType));
     req.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, obtainTokenRequest.companionDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_006, TestSize.Level0)
@@ -459,18 +459,18 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_006, TestSize.Leve
         static_cast<int32_t>(obtainTokenRequest.companionDeviceKey.idType));
     req.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, obtainTokenRequest.companionDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::INVALID_PARAMETERS));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_007, TestSize.Level0)
@@ -492,11 +492,11 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_007, TestSize.Leve
         static_cast<int32_t>(obtainTokenRequest.companionDeviceKey.idType));
     req.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, obtainTokenRequest.companionDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
     OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
-        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, receivedResult));
+        *replyCalled = true;
+        EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *receivedResult));
     };
 
     EXPECT_CALL(mockSecurityAgent_, HostProcessObtainToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
@@ -504,8 +504,8 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_007, TestSize.Leve
     request->HandleObtainTokenMessage(req, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, ParsePreObtainTokenRequest_001, TestSize.Level0)
