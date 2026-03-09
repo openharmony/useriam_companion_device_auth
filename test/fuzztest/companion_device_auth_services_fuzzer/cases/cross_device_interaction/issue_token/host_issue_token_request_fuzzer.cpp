@@ -144,10 +144,11 @@ void FuzzHostIssueTokenRequest(FuzzedDataProvider &fuzzData)
 {
     UserId hostUserId = fuzzData.ConsumeIntegral<UserId>();
     TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
+    uint32_t lockStateAuthTypeValue = fuzzData.ConsumeIntegral<uint32_t>();
     std::vector<uint8_t> fwkMsg =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
 
-    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, fwkMsg);
+    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue, fwkMsg);
     if (!request) {
         return;
     }

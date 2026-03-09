@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "companion_manager.h"
 #include "companion_pre_issue_token_handler.h"
 #include "cross_device_comm_manager_impl.h"
@@ -32,13 +33,18 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-    const std::vector<uint8_t> &fwkUnlockMsg)
+    uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
     : OutboundRequest(RequestType::HOST_ISSUE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       templateId_(templateId),
-      fwkUnlockMsg_(fwkUnlockMsg)
+      fwkUnlockMsg_(fwkUnlockMsg),
+      eventCollector_("host issue token request")
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    eventCollector_.UpdateHostUserId(hostUserId);
+    eventCollector_.UpdateTriggerReason(
+        "host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
+    eventCollector_.UpdateTemplateIdList({ templateId });
 }
 
 bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
@@ -55,6 +61,7 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
     SetPeerDeviceKey(companionDeviceKey);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     if (!EnsureCompanionAuthMaintainActive(companionDeviceKey, errorGuard)) {
         return false;
     }
@@ -70,6 +77,7 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
+    eventCollector_.UpdateConnectionName(GetConnectionName());
     return true;
 }
 
@@ -211,6 +219,9 @@ void HostIssueTokenRequest::HandleIssueTokenReply(const Attributes &message)
     input.issueTokenReply = reply.extraInfo;
     HostEndIssueTokenOutput output = {};
     ResultCode ret = GetSecurityAgent().HostEndIssueToken(input, output);
+
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
+
     needCancelIssueToken_ = false;
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s HostEndIssueToken failed ret=%{public}d", GetDescription(), ret);
@@ -283,12 +294,14 @@ void HostIssueTokenRequest::CompleteWithError(ResultCode result)
         }
         needCancelIssueToken_ = false;
     }
+    eventCollector_.Report(result);
     Destroy();
 }
 
 void HostIssueTokenRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

@@ -26,6 +26,10 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+namespace {
+constexpr uint32_t ATTR_MESSAGE = 300001;
+constexpr uint32_t ATTR_ALGO_LIST = 300003;
+}
 void EncodeInitKeyNegotiationRequest(const InitKeyNegotiationRequest &request, Attributes &attributes)
 {
     attributes.SetInt32Value(Attributes::ATTR_CDA_SA_HOST_USER_ID, request.hostDeviceKey.deviceUserId);
@@ -147,6 +151,54 @@ std::optional<EndAddHostBindingReply> DecodeEndAddHostBindingReply(const Attribu
     ENSURE_OR_RETURN_VAL(getResultRet, std::nullopt);
     reply.result = static_cast<ResultCode>(result);
     return reply;
+}
+
+void ParseAlgorithmListFromInitKeyNegotiationRequest(const std::vector<uint8_t> &extraInfo,
+    std::vector<uint16_t> &algorithmList)
+{
+    if (extraInfo.empty()) {
+        IAM_LOGE("Extra info is empty");
+        return;
+    }
+
+    Attributes messageDataAttr(extraInfo);
+
+    std::vector<uint8_t> messageData;
+    if (!messageDataAttr.GetUint8ArrayValue(static_cast<Attributes::AttributeKey>(ATTR_MESSAGE), messageData)) {
+        IAM_LOGE("Failed to get message data");
+        return;
+    }
+
+    Attributes algoListAttr(messageData);
+
+    if (!algoListAttr.GetUint16ArrayValue(static_cast<Attributes::AttributeKey>(ATTR_ALGO_LIST), algorithmList)) {
+        IAM_LOGE("Failed to get algorithm list");
+        return;
+    }
+}
+
+void ParseSelectedAlgorithmFromInitKeyNegotiationReply(const std::vector<uint8_t> &extraInfo,
+    uint16_t &selectedAlgorithm)
+{
+    if (extraInfo.empty()) {
+        IAM_LOGE("Extra info is empty");
+        return;
+    }
+
+    Attributes messageDataAttr(extraInfo);
+
+    std::vector<uint8_t> messageData;
+    if (!messageDataAttr.GetUint8ArrayValue(static_cast<Attributes::AttributeKey>(ATTR_MESSAGE), messageData)) {
+        IAM_LOGE("Failed to get message data");
+        return;
+    }
+
+    Attributes algoAttr(messageData);
+
+    if (!algoAttr.GetUint16Value(static_cast<Attributes::AttributeKey>(ATTR_ALGO_LIST), selectedAlgorithm)) {
+        IAM_LOGE("Failed to get algorithm list");
+        return;
+    }
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

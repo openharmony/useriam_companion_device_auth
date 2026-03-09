@@ -162,6 +162,7 @@ impl Request for CompanionDeviceIssueTokenRequest {
         let sec_message = self.encode_sec_token_issue_reply()?;
         self.store_token()?;
 
+        ffi_output.atl = self.token_info.atl as i32;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         Ok(())
     }

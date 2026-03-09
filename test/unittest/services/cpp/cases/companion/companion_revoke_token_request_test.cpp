@@ -32,6 +32,7 @@ namespace {
 // 测试数据常量
 constexpr int32_t COMPANION_USER_ID = 200;
 const DeviceKey HOST_DEVICE_KEY = { .deviceId = "host_device_id", .deviceUserId = 100 };
+const std::string REASON = "unknown";
 
 class CompanionRevokeTokenRequestTest : public Test {
 protected:
@@ -42,7 +43,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, OnConnected_001, TestSize.Level0)
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_))
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
@@ -55,7 +56,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_001, TestSize.L
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
     request->peerDeviceKey_ = std::nullopt;
     request->SendRevokeTokenRequest();
 }
@@ -64,7 +65,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_002, TestSize.L
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
 
@@ -75,7 +76,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_001, TestSize.L
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     Attributes message;
     RevokeTokenReply reply = { .result = ResultCode::SUCCESS };
@@ -88,7 +89,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_002, TestSize.L
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     Attributes message;
     request->HandleRevokeTokenReply(message);
@@ -98,7 +99,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_003, TestSize.L
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     Attributes message;
     RevokeTokenReply reply = { .result = ResultCode::GENERAL_ERROR };
@@ -111,7 +112,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, GetMaxConcurrency_001, TestSize.Level0
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     EXPECT_EQ(request->GetMaxConcurrency(), 10);
 }
@@ -120,7 +121,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, ShouldCancelOnNewRequest_001, TestSize
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_REVOKE_TOKEN_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -130,7 +131,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, ShouldCancelOnNewRequest_002, TestSize
 {
     MockGuard guard;
 
-    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY);
+    auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);

@@ -20,6 +20,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "host_delegate_auth_request.h"
 #include "host_token_auth_request.h"
 #include "singleton_manager.h"
@@ -30,15 +31,21 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostSingleMixAuthRequest::HostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-    UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback)
-    : BaseRequest(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
-      fwkMsg_(fwkMsg),
-      hostUserId_(hostUserId),
-      templateId_(templateId),
-      requestCallback_(std::move(requestCallback))
+HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &params,
+    FwkResultCallback &&requestCallback)
+    : BaseRequest(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
+      fwkMsg_(params.fwkMsg),
+      hostUserId_(params.hostUserId),
+      templateId_(params.templateId),
+      authIntent_(params.authIntent),
+      requestCallback_(std::move(requestCallback)),
+      eventCollector_("host single mix auth request")
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateScheduleId(params.scheduleId);
+    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.UpdateTemplateIdList({ params.templateId });
 }
 
 void HostSingleMixAuthRequest::Start()
@@ -49,14 +56,20 @@ void HostSingleMixAuthRequest::Start()
         return;
     }
 
-    tokenAuthRequest_ =
-        GetRequestFactory().CreateHostTokenAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId_,
-            [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
-                const std::vector<uint8_t> &extraInfo) {
-                auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
-                self->HandleTokenAuthResult(result, extraInfo);
-            });
+    AuthRequestParams tokenAuthParams = {
+        .scheduleId = GetScheduleId(),
+        .fwkMsg = fwkMsg_,
+        .hostUserId = hostUserId_,
+        .templateId = templateId_,
+        .authIntent = authIntent_
+    };
+    tokenAuthRequest_ = GetRequestFactory().CreateHostTokenAuthRequest(tokenAuthParams,
+        [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
+            const std::vector<uint8_t> &extraInfo) {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            self->HandleTokenAuthResult(result, extraInfo);
+        });
     if (tokenAuthRequest_ == nullptr) {
         IAM_LOGE("%{public}s CreateHostTokenAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
@@ -103,14 +116,20 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
-    delegateAuthRequest_ =
-        GetRequestFactory().CreateHostDelegateAuthRequest(GetScheduleId(), fwkMsg_, hostUserId_, templateId_,
-            [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
-                const std::vector<uint8_t> &extraInfo) {
-                auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
-                self->HandleDelegateAuthResult(result, extraInfo);
-            });
+    AuthRequestParams delegateAuthParams = {
+        .scheduleId = GetScheduleId(),
+        .fwkMsg = fwkMsg_,
+        .hostUserId = hostUserId_,
+        .templateId = templateId_,
+        .authIntent = authIntent_
+    };
+    delegateAuthRequest_ = GetRequestFactory().CreateHostDelegateAuthRequest(delegateAuthParams,
+        [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
+            const std::vector<uint8_t> &extraInfo) {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            self->HandleDelegateAuthResult(result, extraInfo);
+        });
     if (delegateAuthRequest_ == nullptr) {
         IAM_LOGE("%{public}s CreateHostDelegateAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
@@ -183,6 +202,7 @@ void HostSingleMixAuthRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
     InvokeCallback(result, {});
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -190,6 +210,7 @@ void HostSingleMixAuthRequest::CompleteWithSuccess(const std::vector<uint8_t> &e
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
     InvokeCallback(ResultCode::SUCCESS, extraInfo);
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

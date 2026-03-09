@@ -503,6 +503,8 @@ impl Request for HostDeviceEnrollRequest {
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         ffi_output.template_id = device_info.template_id;
         ffi_output.atl = self.atl as i32;
+        let esl = self.device_capability.iter().map(|cap| cap.esl).max().unwrap_or(ExecutorSecurityLevel::Esl0);
+        ffi_output.esl = esl as i32;
         ffi_output.added_time = device_info.added_time;
         Ok(())
     }

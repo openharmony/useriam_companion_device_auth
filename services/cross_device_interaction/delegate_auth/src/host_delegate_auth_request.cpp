@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "common_defines.h"
 #include "companion_manager.h"
 #include "cross_device_comm_manager_impl.h"
@@ -32,15 +33,19 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostDelegateAuthRequest::HostDelegateAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-    UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback)
-    : OutboundRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
-      fwkMsg_(fwkMsg),
-      hostUserId_(hostUserId),
-      templateId_(templateId),
-      requestCallback_(std::move(requestCallback))
+HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
+    : OutboundRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
+      fwkMsg_(params.fwkMsg),
+      hostUserId_(params.hostUserId),
+      templateId_(params.templateId),
+      requestCallback_(std::move(requestCallback)),
+      eventCollector_("host delegate auth request")
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateScheduleId(params.scheduleId);
+    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.UpdateTemplateIdList({ params.templateId });
 }
 
 bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
@@ -59,6 +64,7 @@ bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
 
     const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
     SetPeerDeviceKey(companionDeviceKey);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
         IAM_LOGI("%{public}s HostGetSecureProtocolId fail", GetDescription());
@@ -70,6 +76,7 @@ bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
+    eventCollector_.UpdateConnectionName(GetConnectionName());
     errorGuard.Cancel();
     return true;
 }
@@ -191,6 +198,8 @@ bool HostDelegateAuthRequest::HandleSendDelegateAuthRequest(const Attributes &re
     }
     IAM_LOGI("%{public}s delegate auth success authType=%{public}d atl=%{public}d", GetDescription(), output.authType,
         output.atl);
+    eventCollector_.AppendExtraInfo("success auth type", static_cast<int32_t>(output.authType));
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
     outFwkMsg = output.fwkMsg;
     needCancelDelegateAuth_ = false;
     return true;
@@ -255,6 +264,7 @@ void HostDelegateAuthRequest::CompleteWithError(ResultCode result)
         }
         needCancelDelegateAuth_ = false;
     }
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -263,6 +273,7 @@ void HostDelegateAuthRequest::CompleteWithSuccess(const std::vector<uint8_t> &fw
     IAM_LOGI("%{public}s complete with success", GetDescription());
     needCancelDelegateAuth_ = false;
     InvokeCallback(ResultCode::SUCCESS, fwkMsg);
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

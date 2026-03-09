@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "base_request.h"
+#include "event_manager_adapter.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "task_runner_manager.h"
@@ -28,8 +29,7 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostSingleMixAuthRequest : public std::enable_shared_from_this<HostSingleMixAuthRequest>, public BaseRequest {
 public:
-    HostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg, UserId hostUserId,
-        TemplateId templateId, FwkResultCallback &&requestCallback);
+    HostSingleMixAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback);
 
     void Start() override final;
     bool Cancel(ResultCode resultCode) override final;
@@ -50,9 +50,11 @@ private:
     std::vector<uint8_t> fwkMsg_;
     UserId hostUserId_ = INVALID_USER_ID;
     TemplateId templateId_ = 0;
+    int32_t authIntent_ = 0;
     FwkResultCallback requestCallback_;
     std::shared_ptr<IRequest> tokenAuthRequest_;
     std::shared_ptr<IRequest> delegateAuthRequest_;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

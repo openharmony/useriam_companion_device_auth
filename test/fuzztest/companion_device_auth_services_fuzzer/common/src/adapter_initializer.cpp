@@ -224,12 +224,16 @@ public:
     {
     }
 
-    void ReportSystemFault(const char *fileName, uint32_t lineNum, FaultType faultType, std::string &faultInfo) override
+    void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo) override
     {
-        (void)fileName;
-        (void)lineNum;
         (void)faultType;
+        (void)faultId;
         (void)faultInfo;
+    }
+
+    void ReportInteractionEvent(const InteractionEventCollector &eventCollector) override
+    {
+        (void)eventCollector;
     }
 
 private:

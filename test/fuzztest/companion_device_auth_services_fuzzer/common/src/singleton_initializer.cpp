@@ -126,6 +126,7 @@ public:
             size_t tokenSize = fuzzData_.ConsumeIntegralInRange<size_t>(32, FUZZ_MAX_TOKEN_LENGTH);
             output.tokenData = fuzzData_.ConsumeBytes<uint8_t>(tokenSize);
             output.atl = fuzzData_.ConsumeIntegral<Atl>();
+            output.esl = fuzzData_.ConsumeIntegral<int32_t>();
         }
         return result;
     }
@@ -181,10 +182,11 @@ public:
         return fuzzData_.ConsumeBool();
     }
 
-    void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds,
+    void StartIssueTokenRequests(const std::vector<TemplateId> &templateIds, uint32_t lockStateAuthTypeValue,
         const std::vector<uint8_t> &fwkUnlockMsg) override
     {
         (void)templateIds;
+        (void)lockStateAuthTypeValue;
         (void)fwkUnlockMsg;
     }
 
@@ -252,10 +254,12 @@ public:
     }
 
     ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-        const std::vector<uint8_t> &tokenData = {}) override
+        Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData = {}) override
     {
         (void)requestId;
         (void)resultCode;
+        (void)atl;
+        (void)esl;
         (void)tokenData;
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
@@ -274,9 +278,11 @@ public:
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0;
     }
 
-    void StartObtainTokenRequests(UserId userId, const std::vector<uint8_t> &fwkUnlockMsg) override
+    void StartObtainTokenRequests(UserId userId, uint32_t lockStateAuthTypeValue,
+        const std::vector<uint8_t> &fwkUnlockMsg) override
     {
         (void)userId;
+        (void)lockStateAuthTypeValue;
         (void)fwkUnlockMsg;
     }
 
@@ -514,6 +520,8 @@ public:
     {
         (void)input;
         output.bindingId = fuzzData_.ConsumeIntegral<BindingId>();
+        output.atl = fuzzData_.ConsumeIntegral<Atl>();
+        output.esl = fuzzData_.ConsumeIntegral<int32_t>();
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 
@@ -577,6 +585,8 @@ public:
         (void)input;
         ResultCode result = static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
         if (result == ResultCode::SUCCESS && fuzzData_.ConsumeBool()) {
+            output.authType = 1;
+            output.atl = 0;
             size_t respSize = fuzzData_.ConsumeIntegralInRange<size_t>(16, FUZZ_MAX_RESPONSE_LENGTH);
             output.delegateAuthResult = fuzzData_.ConsumeBytes<uint8_t>(respSize);
         }
@@ -637,6 +647,7 @@ public:
         (void)input;
         ResultCode result = static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
         if (result == ResultCode::SUCCESS && fuzzData_.ConsumeBool()) {
+            output.atl = fuzzData_.ConsumeIntegral<Atl>();
             size_t tokenSize = fuzzData_.ConsumeIntegralInRange<size_t>(32, FUZZ_MAX_TOKEN_LENGTH);
             output.issueTokenReply = fuzzData_.ConsumeBytes<uint8_t>(tokenSize);
         }
@@ -685,6 +696,7 @@ public:
         (void)input;
         ResultCode result = static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
         if (result == ResultCode::SUCCESS && fuzzData_.ConsumeBool()) {
+            output.atl = fuzzData_.ConsumeIntegral<Atl>();
             size_t tokenSize = fuzzData_.ConsumeIntegralInRange<size_t>(32, FUZZ_MAX_TOKEN_LENGTH);
             output.obtainTokenRequest = fuzzData_.ConsumeBytes<uint8_t>(tokenSize);
         }
@@ -1119,15 +1131,13 @@ public:
             : nullptr;
     }
 
-    std::shared_ptr<IRequest> CreateHostTokenAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override
+    std::shared_ptr<IRequest> CreateHostTokenAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override
     {
-        (void)fwkMsg;
-        (void)hostUserId;
-        (void)templateId;
+        (void)params;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
-            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, scheduleId)
+            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, params.scheduleId)
             : nullptr;
     }
 
@@ -1155,25 +1165,24 @@ public:
     }
 
     std::shared_ptr<IRequest> CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-        const std::vector<uint8_t> &fwkUnlockMsg) override
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) override
     {
         (void)hostUserId;
         (void)templateId;
+        (void)lockStateAuthTypeValue;
         (void)fwkUnlockMsg;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
             ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, 0)
             : nullptr;
     }
 
-    std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override
+    std::shared_ptr<IRequest> CreateHostDelegateAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override
     {
-        (void)fwkMsg;
-        (void)hostUserId;
-        (void)templateId;
+        (void)params;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
-            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, scheduleId)
+            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, params.scheduleId)
             : nullptr;
     }
 
@@ -1214,9 +1223,10 @@ public:
     }
 
     std::shared_ptr<IRequest> CreateCompanionObtainTokenRequest(const DeviceKey &hostDeviceKey,
-        const std::vector<uint8_t> &fwkUnlockMsg) override
+        uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg) override
     {
         (void)hostDeviceKey;
+        (void)lockStateAuthTypeValue;
         (void)fwkUnlockMsg;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
             ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, 0)
@@ -1237,10 +1247,11 @@ public:
     }
 
     std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
-        const DeviceKey &hostDeviceKey) override
+        const DeviceKey &hostDeviceKey, const std::string &triggerReason) override
     {
         (void)companionUserId;
         (void)hostDeviceKey;
+        (void)triggerReason;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
             ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, 0)
             : nullptr;
@@ -1256,15 +1267,13 @@ public:
             : nullptr;
     }
 
-    std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(ScheduleId scheduleId, std::vector<uint8_t> fwkMsg,
-        UserId hostUserId, TemplateId templateId, FwkResultCallback &&requestCallback) override
+    std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
+        FwkResultCallback &&requestCallback) override
     {
-        (void)fwkMsg;
-        (void)hostUserId;
-        (void)templateId;
+        (void)params;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
-            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, scheduleId)
+            ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, params.scheduleId)
             : nullptr;
     }
 

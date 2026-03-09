@@ -67,7 +67,7 @@ HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
 
 HostBinding::~HostBinding()
 {
-    SetTokenValid(false);
+    SetTokenValid(false, "host binding destroyed");
 }
 
 bool HostBinding::Initialize()
@@ -129,7 +129,7 @@ void HostBinding::HandleHostDeviceOffline()
 
     status_.hostDeviceStatus.isOnline = false;
     IAM_LOGE("host device %{public}s is offline", status_.hostDeviceStatus.deviceKey.GetDesc().c_str());
-    SetTokenValid(false);
+    SetTokenValid(false, "host device offline");
 }
 
 void HostBinding::HandleAuthMaintainActiveChanged(bool isActive)
@@ -142,11 +142,11 @@ void HostBinding::HandleAuthMaintainActiveChanged(bool isActive)
     IAM_LOGI("%{public}s local auth maintain active -> %{public}d", GetDescription(), isActive);
     if (!isActive) {
         IAM_LOGE("%{public}s local auth maintain inactive, revoking token", GetDescription());
-        SetTokenValid(false);
+        SetTokenValid(false, "auth maintain inactive");
     }
 }
 
-void HostBinding::SetTokenValid(bool isTokenValid)
+void HostBinding::SetTokenValid(bool isTokenValid, const std::string &triggerReason)
 {
     bool oldTokenValid = status_.isTokenValid;
     status_.isTokenValid = isTokenValid;
@@ -158,7 +158,8 @@ void HostBinding::SetTokenValid(bool isTokenValid)
         (void)GetSecurityAgent().CompanionRevokeToken(input);
 
         const DeviceKey &hostDeviceKey = status_.hostDeviceStatus.deviceKey;
-        auto request = GetRequestFactory().CreateCompanionRevokeTokenRequest(status_.companionUserId, hostDeviceKey);
+        auto request = GetRequestFactory().CreateCompanionRevokeTokenRequest(status_.companionUserId, hostDeviceKey,
+            triggerReason);
         ENSURE_OR_RETURN_DESC(GetDescription(), request != nullptr);
 
         bool result = GetRequestManager().Start(request);

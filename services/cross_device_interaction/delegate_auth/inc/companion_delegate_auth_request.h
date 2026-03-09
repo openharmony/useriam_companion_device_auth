@@ -19,6 +19,7 @@
 #include <memory>
 #include <optional>
 
+#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
 #include "request_callback.h"
@@ -58,6 +59,7 @@ private:
     std::vector<uint8_t> startDelegateAuthRequest_;
     std::optional<uint64_t> contextId_ = std::nullopt;
     SecureProtocolId secureProtocolId_ { SecureProtocolId::INVALID };
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

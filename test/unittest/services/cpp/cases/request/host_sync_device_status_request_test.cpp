@@ -18,6 +18,7 @@
 
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
+#include "mock_event_manager_adapter.h"
 #include "mock_misc_manager.h"
 #include "mock_request_manager.h"
 #include "mock_security_agent.h"
@@ -91,6 +92,10 @@ public:
         auto timeKeeper = std::make_shared<MockTimeKeeper>();
         AdapterManager::GetInstance().SetTimeKeeper(timeKeeper);
 
+        auto eventManagerAdapter =
+            std::shared_ptr<IEventManagerAdapter>(&mockEventManagerAdapter_, [](IEventManagerAdapter *) {});
+        AdapterManager::GetInstance().SetEventManagerAdapter(eventManagerAdapter);
+
         ON_CALL(mockSecurityAgent_, HostBeginCompanionCheck(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
         ON_CALL(mockSecurityAgent_, HostCancelCompanionCheck(_)).WillByDefault(Return(ResultCode::SUCCESS));
         ON_CALL(mockSecurityAgent_, HostEndCompanionCheck(_)).WillByDefault(Return(ResultCode::SUCCESS));
@@ -100,6 +105,7 @@ public:
         ON_CALL(mockCrossDeviceCommManager_, SendMessage(_, _, _, _)).WillByDefault(Return(true));
         ON_CALL(mockCompanionManager_, UpdateCompanionStatus(_, _, _)).WillByDefault(Return(ResultCode::SUCCESS));
         ON_CALL(mockCompanionManager_, HandleCompanionCheckFail(_)).WillByDefault(Return(ResultCode::SUCCESS));
+        ON_CALL(mockEventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
     }
 
     void TearDown() override
@@ -119,6 +125,7 @@ protected:
     NiceMock<MockSecurityAgent> mockSecurityAgent_;
     NiceMock<MockMiscManager> mockMiscManager_;
     NiceMock<MockUserIdManager> mockUserIdManager_;
+    NiceMock<MockEventManagerAdapter> mockEventManagerAdapter_;
 };
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, OnConnected_001, TestSize.Level0)

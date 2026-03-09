@@ -330,6 +330,8 @@ impl Request for CompanionDeviceEnrollRequest {
         self.store_token()?;
         companion_db_helper::update_host_device_last_used_time(self.binding_id)?;
         ffi_output.binding_id = self.binding_id;
+        ffi_output.atl = self.token_info.atl as i32;
+        ffi_output.esl = ExecutorSecurityLevel::Esl3 as i32;
         Ok(())
     }
 }

@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "error_guard.h"
 #include "host_revoke_token_handler.h"
 #include "revoke_token_message.h"
@@ -28,11 +29,17 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-CompanionRevokeTokenRequest::CompanionRevokeTokenRequest(int32_t companionUserId, const DeviceKey &hostDeviceKey)
+CompanionRevokeTokenRequest::CompanionRevokeTokenRequest(int32_t companionUserId, const DeviceKey &hostDeviceKey,
+    const std::string &triggerReason)
     : OutboundRequest(RequestType::COMPANION_REVOKE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
-      companionUserId_(companionUserId)
+      companionUserId_(companionUserId),
+      eventCollector_("companion revoke token request")
 {
     SetPeerDeviceKey(hostDeviceKey);
+    eventCollector_.UpdateHostDeviceKey(hostDeviceKey);
+    eventCollector_.UpdateCompanionUserId(companionUserId);
+    eventCollector_.UpdateTriggerReason(triggerReason);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
 }
 
 void CompanionRevokeTokenRequest::OnConnected()
@@ -97,12 +104,14 @@ void CompanionRevokeTokenRequest::HandleRevokeTokenReply(const Attributes &messa
 void CompanionRevokeTokenRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s: revoke token request failed, result=%{public}d", GetDescription(), result);
+    eventCollector_.Report(result);
     Destroy();
 }
 
 void CompanionRevokeTokenRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

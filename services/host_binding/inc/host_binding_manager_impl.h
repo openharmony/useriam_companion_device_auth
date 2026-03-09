@@ -45,13 +45,14 @@ public:
         const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply) override;
 
     ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-        const std::vector<uint8_t> &tokenData = {}) override;
+        Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData = {}) override;
 
     ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) override;
 
     bool SetHostBindingTokenValid(BindingId bindingId, bool isTokenValid) override;
 
-    void StartObtainTokenRequests(UserId userId, const std::vector<uint8_t> &fwkUnlockMsg) override;
+    void StartObtainTokenRequests(UserId userId, uint32_t lockStateAuthTypeValue,
+        const std::vector<uint8_t> &fwkUnlockMsg) override;
     void RevokeTokens(UserId userId) override;
 
 private:
