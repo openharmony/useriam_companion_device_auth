@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 
+#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "obtain_token_message.h"
 #include "outbound_request.h"
@@ -31,7 +32,8 @@ namespace CompanionDeviceAuth {
 class CompanionObtainTokenRequest : public std::enable_shared_from_this<CompanionObtainTokenRequest>,
                                     public OutboundRequest {
 public:
-    CompanionObtainTokenRequest(const DeviceKey &hostDeviceKey, const std::vector<uint8_t> &fwkUnlockMsg);
+    CompanionObtainTokenRequest(const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
+        const std::vector<uint8_t> &fwkUnlockMsg);
     ~CompanionObtainTokenRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
@@ -60,6 +62,7 @@ private:
     BindingId bindingId_ = 0;
     bool needCancelObtainToken_ = false;
     std::unique_ptr<Subscription> localDeviceStatusSubscription_;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

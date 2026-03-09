@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#include "event_manager_adapter.h"
 #include "outbound_request.h"
 
 namespace OHOS {
@@ -27,7 +28,8 @@ namespace CompanionDeviceAuth {
 class CompanionRevokeTokenRequest : public std::enable_shared_from_this<CompanionRevokeTokenRequest>,
                                     public OutboundRequest {
 public:
-    CompanionRevokeTokenRequest(int32_t companionUserId, const DeviceKey &hostDeviceKey);
+    CompanionRevokeTokenRequest(int32_t companionUserId, const DeviceKey &hostDeviceKey,
+        const std::string &triggerReason);
     ~CompanionRevokeTokenRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
@@ -47,6 +49,7 @@ private:
     void CompleteWithSuccess();
 
     int32_t companionUserId_ = INVALID_USER_ID;
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

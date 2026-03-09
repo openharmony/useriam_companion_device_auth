@@ -18,6 +18,7 @@
 
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
+#include "mock_event_manager_adapter.h"
 #include "mock_misc_manager.h"
 #include "mock_request_manager.h"
 #include "mock_security_agent.h"
@@ -79,6 +80,10 @@ public:
         auto timeKeeper = std::make_shared<MockTimeKeeper>();
         AdapterManager::GetInstance().SetTimeKeeper(timeKeeper);
 
+        auto eventManagerAdapter =
+            std::shared_ptr<IEventManagerAdapter>(&mockEventManagerAdapter_, [](IEventManagerAdapter *) {});
+        AdapterManager::GetInstance().SetEventManagerAdapter(eventManagerAdapter);
+
         CompanionStatus companionStatus;
         ON_CALL(mockCompanionManager_, GetCompanionStatus(_, _))
             .WillByDefault(Return(std::make_optional(companionStatus)));
@@ -93,6 +98,7 @@ public:
             .WillByDefault(Return(ByMove(MakeSubscription())));
         ON_CALL(mockSecurityAgent_, HostProcessPreObtainToken(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
         ON_CALL(mockSecurityAgent_, HostProcessObtainToken(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
+        ON_CALL(mockEventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
     }
 
     void TearDown() override
@@ -126,6 +132,7 @@ protected:
     NiceMock<MockSecurityAgent> mockSecurityAgent_;
     NiceMock<MockMiscManager> mockMiscManager_;
     NiceMock<MockUserIdManager> mockUserIdManager_;
+    NiceMock<MockEventManagerAdapter> mockEventManagerAdapter_;
 };
 
 HWTEST_F(HostObtainTokenRequestTest, OnStart_001, TestSize.Level0)

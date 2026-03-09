@@ -259,6 +259,7 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
     output.fwkMsg.swap(secOutput.fwkMsg);
     output.tokenData.swap(secOutput.tokenData);
     output.atl = secOutput.atl;
+    output.esl = secOutput.esl;
 
     NotifyCompanionStatusChange();
 
@@ -572,7 +573,7 @@ ResultCode CompanionManagerImpl::RemoveCompanionInternal(TemplateId templateId)
 }
 
 void CompanionManagerImpl::StartIssueTokenRequests(const std::vector<uint64_t> &templateIds,
-    const std::vector<uint8_t> &fwkUnlockMsg)
+    uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
 {
     IAM_LOGI("start, templateIds size=%{public}zu", templateIds.size());
     for (const auto &templateId : templateIds) {
@@ -607,7 +608,7 @@ void CompanionManagerImpl::StartIssueTokenRequests(const std::vector<uint64_t> &
             companionStatus.hostUserId);
 
         auto request = GetRequestFactory().CreateHostIssueTokenRequest(companionStatus.hostUserId,
-            companionStatus.templateId, fwkUnlockMsg);
+            companionStatus.templateId, lockStateAuthTypeValue, fwkUnlockMsg);
         if (request == nullptr) {
             IAM_LOGE("companion %{public}s failed to create HostIssueTokenRequest", companion->GetDescription());
             continue;

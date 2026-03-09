@@ -18,8 +18,10 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "companion_manager.h"
 #include "companion_sync_device_status_handler.h"
+#include "common_message.h"
 #include "error_guard.h"
 #include "scope_guard.h"
 #include "security_agent.h"
@@ -38,9 +40,13 @@ HostSyncDeviceStatusRequest::HostSyncDeviceStatusRequest(int32_t hostUserId, con
       hostUserId_(hostUserId),
       companionDeviceKey_(companionDeviceKey),
       companionDeviceName_(companionDeviceName),
-      callback_(std::move(callback))
+      callback_(std::move(callback)),
+      eventCollector_("host sync device status request")
 {
     SetPeerDeviceKey(companionDeviceKey_);
+    eventCollector_.UpdateHostUserId(hostUserId);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.UpdateConnectionName(GetConnectionName());
 }
 
 void HostSyncDeviceStatusRequest::OnConnected()
@@ -71,6 +77,7 @@ void HostSyncDeviceStatusRequest::CompleteWithError(ResultCode result)
     InvokeCallback(result, {});
 
     IAM_LOGE("%{public}s complete with error result=%{public}d", GetDescription(), result);
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -78,6 +85,7 @@ void HostSyncDeviceStatusRequest::CompleteWithSuccess(const SyncDeviceStatus &sy
 {
     InvokeCallback(ResultCode::SUCCESS, syncDeviceStatus);
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 
@@ -117,6 +125,9 @@ bool HostSyncDeviceStatusRequest::SendSyncDeviceStatusRequest(const std::vector<
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), localDeviceKey.has_value(), false);
 
     auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
+    eventCollector_.AppendExtraInfo("protocolIdList", ProtocolIdConverter::ToUnderlyingVec(profile.protocols));
+    eventCollector_.AppendExtraInfo("capabilityList", CapabilityConverter::ToUnderlyingVec(profile.capabilities));
+
     SyncDeviceStatusRequest syncDeviceStatusRequest = {};
     syncDeviceStatusRequest.protocolIdList = profile.protocols;
     syncDeviceStatusRequest.capabilityList = profile.capabilities;
@@ -159,6 +170,10 @@ void HostSyncDeviceStatusRequest::HandleSyncDeviceStatusReply(const Attributes &
     syncDeviceStatus.secureProtocolId = replyData.secureProtocolId;
     syncDeviceStatus.deviceUserName = replyData.deviceUserName;
 
+    eventCollector_.AppendExtraInfo("selectedProtocolIdList",
+        ProtocolIdConverter::ToUnderlyingVec(syncDeviceStatus.protocolIdList));
+    eventCollector_.AppendExtraInfo("secureProtocolId", static_cast<uint16_t>(syncDeviceStatus.secureProtocolId));
+
     if (cancelCompanionCheckGuard_ != nullptr) {
         cancelCompanionCheckGuard_->Cancel();
     }
@@ -176,6 +191,8 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
         IAM_LOGI("%{public}s companionStatus not exist", GetDescription());
         return true;
     }
+
+    eventCollector_.UpdateTemplateIdList({ companionStatus->templateId });
 
     HostEndCompanionCheckInput input = {};
     input.requestId = GetRequestId();

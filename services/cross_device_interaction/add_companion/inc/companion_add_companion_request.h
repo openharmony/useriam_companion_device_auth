@@ -20,6 +20,7 @@
 #include <optional>
 
 #include "add_companion_message.h"
+#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
 #include "security_agent.h"
@@ -60,6 +61,7 @@ private:
     std::unique_ptr<Subscription> beginAddHostBindingSubscription_;
     std::unique_ptr<Subscription> endAddHostBindingSubscription_;
     DeviceKey companionDeviceKey_ {};
+    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

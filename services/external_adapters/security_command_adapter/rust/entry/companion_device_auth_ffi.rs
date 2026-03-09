@@ -443,6 +443,7 @@ pub struct HostEndAddCompanionOutputFfi {
     pub sec_message: DataArray1024Ffi,
     pub template_id: u64,
     pub atl: i32,
+    pub esl: i32,
     pub added_time: u64,
 }
 assert_max_size!(HostEndAddCompanionOutputFfi);
@@ -859,6 +860,8 @@ assert_max_size!(CompanionEndAddHostBindingInputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionEndAddHostBindingOutputFfi {
     pub binding_id: i32,
+    pub atl: i32,
+    pub esl: i32,
 }
 assert_max_size!(CompanionEndAddHostBindingOutputFfi);
 
@@ -908,6 +911,7 @@ assert_max_size!(CompanionProcessIssueTokenInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionProcessIssueTokenOutputFfi {
+    pub atl: i32,
     pub sec_message: DataArray1024Ffi, /* result */
 }
 assert_max_size!(CompanionProcessIssueTokenOutputFfi);
@@ -989,6 +993,8 @@ assert_max_size!(CompanionEndDelegateAuthInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionEndDelegateAuthOutputFfi {
+    pub auth_type: i32,
+    pub atl: i32,
     pub sec_message: DataArray1024Ffi, /* salt, tag, iv, encrypt_data(challenge, atl, authType)) */
 }
 assert_max_size!(CompanionEndDelegateAuthOutputFfi);
@@ -1010,6 +1016,7 @@ assert_max_size!(CompanionBeginObtainTokenInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionBeginObtainTokenOutputFfi {
+    pub atl: i32,
     pub sec_message: DataArray1024Ffi, /* tag, iv, encrypt_data(challenge, atl) */
 }
 assert_max_size!(CompanionBeginObtainTokenOutputFfi);

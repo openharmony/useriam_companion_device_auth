@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "adapter_manager.h"
 #include "companion_manager.h"
 #include "companion_remove_host_binding_handler.h"
 #include "error_guard.h"
@@ -34,8 +35,12 @@ HostRemoveHostBindingRequest::HostRemoveHostBindingRequest(UserId hostUserId, Te
     : OutboundRequest(RequestType::HOST_REMOVE_HOST_BINDING_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       companionDeviceKey_(companionDeviceKey),
-      templateId_(templateId)
+      templateId_(templateId),
+      eventCollector_("host remove host binding request")
 {
+    eventCollector_.UpdateHostUserId(hostUserId);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.UpdateTemplateIdList({ templateId });
 }
 
 bool HostRemoveHostBindingRequest::OnStart(ErrorGuard &errorGuard)
@@ -46,6 +51,7 @@ bool HostRemoveHostBindingRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
+    eventCollector_.UpdateConnectionName(GetConnectionName());
     return true;
 }
 
@@ -114,6 +120,7 @@ void HostRemoveHostBindingRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
     GetCompanionManager().HandleRemoveHostBindingComplete(templateId_);
+    eventCollector_.Report(result);
     Destroy();
 }
 
@@ -121,6 +128,7 @@ void HostRemoveHostBindingRequest::CompleteWithSuccess()
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
     GetCompanionManager().HandleRemoveHostBindingComplete(templateId_);
+    eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();
 }
 

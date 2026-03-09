@@ -389,7 +389,7 @@ fn companion_obtain_token_request_end_test_challenge_mismatch() {
     };
 
     let mut request = CompanionDeviceObtainTokenRequest::new(&input).unwrap();
-    request.obtain_param.host_challenge = 999;
+    request.companion_challenge = 999;
 
     let sec_message = create_valid_obtain_token_reply(0, AuthTrustLevel::Atl3 as i32, &request.session_key);
     let end_input = CompanionEndObtainTokenInputFfi {
@@ -420,7 +420,7 @@ fn companion_obtain_token_request_end_test_atl_try_from_fail() {
     };
 
     let mut request = CompanionDeviceObtainTokenRequest::new(&input).unwrap();
-    request.obtain_param.host_challenge = 0;
+    request.companion_challenge = 0;
 
     let sec_message = create_valid_obtain_token_reply(0, 99999, &request.session_key);
     let end_input = CompanionEndObtainTokenInputFfi {
@@ -455,7 +455,7 @@ fn companion_obtain_token_request_end_test_store_token_fail() {
     };
 
     let mut request = CompanionDeviceObtainTokenRequest::new(&input).unwrap();
-    request.obtain_param.host_challenge = 0;
+    request.companion_challenge = 0;
 
     let sec_message = create_valid_obtain_token_reply(0, AuthTrustLevel::Atl3 as i32, &request.session_key);
     let end_input = CompanionEndObtainTokenInputFfi {

@@ -174,6 +174,7 @@ impl Request for CompanionDeviceObtainTokenRequest {
         self.decode_sec_token_pre_obtaion_request(ffi_input.sec_message.as_slice()?)?;
 
         let sec_message = self.encode_sec_token_obtain_request()?;
+        ffi_output.atl = self.atl as i32;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         Ok(())
     }

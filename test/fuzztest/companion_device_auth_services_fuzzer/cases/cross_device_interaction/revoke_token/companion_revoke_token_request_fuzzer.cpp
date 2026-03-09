@@ -120,8 +120,10 @@ void FuzzCompanionRevokeTokenRequest(FuzzedDataProvider &fuzzData)
 {
     int32_t companionUserId = fuzzData.ConsumeIntegral<int32_t>();
     DeviceKey hostDeviceKey = GenerateFuzzDeviceKey(fuzzData);
+    std::string triggerReason = GenerateFuzzString(fuzzData, 64);
 
-    auto revokeTokenRequest = std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey);
+    auto revokeTokenRequest =
+        std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
     if (!revokeTokenRequest) {
         return;
     }
