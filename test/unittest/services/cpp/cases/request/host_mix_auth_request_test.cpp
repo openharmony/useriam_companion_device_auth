@@ -55,10 +55,8 @@ HWTEST_F(HostMixAuthRequestTest, Start_001, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -73,7 +71,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     // Callback is not called because request started successfully
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(HostMixAuthRequestTest, Start_002, TestSize.Level0)
@@ -84,11 +82,11 @@ HWTEST_F(HostMixAuthRequestTest, Start_002, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::SUCCESS;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     // Set up companion status to be valid so Start() can proceed
@@ -102,8 +100,8 @@ HWTEST_F(HostMixAuthRequestTest, Start_002, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     // Callback should be called with GENERAL_ERROR when factory returns nullptr
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::GENERAL_ERROR);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(HostMixAuthRequestTest, Start_003, TestSize.Level0)
@@ -114,10 +112,8 @@ HWTEST_F(HostMixAuthRequestTest, Start_003, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -147,18 +143,18 @@ HWTEST_F(HostMixAuthRequestTest, Start_004, TestSize.Level0)
 
     request->templateIdList_ = {};
     request->requestMap_[1] = nullptr;
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::SUCCESS;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     request->Start();
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::NO_VALID_CREDENTIAL);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::NO_VALID_CREDENTIAL);
 }
 
 HWTEST_F(HostMixAuthRequestTest, Cancel_001, TestSize.Level0)
@@ -169,11 +165,11 @@ HWTEST_F(HostMixAuthRequestTest, Cancel_001, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::SUCCESS;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     // Set up companion status to be valid so Start() can proceed
@@ -190,8 +186,8 @@ HWTEST_F(HostMixAuthRequestTest, Cancel_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_TRUE(result);
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::CANCELED);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::CANCELED);
 }
 
 HWTEST_F(HostMixAuthRequestTest, Cancel_002, TestSize.Level0)
@@ -218,19 +214,19 @@ HWTEST_F(HostMixAuthRequestTest, Cancel_003, TestSize.Level0)
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
     request->requestMap_[1] = nullptr;
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::SUCCESS;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     bool result = request->Cancel(ResultCode::CANCELED);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_TRUE(result);
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::CANCELED);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::CANCELED);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_001, TestSize.Level0)
@@ -241,11 +237,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_001, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::GENERAL_ERROR;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     // Set up companion status to be valid so Start() can proceed
@@ -261,8 +257,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_001, TestSize.Level0)
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::SUCCESS);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_002, TestSize.Level0)
@@ -273,10 +269,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_002, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -292,7 +286,7 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_002, TestSize.Level0)
     request->HandleAuthResult(0, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
@@ -303,10 +297,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -318,13 +310,13 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
-    // Set request to nullptr, callback should not be called
+    // Set request to nullptr, callback should not be called because HandleAuthResult returns early
     request->requestMap_[TEMPLATE_ID] = nullptr;
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    // Callback gets called when request completes successfully
-    EXPECT_TRUE(callbackCalled);
+    // Callback should not be called when request is nullptr (defensive early return)
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_004, TestSize.Level0)
@@ -335,11 +327,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_004, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::SUCCESS;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     // Set up companion status to be valid so Start() can proceed
@@ -356,8 +348,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_004, TestSize.Level0)
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::GENERAL_ERROR, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::FAIL);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::FAIL);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_005, TestSize.Level0)
@@ -368,10 +360,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_005, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -389,7 +379,7 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_005, TestSize.Level0)
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::GENERAL_ERROR, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_007, TestSize.Level0)
@@ -400,11 +390,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_007, TestSize.Level0)
     HostMixAuthParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID_LIST, std::nullopt };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    bool callbackCalled = false;
-    ResultCode callbackResult = ResultCode::GENERAL_ERROR;
-    request->requestCallback_ = [&callbackCalled, &callbackResult](ResultCode result, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-        callbackResult = result;
+    auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
     };
 
     // Set up companion status to be valid so Start() can proceed
@@ -423,8 +413,8 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_007, TestSize.Level0)
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(callbackCalled);
-    EXPECT_EQ(callbackResult, ResultCode::SUCCESS);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(HostMixAuthRequestTest, GetMaxConcurrency_001, TestSize.Level0)
@@ -485,10 +475,8 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
 
     // Set tokenId to a value to test device selection path
     request->tokenId_ = 1000;
-    bool callbackCalled = false;
-    request->requestCallback_ = [&callbackCalled](ResultCode, const std::vector<uint8_t> &) {
-        callbackCalled = true;
-    };
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
@@ -511,7 +499,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     // Callback is not called because request started successfully
-    EXPECT_FALSE(callbackCalled);
+    EXPECT_FALSE(*callbackCalled);
 }
 
 } // namespace

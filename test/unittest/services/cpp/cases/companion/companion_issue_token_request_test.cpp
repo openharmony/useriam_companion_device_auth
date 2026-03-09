@@ -62,13 +62,13 @@ protected:
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_001, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     auto preIssueTokenRequest = MakePreIssueTokenRequest();
@@ -90,20 +90,20 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_001, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_TRUE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_002, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     Attributes emptyRequest;
@@ -118,20 +118,20 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_002, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_003, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     auto preIssueTokenRequest = MakePreIssueTokenRequest();
@@ -148,20 +148,20 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_003, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_004, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     auto preIssueTokenRequest = MakePreIssueTokenRequest();
@@ -182,24 +182,24 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_004, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
-    EXPECT_FALSE(replyCalled);
+    EXPECT_FALSE(*replyCalled);
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_005, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     Attributes attrs;
-    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
-        std::move(replyCallback), HOST_DEVICE_KEY);
+    auto request =
+        std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs, std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(false));
 
@@ -207,25 +207,25 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_005, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, OnStart_006, TestSize.Level0)
 {
     MockGuard guard;
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply replyCallback = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply replyCallback = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodePreIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     Attributes attrs;
-    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
-        std::move(replyCallback), HOST_DEVICE_KEY);
+    auto request =
+        std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs, std::move(replyCallback), HOST_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), IsAuthMaintainActive()).WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIsAuthMaintainActive(_)).WillOnce(Return(nullptr));
@@ -234,8 +234,8 @@ HWTEST_F(CompanionIssueTokenRequestTest, OnStart_006, TestSize.Level0)
     bool result = request->OnStart(errorGuard);
 
     EXPECT_FALSE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_001, TestSize.Level0)
@@ -266,8 +266,8 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompanionPreIssueToken_002, TestSize.Le
         .companionUserId = COMPANION_USER_ID,
         .extraInfo = { 1, 2, 3 } };
     EncodePreIssueTokenRequest(preIssueRequest, attrs);
-    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs,
-        std::move(replyCallback), differentDeviceKey);
+    auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, attrs, std::move(replyCallback),
+        differentDeviceKey);
 
     std::vector<uint8_t> preIssueTokenReply;
     bool result = request->CompanionPreIssueToken(preIssueTokenReply);
@@ -361,13 +361,13 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.L
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
     attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodeIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -375,8 +375,8 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_001, TestSize.L
 
     request->HandleIssueTokenMessage(attrs, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.Level0)
@@ -401,20 +401,20 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_002, TestSize.L
     ErrorGuard errorGuard([](ResultCode) {});
     EXPECT_TRUE(request->OnStart(errorGuard));
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodeIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     Attributes badRequest;
     request->HandleIssueTokenMessage(badRequest, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.Level0)
@@ -448,21 +448,21 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_003, TestSize.L
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
     attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodeIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     request->HandleIssueTokenMessage(attrs, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.Level0)
@@ -496,13 +496,13 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.L
         static_cast<int32_t>(issueRequest.hostDeviceKey.idType));
     attrs.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, issueRequest.hostDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    int32_t receivedResult = -1;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<int32_t>(-1);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto result = DecodeIssueTokenReply(reply);
         EXPECT_TRUE(result.has_value());
-        receivedResult = static_cast<int32_t>(result.value().result);
+        *receivedResult = static_cast<int32_t>(result.value().result);
     };
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionProcessIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
@@ -510,8 +510,8 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleIssueTokenMessage_004, TestSize.L
 
     request->HandleIssueTokenMessage(attrs, onMessageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_001, TestSize.Level0)

@@ -312,13 +312,13 @@ std::shared_ptr<MockTimeKeeper> MessageRouterTest::staticTimeKeeper = nullptr;
 HWTEST_F(MessageRouterTest, SendMessage_001, TestSize.Level1)
 {
     Attributes request;
-    bool replyReceived = false;
-    int32_t replyCode = -1;
+    auto replyReceived = std::make_shared<bool>(false);
+    auto replyCode = std::make_shared<int32_t>(-1);
 
     bool sendResult = router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&replyReceived, &replyCode](const Attributes &reply) {
-            replyReceived = true;
-            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyCode);
+        [replyReceived, replyCode](const Attributes &reply) {
+            *replyReceived = true;
+            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *replyCode);
         });
     ASSERT_TRUE(sendResult);
     ASSERT_FALSE(channel_->GetSentMessages().empty());
@@ -342,8 +342,8 @@ HWTEST_F(MessageRouterTest, SendMessage_001, TestSize.Level1)
     channel_->TriggerRawMessage(connectionName_, reply.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyReceived);
-    EXPECT_EQ(static_cast<int32_t>(ResultCode::SUCCESS), replyCode);
+    EXPECT_TRUE(*replyReceived);
+    EXPECT_EQ(static_cast<int32_t>(ResultCode::SUCCESS), *replyCode);
 }
 
 HWTEST_F(MessageRouterTest, SendMessage_002, TestSize.Level0)
@@ -366,9 +366,9 @@ HWTEST_F(MessageRouterTest, SendMessage_004, TestSize.Level0)
 {
     Attributes request;
 
-    bool replyReceived = false;
+    auto replyReceived = std::make_shared<bool>(false);
     bool sendResult = router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&replyReceived](const Attributes &) { replyReceived = true; });
+        [replyReceived](const Attributes &) { *replyReceived = true; });
     EXPECT_TRUE(sendResult);
 
     Attributes sentMessage(channel_->GetSentMessages().back());
@@ -384,14 +384,14 @@ HWTEST_F(MessageRouterTest, SendMessage_004, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, reply.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(replyReceived);
+    EXPECT_FALSE(*replyReceived);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeMessage_001, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+        [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
     EXPECT_NE(subscription, nullptr);
 
     Attributes msg;
@@ -403,15 +403,15 @@ HWTEST_F(MessageRouterTest, SubscribeMessage_001, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(messageReceived);
+    EXPECT_TRUE(*messageReceived);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeMessage_002, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     {
         auto subscription = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-            [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+            [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
         EXPECT_NE(subscription, nullptr);
     }
 
@@ -424,19 +424,19 @@ HWTEST_F(MessageRouterTest, SubscribeMessage_002, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(messageReceived);
+    EXPECT_FALSE(*messageReceived);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeMessage_003, TestSize.Level0)
 {
-    bool firstCallbackInvoked = false;
-    bool secondCallbackInvoked = false;
+    auto firstCallbackInvoked = std::make_shared<bool>(false);
+    auto secondCallbackInvoked = std::make_shared<bool>(false);
 
     auto subscription1 = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&firstCallbackInvoked](const Attributes &, OnMessageReply &) { firstCallbackInvoked = true; });
+        [firstCallbackInvoked](const Attributes &, OnMessageReply &) { *firstCallbackInvoked = true; });
 
     auto subscription2 = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&secondCallbackInvoked](const Attributes &, OnMessageReply &) { secondCallbackInvoked = true; });
+        [secondCallbackInvoked](const Attributes &, OnMessageReply &) { *secondCallbackInvoked = true; });
 
     Attributes msg;
     msg.SetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName_);
@@ -447,15 +447,15 @@ HWTEST_F(MessageRouterTest, SubscribeMessage_003, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(firstCallbackInvoked);
-    EXPECT_TRUE(secondCallbackInvoked);
+    EXPECT_FALSE(*firstCallbackInvoked);
+    EXPECT_TRUE(*secondCallbackInvoked);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_001, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeIncomingConnection(MessageType::START_DELEGATE_AUTH,
-        [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+        [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
     EXPECT_NE(subscription, nullptr);
 
     std::string newConnectionName = "new-incoming-connection";
@@ -473,15 +473,15 @@ HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_001, TestSize.Level0)
     channel_->TriggerRawMessage(newConnectionName, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(messageReceived);
+    EXPECT_TRUE(*messageReceived);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_002, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     {
         auto subscription = router_->SubscribeIncomingConnection(MessageType::START_DELEGATE_AUTH,
-            [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+            [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
         EXPECT_NE(subscription, nullptr);
     }
 
@@ -500,14 +500,14 @@ HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_002, TestSize.Level0)
     channel_->TriggerRawMessage(newConnectionName, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(messageReceived);
+    EXPECT_FALSE(*messageReceived);
 }
 
 HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_003, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeIncomingConnection(MessageType::TOKEN_AUTH,
-        [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+        [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
 
     std::string newConnectionName = "new-conn";
     PhysicalDeviceKey physicalDeviceKey;
@@ -524,7 +524,7 @@ HWTEST_F(MessageRouterTest, SubscribeIncomingConnection_003, TestSize.Level0)
     channel_->TriggerRawMessage(newConnectionName, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(messageReceived);
+    EXPECT_FALSE(*messageReceived);
 }
 
 HWTEST_F(MessageRouterTest, Create_001, TestSize.Level0)
@@ -614,16 +614,16 @@ HWTEST_F(MessageRouterTest, HandleRequest_003, TestSize.Level0)
 
 HWTEST_F(MessageRouterTest, HandleRequest_004, TestSize.Level0)
 {
-    bool messageReceived = false;
-    bool replySent = false;
+    auto messageReceived = std::make_shared<bool>(false);
+    auto replySent = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&messageReceived, &replySent](const Attributes &request, OnMessageReply &onReply) {
-            messageReceived = true;
+        [messageReceived, replySent](const Attributes &request, OnMessageReply &onReply) {
+            *messageReceived = true;
             if (onReply != nullptr) {
                 Attributes reply;
                 reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::SUCCESS));
                 onReply(reply);
-                replySent = true;
+                *replySent = true;
             }
         });
 
@@ -636,20 +636,20 @@ HWTEST_F(MessageRouterTest, HandleRequest_004, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(messageReceived);
-    EXPECT_TRUE(replySent);
+    EXPECT_TRUE(*messageReceived);
+    EXPECT_TRUE(*replySent);
 }
 
 HWTEST_F(MessageRouterTest, FindMessageSubscriber_001, TestSize.Level0)
 {
-    bool connSpecificInvoked = false;
-    bool incomingInvoked = false;
+    auto connSpecificInvoked = std::make_shared<bool>(false);
+    auto incomingInvoked = std::make_shared<bool>(false);
 
     auto subscription1 = router_->SubscribeIncomingConnection(MessageType::TOKEN_AUTH,
-        [&incomingInvoked](const Attributes &, OnMessageReply &) { incomingInvoked = true; });
+        [incomingInvoked](const Attributes &, OnMessageReply &) { *incomingInvoked = true; });
 
     auto subscription2 = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&connSpecificInvoked](const Attributes &, OnMessageReply &) { connSpecificInvoked = true; });
+        [connSpecificInvoked](const Attributes &, OnMessageReply &) { *connSpecificInvoked = true; });
 
     Attributes msg;
     msg.SetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName_);
@@ -660,8 +660,8 @@ HWTEST_F(MessageRouterTest, FindMessageSubscriber_001, TestSize.Level0)
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(connSpecificInvoked);
-    EXPECT_FALSE(incomingInvoked);
+    EXPECT_TRUE(*connSpecificInvoked);
+    EXPECT_FALSE(*incomingInvoked);
 }
 
 HWTEST_F(MessageRouterTest, HandleReply_001, TestSize.Level0)
@@ -687,16 +687,16 @@ HWTEST_F(MessageRouterTest, HandleReply_001, TestSize.Level0)
 
 HWTEST_F(MessageRouterTest, HandleConnectionDown_001, TestSize.Level0)
 {
-    bool replyReceived = false;
+    auto replyReceived = std::make_shared<bool>(false);
     Attributes request;
 
     bool sendResult = router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&replyReceived](const Attributes &) { replyReceived = true; });
+        [replyReceived](const Attributes &) { *replyReceived = true; });
     ASSERT_TRUE(sendResult);
 
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+        [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
     EXPECT_NE(subscription, nullptr);
 
     EXPECT_EQ(router_->pendingReplyMessages_.size(), 1);
@@ -709,7 +709,7 @@ HWTEST_F(MessageRouterTest, HandleConnectionDown_001, TestSize.Level0)
     EXPECT_EQ(router_->connectionStatusSubscriptions_.count(connectionName_), 0);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(replyReceived);
+    EXPECT_FALSE(*replyReceived);
 }
 
 HWTEST_F(MessageRouterTest, HandleConnectionDown_002, TestSize.Level0)
@@ -721,14 +721,14 @@ HWTEST_F(MessageRouterTest, HandleConnectionDown_002, TestSize.Level0)
     ASSERT_TRUE(connectionManager_->HandleIncomingConnection(otherConnectionName, physicalDeviceKey));
 
     Attributes request;
-    bool reply1Received = false;
-    bool reply2Received = false;
+    auto reply1Received = std::make_shared<bool>(false);
+    auto reply2Received = std::make_shared<bool>(false);
 
     ASSERT_TRUE(router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&reply1Received](const Attributes &) { reply1Received = true; }));
+        [reply1Received](const Attributes &) { *reply1Received = true; }));
 
     ASSERT_TRUE(router_->SendMessage(otherConnectionName, MessageType::KEEP_ALIVE, request,
-        [&reply2Received](const Attributes &) { reply2Received = true; }));
+        [reply2Received](const Attributes &) { *reply2Received = true; }));
 
     EXPECT_EQ(router_->pendingReplyMessages_.size(), 2);
 
@@ -748,13 +748,13 @@ HWTEST_F(MessageRouterTest, HandleConnectionDown_003, TestSize.Level0)
 
 HWTEST_F(MessageRouterTest, HandleConnectionDown_004, TestSize.Level0)
 {
-    bool messageReceived = false;
+    auto messageReceived = std::make_shared<bool>(false);
     auto subscription = router_->SubscribeMessage(connectionName_, MessageType::TOKEN_AUTH,
-        [&messageReceived](const Attributes &, OnMessageReply &) { messageReceived = true; });
+        [messageReceived](const Attributes &, OnMessageReply &) { *messageReceived = true; });
 
-    bool incomingReceived = false;
+    auto incomingReceived = std::make_shared<bool>(false);
     auto incomingSubscription = router_->SubscribeIncomingConnection(MessageType::TOKEN_AUTH,
-        [&incomingReceived](const Attributes &, OnMessageReply &) { incomingReceived = true; });
+        [incomingReceived](const Attributes &, OnMessageReply &) { *incomingReceived = true; });
 
     EXPECT_EQ(router_->subscriptions_.size(), 2);
 
@@ -766,13 +766,13 @@ HWTEST_F(MessageRouterTest, HandleConnectionDown_004, TestSize.Level0)
 HWTEST_F(MessageRouterTest, HandleMessageTimeout_001, TestSize.Level0)
 {
     Attributes request;
-    bool replyReceived = false;
-    int32_t replyCode = -1;
+    auto replyReceived = std::make_shared<bool>(false);
+    auto replyCode = std::make_shared<int32_t>(-1);
 
     bool sendResult = router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&replyReceived, &replyCode](const Attributes &reply) {
-            replyReceived = true;
-            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyCode);
+        [replyReceived, replyCode](const Attributes &reply) {
+            *replyReceived = true;
+            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *replyCode);
         });
     ASSERT_TRUE(sendResult);
 
@@ -784,8 +784,8 @@ HWTEST_F(MessageRouterTest, HandleMessageTimeout_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(replyReceived);
-    EXPECT_EQ(replyCode, TIMEOUT);
+    EXPECT_TRUE(*replyReceived);
+    EXPECT_EQ(*replyCode, TIMEOUT);
 
     EXPECT_EQ(router_->pendingReplyMessages_.count(messageSeq), 0);
 }
@@ -837,13 +837,13 @@ HWTEST_F(MessageRouterTest, HandleTimeoutCheck_001, TestSize.Level0)
 HWTEST_F(MessageRouterTest, HandleTimeoutCheck_002, TestSize.Level0)
 {
     Attributes request;
-    bool replyReceived = false;
-    int32_t replyCode = -1;
+    auto replyReceived = std::make_shared<bool>(false);
+    auto replyCode = std::make_shared<int32_t>(-1);
 
     bool sendResult = router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&replyReceived, &replyCode](const Attributes &reply) {
-            replyReceived = true;
-            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyCode);
+        [replyReceived, replyCode](const Attributes &reply) {
+            *replyReceived = true;
+            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *replyCode);
         });
     ASSERT_TRUE(sendResult);
 
@@ -862,8 +862,8 @@ HWTEST_F(MessageRouterTest, HandleTimeoutCheck_002, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(replyReceived);
-    EXPECT_EQ(replyCode, TIMEOUT);
+    EXPECT_TRUE(*replyReceived);
+    EXPECT_EQ(*replyCode, TIMEOUT);
 
     EXPECT_EQ(router_->pendingReplyMessages_.size(), 0);
 }
@@ -877,21 +877,21 @@ HWTEST_F(MessageRouterTest, HandleTimeoutCheck_003, TestSize.Level0)
     ASSERT_TRUE(connectionManager_->HandleIncomingConnection(otherConnectionName, physicalDeviceKey));
 
     Attributes request;
-    bool reply1Received = false;
-    bool reply2Received = false;
-    int32_t replyCode1 = -1;
-    int32_t replyCode2 = -1;
+    auto reply1Received = std::make_shared<bool>(false);
+    auto reply2Received = std::make_shared<bool>(false);
+    auto replyCode1 = std::make_shared<int32_t>(-1);
+    auto replyCode2 = std::make_shared<int32_t>(-1);
 
     ASSERT_TRUE(router_->SendMessage(connectionName_, MessageType::KEEP_ALIVE, request,
-        [&reply1Received, &replyCode1](const Attributes &reply) {
-            reply1Received = true;
-            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyCode1);
+        [reply1Received, replyCode1](const Attributes &reply) {
+            *reply1Received = true;
+            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *replyCode1);
         }));
 
     ASSERT_TRUE(router_->SendMessage(otherConnectionName, MessageType::KEEP_ALIVE, request,
-        [&reply2Received, &replyCode2](const Attributes &reply) {
-            reply2Received = true;
-            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyCode2);
+        [reply2Received, replyCode2](const Attributes &reply) {
+            *reply2Received = true;
+            (void)reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, *replyCode2);
         }));
 
     EXPECT_EQ(router_->pendingReplyMessages_.size(), 2);
@@ -905,10 +905,10 @@ HWTEST_F(MessageRouterTest, HandleTimeoutCheck_003, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(reply1Received);
-    EXPECT_EQ(replyCode1, TIMEOUT);
+    EXPECT_TRUE(*reply1Received);
+    EXPECT_EQ(*replyCode1, TIMEOUT);
 
-    EXPECT_FALSE(reply2Received);
+    EXPECT_FALSE(*reply2Received);
 
     EXPECT_EQ(router_->pendingReplyMessages_.size(), 1);
 }

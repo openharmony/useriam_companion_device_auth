@@ -49,13 +49,13 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_001, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::GENERAL_ERROR;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto replyOpt = DecodeInitKeyNegotiationReply(reply);
         if (replyOpt.has_value()) {
-            receivedResult = replyOpt->result;
+            *receivedResult = replyOpt->result;
         }
     };
 
@@ -91,16 +91,16 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_001, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_TRUE(result);
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::SUCCESS);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, OnStart_002, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     auto request = std::make_shared<CompanionAddCompanionRequest>(CONNECTION_NAME, initKeyNegoRequest,
@@ -113,15 +113,15 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_002, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
-    EXPECT_FALSE(replyCalled);
+    EXPECT_FALSE(*replyCalled);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, OnStart_003, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     auto request = std::make_shared<CompanionAddCompanionRequest>(CONNECTION_NAME, initKeyNegoRequest,
@@ -144,8 +144,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_004, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     auto request = std::make_shared<CompanionAddCompanionRequest>(CONNECTION_NAME, initKeyNegoRequest,
@@ -170,8 +170,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_005, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes emptyRequest;
     auto request = std::make_shared<CompanionAddCompanionRequest>(CONNECTION_NAME, emptyRequest,
@@ -196,8 +196,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_006, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     InitKeyNegotiationRequest initRequest;
@@ -233,8 +233,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_007, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     auto request = std::make_shared<CompanionAddCompanionRequest>(CONNECTION_NAME, initKeyNegoRequest,
@@ -255,14 +255,15 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_007, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
+    EXPECT_FALSE(*replyCalled);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, OnStart_008, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    OnMessageReply onMessageReply = [&replyCalled](const Attributes &) { replyCalled = true; };
+    auto replyCalled = std::make_shared<bool>(false);
+    OnMessageReply onMessageReply = [replyCalled](const Attributes &) { *replyCalled = true; };
 
     Attributes initKeyNegoRequest;
     InitKeyNegotiationRequest initRequest;
@@ -297,6 +298,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, OnStart_008, TestSize.Level0)
 
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_FALSE(result);
+    EXPECT_FALSE(*replyCalled);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_001, TestSize.Level0)
@@ -317,13 +319,13 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_001, TestSize
     Attributes attrInput;
     EncodeBeginAddHostBindingRequest(beginRequest, attrInput);
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::GENERAL_ERROR;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto replyOpt = DecodeBeginAddHostBindingReply(reply);
         if (replyOpt.has_value()) {
-            receivedResult = replyOpt->result;
+            *receivedResult = replyOpt->result;
         }
     };
 
@@ -337,8 +339,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_001, TestSize
     request->HandleBeginAddCompanion(attrInput, messageReply);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::SUCCESS);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_002, TestSize.Level0)
@@ -378,19 +380,19 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_003, TestSize
 
     Attributes attrInput;
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::SUCCESS;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
-        receivedResult = static_cast<ResultCode>(result);
+        *receivedResult = static_cast<ResultCode>(result);
     };
 
     request->HandleBeginAddCompanion(attrInput, messageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::GENERAL_ERROR);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_004, TestSize.Level0)
@@ -411,21 +413,21 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_004, TestSize
     Attributes attrInput;
     EncodeBeginAddHostBindingRequest(beginRequest, attrInput);
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::SUCCESS;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
-        receivedResult = static_cast<ResultCode>(result);
+        *receivedResult = static_cast<ResultCode>(result);
     };
 
     EXPECT_CALL(guard.GetHostBindingManager(), BeginAddHostBinding(_, _, _, _, _)).WillOnce(Return(ResultCode::FAIL));
 
     request->HandleBeginAddCompanion(attrInput, messageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::FAIL);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::FAIL);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_001, TestSize.Level0)
@@ -450,13 +452,13 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_001, TestSize.L
         static_cast<int32_t>(endRequest.hostDeviceKey.idType));
     attrInput.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, endRequest.hostDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::GENERAL_ERROR;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         auto replyOpt = DecodeEndAddHostBindingReply(reply);
         if (replyOpt.has_value()) {
-            receivedResult = replyOpt->result;
+            *receivedResult = replyOpt->result;
         }
     };
 
@@ -464,8 +466,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_001, TestSize.L
 
     request->HandleEndAddCompanion(attrInput, messageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::SUCCESS);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_002, TestSize.Level0)
@@ -509,19 +511,19 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_003, TestSize.L
 
     Attributes attrInput;
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::SUCCESS;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
-        receivedResult = static_cast<ResultCode>(result);
+        *receivedResult = static_cast<ResultCode>(result);
     };
 
     request->HandleEndAddCompanion(attrInput, messageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::GENERAL_ERROR);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::GENERAL_ERROR);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_004, TestSize.Level0)
@@ -546,34 +548,34 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_004, TestSize.L
         static_cast<int32_t>(endRequest.hostDeviceKey.idType));
     attrInput.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, endRequest.hostDeviceKey.deviceId);
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::SUCCESS;
-    OnMessageReply messageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    OnMessageReply messageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
-        receivedResult = static_cast<ResultCode>(result);
+        *receivedResult = static_cast<ResultCode>(result);
     };
 
     EXPECT_CALL(guard.GetHostBindingManager(), EndAddHostBinding(_, _, _)).WillOnce(Return(ResultCode::FAIL));
 
     request->HandleEndAddCompanion(attrInput, messageReply);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::FAIL);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::FAIL);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, CompleteWithError_001, TestSize.Level0)
 {
     MockGuard guard;
 
-    bool replyCalled = false;
-    ResultCode receivedResult = ResultCode::SUCCESS;
-    OnMessageReply onMessageReply = [&replyCalled, &receivedResult](const Attributes &reply) {
-        replyCalled = true;
+    auto replyCalled = std::make_shared<bool>(false);
+    auto receivedResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
+    OnMessageReply onMessageReply = [replyCalled, receivedResult](const Attributes &reply) {
+        *replyCalled = true;
         int32_t result = 0;
         reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
-        receivedResult = static_cast<ResultCode>(result);
+        *receivedResult = static_cast<ResultCode>(result);
     };
 
     Attributes initKeyNegoRequest;
@@ -582,8 +584,8 @@ HWTEST_F(CompanionAddCompanionRequestTest, CompleteWithError_001, TestSize.Level
 
     request->CompleteWithError(ResultCode::COMMUNICATION_ERROR);
 
-    EXPECT_TRUE(replyCalled);
-    EXPECT_EQ(receivedResult, ResultCode::COMMUNICATION_ERROR);
+    EXPECT_TRUE(*replyCalled);
+    EXPECT_EQ(*receivedResult, ResultCode::COMMUNICATION_ERROR);
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, GetWeakPtr_001, TestSize.Level0)

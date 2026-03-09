@@ -92,13 +92,33 @@ bool IdmAdapterImpl::Initialize()
 {
     eventListener_ = std::make_shared<CredChangeListener>(shared_from_this());
     ENSURE_OR_RETURN_VAL(eventListener_ != nullptr, false);
+
+    constexpr const char *userIdmSaName = "UserIdmService";
+    std::weak_ptr<IdmAdapterImpl> weakImpl = weak_from_this();
+    saListener_ = SaStatusListener::Create(
+        userIdmSaName, SUBSYS_USERIAM_SYS_ABILITY_USERIDM,
+        [weakImpl]() {
+            auto impl = weakImpl.lock();
+            ENSURE_OR_RETURN(impl != nullptr);
+            impl->OnUserIdmServiceReady();
+        },
+        [weakImpl]() {
+            auto impl = weakImpl.lock();
+            ENSURE_OR_RETURN(impl != nullptr);
+            impl->OnUserIdmServiceUnavailable();
+        });
+    if (saListener_ == nullptr) {
+        IAM_LOGE("failed to subscribe UserIDM SA status");
+        return false;
+    }
+
     IAM_LOGI("IdmAdapterImpl initialized");
     return true;
 }
 
 void IdmAdapterImpl::OnUserIdmServiceReady()
 {
-    IAM_LOGI("UserIdM SA is ready");
+    IAM_LOGI("UserIDM SA is ready");
 
     ENSURE_OR_RETURN(eventListener_ != nullptr);
 
@@ -121,12 +141,12 @@ void IdmAdapterImpl::OnUserIdmServiceReady()
         QueryAndUpdateCache(userId);
     }
 
-    IAM_LOGI("UserIdM service ready, processed %{public}zu subscribed users", subscribedUsers.size());
+    IAM_LOGI("UserIDM service ready, processed %{public}zu subscribed users", subscribedUsers.size());
 }
 
 void IdmAdapterImpl::OnUserIdmServiceUnavailable()
 {
-    IAM_LOGE("UserIdM SA is unavailable");
+    IAM_LOGE("UserIDM SA is unavailable");
 
     if (eventListener_ != nullptr) {
         SetFirstCallerTokenID(IPCSkeleton::GetCallingTokenID());
@@ -204,8 +224,8 @@ void IdmAdapterImpl::QueryAndUpdateCache(int32_t userId)
 {
     std::vector<UserAuth::CredentialInfo> credentialInfoList;
     SetFirstCallerTokenID(IPCSkeleton::GetCallingTokenID());
-    int32_t ret =
-        UserIdmClient::GetInstance().GetCredentialInfoSync(userId, UserAuth::AuthType::ALL, credentialInfoList);
+    int32_t ret = UserIdmClient::GetInstance().GetCredentialInfoSync(userId, UserAuth::AuthType::COMPANION_DEVICE,
+        credentialInfoList);
     SetFirstCallerTokenID(0);
 
     if (ret != ERR_OK) {
@@ -215,6 +235,9 @@ void IdmAdapterImpl::QueryAndUpdateCache(int32_t userId)
 
     std::vector<uint64_t> templateIds;
     for (const auto &credInfo : credentialInfoList) {
+        if (credInfo.authType != UserAuth::AuthType::COMPANION_DEVICE) {
+            continue;
+        }
         templateIds.push_back(credInfo.templateId);
     }
 
@@ -222,8 +245,6 @@ void IdmAdapterImpl::QueryAndUpdateCache(int32_t userId)
     if (it == templateCache_.end() || it->second != templateIds) {
         IAM_LOGI("Templates changed for user %{public}d, count: %{public}zu", userId, templateIds.size());
         NotifyTemplateChange(userId, templateIds);
-    } else {
-        IAM_LOGI("Templates unchanged for user %{public}d, count: %{public}zu", userId, templateIds.size());
     }
 }
 
@@ -243,6 +264,7 @@ void IdmAdapterImpl::NotifyTemplateChange(int32_t userId, const std::vector<uint
         return;
     }
 
+    auto subscribeCount = callbacksToNotify.size();
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [callbacks = std::move(callbacksToNotify), userId, templateIds]() {
             for (auto &callback : callbacks) {
@@ -250,7 +272,7 @@ void IdmAdapterImpl::NotifyTemplateChange(int32_t userId, const std::vector<uint
             }
         });
 
-    IAM_LOGI("Notified %{public}zu subscribers for user %{public}d", callbacksToNotify.size(), userId);
+    IAM_LOGI("Notified %{public}zu subscribers for user %{public}d", subscribeCount, userId);
 }
 
 } // namespace CompanionDeviceAuth

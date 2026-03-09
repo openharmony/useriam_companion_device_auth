@@ -145,17 +145,18 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResultSuccessPropagatesNegotiatedSta
     ctx.localStatusManager->profile_.protocols = { ProtocolId::VERSION_1 };
     ctx.localStatusManager->profile_.capabilities = { Capability::TOKEN_AUTH, Capability::DELEGATE_AUTH };
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     size_t callbackCount = 0;
-    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &statusList) {
-        callbackInvoked = true;
-        callbackCount++;
-        ASSERT_EQ(1u, statusList.size());
-        EXPECT_EQ("device-1", statusList[0].deviceKey.deviceId);
-        EXPECT_EQ(ProtocolId::VERSION_1, statusList[0].protocolId);
-        ASSERT_EQ(1u, statusList[0].capabilities.size());
-        EXPECT_EQ(Capability::TOKEN_AUTH, statusList[0].capabilities[0]);
-    });
+    auto subscription = ctx.manager->SubscribeDeviceStatus(
+        [callbackInvoked, &callbackCount](const std::vector<DeviceStatus> &statusList) {
+            *callbackInvoked = true;
+            callbackCount++;
+            ASSERT_EQ(1u, statusList.size());
+            EXPECT_EQ("device-1", statusList[0].deviceKey.deviceId);
+            EXPECT_EQ(ProtocolId::VERSION_1, statusList[0].protocolId);
+            ASSERT_EQ(1u, statusList[0].capabilities.size());
+            EXPECT_EQ(Capability::TOKEN_AUTH, statusList[0].capabilities[0]);
+        });
     (void)subscription;
 
     auto physicalStatus = MakePhysicalStatus("device-1", ChannelId::SOFTBUS, "deviceName");
@@ -201,8 +202,18 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncFailsWhenRequestCreationFails
     entry.isSyncInProgress = false;
     ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
 
-    bool notified = false;
-    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &) { notified = true; });
+    // Set up mock to return the test device to prevent RefreshDeviceList from removing it
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices)
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
+    // Subscribe with needSync=true to ensure NeedSyncDevice returns true
+    auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
+    auto syncSubscription =
+        ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
+
+    auto notified = std::make_shared<bool>(false);
+    auto subscription =
+        ctx.manager->SubscribeDeviceStatus([notified](const std::vector<DeviceStatus> &) { *notified = true; });
     (void)subscription;
 
     EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _))
@@ -213,7 +224,7 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncFailsWhenRequestCreationFails
     const auto &failedEntry = ctx.manager->deviceStatusMap_.at(physicalStatus.physicalDeviceKey);
     EXPECT_FALSE(failedEntry.isSynced);
     EXPECT_FALSE(failedEntry.isSyncInProgress);
-    EXPECT_FALSE(notified);
+    EXPECT_FALSE(*notified);
 }
 
 HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncFailsWhenRequestStartFails, TestSize.Level0)
@@ -226,8 +237,18 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncFailsWhenRequestStartFails, T
     entry.isSyncInProgress = false;
     ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
 
-    bool notified = false;
-    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &) { notified = true; });
+    // Set up mock to return the test device to prevent RefreshDeviceList from removing it
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices)
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
+    // Subscribe with needSync=true to ensure NeedSyncDevice returns true
+    auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
+    auto syncSubscription =
+        ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
+
+    auto notified = std::make_shared<bool>(false);
+    auto subscription =
+        ctx.manager->SubscribeDeviceStatus([notified](const std::vector<DeviceStatus> &) { *notified = true; });
     (void)subscription;
 
     EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _))
@@ -243,7 +264,7 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncFailsWhenRequestStartFails, T
     const auto &failedEntry2 = ctx.manager->deviceStatusMap_.at(physicalStatus.physicalDeviceKey);
     EXPECT_FALSE(failedEntry2.isSynced);
     EXPECT_FALSE(failedEntry2.isSyncInProgress);
-    EXPECT_FALSE(notified);
+    EXPECT_FALSE(*notified);
 }
 
 HWTEST_F(DeviceStatusManagerTest, HandleSyncResultFailureMarksEntryAndSkipsNotification, TestSize.Level0)
@@ -254,13 +275,18 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResultFailureMarksEntryAndSkipsNotif
     entry.isSyncInProgress = true;
     ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
 
+    // Set up mock to return the test device to prevent RefreshDeviceList from removing it
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices())
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
-    bool callbackInvoked = false;
-    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &statusList) {
-        (void)statusList;
-        callbackInvoked = true;
-    });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription =
+        ctx.manager->SubscribeDeviceStatus([callbackInvoked](const std::vector<DeviceStatus> &statusList) {
+            (void)statusList;
+            *callbackInvoked = true;
+        });
     (void)subscription;
 
     SyncDeviceStatus syncStatus;
@@ -271,7 +297,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResultFailureMarksEntryAndSkipsNotif
     syncStatus.secureProtocolId = SecureProtocolId::DEFAULT;
     ctx.manager->HandleSyncResult(deviceKey, GENERAL_ERROR, syncStatus);
 
-    EXPECT_FALSE(callbackInvoked);
+    EXPECT_FALSE(*callbackInvoked);
     const auto &failedEntry3 = ctx.manager->deviceStatusMap_.at(physicalStatus.physicalDeviceKey);
     EXPECT_FALSE(failedEntry3.isSynced);
     EXPECT_FALSE(failedEntry3.isSyncInProgress);
@@ -354,11 +380,19 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncStartsRequestAndHandlesCallba
     entry.isSyncInProgress = false;
     ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
 
+    // Set up mock to return the test device to prevent RefreshDeviceList from removing it
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices)
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
-    bool notified = false;
+    // Subscribe with needSync=true to ensure NeedSyncDevice returns true
+    auto syncSubscription =
+        ctx.manager->SubscribeDeviceStatus(deviceKey, true, [](const std::vector<DeviceStatus> &) {});
+
+    auto notified = std::make_shared<bool>(false);
     auto subscription = ctx.manager->SubscribeDeviceStatus(
-        [&](const std::vector<DeviceStatus> &statusList) { notified = !statusList.empty(); });
+        [notified](const std::vector<DeviceStatus> &statusList) { *notified = !statusList.empty(); });
     (void)subscription;
 
     EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _))
@@ -509,15 +543,16 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_EmptySyncStatus, TestSize.Lev
 
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
 
-    bool callbackInvoked = false;
-    auto subscription = ctx.manager->SubscribeDeviceStatus([&](const std::vector<DeviceStatus> &statusList) {
-        callbackInvoked = true;
-        ASSERT_EQ(1u, statusList.size());
-        EXPECT_EQ("device-empty-sync", statusList[0].deviceKey.deviceId);
-        // Empty sync result should have default/empty values
-        EXPECT_EQ(ProtocolId::INVALID, statusList[0].protocolId);
-        EXPECT_TRUE(statusList[0].capabilities.empty());
-    });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription =
+        ctx.manager->SubscribeDeviceStatus([callbackInvoked](const std::vector<DeviceStatus> &statusList) {
+            *callbackInvoked = true;
+            ASSERT_EQ(1u, statusList.size());
+            EXPECT_EQ("device-empty-sync", statusList[0].deviceKey.deviceId);
+            // Empty sync result should have default/empty values
+            EXPECT_EQ(ProtocolId::INVALID, statusList[0].protocolId);
+            EXPECT_TRUE(statusList[0].capabilities.empty());
+        });
     (void)subscription;
 
     // Empty SyncDeviceStatus (needSync=false scenario)
@@ -672,16 +707,22 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_SkippedWhenNeedSyncFalse, Te
 {
     auto ctx = SetupTestContext();
     auto physicalStatus = MakePhysicalStatus("device-skip-sync", ChannelId::SOFTBUS, "Device");
+
+    // Mock GetAllPhysicalDevices to return the test device, otherwise RefreshDeviceList (triggered by
+    // SubscribeDeviceStatus) will remove the device from deviceStatusMap_
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices())
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
     DeviceStatusEntry entry(physicalStatus, []() {});
     entry.isSynced = false;
     entry.isSyncInProgress = false;
     ctx.manager->deviceStatusMap_.emplace(physicalStatus.physicalDeviceKey, std::move(entry));
 
     auto deviceKey = MakeDeviceKey(physicalStatus.physicalDeviceKey);
-    bool callbackInvoked = false;
-    auto subscription =
-        ctx.manager->SubscribeDeviceStatus(deviceKey, false, [&](const std::vector<DeviceStatus> &statusList) {
-            callbackInvoked = true;
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = ctx.manager->SubscribeDeviceStatus(deviceKey, false,
+        [callbackInvoked](const std::vector<DeviceStatus> &statusList) {
+            *callbackInvoked = true;
             ASSERT_EQ(1u, statusList.size());
             EXPECT_EQ("device-skip-sync", statusList[0].deviceKey.deviceId);
             // Empty sync result should have default/empty values
@@ -708,6 +749,12 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_ProceedsWhenNeedSyncTrue, Te
 {
     auto ctx = SetupTestContext();
     auto physicalStatus = MakePhysicalStatus("device-proceed-sync", ChannelId::SOFTBUS, "Device");
+
+    // Mock GetAllPhysicalDevices to return the test device
+    // to prevent RefreshDeviceList (triggered by SubscribeDeviceStatus) from removing the device
+    ON_CALL(*ctx.mockChannel, GetAllPhysicalDevices())
+        .WillByDefault(Return(std::vector<PhysicalDeviceStatus> { physicalStatus }));
+
     DeviceStatusEntry entry(physicalStatus, []() {});
     entry.isSynced = false;
     entry.isSyncInProgress = false;

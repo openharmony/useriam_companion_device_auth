@@ -64,13 +64,13 @@ void SystemAbilityListenerTest::TearDown()
 HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityCallsAddCallback, TestSize.Level0)
 {
     // Arrange
-    bool addCallbackCalled = false;
-    bool removeCallbackCalled = false;
+    auto addCallbackCalled = std::make_shared<bool>(false);
+    auto removeCallbackCalled = std::make_shared<bool>(false);
 
     sptr<SystemAbilityListener> listener = new (std::nothrow) SystemAbilityListener(
         "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH,
-        [&addCallbackCalled]() { addCallbackCalled = true; },
-        [&removeCallbackCalled]() { removeCallbackCalled = true; });
+        [addCallbackCalled]() { *addCallbackCalled = true; },
+        [removeCallbackCalled]() { *removeCallbackCalled = true; });
 
     ASSERT_NE(listener, nullptr);
 
@@ -78,8 +78,8 @@ HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityCallsAddCallback, TestSize
     listener->OnAddSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device");
 
     // Assert
-    EXPECT_TRUE(addCallbackCalled);
-    EXPECT_FALSE(removeCallbackCalled);
+    EXPECT_TRUE(*addCallbackCalled);
+    EXPECT_FALSE(*removeCallbackCalled);
 }
 
 /**
@@ -88,13 +88,13 @@ HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityCallsAddCallback, TestSize
 HWTEST_F(SystemAbilityListenerTest, OnRemoveSystemAbilityCallsRemoveCallback, TestSize.Level0)
 {
     // Arrange
-    bool addCallbackCalled = false;
-    bool removeCallbackCalled = false;
+    auto addCallbackCalled = std::make_shared<bool>(false);
+    auto removeCallbackCalled = std::make_shared<bool>(false);
 
     sptr<SystemAbilityListener> listener = new (std::nothrow) SystemAbilityListener(
         "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH,
-        [&addCallbackCalled]() { addCallbackCalled = true; },
-        [&removeCallbackCalled]() { removeCallbackCalled = true; });
+        [addCallbackCalled]() { *addCallbackCalled = true; },
+        [removeCallbackCalled]() { *removeCallbackCalled = true; });
 
     ASSERT_NE(listener, nullptr);
 
@@ -102,8 +102,8 @@ HWTEST_F(SystemAbilityListenerTest, OnRemoveSystemAbilityCallsRemoveCallback, Te
     listener->OnRemoveSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device");
 
     // Assert
-    EXPECT_FALSE(addCallbackCalled);
-    EXPECT_TRUE(removeCallbackCalled);
+    EXPECT_FALSE(*addCallbackCalled);
+    EXPECT_TRUE(*removeCallbackCalled);
 }
 
 /**
@@ -112,11 +112,11 @@ HWTEST_F(SystemAbilityListenerTest, OnRemoveSystemAbilityCallsRemoveCallback, Te
 HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityIgnoresDifferentSaId, TestSize.Level0)
 {
     // Arrange
-    bool addCallbackCalled = false;
+    auto addCallbackCalled = std::make_shared<bool>(false);
 
     sptr<SystemAbilityListener> listener = new (std::nothrow) SystemAbilityListener(
         "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH,
-        [&addCallbackCalled]() { addCallbackCalled = true; }, []() {});
+        [addCallbackCalled]() { *addCallbackCalled = true; }, []() {});
 
     ASSERT_NE(listener, nullptr);
 
@@ -124,7 +124,7 @@ HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityIgnoresDifferentSaId, Test
     listener->OnAddSystemAbility(INT32_9999, "test-device");
 
     // Assert
-    EXPECT_FALSE(addCallbackCalled);
+    EXPECT_FALSE(*addCallbackCalled);
 }
 
 /**
@@ -133,11 +133,11 @@ HWTEST_F(SystemAbilityListenerTest, OnAddSystemAbilityIgnoresDifferentSaId, Test
 HWTEST_F(SystemAbilityListenerTest, OnRemoveSystemAbilityIgnoresDifferentSaId, TestSize.Level0)
 {
     // Arrange
-    bool removeCallbackCalled = false;
+    auto removeCallbackCalled = std::make_shared<bool>(false);
 
     sptr<SystemAbilityListener> listener = new (std::nothrow) SystemAbilityListener(
         "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, []() {},
-        [&removeCallbackCalled]() { removeCallbackCalled = true; });
+        [removeCallbackCalled]() { *removeCallbackCalled = true; });
 
     ASSERT_NE(listener, nullptr);
 
@@ -145,7 +145,7 @@ HWTEST_F(SystemAbilityListenerTest, OnRemoveSystemAbilityIgnoresDifferentSaId, T
     listener->OnRemoveSystemAbility(INT32_8888, "test-device");
 
     // Assert
-    EXPECT_FALSE(removeCallbackCalled);
+    EXPECT_FALSE(*removeCallbackCalled);
 }
 
 /**
@@ -173,12 +173,12 @@ HWTEST_F(SystemAbilityListenerTest, NullptrCallbacksDoesNotCrash, TestSize.Level
 HWTEST_F(SystemAbilityListenerTest, MultipleAddRemoveCycles, TestSize.Level0)
 {
     // Arrange
-    int addCount = 0;
-    int removeCount = 0;
+    auto addCount = std::make_shared<int>(0);
+    auto removeCount = std::make_shared<int>(0);
 
     sptr<SystemAbilityListener> listener = new (std::nothrow) SystemAbilityListener(
-        "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, [&addCount]() { addCount++; },
-        [&removeCount]() { removeCount++; });
+        "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, [addCount]() { (*addCount)++; },
+        [removeCount]() { (*removeCount)++; });
 
     ASSERT_NE(listener, nullptr);
 
@@ -189,8 +189,8 @@ HWTEST_F(SystemAbilityListenerTest, MultipleAddRemoveCycles, TestSize.Level0)
     listener->OnRemoveSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "device2");
 
     // Assert
-    EXPECT_EQ(addCount, INT32_2);
-    EXPECT_EQ(removeCount, INT32_2);
+    EXPECT_EQ(*addCount, INT32_2);
+    EXPECT_EQ(*removeCount, INT32_2);
 }
 
 /**
@@ -199,22 +199,22 @@ HWTEST_F(SystemAbilityListenerTest, MultipleAddRemoveCycles, TestSize.Level0)
 HWTEST_F(SystemAbilityListenerTest, SubscribeReturnsValidListener, TestSize.Level0)
 {
     // Arrange - Prepare callbacks
-    bool addCallbackCalled = false;
-    bool removeCallbackCalled = false;
+    auto addCallbackCalled = std::make_shared<bool>(false);
+    auto removeCallbackCalled = std::make_shared<bool>(false);
 
     // Act - Subscribe creates and returns a listener
     sptr<SystemAbilityListener> listener = SystemAbilityListener::Subscribe(
         "TestService", SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH,
-        [&addCallbackCalled]() { addCallbackCalled = true; },
-        [&removeCallbackCalled]() { removeCallbackCalled = true; });
+        [addCallbackCalled]() { *addCallbackCalled = true; },
+        [removeCallbackCalled]() { *removeCallbackCalled = true; });
 
     // Assert - Should return a valid listener
     ASSERT_NE(listener, nullptr);
 
     // Trigger callback manually to test
     listener->OnAddSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device");
-    EXPECT_TRUE(addCallbackCalled);
-    EXPECT_FALSE(removeCallbackCalled);
+    EXPECT_TRUE(*addCallbackCalled);
+    EXPECT_FALSE(*removeCallbackCalled);
 }
 
 /**

@@ -127,15 +127,15 @@ HWTEST_F(LocalDeviceStatusManagerTest, SubscribeIsAuthMaintainActive_001, TestSi
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    auto subscription = manager->SubscribeIsAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeIsAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
 
     EXPECT_NE(subscription, nullptr);
 
     manager->SetAuthMaintainActive(true);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
     EXPECT_TRUE(manager->IsAuthMaintainActive());
 }
 
@@ -157,17 +157,17 @@ HWTEST_F(LocalDeviceStatusManagerTest, SubscribeIsAuthMaintainActive_002, TestSi
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
+    auto callbackInvoked = std::make_shared<bool>(false);
     {
         auto subscription =
-            manager->SubscribeIsAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+            manager->SubscribeIsAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
         EXPECT_NE(subscription, nullptr);
     }
 
     manager->SetAuthMaintainActive(true);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
     EXPECT_TRUE(manager->IsAuthMaintainActive());
 }
 
@@ -210,12 +210,12 @@ HWTEST_F(LocalDeviceStatusManagerTest, OnActiveUserIdChanged_002, TestSize.Level
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
     ASSERT_NE(manager, nullptr);
 
-    bool callbackInvoked = false;
-    auto subscription = manager->SubscribeIsAuthMaintainActive([&callbackInvoked](bool) { callbackInvoked = true; });
+    auto callbackInvoked = std::make_shared<bool>(false);
+    auto subscription = manager->SubscribeIsAuthMaintainActive([callbackInvoked](bool) { *callbackInvoked = true; });
 
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_TRUE(callbackInvoked);
+    EXPECT_TRUE(*callbackInvoked);
 }
 
 HWTEST_F(LocalDeviceStatusManagerTest, AuthMaintainCallback_001, TestSize.Level0)
@@ -236,11 +236,11 @@ HWTEST_F(LocalDeviceStatusManagerTest, AuthMaintainCallback_001, TestSize.Level0
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
     ASSERT_NE(manager, nullptr);
 
-    int callbackCount = 0;
-    auto subscription = manager->SubscribeIsAuthMaintainActive([&callbackCount](bool isActive) {
-        callbackCount++;
+    auto callbackCount = std::make_shared<int>(0);
+    auto subscription = manager->SubscribeIsAuthMaintainActive([callbackCount](bool isActive) {
+        (*callbackCount)++;
         // First callback will be false (initial state), second will be true
-        if (callbackCount == INT32_2) {
+        if (*callbackCount == INT32_2) {
             EXPECT_TRUE(isActive);
         }
     });
@@ -249,7 +249,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, AuthMaintainCallback_001, TestSize.Level0
     manager->SetAuthMaintainActive(true);
     TaskRunnerManager::GetInstance().ExecuteAll();
 
-    EXPECT_EQ(callbackCount, INT32_2);
+    EXPECT_EQ(*callbackCount, INT32_2);
     EXPECT_TRUE(manager->IsAuthMaintainActive());
 }
 

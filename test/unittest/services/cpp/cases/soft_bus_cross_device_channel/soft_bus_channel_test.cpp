@@ -461,9 +461,9 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_002, TestSize.Level0)
 
     EXPECT_CALL(mockMiscManager_, GetDeviceDeviceSelectResult(_, _, _)).WillOnce(Return(false));
 
-    bool resultInvoked = false;
+    auto resultInvoked = std::make_shared<bool>(false);
     bool result =
-        channel->CheckOperationIntent(deviceKey, 12345, [&resultInvoked](bool confirmed) { resultInvoked = true; });
+        channel->CheckOperationIntent(deviceKey, 12345, [resultInvoked](bool confirmed) { *resultInvoked = true; });
 
     EXPECT_FALSE(result);
 }
@@ -486,17 +486,17 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_003, TestSize.Level0)
                 return true;
             }));
 
-    bool confirmed = false;
-    bool resultInvoked = false;
-    bool result = channel->CheckOperationIntent(deviceKey, 12345, [&resultInvoked, &confirmed](bool confirm) {
-        resultInvoked = true;
-        confirmed = confirm;
+    auto confirmed = std::make_shared<bool>(false);
+    auto resultInvoked = std::make_shared<bool>(false);
+    bool result = channel->CheckOperationIntent(deviceKey, 12345, [resultInvoked, confirmed](bool confirm) {
+        *resultInvoked = true;
+        *confirmed = confirm;
     });
 
     EXPECT_TRUE(result);
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(resultInvoked);
-    EXPECT_TRUE(confirmed);
+    EXPECT_TRUE(*resultInvoked);
+    EXPECT_TRUE(*confirmed);
 }
 
 HWTEST_F(SoftBusChannelTest, CheckOperationIntent_004, TestSize.Level0)
@@ -516,17 +516,17 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_004, TestSize.Level0)
             return true;
         }));
 
-    bool confirmed = true;
-    bool resultInvoked = false;
-    bool result = channel->CheckOperationIntent(deviceKey, 12345, [&resultInvoked, &confirmed](bool confirm) {
-        resultInvoked = true;
-        confirmed = confirm;
+    auto confirmed = std::make_shared<bool>(true);
+    auto resultInvoked = std::make_shared<bool>(false);
+    bool result = channel->CheckOperationIntent(deviceKey, 12345, [resultInvoked, confirmed](bool confirm) {
+        *resultInvoked = true;
+        *confirmed = confirm;
     });
 
     EXPECT_TRUE(result);
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(resultInvoked);
-    EXPECT_FALSE(confirmed);
+    EXPECT_TRUE(*resultInvoked);
+    EXPECT_FALSE(*confirmed);
 }
 
 HWTEST_F(SoftBusChannelTest, CheckOperationIntent_005, TestSize.Level0)
@@ -552,17 +552,17 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_005, TestSize.Level0)
                 return true;
             }));
 
-    bool confirmed = true;
-    bool resultInvoked = false;
-    bool result = channel->CheckOperationIntent(deviceKey, 12345, [&resultInvoked, &confirmed](bool confirm) {
-        resultInvoked = true;
-        confirmed = confirm;
+    auto confirmed = std::make_shared<bool>(true);
+    auto resultInvoked = std::make_shared<bool>(false);
+    bool result = channel->CheckOperationIntent(deviceKey, 12345, [resultInvoked, confirmed](bool confirm) {
+        *resultInvoked = true;
+        *confirmed = confirm;
     });
 
     EXPECT_TRUE(result);
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_TRUE(resultInvoked);
-    EXPECT_FALSE(confirmed);
+    EXPECT_TRUE(*resultInvoked);
+    EXPECT_FALSE(*confirmed);
 }
 
 HWTEST_F(SoftBusChannelTest, OnRemoteDisconnect_001, TestSize.Level0)
