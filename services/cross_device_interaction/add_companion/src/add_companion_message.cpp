@@ -29,7 +29,7 @@ namespace CompanionDeviceAuth {
 namespace {
 constexpr uint32_t ATTR_MESSAGE = 300001;
 constexpr uint32_t ATTR_ALGO_LIST = 300003;
-}
+} // namespace
 void EncodeInitKeyNegotiationRequest(const InitKeyNegotiationRequest &request, Attributes &attributes)
 {
     attributes.SetInt32Value(Attributes::ATTR_CDA_SA_HOST_USER_ID, request.hostDeviceKey.deviceUserId);

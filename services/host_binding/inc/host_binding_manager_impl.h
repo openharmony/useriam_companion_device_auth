@@ -44,8 +44,8 @@ public:
     ResultCode BeginAddHostBinding(RequestId requestId, UserId companionUserId, SecureProtocolId secureProtocolId,
         const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply) override;
 
-    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-        Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData = {}) override;
+    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
+        const std::vector<uint8_t> &tokenData = {}) override;
 
     ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) override;
 

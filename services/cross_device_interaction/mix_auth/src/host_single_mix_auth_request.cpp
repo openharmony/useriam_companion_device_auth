@@ -31,8 +31,7 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &params,
-    FwkResultCallback &&requestCallback)
+HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
     : BaseRequest(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
       fwkMsg_(params.fwkMsg),
       hostUserId_(params.hostUserId),
@@ -56,13 +55,11 @@ void HostSingleMixAuthRequest::Start()
         return;
     }
 
-    AuthRequestParams tokenAuthParams = {
-        .scheduleId = GetScheduleId(),
+    AuthRequestParams tokenAuthParams = { .scheduleId = GetScheduleId(),
         .fwkMsg = fwkMsg_,
         .hostUserId = hostUserId_,
         .templateId = templateId_,
-        .authIntent = authIntent_
-    };
+        .authIntent = authIntent_ };
     tokenAuthRequest_ = GetRequestFactory().CreateHostTokenAuthRequest(tokenAuthParams,
         [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
             const std::vector<uint8_t> &extraInfo) {
@@ -116,13 +113,11 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
-    AuthRequestParams delegateAuthParams = {
-        .scheduleId = GetScheduleId(),
+    AuthRequestParams delegateAuthParams = { .scheduleId = GetScheduleId(),
         .fwkMsg = fwkMsg_,
         .hostUserId = hostUserId_,
         .templateId = templateId_,
-        .authIntent = authIntent_
-    };
+        .authIntent = authIntent_ };
     delegateAuthRequest_ = GetRequestFactory().CreateHostDelegateAuthRequest(delegateAuthParams,
         [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
             const std::vector<uint8_t> &extraInfo) {

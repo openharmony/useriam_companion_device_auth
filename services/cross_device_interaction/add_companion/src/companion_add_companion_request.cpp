@@ -206,8 +206,7 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
 
     Atl atl = 0;
     int32_t esl = 0;
-    ResultCode ret =
-        GetHostBindingManager().EndAddHostBinding(GetRequestId(), requestOpt->result, atl, esl, tokenData);
+    ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), requestOpt->result, atl, esl, tokenData);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionEndAddHostBinding failed ret=%{public}d", GetDescription(), ret);
         errorGuard.UpdateErrorCode(ret);

@@ -84,8 +84,8 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSyncDeviceStatusRequest(
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
     uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
 {
-    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-        fwkUnlockMsg);
+    auto request =
+        std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue, fwkUnlockMsg);
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }

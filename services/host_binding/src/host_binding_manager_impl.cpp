@@ -192,8 +192,8 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(RequestId requestId, User
     return ResultCode::SUCCESS;
 }
 
-ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-    Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData)
+ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
+    const std::vector<uint8_t> &tokenData)
 {
     IAM_LOGI("end add host binding, request id 0x%{public}08X, result %{public}d", requestId, resultCode);
 
@@ -348,8 +348,8 @@ void HostBindingManagerImpl::StartObtainTokenRequests(UserId userId, uint32_t lo
                  "userId=%{public}d",
             GET_MASKED_NUM_STRING(bindingId).c_str(), static_cast<int32_t>(hostDeviceKey.idType),
             hostDeviceKey.deviceUserId);
-        auto request = GetRequestFactory().CreateCompanionObtainTokenRequest(hostDeviceKey,
-            lockStateAuthTypeValue, fwkUnlockMsg);
+        auto request =
+            GetRequestFactory().CreateCompanionObtainTokenRequest(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
         ENSURE_OR_CONTINUE(request != nullptr);
 
         bool result = GetRequestManager().Start(request);

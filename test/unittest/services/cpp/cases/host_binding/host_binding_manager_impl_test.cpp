@@ -78,13 +78,12 @@ void SetupManagerCreationMocks(MockGuard &guard)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
 
@@ -134,13 +133,12 @@ HWTEST_F(HostBindingManagerImplTest, Create_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -180,13 +178,12 @@ HWTEST_F(HostBindingManagerImplTest, Create_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -224,13 +221,12 @@ HWTEST_F(HostBindingManagerImplTest, Initialize_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -268,13 +264,12 @@ HWTEST_F(HostBindingManagerImplTest, GetHostBindingStatusById_001, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -323,13 +318,12 @@ HWTEST_F(HostBindingManagerImplTest, GetHostBindingStatusById_002, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -393,13 +387,12 @@ HWTEST_F(HostBindingManagerImplTest, GetHostBindingStatusByDeviceUser_002, TestS
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -443,13 +436,12 @@ HWTEST_F(HostBindingManagerImplTest, GetAllHostBindingStatus_001, TestSize.Level
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -496,13 +488,12 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -546,13 +537,12 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -728,13 +718,12 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -777,13 +766,12 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -866,13 +854,12 @@ HWTEST_F(HostBindingManagerImplTest, RemoveHostBinding_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -993,13 +980,12 @@ HWTEST_F(HostBindingManagerImplTest, SetHostBindingTokenValid_001, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1038,13 +1024,12 @@ HWTEST_F(HostBindingManagerImplTest, SetHostBindingTokenValid_002, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1094,13 +1079,12 @@ HWTEST_F(HostBindingManagerImplTest, OnActiveUserIdChanged_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1148,13 +1132,12 @@ HWTEST_F(HostBindingManagerImplTest, OnActiveUserIdChanged_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1204,13 +1187,12 @@ HWTEST_F(HostBindingManagerImplTest, OnActiveUserIdChanged_003, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1258,13 +1240,12 @@ HWTEST_F(HostBindingManagerImplTest, OnActiveUserIdChanged_004, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1347,13 +1328,12 @@ HWTEST_F(HostBindingManagerImplTest, AddBindingInternal_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1392,13 +1372,12 @@ HWTEST_F(HostBindingManagerImplTest, AddBindingInternal_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1443,13 +1422,12 @@ HWTEST_F(HostBindingManagerImplTest, AddBindingInternal_003, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1521,13 +1499,12 @@ HWTEST_F(HostBindingManagerImplTest, RemoveBindingInternal_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1566,13 +1543,12 @@ HWTEST_F(HostBindingManagerImplTest, RemoveBindingInternal_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1619,13 +1595,12 @@ HWTEST_F(HostBindingManagerImplTest, StartObtainTokenRequests_001, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1667,13 +1642,12 @@ HWTEST_F(HostBindingManagerImplTest, StartObtainTokenRequests_002, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1715,13 +1689,12 @@ HWTEST_F(HostBindingManagerImplTest, StartObtainTokenRequests_003, TestSize.Leve
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1779,10 +1752,9 @@ HWTEST_F(HostBindingManagerImplTest, StartObtainTokenRequests_004, TestSize.Leve
 
     EXPECT_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillOnce(Invoke([this](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                             const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     EXPECT_CALL(requestMgr, Start(_)).WillOnce(Return(false));
 
     uint32_t lockStateAuthTypeValue = 1;
@@ -1826,10 +1798,9 @@ HWTEST_F(HostBindingManagerImplTest, StartObtainTokenRequests_005, TestSize.Leve
 
     EXPECT_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillOnce(Invoke([this](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                             const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     EXPECT_CALL(requestMgr, Start(_)).WillOnce(Return(true));
 
     uint32_t lockStateAuthTypeValue = 1;
@@ -1864,13 +1835,12 @@ HWTEST_F(HostBindingManagerImplTest, RevokeTokens_001, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1910,13 +1880,12 @@ HWTEST_F(HostBindingManagerImplTest, RevokeTokens_002, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
@@ -1956,13 +1925,12 @@ HWTEST_F(HostBindingManagerImplTest, RevokeTokens_003, TestSize.Level0)
     auto &requestFactory = guard.GetRequestFactory();
     ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
         .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey,
-                    lockStateAuthTypeValue, fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
     ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
-        .WillByDefault(Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey,
-            const std::string &triggerReason) {
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
                 return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
             }));
     auto &requestMgr = guard.GetRequestManager();
