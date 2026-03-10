@@ -32,8 +32,8 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
-    uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
+HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
+    const std::vector<uint8_t> &fwkUnlockMsg)
     : OutboundRequest(RequestType::HOST_ISSUE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       templateId_(templateId),
@@ -42,8 +42,7 @@ HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templ
 {
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
     eventCollector_.UpdateHostUserId(hostUserId);
-    eventCollector_.UpdateTriggerReason(
-        "host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
+    eventCollector_.UpdateTriggerReason("host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
     eventCollector_.UpdateTemplateIdList({ templateId });
 }
 

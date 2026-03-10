@@ -63,13 +63,11 @@ static void FuzzCreateHostTokenAuthRequest(std::shared_ptr<RequestFactoryImpl> &
         (void)result;
         (void)extraInfo;
     };
-    AuthRequestParams params = {
-        .scheduleId = scheduleId,
+    AuthRequestParams params = { .scheduleId = scheduleId,
         .fwkMsg = fwkMsg,
         .hostUserId = hostUserId,
         .templateId = templateId,
-        .authIntent = authIntent
-    };
+        .authIntent = authIntent };
     auto request = factory->CreateHostTokenAuthRequest(params, std::move(callback));
     (void)request;
 }
@@ -124,13 +122,11 @@ static void FuzzCreateHostDelegateAuthRequest(std::shared_ptr<RequestFactoryImpl
         (void)result;
         (void)extraInfo;
     };
-    AuthRequestParams params = {
-        .scheduleId = scheduleId,
+    AuthRequestParams params = { .scheduleId = scheduleId,
         .fwkMsg = fwkMsg,
         .hostUserId = hostUserId,
         .templateId = templateId,
-        .authIntent = authIntent
-    };
+        .authIntent = authIntent };
     auto request = factory->CreateHostDelegateAuthRequest(params, std::move(callback));
     (void)request;
 }
@@ -222,15 +218,8 @@ static void FuzzCreateHostMixAuthRequest(std::shared_ptr<RequestFactoryImpl> &fa
         (void)result;
         (void)extraInfo;
     };
-    HostMixAuthParams params = {
-        scheduleId,
-        fwkMsg,
-        hostUserId,
-        templateIdList,
-        optionalTokenId,
-        std::nullopt,
-        authIntent
-    };
+    HostMixAuthParams params = { scheduleId, fwkMsg, hostUserId, templateIdList, optionalTokenId, std::nullopt,
+        authIntent };
     auto request = factory->CreateHostMixAuthRequest(params, std::move(callback));
     (void)request;
 }
@@ -248,13 +237,11 @@ static void FuzzCreateHostSingleMixAuthRequest(std::shared_ptr<RequestFactoryImp
         (void)result;
         (void)extraInfo;
     };
-    AuthRequestParams params = {
-        .scheduleId = scheduleId,
+    AuthRequestParams params = { .scheduleId = scheduleId,
         .fwkMsg = fwkMsg,
         .hostUserId = hostUserId,
         .templateId = templateId,
-        .authIntent = authIntent
-    };
+        .authIntent = authIntent };
     auto request = factory->CreateHostSingleMixAuthRequest(params, std::move(callback));
     (void)request;
 }

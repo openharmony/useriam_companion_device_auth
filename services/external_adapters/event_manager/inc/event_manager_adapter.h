@@ -17,9 +17,9 @@
 #define COMPANION_DEVICE_AUTH_EVENT_MANAGER_ADAPTER_H
 
 #include <cstdint>
+#include <optional>
 #include <sstream>
 #include <string>
-#include <optional>
 #include <vector>
 
 #include "nocopyable.h"
@@ -39,7 +39,9 @@ enum class FaultType : uint32_t {
 
 class InteractionEventCollector {
 public:
-    explicit InteractionEventCollector(const std::string &requestType) : requestType_(requestType) {}
+    explicit InteractionEventCollector(const std::string &requestType) : requestType_(requestType)
+    {
+    }
     ~InteractionEventCollector() = default;
 
     void UpdateHostUserId(UserId hostUserId);
@@ -51,25 +53,58 @@ public:
     void UpdateTriggerReason(const std::string &triggerReason);
     void UpdateTemplateIdList(const std::vector<TemplateId> &templateIdList);
 
-    template<typename T>
+    template <typename T>
     void AppendExtraInfo(const std::string &key, const T &value);
 
-    template<typename T>
+    template <typename T>
     void AppendExtraInfo(const std::string &key, const std::vector<T> &value);
 
     void Report(ResultCode result);
 
-    const std::string &GetRequestType() const { return requestType_; }
-    ResultCode GetResult() const { return result_; }
-    const std::optional<UserId> &GetHostUserId() const { return hostUserId_; }
-    const std::optional<DeviceKey> &GetHostDeviceKey() const { return hostDeviceKey_; }
-    const std::optional<UserId> &GetCompanionUserId() const { return companionUserId_; }
-    const std::optional<DeviceKey> &GetCompanionDeviceKey() const { return companionDeviceKey_; }
-    const std::optional<std::string> &GetConnectionName() const { return connectionName_; }
-    const std::optional<ScheduleId> &GetScheduleId() const { return scheduleId_; }
-    const std::optional<std::string> &GetTriggerReason() const { return triggerReason_; }
-    const std::optional<std::vector<TemplateId>> &GetTemplateIdList() const { return templateIdList_; }
-    const std::string &GetExtraInfo() const { return extraInfo_; }
+    const std::string &GetRequestType() const
+    {
+        return requestType_;
+    }
+    ResultCode GetResult() const
+    {
+        return result_;
+    }
+    const std::optional<UserId> &GetHostUserId() const
+    {
+        return hostUserId_;
+    }
+    const std::optional<DeviceKey> &GetHostDeviceKey() const
+    {
+        return hostDeviceKey_;
+    }
+    const std::optional<UserId> &GetCompanionUserId() const
+    {
+        return companionUserId_;
+    }
+    const std::optional<DeviceKey> &GetCompanionDeviceKey() const
+    {
+        return companionDeviceKey_;
+    }
+    const std::optional<std::string> &GetConnectionName() const
+    {
+        return connectionName_;
+    }
+    const std::optional<ScheduleId> &GetScheduleId() const
+    {
+        return scheduleId_;
+    }
+    const std::optional<std::string> &GetTriggerReason() const
+    {
+        return triggerReason_;
+    }
+    const std::optional<std::vector<TemplateId>> &GetTemplateIdList() const
+    {
+        return templateIdList_;
+    }
+    const std::string &GetExtraInfo() const
+    {
+        return extraInfo_;
+    }
 
 private:
     std::string requestType_;
@@ -98,7 +133,7 @@ protected:
 void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo);
 void ReportInteractionEvent(const InteractionEventCollector &eventCollector);
 
-template<typename T>
+template <typename T>
 std::string ConvertVectorToString(const std::vector<T> &vec);
 
 } // namespace CompanionDeviceAuth

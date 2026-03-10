@@ -19,9 +19,9 @@
 #include "iam_logger.h"
 
 #include "adapter_manager.h"
+#include "common_message.h"
 #include "companion_manager.h"
 #include "companion_sync_device_status_handler.h"
-#include "common_message.h"
 #include "error_guard.h"
 #include "scope_guard.h"
 #include "security_agent.h"

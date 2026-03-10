@@ -124,13 +124,11 @@ std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::v
 void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId> &templateList)
 {
     for (auto templateId : templateList) {
-        AuthRequestParams authParams = {
-            .scheduleId = GetScheduleId(),
+        AuthRequestParams authParams = { .scheduleId = GetScheduleId(),
             .fwkMsg = fwkMsg_,
             .hostUserId = hostUserId_,
             .templateId = templateId,
-            .authIntent = authIntent_
-        };
+            .authIntent = authIntent_ };
         auto hostSingleMixAuthRequest = GetRequestFactory().CreateHostSingleMixAuthRequest(authParams,
             [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
                 const std::vector<uint8_t> &extraInfo) {

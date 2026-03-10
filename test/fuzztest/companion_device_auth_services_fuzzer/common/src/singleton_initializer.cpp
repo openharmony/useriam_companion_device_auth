@@ -253,8 +253,8 @@ public:
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 
-    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-        Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData = {}) override
+    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
+        const std::vector<uint8_t> &tokenData = {}) override
     {
         (void)requestId;
         (void)resultCode;
@@ -1246,8 +1246,8 @@ public:
             : nullptr;
     }
 
-    std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId,
-        const DeviceKey &hostDeviceKey, const std::string &triggerReason) override
+    std::shared_ptr<IRequest> CreateCompanionRevokeTokenRequest(UserId companionUserId, const DeviceKey &hostDeviceKey,
+        const std::string &triggerReason) override
     {
         (void)companionUserId;
         (void)hostDeviceKey;
