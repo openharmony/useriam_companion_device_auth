@@ -174,7 +174,7 @@ bool CompanionDelegateAuthRequest::SecurityAgentEndDelegateAuth(ResultCode resul
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionEndDelegateAuth failed ret=%{public}d", GetDescription(), ret);
     }
-    eventCollector_.AppendExtraInfo("suceess auth type", output.authType);
+    eventCollector_.AppendExtraInfo("success auth type", output.authType);
     eventCollector_.AppendExtraInfo("ATL", output.atl);
     delegateAuthResult.swap(output.delegateAuthResult);
     return ret == ResultCode::SUCCESS;

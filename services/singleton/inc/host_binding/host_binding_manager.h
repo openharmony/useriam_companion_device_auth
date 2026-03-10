@@ -39,8 +39,8 @@ public:
     virtual ResultCode BeginAddHostBinding(RequestId requestId, UserId companionUserId,
         SecureProtocolId secureProtocolId, const std::vector<uint8_t> &addHostBindingRequest,
         std::vector<uint8_t> &outAddHostBindingReply) = 0;
-    virtual ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode,
-        Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData = {}) = 0;
+    virtual ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
+        const std::vector<uint8_t> &tokenData = {}) = 0;
     virtual ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) = 0;
     virtual bool SetHostBindingTokenValid(BindingId bindingId, bool isTokenValid) = 0;
 

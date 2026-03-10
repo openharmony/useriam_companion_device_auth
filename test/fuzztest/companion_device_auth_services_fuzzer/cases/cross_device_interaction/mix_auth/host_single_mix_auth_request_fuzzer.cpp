@@ -143,13 +143,11 @@ void FuzzHostSingleMixAuthRequest(FuzzedDataProvider &fuzzData)
         (void)extraInfo;
     };
 
-    AuthRequestParams params = {
-        .scheduleId = scheduleId,
+    AuthRequestParams params = { .scheduleId = scheduleId,
         .fwkMsg = fwkMsg,
         .hostUserId = hostUserId,
         .templateId = templateId,
-        .authIntent = authIntent
-    };
+        .authIntent = authIntent };
     auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
     if (!request) {
         return;
