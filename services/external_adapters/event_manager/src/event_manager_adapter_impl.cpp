@@ -65,7 +65,7 @@ void InteractionEventCollector::UpdateTemplateIdList(const std::vector<TemplateI
     templateIdList_ = templateIdList;
 }
 
-template<typename T>
+template <typename T>
 void InteractionEventCollector::AppendExtraInfo(const std::string &key, const T &value)
 {
     std::ostringstream oss;
@@ -76,7 +76,7 @@ void InteractionEventCollector::AppendExtraInfo(const std::string &key, const T 
     extraInfo_ += oss.str();
 }
 
-template<typename T>
+template <typename T>
 void InteractionEventCollector::AppendExtraInfo(const std::string &key, const std::vector<T> &value)
 {
     std::ostringstream oss;
@@ -113,10 +113,14 @@ constexpr char STR_FAULT_INFO[] = "FAULT_INFO";
 std::string ConvertFaultTypeToString(FaultType faultType)
 {
     switch (faultType) {
-        case FaultType::NONE: return "NONE";
-        case FaultType::TA_CRASH: return "TA_CRASH";
-        case FaultType::TA_INIT_FAILED: return "TA_INIT_FAILED";
-        default: return "UNKNOWN";
+        case FaultType::NONE:
+            return "NONE";
+        case FaultType::TA_CRASH:
+            return "TA_CRASH";
+        case FaultType::TA_INIT_FAILED:
+            return "TA_INIT_FAILED";
+        default:
+            return "UNKNOWN";
     }
 }
 
@@ -124,11 +128,8 @@ void EventManagerAdapterImpl::ReportSystemFault(FaultType faultType, std::string
 {
     std::string faultTypeStr = ConvertFaultTypeToString(faultType);
 
-    int32_t ret = HiSysEventWrite(HiSysEvent::Domain::COMPANION_AUTH, "SYSTEM_FAULT",
-        HiSysEvent::EventType::FAULT,
-        STR_FAULT_TYPE, faultTypeStr,
-        STR_FAULT_ID, faultId,
-        STR_FAULT_INFO, faultInfo);
+    int32_t ret = HiSysEventWrite(HiSysEvent::Domain::COMPANION_AUTH, "SYSTEM_FAULT", HiSysEvent::EventType::FAULT,
+        STR_FAULT_TYPE, faultTypeStr, STR_FAULT_ID, faultId, STR_FAULT_INFO, faultInfo);
     if (ret != 0) {
         IAM_LOGE("hisysevent write failed! ret %{public}d", ret);
     }
@@ -138,11 +139,11 @@ void EventManagerAdapterImpl::ReportInteractionEvent(const InteractionEventColle
 {
     std::string resultStr = std::to_string(static_cast<int32_t>(eventCollector.GetResult()));
     int32_t hostUserId = eventCollector.GetHostUserId().value_or(0);
-    std::string hostDeviceKey = eventCollector.GetHostDeviceKey().has_value() ?
-        eventCollector.GetHostDeviceKey()->GetDesc() : "";
+    std::string hostDeviceKey =
+        eventCollector.GetHostDeviceKey().has_value() ? eventCollector.GetHostDeviceKey()->GetDesc() : "";
     int32_t companionUserId = eventCollector.GetCompanionUserId().value_or(0);
-    std::string companionDeviceKey = eventCollector.GetCompanionDeviceKey().has_value() ?
-        eventCollector.GetCompanionDeviceKey()->GetDesc() : "";
+    std::string companionDeviceKey =
+        eventCollector.GetCompanionDeviceKey().has_value() ? eventCollector.GetCompanionDeviceKey()->GetDesc() : "";
     std::string connectionName = eventCollector.GetConnectionName().value_or("");
     uint64_t scheduleId = eventCollector.GetScheduleId().value_or(0);
     std::string triggerReason = eventCollector.GetTriggerReason().value_or("");
@@ -152,19 +153,11 @@ void EventManagerAdapterImpl::ReportInteractionEvent(const InteractionEventColle
         templateIdList = ConvertVectorToString(*eventCollector.GetTemplateIdList());
     }
 
-    int32_t ret = HiSysEventWrite(HiSysEvent::Domain::COMPANION_AUTH, "INTERACTION_EVENT",
-        HiSysEvent::EventType::FAULT,
-        STR_REQUEST_TYPE, eventCollector.GetRequestType(),
-        STR_RESULT, resultStr,
-        STR_HOST_USER_ID, hostUserId,
-        STR_HOST_DEVICE_KEY, hostDeviceKey,
-        STR_COMPANION_USER_ID, companionUserId,
-        STR_COMPANION_DEVICE_KEY, companionDeviceKey,
-        STR_CONNECTION_NAME, connectionName,
-        STR_SCHEDULE_ID, scheduleId,
-        STR_TRIGGER_REASON, triggerReason,
-        STR_TEMPLATE_ID_LIST, templateIdList,
-        STR_EXTRA_INFO, eventCollector.GetExtraInfo());
+    int32_t ret = HiSysEventWrite(HiSysEvent::Domain::COMPANION_AUTH, "INTERACTION_EVENT", HiSysEvent::EventType::FAULT,
+        STR_REQUEST_TYPE, eventCollector.GetRequestType(), STR_RESULT, resultStr, STR_HOST_USER_ID, hostUserId,
+        STR_HOST_DEVICE_KEY, hostDeviceKey, STR_COMPANION_USER_ID, companionUserId, STR_COMPANION_DEVICE_KEY,
+        companionDeviceKey, STR_CONNECTION_NAME, connectionName, STR_SCHEDULE_ID, scheduleId, STR_TRIGGER_REASON,
+        triggerReason, STR_TEMPLATE_ID_LIST, templateIdList, STR_EXTRA_INFO, eventCollector.GetExtraInfo());
     if (ret != 0) {
         IAM_LOGE("hisusysevent write failed! ret %{public}d", ret);
     }
@@ -180,7 +173,7 @@ void ReportInteractionEvent(const InteractionEventCollector &eventCollector)
     GetEventManagerAdapter().ReportInteractionEvent(eventCollector);
 }
 
-template<typename T>
+template <typename T>
 std::string ConvertVectorToString(const std::vector<T> &vec)
 {
     if (vec.empty()) {
@@ -203,8 +196,7 @@ template void InteractionEventCollector::AppendExtraInfo<uint16_t>(const std::st
 template void InteractionEventCollector::AppendExtraInfo<uint32_t>(const std::string &key, const uint32_t &value);
 template void InteractionEventCollector::AppendExtraInfo<uint64_t>(const std::string &key, const uint64_t &value);
 template void InteractionEventCollector::AppendExtraInfo<int32_t>(const std::string &key, const int32_t &value);
-template void InteractionEventCollector::AppendExtraInfo<std::string>(const std::string &key,
-    const std::string &value);
+template void InteractionEventCollector::AppendExtraInfo<std::string>(const std::string &key, const std::string &value);
 template void InteractionEventCollector::AppendExtraInfo<uint16_t>(const std::string &key,
     const std::vector<uint16_t> &value);
 

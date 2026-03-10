@@ -67,8 +67,8 @@ bool SecurityAgentImpl::Initialize()
 
     auto result = SetActiveUser(SetActiveUserInput { userIdManager.GetActiveUserId() });
     if (result != SUCCESS) {
-        std::string faultInfo = "SetActiveUser " +
-            std::to_string(userIdManager.GetActiveUserId()) + " failed, result: " + std::to_string(result);
+        std::string faultInfo = "SetActiveUser " + std::to_string(userIdManager.GetActiveUserId()) +
+            " failed, result: " + std::to_string(result);
         ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
         return false;
     }

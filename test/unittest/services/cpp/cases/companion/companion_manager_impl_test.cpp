@@ -105,10 +105,10 @@ HWTEST_F(CompanionManagerImplTest, Create_001, TestSize.Level0)
         }));
     ON_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillByDefault(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     ON_CALL(guard.GetRequestManager(), Start(_)).WillByDefault(Return(true));
 
     EXPECT_CALL(guard.GetUserIdManager(), SubscribeActiveUserId(_)).WillOnce(Return(ByMove(MakeSubscription())));
@@ -148,10 +148,10 @@ HWTEST_F(CompanionManagerImplTest, Create_002, TestSize.Level0)
         }));
     ON_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillByDefault(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     ON_CALL(guard.GetRequestManager(), Start(_)).WillByDefault(Return(true));
 
     EXPECT_CALL(guard.GetUserIdManager(), SubscribeActiveUserId(_)).WillOnce(Return(nullptr));
@@ -191,10 +191,10 @@ HWTEST_F(CompanionManagerImplTest, Reload_001, TestSize.Level0)
         }));
     ON_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillByDefault(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     ON_CALL(guard.GetRequestManager(), Start(_)).WillByDefault(Return(true));
 
     auto manager = CompanionManagerImpl::Create();
@@ -238,10 +238,10 @@ HWTEST_F(CompanionManagerImplTest, Reload_002, TestSize.Level0)
         }));
     ON_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillByDefault(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     ON_CALL(guard.GetRequestManager(), Start(_)).WillByDefault(Return(true));
 
     auto manager = CompanionManagerImpl::Create();
@@ -286,10 +286,10 @@ HWTEST_F(CompanionManagerImplTest, Reload_003, TestSize.Level0)
         }));
     ON_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillByDefault(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     ON_CALL(guard.GetRequestManager(), Start(_)).WillByDefault(Return(true));
 
     auto manager = CompanionManagerImpl::Create();
@@ -1042,10 +1042,10 @@ HWTEST_F(CompanionManagerImplTest, StartIssueTokenRequests_005, TestSize.Level0)
 
     EXPECT_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillOnce(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                             const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(false));
 
     manager->StartIssueTokenRequests(templateIds, lockStateAuthTypeValue, fwkMsg);
@@ -1079,10 +1079,10 @@ HWTEST_F(CompanionManagerImplTest, StartIssueTokenRequests_006, TestSize.Level0)
 
     EXPECT_CALL(guard.GetRequestFactory(), CreateHostIssueTokenRequest(_, _, _, _))
         .WillOnce(Invoke([this](UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-            const std::vector<uint8_t> &fwkUnlockMsg) {
-                return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
-                    fwkUnlockMsg);
-            }));
+                             const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue,
+                fwkUnlockMsg);
+        }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     manager->StartIssueTokenRequests(templateIds, lockStateAuthTypeValue, fwkMsg);
