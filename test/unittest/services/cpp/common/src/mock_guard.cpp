@@ -226,7 +226,7 @@ void MockGuard::SetupHostBindingManagerDefaults()
     ON_CALL(*hostBindingManager_, RemoveHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, SetHostBindingTokenValid(_, _)).WillByDefault(Return(true));
     ON_CALL(*hostBindingManager_, StartObtainTokenRequests(_, _, _)).WillByDefault(Return());
-    ON_CALL(*hostBindingManager_, RevokeTokens(_)).WillByDefault(Return());
+    ON_CALL(*hostBindingManager_, RevokeTokens(_, _)).WillByDefault(Return());
 }
 
 void MockGuard::SetupSecurityAgentDefaults()

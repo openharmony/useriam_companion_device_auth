@@ -164,7 +164,7 @@ impl DefaultHostDbManager {
 
     fn serialize_device_base_info(base_info: &CompanionDeviceBaseInfo, parcel: &mut Parcel) {
         parcel.write_i32(CURRENT_VERSION);
-        parcel.write_string(&base_info.device_model);
+        parcel.write_string(&base_info.device_model_info);
         parcel.write_string(&base_info.device_name);
         parcel.write_string(&base_info.device_user_name);
         parcel.write_i32(base_info.business_ids.len() as i32);
@@ -180,7 +180,7 @@ impl DefaultHostDbManager {
             return Err(ErrorCode::GeneralError);
         }
 
-        let device_model = parcel.read_string().map_err(|e| p!(e))?;
+        let device_model_info = parcel.read_string().map_err(|e| p!(e))?;
         let device_name = parcel.read_string().map_err(|e| p!(e))?;
         let device_user_name = parcel.read_string().map_err(|e| p!(e))?;
         let business_ids_len = parcel.read_i32().map_err(|e| p!(e))? as usize;
@@ -190,7 +190,7 @@ impl DefaultHostDbManager {
             business_ids.push(business_id);
         }
 
-        Ok(CompanionDeviceBaseInfo { device_model, device_name, device_user_name, business_ids })
+        Ok(CompanionDeviceBaseInfo { device_model_info, device_name, device_user_name, business_ids })
     }
 
     fn serialize_device_capability_info(capability_infos: &[CompanionDeviceCapability], parcel: &mut Parcel) {

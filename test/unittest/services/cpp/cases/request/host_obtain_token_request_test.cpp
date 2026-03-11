@@ -351,7 +351,7 @@ HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_002, TestSize.Leve
 
     Attributes req;
     OnMessageReply messageReply = nullptr;
-    request->HandleObtainTokenMessage(req, messageReply);
+    ASSERT_NO_THROW(request->HandleObtainTokenMessage(req, messageReply));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandleObtainTokenMessage_003, TestSize.Level0)
@@ -594,7 +594,7 @@ HWTEST_F(HostObtainTokenRequestTest, CompleteWithError_001, TestSize.Level0)
     EXPECT_CALL(mockSecurityAgent_, HostCancelObtainToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
     request->needCancelObtainToken_ = true;
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0)
@@ -607,7 +607,7 @@ HWTEST_F(HostObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0)
     EXPECT_CALL(mockSecurityAgent_, HostCancelObtainToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     request->needCancelObtainToken_ = true;
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, GetWeakPtr_001, TestSize.Level0)
@@ -717,7 +717,7 @@ HWTEST_F(HostObtainTokenRequestTest, HandlePeerDeviceStatusChanged_001, TestSize
     status.deviceKey = deviceKey;
     std::vector<DeviceStatus> deviceStatusList = { status };
 
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandlePeerDeviceStatusChanged_002, TestSize.Level0)
@@ -733,7 +733,7 @@ HWTEST_F(HostObtainTokenRequestTest, HandlePeerDeviceStatusChanged_002, TestSize
     status.isAuthMaintainActive = true;
     std::vector<DeviceStatus> deviceStatusList = { status };
 
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 HWTEST_F(HostObtainTokenRequestTest, HandlePeerDeviceStatusChanged_003, TestSize.Level0)
@@ -749,7 +749,7 @@ HWTEST_F(HostObtainTokenRequestTest, HandlePeerDeviceStatusChanged_003, TestSize
     status.isAuthMaintainActive = false;
     std::vector<DeviceStatus> deviceStatusList = { status };
 
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 } // namespace

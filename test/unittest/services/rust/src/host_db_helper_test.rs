@@ -22,7 +22,7 @@ use crate::ut_registry_guard;
 
 fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
     CompanionDeviceBaseInfo {
-        device_model: String::from("TestModel"),
+        device_model_info: String::from("TestModelInfo"),
         device_name: String::from("TestDevice"),
         device_user_name: String::from("TestUser"),
         business_ids: vec![1, 2, 3],
@@ -50,7 +50,7 @@ fn update_companion_device_info_test_write_device_base_info_fail() {
     mock_host_db_manager.expect_write_device_base_info().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let result = update_companion_device_info(123, "name".to_string(), "user_name".to_string());
+    let result = update_companion_device_info(123, "model_info".to_string(), "name".to_string(), "user_name".to_string());
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 

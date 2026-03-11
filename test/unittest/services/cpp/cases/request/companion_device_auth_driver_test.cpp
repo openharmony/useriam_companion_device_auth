@@ -99,8 +99,7 @@ HWTEST_F(CompanionDeviceAuthDriverTest, OnHdiDisconnect_001, TestSize.Level0)
     auto driver = std::make_unique<CompanionDeviceAuthDriver>();
     ASSERT_NE(nullptr, driver);
 
-    driver->OnHdiDisconnect();
-    EXPECT_TRUE(true);
+    EXPECT_NO_THROW(driver->OnHdiDisconnect());
 }
 
 } // namespace CompanionDeviceAuth

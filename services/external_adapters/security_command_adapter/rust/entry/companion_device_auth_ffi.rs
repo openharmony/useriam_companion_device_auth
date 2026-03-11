@@ -215,7 +215,7 @@ pub struct PersistedCompanionStatusFfi {
     pub is_valid: u8,
     pub enabled_business_ids: Int32Array64Ffi,
     pub added_time: u64,
-    pub device_model: DataArray256Ffi,
+    pub device_model_info: DataArray1024Ffi,
     pub device_user_name: DataArray256Ffi,
     pub device_name: DataArray256Ffi,
 }
@@ -602,6 +602,7 @@ pub type HostRevokeTokenOutputFfi = PlaceHolderFfi;
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostUpdateCompanionStatusInputFfi {
     pub template_id: u64,
+    pub device_model_info: DataArray1024Ffi,
     pub device_name: DataArray256Ffi,
     pub device_user_name: DataArray256Ffi,
 }

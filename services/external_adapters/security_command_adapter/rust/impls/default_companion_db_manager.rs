@@ -365,8 +365,8 @@ impl CompanionDbManager for DefaultCompanionDbManager {
         let filename = format!("{:x}_{}", binding_id, COMPANION_DEVICE_TOKEN);
         let token_info: Vec<u8> = StorageIoRegistry::get().read(&filename).map_err(|e| p!(e))?;
         if token_info.is_empty() {
-            log_i!("db is empty");
-            return Err(ErrorCode::GeneralError);
+            log_i!("token not found");
+            return Err(ErrorCode::TokenNotFound);
         }
         let mut parcel = Parcel::from(token_info);
         Self::deserialize_token_info(&mut parcel)

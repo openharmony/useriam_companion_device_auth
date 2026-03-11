@@ -211,6 +211,7 @@ typedef struct PlaceHolderFfi HostRevokeTokenOutputFfi;
 
 typedef struct HostUpdateCompanionStatusInputFfi {
     uint64_t templateId;
+    struct DataArray1024Ffi deviceModelInfo;
     struct DataArray256Ffi deviceName;
     struct DataArray256Ffi deviceUserName;
 } HostUpdateCompanionStatusInputFfi;

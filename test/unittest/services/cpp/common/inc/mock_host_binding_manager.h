@@ -40,7 +40,7 @@ public:
     MOCK_METHOD(bool, SetHostBindingTokenValid, (BindingId bindingId, bool isTokenValid), (override));
     MOCK_METHOD(void, StartObtainTokenRequests,
         (UserId userId, uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg), (override));
-    MOCK_METHOD(void, RevokeTokens, (UserId userId), (override));
+    MOCK_METHOD(void, RevokeTokens, (UserId userId, const std::string &reason), (override));
 
 private:
     MOCK_METHOD(bool, Initialize, (), ());

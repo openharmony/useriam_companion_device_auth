@@ -212,7 +212,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_002, TestSize.Level0)
@@ -243,7 +243,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, OnConnected_002, TestSize.Level0)
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_001, TestSize.Level0)
@@ -282,7 +282,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_001, TestSiz
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->HandlePreObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandlePreObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_002, TestSize.Level0)
@@ -312,7 +312,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_002, TestSiz
         std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
     Attributes reply;
-    request->HandlePreObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandlePreObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_003, TestSize.Level0)
@@ -346,7 +346,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_003, TestSiz
         .extraInfo = { 1, 2, 3 } };
     EncodePreObtainTokenReply(preObtainTokenReply, reply);
 
-    request->HandlePreObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandlePreObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_004, TestSize.Level0)
@@ -382,7 +382,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandlePreObtainTokenReply_004, TestSiz
 
     EXPECT_CALL(guard.GetHostBindingManager(), GetHostBindingStatus(_, _)).WillOnce(Return(std::nullopt));
 
-    request->HandlePreObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandlePreObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_001, TestSize.Level0)
@@ -495,7 +495,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_001, TestSize.L
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request->HandleObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandleObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_002, TestSize.Level0)
@@ -525,7 +525,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_002, TestSize.L
         std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
     Attributes reply;
-    request->HandleObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandleObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_003, TestSize.Level0)
@@ -559,7 +559,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_003, TestSize.L
         .extraInfo = { 1, 2, 3 } };
     EncodeObtainTokenReply(obtainTokenReply, reply);
 
-    request->HandleObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandleObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_004, TestSize.Level0)
@@ -595,7 +595,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleObtainTokenReply_004, TestSize.L
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndObtainToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->HandleObtainTokenReply(reply);
+    ASSERT_NO_THROW(request->HandleObtainTokenReply(reply));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_001, TestSize.Level0)
@@ -627,7 +627,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_001, TestSize.Level0
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0)
@@ -659,7 +659,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompleteWithError_002, TestSize.Level0
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelObtainToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, CompanionEndObtainToken_001, TestSize.Level0)
@@ -815,7 +815,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_001, T
     auto request =
         std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
-    request->HandleAuthMaintainActiveChanged(true);
+    ASSERT_NO_THROW(request->HandleAuthMaintainActiveChanged(true));
 }
 
 HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
@@ -844,7 +844,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, HandleAuthMaintainActiveChanged_002, T
     auto request =
         std::make_shared<CompanionObtainTokenRequest>(HOST_DEVICE_KEY, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
-    request->HandleAuthMaintainActiveChanged(false);
+    ASSERT_NO_THROW(request->HandleAuthMaintainActiveChanged(false));
 }
 
 } // namespace

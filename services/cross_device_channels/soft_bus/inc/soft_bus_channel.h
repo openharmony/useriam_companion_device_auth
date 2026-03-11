@@ -53,6 +53,8 @@ public:
     bool CheckOperationIntent(const DeviceKey &deviceKey, uint32_t tokenId,
         OnCheckOperationIntentResult &&resultCallback) override;
 
+    void RefreshPhysicalDeviceStatus() override;
+
 private:
     SoftBusChannel();
     bool Initialize();

@@ -251,7 +251,7 @@ HWTEST_F(AttributesTest, AttributesStringValueWithTrailingZeros, TestSize.Level0
     TestGetStringValue(rawWithSingleZero, true, "hello");
     TestGetStringValue(rawWithNoZero, false, "");
     TestGetStringValue(rawOnlyZeros, true, "");
-    TestGetStringValue(rawEmpty, true, "");
+    ASSERT_NO_THROW(TestGetStringValue(rawEmpty, true, ""));
 }
 
 HWTEST_F(AttributesTest, AttributesUint64ByteArray, TestSize.Level0)

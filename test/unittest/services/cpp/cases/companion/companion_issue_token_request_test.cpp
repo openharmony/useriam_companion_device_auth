@@ -525,7 +525,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_002, TestSize.Level0)
@@ -539,7 +539,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_002, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_003, TestSize.Level0)
@@ -553,7 +553,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, CompleteWithError_003, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionCancelIssueToken(_)).Times(0);
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, GetWeakPtr_001, TestSize.Level0)
@@ -612,7 +612,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleAuthMaintainActiveChanged_001, Te
     auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
         std::move(replyCallback), HOST_DEVICE_KEY);
 
-    request->HandleAuthMaintainActiveChanged(true);
+    ASSERT_NO_THROW(request->HandleAuthMaintainActiveChanged(true));
 }
 
 HWTEST_F(CompanionIssueTokenRequestTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
@@ -623,7 +623,7 @@ HWTEST_F(CompanionIssueTokenRequestTest, HandleAuthMaintainActiveChanged_002, Te
     auto request = std::make_shared<CompanionIssueTokenRequest>(CONNECTION_NAME, preIssueTokenRequest,
         std::move(replyCallback), HOST_DEVICE_KEY);
 
-    request->HandleAuthMaintainActiveChanged(false);
+    ASSERT_NO_THROW(request->HandleAuthMaintainActiveChanged(false));
 }
 
 } // namespace

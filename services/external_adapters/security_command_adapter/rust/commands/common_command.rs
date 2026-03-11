@@ -158,6 +158,14 @@ impl TryFrom<String> for DataArray256Ffi {
     }
 }
 
+impl TryFrom<String> for DataArray1024Ffi {
+    type Error = ErrorCode;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        DataArray1024Ffi::try_from(value.into_bytes())
+    }
+}
+
 // TemplateIdArrayFfi
 impl TryFrom<TemplateIdArrayFfi> for Vec<u64> {
     type Error = ErrorCode;

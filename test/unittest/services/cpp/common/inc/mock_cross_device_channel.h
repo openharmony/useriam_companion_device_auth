@@ -56,6 +56,8 @@ public:
 
     MOCK_METHOD(bool, RequiresDisconnectNotification, (), (const, override));
     MOCK_METHOD(void, OnRemoteDisconnect, (const std::string &connectionName, const std::string &reason), (override));
+
+    MOCK_METHOD(void, RefreshPhysicalDeviceStatus, (), (override));
 };
 
 } // namespace CompanionDeviceAuth

@@ -896,7 +896,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_006
         .Times(1);
     EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAtl(UINT64_456, testing::Eq(std::optional<Atl>())))
         .Times(1);
-    EXPECT_CALL(guard.GetHostBindingManager(), RevokeTokens(_)).Times(1);
+    EXPECT_CALL(guard.GetHostBindingManager(), RevokeTokens(_, _)).Times(1);
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 

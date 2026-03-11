@@ -118,10 +118,6 @@ void Companion::HandleDeviceStatusUpdate(const DeviceStatus &deviceStatus)
     status_.companionDeviceStatus = deviceStatus;
     IAM_LOGI("%{public}s device status updated", GetDescription());
 
-    if (!deviceStatus.isAuthMaintainActive) {
-        IAM_LOGE("%{public}s auth maintain inactive, set token invalid", GetDescription());
-        SetCompanionTokenAtl(std::nullopt);
-    }
     NotifySubscribers();
 }
 
@@ -133,7 +129,6 @@ void Companion::HandleDeviceOffline()
 
     status_.companionDeviceStatus.isOnline = false;
     IAM_LOGE("%{public}s device offline", GetDescription());
-    SetCompanionTokenAtl(std::nullopt);
     NotifySubscribers();
 }
 

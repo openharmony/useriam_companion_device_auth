@@ -51,6 +51,7 @@ pub enum ErrorCode {
     BadSign = 12,
     IdExists = 13,
     ExceedLimit = 14,
+    TokenNotFound = 20005,
 }
 
 impl TryFrom<i32> for ErrorCode {
@@ -72,6 +73,7 @@ impl TryFrom<i32> for ErrorCode {
             12 => Ok(ErrorCode::BadSign),
             13 => Ok(ErrorCode::IdExists),
             14 => Ok(ErrorCode::ExceedLimit),
+            20005 => Ok(ErrorCode::TokenNotFound),
             _ => {
                 log_e!("Invalid error code: {}", value);
                 Err(ErrorCode::BadParam)

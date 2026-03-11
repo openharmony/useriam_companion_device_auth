@@ -159,12 +159,9 @@ HWTEST_F(SystemAbilityListenerTest, NullptrCallbacksDoesNotCrash, TestSize.Level
 
     ASSERT_NE(listener, nullptr);
 
-    // Act - Should not crash
-    listener->OnAddSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device");
-    listener->OnRemoveSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device");
-
-    // Assert - No crash is success
-    EXPECT_TRUE(true);
+    // Act & Assert - Should not throw exception with nullptr callbacks
+    EXPECT_NO_THROW(listener->OnAddSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device"));
+    EXPECT_NO_THROW(listener->OnRemoveSystemAbility(SUBSYS_USERIAM_SYS_ABILITY_COMPANIONDEVICEAUTH, "test-device"));
 }
 
 /**

@@ -181,7 +181,7 @@ HWTEST_F(HostIssueTokenRequestTest, OnConnected_001, TestSize.Level0)
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HostPreIssueToken_001, TestSize.Level0)
@@ -193,7 +193,7 @@ HWTEST_F(HostIssueTokenRequestTest, HostPreIssueToken_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostPreIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->HostPreIssueToken();
+    ASSERT_NO_THROW(request->HostPreIssueToken());
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HostPreIssueToken_002, TestSize.Level0)
@@ -208,7 +208,7 @@ HWTEST_F(HostIssueTokenRequestTest, HostPreIssueToken_002, TestSize.Level0)
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request->HostPreIssueToken();
+    ASSERT_NO_THROW(request->HostPreIssueToken());
 }
 
 HWTEST_F(HostIssueTokenRequestTest, SendPreIssueTokenRequest_001, TestSize.Level0)
@@ -242,7 +242,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_001, TestSize.Level
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->HandlePreIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_002, TestSize.Level0)
@@ -253,7 +253,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_002, TestSize.Level
         std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
     Attributes badMessage;
-    request->HandlePreIssueTokenReply(badMessage);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(badMessage));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_003, TestSize.Level0)
@@ -267,7 +267,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_003, TestSize.Level
     Attributes message;
     EncodePreIssueTokenReply(reply, message);
 
-    request->HandlePreIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_004, TestSize.Level0)
@@ -283,7 +283,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_004, TestSize.Level
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostBeginIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->HandlePreIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_005, TestSize.Level0)
@@ -302,7 +302,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_005, TestSize.Level
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request->HandlePreIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_006, TestSize.Level0)
@@ -319,7 +319,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePreIssueTokenReply_006, TestSize.Level
     EXPECT_CALL(guard.GetSecurityAgent(), HostBeginIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
 
-    request->HandlePreIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandlePreIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_001, TestSize.Level0)
@@ -335,7 +335,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostEndIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request->HandleIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandleIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_002, TestSize.Level0)
@@ -346,7 +346,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_002, TestSize.Level0)
         std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
     Attributes badMessage;
-    request->HandleIssueTokenReply(badMessage);
+    ASSERT_NO_THROW(request->HandleIssueTokenReply(badMessage));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_003, TestSize.Level0)
@@ -360,7 +360,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_003, TestSize.Level0)
     Attributes message;
     EncodeIssueTokenReply(reply, message);
 
-    request->HandleIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandleIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_004, TestSize.Level0)
@@ -376,7 +376,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_004, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostEndIssueToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->HandleIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandleIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_005, TestSize.Level0)
@@ -393,7 +393,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandleIssueTokenReply_005, TestSize.Level0)
     EXPECT_CALL(guard.GetSecurityAgent(), HostEndIssueToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAtl(_, _)).WillOnce(Return(true));
 
-    request->HandleIssueTokenReply(message);
+    ASSERT_NO_THROW(request->HandleIssueTokenReply(message));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, EnsureCompanionAuthMaintainActive_001, TestSize.Level0)
@@ -439,7 +439,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePeerDeviceStatusChanged_001, TestSize.
     request->peerDeviceKey_ = COMPANION_DEVICE_KEY;
 
     std::vector<DeviceStatus> deviceStatusList = { DEVICE_STATUS };
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePeerDeviceStatusChanged_002, TestSize.Level0)
@@ -451,7 +451,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePeerDeviceStatusChanged_002, TestSize.
     request->peerDeviceKey_ = std::nullopt;
 
     std::vector<DeviceStatus> deviceStatusList = { DEVICE_STATUS };
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, HandlePeerDeviceStatusChanged_003, TestSize.Level0)
@@ -464,7 +464,7 @@ HWTEST_F(HostIssueTokenRequestTest, HandlePeerDeviceStatusChanged_003, TestSize.
 
     DeviceStatus deviceStatus = { .deviceKey = HOST_DEVICE_KEY, .isAuthMaintainActive = false };
     std::vector<DeviceStatus> deviceStatusList = { DEVICE_STATUS, deviceStatus };
-    request->HandlePeerDeviceStatusChanged(deviceStatusList);
+    ASSERT_NO_THROW(request->HandlePeerDeviceStatusChanged(deviceStatusList));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_001, TestSize.Level0)
@@ -477,7 +477,7 @@ HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelIssueToken(_)).WillOnce(Return(ResultCode::SUCCESS));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_Failed_002, TestSize.Level0)
@@ -490,7 +490,7 @@ HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_Failed_002, TestSize.Level
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelIssueToken(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_003, TestSize.Level0)
@@ -503,7 +503,7 @@ HWTEST_F(HostIssueTokenRequestTest, CompleteWithError_003, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelIssueToken(_)).Times(0);
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostIssueTokenRequestTest, CompleteWithSuccess_001, TestSize.Level0)
@@ -513,7 +513,7 @@ HWTEST_F(HostIssueTokenRequestTest, CompleteWithSuccess_001, TestSize.Level0)
     auto request =
         std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE, FWK_UNLOCK_MSG);
 
-    request->CompleteWithSuccess();
+    ASSERT_NO_THROW(request->CompleteWithSuccess());
 }
 
 HWTEST_F(HostIssueTokenRequestTest, GetWeakPtr_001, TestSize.Level0)

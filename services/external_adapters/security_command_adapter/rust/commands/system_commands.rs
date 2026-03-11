@@ -28,7 +28,7 @@ use crate::entry::companion_device_auth_ffi::{
     CompanionPreIssueTokenOutputFfi, CompanionProcessCheckInputFfi, CompanionProcessCheckOutputFfi,
     CompanionProcessIssueTokenInputFfi, CompanionProcessIssueTokenOutputFfi, CompanionProcessTokenAuthInputFfi,
     CompanionProcessTokenAuthOutputFfi, CompanionRemoveHostBindingInputFfi, CompanionRemoveHostBindingOutputFfi,
-    CompanionRevokeTokenInputFfi, CompanionRevokeTokenOutputFfi, DataArray256Ffi, DeviceKeyFfi,
+    CompanionRevokeTokenInputFfi, CompanionRevokeTokenOutputFfi, DataArray1024Ffi, DataArray256Ffi, DeviceKeyFfi,
     GetExecutorInfoInputFfi, GetExecutorInfoOutputFfi, HostBeginAddCompanionInputFfi, HostBeginAddCompanionOutputFfi,
     HostBeginCompanionCheckInputFfi, HostBeginCompanionCheckOutputFfi, HostBeginDelegateAuthInputFfi,
     HostBeginDelegateAuthOutputFfi, HostBeginIssueTokenInputFfi, HostBeginIssueTokenOutputFfi,
@@ -137,7 +137,7 @@ pub fn host_get_persisted_status(
                     is_valid: device_info.is_valid as u8,
                     enabled_business_ids: Int32Array64Ffi::try_from(device_base_info.business_ids)?,
                     added_time: device_info.added_time,
-                    device_model: DataArray256Ffi::try_from(device_base_info.device_model)?,
+                    device_model_info: DataArray1024Ffi::try_from(device_base_info.device_model_info)?,
                     device_user_name: DataArray256Ffi::try_from(device_base_info.device_user_name)?,
                     device_name: DataArray256Ffi::try_from(device_base_info.device_name)?,
                 };
@@ -320,6 +320,7 @@ pub fn host_update_companion_status(
 ) -> Result<(), ErrorCode> {
     host_db_helper::update_companion_device_info(
         input.template_id,
+        input.device_model_info.to_string()?,
         input.device_name.to_string()?,
         input.device_user_name.to_string()?,
     )?;
