@@ -74,7 +74,7 @@ fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
 
 fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
     CompanionDeviceBaseInfo {
-        device_model: String::from("TestModel"),
+        device_model_info: String::from("TestModelInfo"),
         device_name: String::from("TestDevice"),
         device_user_name: String::from("TestUser"),
         business_ids: vec![1, 2, 3],
@@ -1584,6 +1584,7 @@ fn host_update_companion_status_test_success() {
 
     let input = HostUpdateCompanionStatusInputFfi {
         template_id: 123,
+        device_model_info: DataArray1024Ffi::default(),
         device_name: DataArray256Ffi::default(),
         device_user_name: DataArray256Ffi::default(),
     };
@@ -1603,6 +1604,7 @@ fn host_update_companion_status_test_fail() {
 
     let input = HostUpdateCompanionStatusInputFfi {
         template_id: 123,
+        device_model_info: DataArray1024Ffi::default(),
         device_name: DataArray256Ffi::default(),
         device_user_name: DataArray256Ffi::default(),
     };

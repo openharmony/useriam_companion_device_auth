@@ -50,6 +50,7 @@ enum ResultCode : int32_t {
     CHECK_SYSTEM_PERMISSION_FAILED = 20002,
     INVALID_BUSINESS_ID = 20003,
     USER_ID_NOT_FOUND = 20004,
+    TOKEN_NOT_FOUND = 20005,
 };
 
 enum class DeviceIdType : int32_t {

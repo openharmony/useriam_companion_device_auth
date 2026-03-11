@@ -227,6 +227,11 @@ void DeviceStatusManager::SetSubscribeMode(SubscribeMode mode)
         auto now = GetTimeKeeper().GetSteadyTimeMs();
         ENSURE_OR_RETURN(now.has_value());
         manageSubscribeTime_ = now.value();
+        for (const auto &channel : channelMgr_->GetAllChannels()) {
+            if (channel != nullptr) {
+                channel->RefreshPhysicalDeviceStatus();
+            }
+        }
         StartPeriodicSync();
     } else {
         manageSubscribeTime_ = std::nullopt;

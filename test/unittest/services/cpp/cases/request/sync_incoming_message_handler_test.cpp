@@ -55,7 +55,7 @@ HWTEST_F(SyncIncomingMessageHandlerTest, Register_001, TestSize.Level0)
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIncomingConnection(_, _))
         .WillOnce(Return(ByMove(MakeSubscription())));
 
-    handler->Register();
+    ASSERT_NO_THROW(handler->Register());
 }
 
 HWTEST_F(SyncIncomingMessageHandlerTest, Register_002, TestSize.Level0)
@@ -65,7 +65,7 @@ HWTEST_F(SyncIncomingMessageHandlerTest, Register_002, TestSize.Level0)
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIncomingConnection(_, _)).WillOnce(Return(ByMove(nullptr)));
 
-    handler->Register();
+    ASSERT_NO_THROW(handler->Register());
 }
 
 HWTEST_F(SyncIncomingMessageHandlerTest, Register_003, TestSize.Level0)
@@ -74,7 +74,7 @@ HWTEST_F(SyncIncomingMessageHandlerTest, Register_003, TestSize.Level0)
     auto handler = std::make_shared<NiceMock<MockSyncIncomingMessageHandler>>(MessageType::SYNC_DEVICE_STATUS);
 
     handler->Register();
-    handler->Register();
+    ASSERT_NO_THROW(handler->Register());
 }
 
 HWTEST_F(SyncIncomingMessageHandlerTest, HandleIncomingMessage_001, TestSize.Level0)
@@ -108,7 +108,7 @@ HWTEST_F(SyncIncomingMessageHandlerTest, HandleIncomingMessage_002, TestSize.Lev
 
     EXPECT_CALL(*handler, HandleRequest(_, _)).Times(0);
 
-    handler->HandleIncomingMessage(request, onMessageReply);
+    ASSERT_NO_THROW(handler->HandleIncomingMessage(request, onMessageReply));
 }
 
 HWTEST_F(SyncIncomingMessageHandlerTest, HandleIncomingMessage_003, TestSize.Level0)

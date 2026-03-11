@@ -42,7 +42,8 @@ public:
 protected:
     // Protected constructor for derived classes
     explicit BaseServiceInitializer(std::shared_ptr<SubscriptionManager> subscriptionManager,
-        const std::vector<BusinessId> &supportedBusinessIds, const std::vector<Capability> &localCapabilities);
+        const std::vector<BusinessId> &supportedBusinessIds, const std::vector<Capability> &localCapabilities,
+        bool hostBindingRevokeTokenOnInactive);
 
     // Virtual initialization methods - can be overridden by derived classes
     virtual bool Initialize();
@@ -86,6 +87,7 @@ private:
     std::shared_ptr<SubscriptionManager> subscriptionManagerHolder_;
     std::vector<BusinessId> supportedBusinessIds_;
     std::vector<Capability> localCapabilities_;
+    bool hostBindingRevokeTokenOnInactive_ { false };
 };
 
 } // namespace CompanionDeviceAuth

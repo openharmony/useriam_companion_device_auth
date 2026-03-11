@@ -178,6 +178,7 @@ struct LocalDeviceProfile {
     SecureProtocolId companionSecureProtocolId { SecureProtocolId::INVALID };
     std::vector<Capability> capabilities;
     std::vector<ProtocolId> protocolPriorityList;
+    bool hostBindingRevokeTokenOnInactive { false };
 };
 
 struct LocalDeviceAuthState {

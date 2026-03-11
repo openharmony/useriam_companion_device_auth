@@ -127,7 +127,7 @@ void FuzzLocalDeviceStatusManager(FuzzedDataProvider &fuzzData)
     }
 
     auto mgr = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     if (!mgr) {
         return;
     }

@@ -35,7 +35,7 @@ fn create_mock_companion_device_info() -> CompanionDeviceInfo {
 
 fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
     CompanionDeviceBaseInfo {
-        device_model: String::default(),
+        device_model_info: String::default(),
         device_name: String::default(),
         device_user_name: String::default(),
         business_ids: Vec::<i32>::new(),

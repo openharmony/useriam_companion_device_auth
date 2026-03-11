@@ -71,7 +71,7 @@ pub struct HostTokenInfo {
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
 pub struct CompanionDeviceBaseInfo {
-    pub device_model: String,
+    pub device_model_info: String,
     pub device_name: String,
     pub device_user_name: String,
     pub business_ids: Vec<i32>,

@@ -248,7 +248,7 @@ void FuzzCrossDeviceCommManagerImpl(FuzzedDataProvider &fuzzData)
     channels.push_back(fuzzChannel);
 
     auto manager = CrossDeviceCommManagerImpl::Create({ BusinessId::DEFAULT },
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels);
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels, false);
     if (!manager) {
         return;
     }

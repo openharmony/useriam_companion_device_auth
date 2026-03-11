@@ -80,7 +80,7 @@ protected:
         ON_CALL(ctx.guard->GetUserIdManager(), GetActiveUserId).WillByDefault(Return(activeUserId_));
 
         ctx.localStatusManager = LocalDeviceStatusManager::Create(ctx.channelMgr,
-            { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+            { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
         EXPECT_NE(ctx.localStatusManager, nullptr);
 
         ctx.connectionMgr = ConnectionManager::Create(ctx.channelMgr, ctx.localStatusManager);
@@ -364,7 +364,7 @@ HWTEST_F(DeviceStatusManagerTest, SpecificDeviceSubscriptionTriggersRefreshOnSub
 
     auto subscription =
         ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
-    subscription.reset();
+    ASSERT_NO_THROW(subscription.reset());
 }
 
 HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSyncStartsRequestAndHandlesCallback, TestSize.Level0)
@@ -513,7 +513,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_WrongUserId, TestSize.Level0)
     syncStatus.deviceUserName = "user";
     syncStatus.secureProtocolId = SecureProtocolId::DEFAULT;
 
-    ctx.manager->HandleSyncResult(wrongUserKey, SUCCESS, syncStatus);
+    ASSERT_NO_THROW(ctx.manager->HandleSyncResult(wrongUserKey, SUCCESS, syncStatus));
 }
 
 HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_DeviceNotInCache, TestSize.Level0)
@@ -530,7 +530,7 @@ HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_DeviceNotInCache, TestSize.Le
     syncStatus.deviceUserName = "user";
     syncStatus.secureProtocolId = SecureProtocolId::DEFAULT;
 
-    ctx.manager->HandleSyncResult(nonExistentKey, SUCCESS, syncStatus);
+    ASSERT_NO_THROW(ctx.manager->HandleSyncResult(nonExistentKey, SUCCESS, syncStatus));
 }
 
 HWTEST_F(DeviceStatusManagerTest, HandleSyncResult_EmptySyncStatus, TestSize.Level0)
@@ -637,7 +637,7 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_DeviceNotInMap, TestSize.Lev
     nonExistentKey.idType = DeviceIdType::UNIFIED_DEVICE_ID;
     nonExistentKey.deviceId = "non-existent-trigger";
 
-    ctx.manager->TriggerDeviceSync(nonExistentKey);
+    ASSERT_NO_THROW(ctx.manager->TriggerDeviceSync(nonExistentKey));
 }
 
 HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_AlreadyInProgress, TestSize.Level0)
@@ -651,7 +651,7 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_AlreadyInProgress, TestSize.
     EXPECT_CALL(ctx.guard->GetRequestFactory(), CreateHostSyncDeviceStatusRequest(_, _, _, _)).Times(0);
     EXPECT_CALL(ctx.guard->GetRequestManager(), Start).Times(0);
 
-    ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey);
+    ASSERT_NO_THROW(ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey));
 }
 
 HWTEST_F(DeviceStatusManagerTest, UnsubscribeDeviceStatus_NotFound, TestSize.Level0)
@@ -768,7 +768,7 @@ HWTEST_F(DeviceStatusManagerTest, TriggerDeviceSync_ProceedsWhenNeedSyncTrue, Te
         .WillOnce(Return(nullptr));                              // Request creation fails, but the call should happen
     EXPECT_CALL(ctx.guard->GetRequestManager(), Start).Times(0); // Won't start due to null request
 
-    ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey);
+    ASSERT_NO_THROW(ctx.manager->TriggerDeviceSync(physicalStatus.physicalDeviceKey));
 }
 
 HWTEST_F(DeviceStatusManagerTest, NeedSyncDevice_MultipleSubscriptions, TestSize.Level1)
@@ -899,7 +899,7 @@ HWTEST_F(DeviceStatusManagerTest, RefreshDeviceList_WithResync, TestSize.Level0)
         }));
     EXPECT_CALL(ctx.guard->GetRequestManager(), Start).WillOnce(Return(true));
 
-    ctx.manager->RefreshDeviceList(true);
+    ASSERT_NO_THROW(ctx.manager->RefreshDeviceList(true));
 }
 
 HWTEST_F(DeviceStatusManagerTest, HandleChannelDeviceStatusChange, TestSize.Level0)
@@ -907,7 +907,8 @@ HWTEST_F(DeviceStatusManagerTest, HandleChannelDeviceStatusChange, TestSize.Leve
     auto ctx = SetupTestContext();
     EXPECT_CALL(*ctx.mockChannel, GetAllPhysicalDevices()).WillOnce(Return(std::vector<PhysicalDeviceStatus> {}));
 
-    ctx.manager->HandleChannelDeviceStatusChange(ChannelId::SOFTBUS, std::vector<PhysicalDeviceStatus> {});
+    ASSERT_NO_THROW(
+        ctx.manager->HandleChannelDeviceStatusChange(ChannelId::SOFTBUS, std::vector<PhysicalDeviceStatus> {}));
 }
 
 HWTEST_F(DeviceStatusManagerTest, NegotiateProtocol_MultipleProtocols, TestSize.Level0)
@@ -964,8 +965,8 @@ HWTEST_F(DeviceStatusManagerTest, SubscribeDeviceStatus_SpecificDevice_RefreshTr
         .Times(AtLeast(1))
         .WillRepeatedly(Return(std::vector<PhysicalDeviceStatus> {}));
 
-    auto subscription =
-        ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true, [](const std::vector<DeviceStatus> &) {});
+    ASSERT_NO_THROW(auto subscription = ctx.manager->SubscribeDeviceStatus(MakeDeviceKey(targetKey), true,
+                        [](const std::vector<DeviceStatus> &) {}));
 }
 
 HWTEST_F(DeviceStatusManagerTest, NotifySubscribers_WithNullCallback, TestSize.Level0)
@@ -980,7 +981,7 @@ HWTEST_F(DeviceStatusManagerTest, NotifySubscribers_WithNullCallback, TestSize.L
     entry.capabilities = { Capability::TOKEN_AUTH };
     ctx.manager->deviceStatusMap_.emplace(status.physicalDeviceKey, std::move(entry));
 
-    ctx.manager->NotifySubscribers();
+    ASSERT_NO_THROW(ctx.manager->NotifySubscribers());
 }
 
 } // namespace CompanionDeviceAuth

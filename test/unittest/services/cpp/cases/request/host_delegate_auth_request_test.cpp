@@ -728,9 +728,7 @@ HWTEST_F(HostDelegateAuthRequestTest, CompleteWithError_003, TestSize.Level0)
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelDelegateAuth(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
-
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(HostDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Level0)

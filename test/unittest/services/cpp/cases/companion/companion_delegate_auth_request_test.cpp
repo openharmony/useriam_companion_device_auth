@@ -178,7 +178,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_001, TestSiz
             return true;
         }));
 
-    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    ASSERT_NO_THROW(request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_002, TestSize.Level0)
@@ -190,7 +190,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_002, TestSiz
 
     std::vector<uint8_t> badExtraInfo = { 1, 2, 3 };
 
-    request->HandleDelegateAuthResult(ResultCode::SUCCESS, badExtraInfo);
+    ASSERT_NO_THROW(request->HandleDelegateAuthResult(ResultCode::SUCCESS, badExtraInfo));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_003, TestSize.Level0)
@@ -207,7 +207,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_003, TestSiz
 
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    ASSERT_NO_THROW(request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_004, TestSize.Level0)
@@ -225,7 +225,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleDelegateAuthResult_004, TestSiz
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo);
+    ASSERT_NO_THROW(request->HandleDelegateAuthResult(ResultCode::SUCCESS, extraInfo));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_001, TestSize.Level0)
@@ -239,7 +239,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_001
     Attributes message;
     EncodeSendDelegateAuthResultReply(reply, message);
 
-    request->HandleSendDelegateAuthResultReply(message);
+    ASSERT_NO_THROW(request->HandleSendDelegateAuthResultReply(message));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_002, TestSize.Level0)
@@ -253,7 +253,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_002
     Attributes message;
     EncodeSendDelegateAuthResultReply(reply, message);
 
-    request->HandleSendDelegateAuthResultReply(message);
+    ASSERT_NO_THROW(request->HandleSendDelegateAuthResultReply(message));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_003, TestSize.Level0)
@@ -265,7 +265,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, HandleSendDelegateAuthResultReply_003
 
     Attributes badMessage;
 
-    request->HandleSendDelegateAuthResultReply(badMessage);
+    ASSERT_NO_THROW(request->HandleSendDelegateAuthResultReply(badMessage));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_001, TestSize.Level0)
@@ -276,7 +276,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_001, TestSize.Level
         START_DELEGATE_AUTH_REQUEST);
     request->contextId_ = 12345;
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_002, TestSize.Level0)
@@ -287,7 +287,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_002, TestSize.Level
         START_DELEGATE_AUTH_REQUEST);
     request->contextId_ = std::nullopt;
 
-    request->CompleteWithError(ResultCode::GENERAL_ERROR);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Level0)
@@ -297,7 +297,7 @@ HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Lev
     auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID, HOST_DEVICE_KEY,
         START_DELEGATE_AUTH_REQUEST);
 
-    request->CompleteWithSuccess();
+    ASSERT_NO_THROW(request->CompleteWithSuccess());
 }
 
 HWTEST_F(CompanionDelegateAuthRequestTest, GetWeakPtr_001, TestSize.Level0)

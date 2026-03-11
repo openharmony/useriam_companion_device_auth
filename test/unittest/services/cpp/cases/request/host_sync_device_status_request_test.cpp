@@ -140,7 +140,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, OnConnected_001, TestSize.Level0)
     EXPECT_CALL(mockCrossDeviceCommManager_, GetLocalDeviceProfile()).WillOnce(Return(PROFILE));
     EXPECT_CALL(mockCrossDeviceCommManager_, SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, BeginCompanionCheck_001, TestSize.Level0)
@@ -376,7 +376,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, CompleteWithError_001, TestSize.Level0
     auto callback = [](ResultCode, const SyncDeviceStatus &) {};
     auto request = std::make_shared<HostSyncDeviceStatusRequest>(HOST_USER_ID, COMPANION_DEVICE_KEY,
         COMPANION_DEVICE_NAME, std::move(callback));
-    request->CompleteWithError(ResultCode::SUCCESS);
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::SUCCESS));
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, InvokeCallback_001, TestSize.Level0)
@@ -387,7 +387,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, InvokeCallback_001, TestSize.Level0)
 
     SyncDeviceStatus syncDeviceStatus;
     syncDeviceStatus.needSync = true;
-    request->InvokeCallback(ResultCode::SUCCESS, syncDeviceStatus);
+    ASSERT_NO_THROW(request->InvokeCallback(ResultCode::SUCCESS, syncDeviceStatus));
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, InvokeCallback_002, TestSize.Level0)
@@ -399,7 +399,7 @@ HWTEST_F(HostSyncDeviceStatusRequestTest, InvokeCallback_002, TestSize.Level0)
 
     SyncDeviceStatus syncDeviceStatus;
     syncDeviceStatus.needSync = true;
-    request->InvokeCallback(ResultCode::SUCCESS, syncDeviceStatus);
+    ASSERT_NO_THROW(request->InvokeCallback(ResultCode::SUCCESS, syncDeviceStatus));
 }
 
 HWTEST_F(HostSyncDeviceStatusRequestTest, GetWeakPtr_001, TestSize.Level0)

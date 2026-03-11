@@ -366,9 +366,9 @@ void HostBindingManagerImpl::StartObtainTokenRequests(UserId userId, uint32_t lo
     IAM_LOGI("end");
 }
 
-void HostBindingManagerImpl::RevokeTokens(UserId userId)
+void HostBindingManagerImpl::RevokeTokens(UserId userId, const std::string &reason)
 {
-    IAM_LOGI("start, userId=%{public}d", userId);
+    IAM_LOGI("start, userId=%{public}d, reason=%{public}s", userId, reason.c_str());
 
     if (activeUserId_ != userId) {
         IAM_LOGI("user id %{public}d mismatch with active user id %{public}d, skip", userId, activeUserId_);
@@ -377,9 +377,10 @@ void HostBindingManagerImpl::RevokeTokens(UserId userId)
 
     IAM_LOGI("Found %{public}zu host bindings in total", bindings_.size());
 
+    std::string actualReason = reason.empty() ? "property freeze" : reason;
     for (const auto &binding : bindings_) {
         ENSURE_OR_CONTINUE(binding != nullptr);
-        binding->SetTokenValid(false, "property freeze");
+        binding->SetTokenValid(false, actualReason);
     }
 
     IAM_LOGI("end");

@@ -286,9 +286,10 @@ public:
         (void)fwkUnlockMsg;
     }
 
-    void RevokeTokens(UserId userId) override
+    void RevokeTokens(UserId userId, const std::string &reason) override
     {
         (void)userId;
+        (void)reason;
     }
 
 private:
