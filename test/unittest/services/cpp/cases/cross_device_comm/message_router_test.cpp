@@ -227,6 +227,10 @@ public:
     {
     }
 
+    void RefreshPhysicalDeviceStatus() override
+    {
+    }
+
     const std::vector<std::vector<uint8_t>> &GetSentMessages() const
     {
         return sentMessages_;
@@ -281,7 +285,7 @@ public:
         channelManager_ =
             std::make_shared<ChannelManager>(std::vector<std::shared_ptr<ICrossDeviceChannel>> { channel_ });
         localDeviceStatusManager_ = LocalDeviceStatusManager::Create(channelManager_,
-            { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+            { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
         ASSERT_NE(localDeviceStatusManager_, nullptr);
 
         connectionManager_ = ConnectionManager::Create(channelManager_, localDeviceStatusManager_);
@@ -553,13 +557,13 @@ HWTEST_F(MessageRouterTest, HandleRawMessage_001, TestSize.Level0)
     msg.SetBoolValue(Attributes::ATTR_CDA_SA_MSG_ACK, false);
     msg.SetUint16Value(Attributes::ATTR_CDA_SA_MSG_TYPE, static_cast<uint16_t>(MessageType::TOKEN_AUTH));
 
-    router_->HandleRawMessage(connectionName_, msg.Serialize());
+    ASSERT_NO_THROW(router_->HandleRawMessage(connectionName_, msg.Serialize()));
 }
 
 HWTEST_F(MessageRouterTest, HandleRawMessage_002, TestSize.Level0)
 {
     std::vector<uint8_t> invalidMsg = GetTestInvalidMessageBytes();
-    router_->HandleRawMessage(connectionName_, invalidMsg);
+    ASSERT_NO_THROW(router_->HandleRawMessage(connectionName_, invalidMsg));
 }
 
 HWTEST_F(MessageRouterTest, HandleRawMessage_003, TestSize.Level0)
@@ -570,7 +574,7 @@ HWTEST_F(MessageRouterTest, HandleRawMessage_003, TestSize.Level0)
     msg.SetBoolValue(Attributes::ATTR_CDA_SA_MSG_ACK, false);
     msg.SetUint16Value(Attributes::ATTR_CDA_SA_MSG_TYPE, static_cast<uint16_t>(MessageType::TOKEN_AUTH));
 
-    channel_->TriggerRawMessage("non-existent-connection", msg.Serialize());
+    ASSERT_NO_THROW(channel_->TriggerRawMessage("non-existent-connection", msg.Serialize()));
 }
 
 HWTEST_F(MessageRouterTest, HandleRequest_001, TestSize.Level0)
@@ -583,7 +587,7 @@ HWTEST_F(MessageRouterTest, HandleRequest_001, TestSize.Level0)
     msg.SetStringValue(Attributes::ATTR_CDA_SA_REASON, "test_disconnect");
 
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(MessageRouterTest, HandleRequest_002, TestSize.Level0)
@@ -595,7 +599,7 @@ HWTEST_F(MessageRouterTest, HandleRequest_002, TestSize.Level0)
     msg.SetUint16Value(Attributes::ATTR_CDA_SA_MSG_TYPE, static_cast<uint16_t>(MessageType::DISCONNECT));
 
     channel_->TriggerRawMessage(connectionName_, msg.Serialize());
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(MessageRouterTest, HandleRequest_003, TestSize.Level0)

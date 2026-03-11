@@ -965,9 +965,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, GetProxy_CachesProxy, TestSize.Level
     client.RegisterDeviceSelectCallback(callback); // First call - creates proxy
     client.UnregisterDeviceSelectCallback();       // Second call - uses cached proxy
     bool isUserIdValid = false;
-    client.CheckLocalUserIdValid(INT32_100, isUserIdValid); // Third call - uses cached proxy
-
-    // Assert - All expectations verified implicitly by gmock
+    ASSERT_NO_THROW(client.CheckLocalUserIdValid(INT32_100, isUserIdValid)); // Third call - uses cached proxy
 }
 
 /**

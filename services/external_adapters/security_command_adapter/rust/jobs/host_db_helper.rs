@@ -63,10 +63,12 @@ pub fn delete_companion_device_token(template_id: u64) -> Result<(), ErrorCode> 
 
 pub fn update_companion_device_info(
     template_id: u64,
+    device_model_info: String,
     device_name: String,
     device_user_name: String,
 ) -> Result<(), ErrorCode> {
     let mut device_base_info = HostDbManagerRegistry::get_mut().read_device_base_info(template_id)?;
+    device_base_info.device_model_info = device_model_info;
     device_base_info.device_name = device_name;
     device_base_info.device_user_name = device_user_name;
     HostDbManagerRegistry::get_mut().write_device_base_info(template_id, &device_base_info)?;

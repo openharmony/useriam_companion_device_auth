@@ -140,6 +140,13 @@ void HostBinding::HandleAuthMaintainActiveChanged(bool isActive)
 
     status_.localAuthMaintainActive = isActive;
     IAM_LOGI("%{public}s local auth maintain active -> %{public}d", GetDescription(), isActive);
+
+    auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
+    if (!profile.hostBindingRevokeTokenOnInactive) {
+        IAM_LOGI("%{public}s skip revoke token on inactive due to configuration", GetDescription());
+        return;
+    }
+
     if (!isActive) {
         IAM_LOGE("%{public}s local auth maintain inactive, revoking token", GetDescription());
         SetTokenValid(false, "auth maintain inactive");

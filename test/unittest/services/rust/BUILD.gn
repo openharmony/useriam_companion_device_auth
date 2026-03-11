@@ -18,7 +18,7 @@ import(
 import("../../../test_config.gni")
 
 ohos_rust_unittest("companion_device_auth_services_rust_test") {
-  module_out_path = "companion_device_auth/services"
+  module_out_path = "${companion_device_auth_subsystem_name}/${companion_device_auth_part_name}"
 
   crate_root = "${companion_device_auth_path}/services/external_adapters/security_command_adapter/rust/lib.rs"
 

@@ -47,7 +47,7 @@ class CrossDeviceCommManagerImpl : public ICrossDeviceCommManager {
 public:
     static std::shared_ptr<CrossDeviceCommManagerImpl> Create(const std::vector<BusinessId> &defaultBusinessIds,
         const std::vector<Capability> &localCapabilities,
-        const std::vector<std::shared_ptr<ICrossDeviceChannel>> &channels);
+        const std::vector<std::shared_ptr<ICrossDeviceChannel>> &channels, bool hostBindingRevokeTokenOnInactive);
 
     ~CrossDeviceCommManagerImpl() override = default;
 

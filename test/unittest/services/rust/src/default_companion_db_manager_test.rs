@@ -831,7 +831,7 @@ fn default_companion_db_manager_read_device_token_test_empty() {
 
     let manager = DefaultCompanionDbManager::new();
     let result = manager.read_device_token(123);
-    assert_eq!(result, Err(ErrorCode::GeneralError));
+    assert_eq!(result, Err(ErrorCode::TokenNotFound));
 }
 
 #[test]

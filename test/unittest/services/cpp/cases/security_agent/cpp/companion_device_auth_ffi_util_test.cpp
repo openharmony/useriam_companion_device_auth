@@ -210,7 +210,7 @@ HWTEST_F(FfiUtilTest, DecodePersistedCompanionStatusLenValidationFalse, TestSize
         ffi.hostUserId = 1;
         ffi.enabledBusinessIds.len = 0;
         ffi.companionDeviceKey.deviceId.len = 0;
-        ffi.deviceModel.len = MAX_DATA_LEN_1024 + 1;
+        ffi.deviceModelInfo.len = MAX_DATA_LEN_1024 + 1;
 
         PersistedCompanionStatus status;
         EXPECT_FALSE(DecodePersistedCompanionStatus(ffi, status));
@@ -224,7 +224,7 @@ HWTEST_F(FfiUtilTest, DecodePersistedCompanionStatusLenValidationFalse, TestSize
         ffi.hostUserId = 1;
         ffi.enabledBusinessIds.len = 0;
         ffi.companionDeviceKey.deviceId.len = 0;
-        ffi.deviceModel.len = 0;
+        ffi.deviceModelInfo.len = 0;
         ffi.deviceUserName.len = MAX_DATA_LEN_1024 + 1;
 
         PersistedCompanionStatus status;
@@ -239,7 +239,7 @@ HWTEST_F(FfiUtilTest, DecodePersistedCompanionStatusLenValidationFalse, TestSize
         ffi.hostUserId = 1;
         ffi.enabledBusinessIds.len = 0;
         ffi.companionDeviceKey.deviceId.len = 0;
-        ffi.deviceModel.len = 0;
+        ffi.deviceModelInfo.len = 0;
         ffi.deviceUserName.len = 0;
         ffi.deviceName.len = MAX_DATA_LEN_1024 + 1;
 
@@ -670,7 +670,7 @@ HWTEST_F(FfiUtilTest, EncodeHostRegisterFinishInput_002, TestSize.Level0)
     }
 
     HostRegisterFinishInputFfi ffi = {};
-    EncodeHostRegisterFinishInput(input, ffi);
+    ASSERT_NO_THROW(EncodeHostRegisterFinishInput(input, ffi));
 }
 
 HWTEST_F(FfiUtilTest, EncodeHostEndCompanionCheckInput_001, TestSize.Level0)
@@ -941,7 +941,7 @@ HWTEST_F(FfiUtilTest, EncodeHostUpdateCompanionStatusInput_002, TestSize.Level0)
     input.companionDeviceName = std::string(MAX_DATA_LEN_1024 + 1, 'A');
 
     HostUpdateCompanionStatusInputFfi ffi = {};
-    EncodeHostUpdateCompanionStatusInput(input, ffi);
+    ASSERT_NO_THROW(EncodeHostUpdateCompanionStatusInput(input, ffi));
 }
 
 HWTEST_F(FfiUtilTest, EncodeHostUpdateCompanionEnabledBusinessIdsInput_001, TestSize.Level0)
@@ -1387,7 +1387,7 @@ HWTEST_F(FfiUtilTest, DecodePersistedCompanionStatusList_001, TestSize.Level0)
     ffi.data[0].hostUserId = INT32_222;
     ffi.data[0].enabledBusinessIds.len = 0;
     ffi.data[0].companionDeviceKey.deviceId.len = 0;
-    ffi.data[0].deviceModel.len = 0;
+    ffi.data[0].deviceModelInfo.len = 0;
     ffi.data[0].deviceUserName.len = 0;
     ffi.data[0].deviceName.len = 0;
 
@@ -1395,7 +1395,7 @@ HWTEST_F(FfiUtilTest, DecodePersistedCompanionStatusList_001, TestSize.Level0)
     ffi.data[1].hostUserId = INT32_444;
     ffi.data[1].enabledBusinessIds.len = 0;
     ffi.data[1].companionDeviceKey.deviceId.len = 0;
-    ffi.data[1].deviceModel.len = 0;
+    ffi.data[1].deviceModelInfo.len = 0;
     ffi.data[1].deviceUserName.len = 0;
     ffi.data[1].deviceName.len = 0;
 

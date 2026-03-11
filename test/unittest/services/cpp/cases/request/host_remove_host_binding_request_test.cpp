@@ -111,7 +111,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, OnConnected_001, TestSize.Level0)
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_001, TestSize.Level0)
@@ -119,7 +119,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_001, Tes
     MockGuard guard;
 
     auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
-    request->SendRemoveHostBindingRequest();
+    ASSERT_NO_THROW(request->SendRemoveHostBindingRequest());
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_002, TestSize.Level0)
@@ -132,7 +132,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, SendRemoveHostBindingRequest_002, Tes
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).Times(AtMost(1)).WillOnce(Return(false));
 
-    request->SendRemoveHostBindingRequest();
+    ASSERT_NO_THROW(request->SendRemoveHostBindingRequest());
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_001, TestSize.Level0)
@@ -145,7 +145,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_001, Tes
     RemoveHostBindingReply reply = { .result = ResultCode::SUCCESS };
     EncodeRemoveHostBindingReply(reply, message);
 
-    request->HandleRemoveHostBindingReply(message);
+    ASSERT_NO_THROW(request->HandleRemoveHostBindingReply(message));
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_002, TestSize.Level0)
@@ -155,7 +155,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_002, Tes
     auto request = std::make_shared<HostRemoveHostBindingRequest>(HOST_USER_ID, TEMPLATE_ID, COMPANION_DEVICE_KEY);
 
     Attributes message;
-    request->HandleRemoveHostBindingReply(message);
+    ASSERT_NO_THROW(request->HandleRemoveHostBindingReply(message));
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_003, TestSize.Level0)
@@ -168,7 +168,7 @@ HWTEST_F(HostRemoveHostBindingRequestTest, HandleRemoveHostBindingReply_003, Tes
     RemoveHostBindingReply reply = { .result = ResultCode::GENERAL_ERROR };
     EncodeRemoveHostBindingReply(reply, message);
 
-    request->HandleRemoveHostBindingReply(message);
+    ASSERT_NO_THROW(request->HandleRemoveHostBindingReply(message));
 }
 
 HWTEST_F(HostRemoveHostBindingRequestTest, GetMaxConcurrency_001, TestSize.Level0)

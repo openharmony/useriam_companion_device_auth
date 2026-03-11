@@ -60,7 +60,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, Create_001, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     EXPECT_NE(manager, nullptr);
 }
 
@@ -69,7 +69,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, Create_002, TestSize.Level0)
     MockGuard guard;
 
     auto manager = LocalDeviceStatusManager::Create(nullptr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     EXPECT_EQ(manager, nullptr);
 }
 
@@ -81,7 +81,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, Create_003, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     EXPECT_EQ(manager, nullptr);
 }
 
@@ -93,7 +93,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, Create_004, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     EXPECT_EQ(manager, nullptr);
 }
 
@@ -105,7 +105,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, Create_005, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     EXPECT_EQ(manager, nullptr);
 }
 
@@ -124,7 +124,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, SubscribeIsAuthMaintainActive_001, TestSi
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto callbackInvoked = std::make_shared<bool>(false);
@@ -154,7 +154,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, SubscribeIsAuthMaintainActive_002, TestSi
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto callbackInvoked = std::make_shared<bool>(false);
@@ -186,7 +186,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, OnActiveUserIdChanged_001, TestSize.Level
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
@@ -207,7 +207,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, OnActiveUserIdChanged_002, TestSize.Level
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto callbackInvoked = std::make_shared<bool>(false);
@@ -233,7 +233,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, AuthMaintainCallback_001, TestSize.Level0
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto callbackCount = std::make_shared<int>(0);
@@ -276,7 +276,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKey_001, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeyOpt = manager->GetLocalDeviceKey(ChannelId::SOFTBUS);
@@ -303,7 +303,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKey_002, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeyOpt = manager->GetLocalDeviceKey(ChannelId::INVALID);
@@ -325,7 +325,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKey_003, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeyOpt = manager->GetLocalDeviceKey(ChannelId::SOFTBUS);
@@ -355,7 +355,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKeys_001, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeys = manager->GetLocalDeviceKeys();
@@ -405,7 +405,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKeys_002, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeys = manager->GetLocalDeviceKeys();
@@ -437,7 +437,7 @@ HWTEST_F(LocalDeviceStatusManagerTest, GetLocalDeviceKeys_003, TestSize.Level0)
     auto channelMgr = std::make_shared<ChannelManager>(channels);
 
     auto manager = LocalDeviceStatusManager::Create(channelMgr,
-        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN });
+        { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, false);
     ASSERT_NE(manager, nullptr);
 
     auto deviceKeys = manager->GetLocalDeviceKeys();

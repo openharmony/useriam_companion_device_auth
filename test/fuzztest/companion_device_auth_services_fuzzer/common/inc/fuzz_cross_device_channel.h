@@ -193,6 +193,11 @@ public:
         (void)reason;
     }
 
+    void RefreshPhysicalDeviceStatus() override
+    {
+        // Empty implementation for fuzz testing
+    }
+
 private:
     FuzzedDataProvider &fuzzData_;
     ChannelId channelId_;

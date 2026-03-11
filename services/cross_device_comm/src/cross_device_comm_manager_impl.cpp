@@ -34,14 +34,15 @@ namespace CompanionDeviceAuth {
 
 std::shared_ptr<CrossDeviceCommManagerImpl> CrossDeviceCommManagerImpl::Create(
     const std::vector<BusinessId> &defaultBusinessIds, const std::vector<Capability> &localCapabilities,
-    const std::vector<std::shared_ptr<ICrossDeviceChannel>> &channels)
+    const std::vector<std::shared_ptr<ICrossDeviceChannel>> &channels, bool hostBindingRevokeTokenOnInactive)
 {
     ENSURE_OR_RETURN_VAL(channels.size() > 0, nullptr);
 
     auto channelMgr = std::make_shared<ChannelManager>(channels);
     ENSURE_OR_RETURN_VAL(channelMgr != nullptr, nullptr);
 
-    auto localDeviceStatusMgr = LocalDeviceStatusManager::Create(channelMgr, localCapabilities);
+    auto localDeviceStatusMgr =
+        LocalDeviceStatusManager::Create(channelMgr, localCapabilities, hostBindingRevokeTokenOnInactive);
     ENSURE_OR_RETURN_VAL(localDeviceStatusMgr != nullptr, nullptr);
 
     auto connectionMgr = ConnectionManager::Create(channelMgr, localDeviceStatusMgr);

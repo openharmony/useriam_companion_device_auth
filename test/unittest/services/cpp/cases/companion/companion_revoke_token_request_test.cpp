@@ -49,7 +49,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, OnConnected_001, TestSize.Level0)
         .WillOnce(Return(std::make_optional(HOST_DEVICE_KEY)));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(true));
 
-    request->OnConnected();
+    ASSERT_NO_THROW(request->OnConnected());
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_001, TestSize.Level0)
@@ -58,7 +58,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_001, TestSize.L
 
     auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
     request->peerDeviceKey_ = std::nullopt;
-    request->SendRevokeTokenRequest();
+    ASSERT_NO_THROW(request->SendRevokeTokenRequest());
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_002, TestSize.Level0)
@@ -69,7 +69,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, SendRevokeTokenRequest_002, TestSize.L
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
 
-    request->SendRevokeTokenRequest();
+    ASSERT_NO_THROW(request->SendRevokeTokenRequest());
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_001, TestSize.Level0)
@@ -82,7 +82,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_001, TestSize.L
     RevokeTokenReply reply = { .result = ResultCode::SUCCESS };
     EncodeRevokeTokenReply(reply, message);
 
-    request->HandleRevokeTokenReply(message);
+    ASSERT_NO_THROW(request->HandleRevokeTokenReply(message));
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_002, TestSize.Level0)
@@ -92,7 +92,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_002, TestSize.L
     auto request = std::make_shared<CompanionRevokeTokenRequest>(COMPANION_USER_ID, HOST_DEVICE_KEY, REASON);
 
     Attributes message;
-    request->HandleRevokeTokenReply(message);
+    ASSERT_NO_THROW(request->HandleRevokeTokenReply(message));
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_003, TestSize.Level0)
@@ -105,7 +105,7 @@ HWTEST_F(CompanionRevokeTokenRequestTest, HandleRevokeTokenReply_003, TestSize.L
     RevokeTokenReply reply = { .result = ResultCode::GENERAL_ERROR };
     EncodeRevokeTokenReply(reply, message);
 
-    request->HandleRevokeTokenReply(message);
+    ASSERT_NO_THROW(request->HandleRevokeTokenReply(message));
 }
 
 HWTEST_F(CompanionRevokeTokenRequestTest, GetMaxConcurrency_001, TestSize.Level0)

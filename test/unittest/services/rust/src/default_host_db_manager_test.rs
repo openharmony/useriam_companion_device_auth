@@ -42,7 +42,7 @@ fn create_test_device_info(template_id: u64, device_id: &str, user_id: i32) -> C
 
 fn create_test_base_info() -> CompanionDeviceBaseInfo {
     CompanionDeviceBaseInfo {
-        device_model: "TestModel".to_string(),
+        device_model_info: "TestModelInfo".to_string(),
         device_name: "TestDevice".to_string(),
         device_user_name: "TestUser".to_string(),
         business_ids: vec![1, 2, 3],

@@ -46,7 +46,7 @@ public:
 
     virtual void StartObtainTokenRequests(UserId userId, uint32_t lockStateAuthTypeValue,
         const std::vector<uint8_t> &fwkUnlockMsg) = 0;
-    virtual void RevokeTokens(UserId userId) = 0;
+    virtual void RevokeTokens(UserId userId, const std::string &reason = "") = 0;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

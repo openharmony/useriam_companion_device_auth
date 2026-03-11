@@ -506,6 +506,10 @@ HWTEST_F(HostBindingTest, HandleAuthMaintainActiveChanged_002, TestSize.Level0)
     ON_CALL(crossDeviceMgr, GetAllDeviceStatus()).WillByDefault(Return(std::vector<DeviceStatus> {}));
     ON_CALL(crossDeviceMgr, IsAuthMaintainActive()).WillByDefault(Return(true));
 
+    LocalDeviceProfile profile;
+    profile.hostBindingRevokeTokenOnInactive = true;
+    ON_CALL(crossDeviceMgr, GetLocalDeviceProfile()).WillByDefault(Return(profile));
+
     auto &companionMgr = guard.GetCompanionManager();
     CompanionStatus mockCompanionStatus = {};
     mockCompanionStatus.templateId = UINT32_12345;

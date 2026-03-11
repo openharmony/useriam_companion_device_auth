@@ -103,7 +103,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_001, TestSize.Lev
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(true));
 
     std::vector<DeviceKey> selectedDevices = { COMPANION_DEVICE_KEY };
-    request->HandleDeviceSelectResult(selectedDevices);
+    ASSERT_NO_THROW(request->HandleDeviceSelectResult(selectedDevices));
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_002, TestSize.Level0)
@@ -281,7 +281,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_001, TestSiz
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, MessageType::BEGIN_ADD_HOST_BINDING, _, _))
         .WillOnce(Return(true));
 
-    request->HandleInitKeyNegotiationReply(reply);
+    ASSERT_NO_THROW(request->HandleInitKeyNegotiationReply(reply));
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_002, TestSize.Level0)
@@ -406,7 +406,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_001, TestSi
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, MessageType::END_ADD_HOST_BINDING, _, _))
         .WillOnce(Return(true));
 
-    request->HandleBeginAddHostBindingReply(reply);
+    ASSERT_NO_THROW(request->HandleBeginAddHostBindingReply(reply));
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_002, TestSize.Level0)
@@ -502,7 +502,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_005, TestSi
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, MessageType::END_ADD_HOST_BINDING, _, _))
         .WillOnce(Return(false));
 
-    request->HandleBeginAddHostBindingReply(reply);
+    ASSERT_NO_THROW(request->HandleBeginAddHostBindingReply(reply));
 }
 
 HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_001, TestSize.Level0)
@@ -660,7 +660,7 @@ HWTEST_F(HostAddCompanionRequestTest, InvokeCallback_001, TestSize.Level0)
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
-    request->InvokeCallback(ResultCode::SUCCESS, {});
+    ASSERT_NO_THROW(request->InvokeCallback(ResultCode::SUCCESS, {}));
 }
 
 HWTEST_F(HostAddCompanionRequestTest, GetMaxConcurrency_001, TestSize.Level0)

@@ -215,6 +215,12 @@ bool SoftBusChannel::RequiresDisconnectNotification() const
     return false;
 }
 
+void SoftBusChannel::RefreshPhysicalDeviceStatus()
+{
+    ENSURE_OR_RETURN(deviceStatusManager_ != nullptr);
+    deviceStatusManager_->RefreshDeviceStatus();
+}
+
 void SoftBusChannel::OnRemoteDisconnect(const std::string &connectionName, const std::string &reason)
 {
     IAM_LOGI("OnRemoteDisconnect: conn=%{public}s, reason=%{public}s", connectionName.c_str(), reason.c_str());

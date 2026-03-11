@@ -75,6 +75,9 @@ pub struct HostDeviceEnrollRequest {
     pub atl: AuthTrustLevel,
     pub expected_protocol_list: Vec<u16>,
     pub expected_capability_list: Vec<u16>,
+    pub device_model_info: String,
+    pub device_name: String,
+    pub device_user_name: String,
 }
 
 impl HostDeviceEnrollRequest {
@@ -108,6 +111,9 @@ impl HostDeviceEnrollRequest {
             atl: AuthTrustLevel::Atl0,
             expected_protocol_list: Vec::new(),
             expected_capability_list: Vec::new(),
+            device_model_info: String::new(),
+            device_name: String::new(),
+            device_user_name: String::new(),
         })
     }
 
@@ -382,9 +388,9 @@ impl HostDeviceEnrollRequest {
         });
 
         let base_info = Box::new(CompanionDeviceBaseInfo {
-            device_model: String::new(),
-            device_name: String::new(),
-            device_user_name: String::new(),
+            device_model_info: self.device_model_info.clone(),
+            device_name: self.device_name.clone(),
+            device_user_name: self.device_user_name.clone(),
             business_ids: Vec::new(),
         });
 
@@ -492,6 +498,10 @@ impl Request for HostDeviceEnrollRequest {
             log_e!("Failed to convert capability_list: {:?}", e);
             ErrorCode::GeneralError
         })?;
+
+        self.device_model_info = ffi_input.companion_status.device_model_info.to_string().unwrap_or_default();
+        self.device_name = ffi_input.companion_status.device_name.to_string().unwrap_or_default();
+        self.device_user_name = ffi_input.companion_status.device_user_name.to_string().unwrap_or_default();
 
         self.decode_sec_binding_reply(ffi_input.sec_message.as_slice()?)?;
         let device_info = self.store_device_info()?;
