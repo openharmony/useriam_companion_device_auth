@@ -41,6 +41,7 @@ companion_device_auth_service_include_dirs = [
   "external_adapters/user_auth/inc",
   "external_adapters/user_id/inc",
   "external_adapters/system_param/inc",
+  "external_adapters/util/inc",
   "fwk_comm/inc",
   "host_binding/inc",
   "misc/inc",
@@ -112,11 +113,13 @@ companion_device_auth_service_static_sources = [
   "external_adapters/cpp/src/adapter_manager.cpp",
   "external_adapters/event_manager/src/event_manager_adapter_impl.cpp",
   "external_adapters/samgr/src/sa_manager_adapter_impl.cpp",
+  "external_adapters/security_command_adapter/cpp/src/companion_device_auth_ffi_util.cpp",
   "external_adapters/system_param/src/system_param_manager_impl.cpp",
   "external_adapters/time_keeper/src/time_keeper_impl.cpp",
   "external_adapters/user_auth/src/driver_manager_adapter_impl.cpp",
   "external_adapters/user_auth/src/idm_adapter_impl.cpp",
   "external_adapters/user_auth/src/user_auth_adapter_impl.cpp",
+  "external_adapters/util/src/xcollie_helper.cpp",
   "fwk_comm/src/companion_device_auth_all_in_one_executor.cpp",
   "fwk_comm/src/companion_device_auth_driver.cpp",
   "fwk_comm/src/companion_device_auth_executor_callback.cpp",
@@ -128,7 +131,6 @@ companion_device_auth_service_static_sources = [
   "request/src/base_request.cpp",
   "request/src/request_factory_impl.cpp",
   "request/src/request_manager_impl.cpp",
-  "security_agent/src/companion_device_auth_ffi_util.cpp",
   "security_agent/src/security_agent_impl.cpp",
   "service_entry/src/base_service_core.cpp",
   "service_entry/src/base_service_initializer.cpp",
@@ -148,7 +150,6 @@ companion_device_auth_service_static_sources = [
   "utils/src/subscription.cpp",
   "utils/src/task_runner_manager.cpp",
   "utils/src/temporary_task_runner.cpp",
-  "utils/src/xcollie_helper.cpp",
 ]
 
 companion_device_auth_service_external_deps = [

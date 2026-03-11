@@ -227,7 +227,7 @@ bool DecodePersistedCompanionStatus(const PersistedCompanionStatusFfi &ffi, Pers
         return false;
     }
 
-    if (!DecodeDataArrayToString(ffi.deviceModel, status.deviceModelInfo)) {
+    if (!DecodeDataArrayToString(ffi.deviceModelInfo, status.deviceModelInfo)) {
         return false;
     }
     if (!DecodeDataArrayToString(ffi.deviceUserName, status.deviceUserName)) {
@@ -255,7 +255,7 @@ bool EncodePersistedCompanionStatus(const PersistedCompanionStatus &status, Pers
         return false;
     }
 
-    if (!EncodeStringToDataArray(status.deviceModelInfo, ffi.deviceModel, "device model info") ||
+    if (!EncodeStringToDataArray(status.deviceModelInfo, ffi.deviceModelInfo, "device model info") ||
         !EncodeStringToDataArray(status.deviceUserName, ffi.deviceUserName, "device user name") ||
         !EncodeStringToDataArray(status.deviceName, ffi.deviceName, "device name")) {
         return false;

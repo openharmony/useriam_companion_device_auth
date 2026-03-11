@@ -363,7 +363,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_002, TestSize
 
     OnMessageReply messageReply = nullptr;
 
-    request->HandleBeginAddCompanion(attrInput, messageReply);
+    ASSERT_NO_THROW(request->HandleBeginAddCompanion(attrInput, messageReply));
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_003, TestSize.Level0)
@@ -494,7 +494,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_002, TestSize.L
 
     OnMessageReply messageReply = nullptr;
 
-    request->HandleEndAddCompanion(attrInput, messageReply);
+    ASSERT_NO_THROW(request->HandleEndAddCompanion(attrInput, messageReply));
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_003, TestSize.Level0)
@@ -611,7 +611,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, SendErrorReply_001, TestSize.Level0)
         std::move(onMessageReply), HOST_DEVICE_KEY);
     request->currentReply_ = nullptr;
 
-    request->SendErrorReply(ResultCode::SUCCESS);
+    ASSERT_NO_THROW(request->SendErrorReply(ResultCode::SUCCESS));
 }
 
 HWTEST_F(CompanionAddCompanionRequestTest, GetMaxConcurrency_001, TestSize.Level0)

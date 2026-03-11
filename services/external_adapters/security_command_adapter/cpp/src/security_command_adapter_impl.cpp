@@ -47,6 +47,7 @@ enum class RustErrorCode : int32_t {
     BAD_SIGN = 12,               // ErrorCode::BadSign
     ID_EXISTS = 13,              // ErrorCode::IdExists
     EXCEED_LIMIT = 14,           // ErrorCode::ExceedLimit
+    TOKEN_NOT_FOUND = 20005,     // ErrorCode::TokenNotFound
 };
 
 struct RustErrorCodeMapping {
@@ -70,6 +71,7 @@ static constexpr RustErrorCodeMapping RUST_ERROR_CODE_MAPPINGS[] = {
     { RustErrorCode::BAD_SIGN, ResultCode::AUTH_TOKEN_CHECK_FAILED },
     { RustErrorCode::ID_EXISTS, ResultCode::INVALID_PARAMETERS },
     { RustErrorCode::EXCEED_LIMIT, ResultCode::LOCKED },
+    { RustErrorCode::TOKEN_NOT_FOUND, ResultCode::TOKEN_NOT_FOUND },
 };
 
 static constexpr size_t RUST_ERROR_CODE_MAPPING_COUNT = sizeof(RUST_ERROR_CODE_MAPPINGS) / sizeof(RustErrorCodeMapping);

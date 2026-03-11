@@ -53,7 +53,7 @@ public:
 
     void StartObtainTokenRequests(UserId userId, uint32_t lockStateAuthTypeValue,
         const std::vector<uint8_t> &fwkUnlockMsg) override;
-    void RevokeTokens(UserId userId) override;
+    void RevokeTokens(UserId userId, const std::string &reason = "") override;
 
 private:
     HostBindingManagerImpl() = default;

@@ -64,7 +64,7 @@ std::shared_ptr<BaseServiceInitializer> BaseServiceInitializer::Create()
     auto subscriptionManager = std::make_shared<SubscriptionManager>();
     ENSURE_OR_RETURN_VAL(subscriptionManager != nullptr, nullptr);
     auto initializer = std::shared_ptr<BaseServiceInitializer>(
-        new (std::nothrow) BaseServiceInitializer(subscriptionManager, supportedBusinessIds, localCapabilities));
+        new (std::nothrow) BaseServiceInitializer(subscriptionManager, supportedBusinessIds, localCapabilities, true));
     ENSURE_OR_RETURN_VAL(initializer != nullptr, nullptr);
 
     if (!initializer->Initialize()) {
@@ -281,8 +281,8 @@ bool BaseServiceInitializer::InitializeChannels()
 
 bool BaseServiceInitializer::InitializeCrossDeviceCommManager()
 {
-    auto crossDeviceCommManager =
-        CrossDeviceCommManagerImpl::Create(supportedBusinessIds_, localCapabilities_, channelsHolder_);
+    auto crossDeviceCommManager = CrossDeviceCommManagerImpl::Create(supportedBusinessIds_, localCapabilities_,
+        channelsHolder_, hostBindingRevokeTokenOnInactive_);
     ENSURE_OR_RETURN_VAL(crossDeviceCommManager != nullptr, false);
     SingletonManager::GetInstance().SetCrossDeviceCommManager(crossDeviceCommManager);
     return true;
@@ -349,10 +349,12 @@ const BaseServiceInitializer::BasicInitStep BaseServiceInitializer::BASIC_INIT_T
 const size_t BaseServiceInitializer::BASIC_INIT_TABLE_SIZE = sizeof(BASIC_INIT_TABLE) / sizeof(BASIC_INIT_TABLE[0]);
 
 BaseServiceInitializer::BaseServiceInitializer(std::shared_ptr<SubscriptionManager> subscriptionManager,
-    const std::vector<BusinessId> &supportedBusinessIds, const std::vector<Capability> &localCapabilities)
+    const std::vector<BusinessId> &supportedBusinessIds, const std::vector<Capability> &localCapabilities,
+    bool hostBindingRevokeTokenOnInactive)
     : subscriptionManagerHolder_(std::move(subscriptionManager)),
       supportedBusinessIds_(supportedBusinessIds),
-      localCapabilities_(localCapabilities)
+      localCapabilities_(localCapabilities),
+      hostBindingRevokeTokenOnInactive_(hostBindingRevokeTokenOnInactive)
 {
 }
 

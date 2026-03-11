@@ -154,7 +154,7 @@ HWTEST_F(SubscriptionManagerTest, RemoveAvailableDeviceStatusCallback_002, TestS
     auto subscriptionManager = std::make_unique<SubscriptionManager>();
     sptr<MockIIpcAvailableDeviceStatusCallback> callback = nullptr;
 
-    subscriptionManager->RemoveAvailableDeviceStatusCallback(callback);
+    ASSERT_NO_THROW(subscriptionManager->RemoveAvailableDeviceStatusCallback(callback));
 }
 
 HWTEST_F(SubscriptionManagerTest, AddTemplateStatusCallback_001, TestSize.Level0)
@@ -242,7 +242,7 @@ HWTEST_F(SubscriptionManagerTest, RemoveTemplateStatusCallback_002, TestSize.Lev
     auto subscriptionManager = std::make_unique<SubscriptionManager>();
     sptr<MockIIpcTemplateStatusCallback> callback = nullptr;
 
-    subscriptionManager->RemoveTemplateStatusCallback(callback);
+    ASSERT_NO_THROW(subscriptionManager->RemoveTemplateStatusCallback(callback));
 }
 
 HWTEST_F(SubscriptionManagerTest, AddContinuousAuthStatusCallback_001, TestSize.Level0)
@@ -334,7 +334,7 @@ HWTEST_F(SubscriptionManagerTest, RemoveContinuousAuthStatusCallback_002, TestSi
     auto subscriptionManager = std::make_unique<SubscriptionManager>();
     sptr<MockIIpcContinuousAuthStatusCallback> callback = nullptr;
 
-    subscriptionManager->RemoveContinuousAuthStatusCallback(callback);
+    ASSERT_NO_THROW(subscriptionManager->RemoveContinuousAuthStatusCallback(callback));
 }
 
 HWTEST_F(SubscriptionManagerTest, UpdateSubscribeMode_001, TestSize.Level0)
@@ -344,7 +344,7 @@ HWTEST_F(SubscriptionManagerTest, UpdateSubscribeMode_001, TestSize.Level0)
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SetSubscribeMode(SUBSCRIBE_MODE_AUTH)).Times(1);
 
-    subscriptionManager->UpdateSubscribeMode();
+    ASSERT_NO_THROW(subscriptionManager->UpdateSubscribeMode());
 }
 
 HWTEST_F(SubscriptionManagerTest, UpdateSubscribeMode_002, TestSize.Level0)

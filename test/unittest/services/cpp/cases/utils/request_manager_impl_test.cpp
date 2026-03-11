@@ -160,7 +160,7 @@ HWTEST_F(RequestManagerImplTest, Start_ValidRequest_CallsStartOnRequest, TestSiz
     EXPECT_CALL(*request, Start()).Times(1);
 
     manager_->Start(request);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Start_DuplicateRequestId_ReturnsFalse, TestSize.Level0)
@@ -185,7 +185,7 @@ HWTEST_F(RequestManagerImplTest, Start_PreemptsRunningRequest_WhenShouldCancelRe
 
     manager_->Start(existingRequest);
     manager_->Start(newRequest);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Start_DoesNotPreemptRunningRequest_WhenShouldCancelReturnsFalse, TestSize.Level0)
@@ -200,7 +200,7 @@ HWTEST_F(RequestManagerImplTest, Start_DoesNotPreemptRunningRequest_WhenShouldCa
 
     manager_->Start(existingRequest);
     manager_->Start(newRequest);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Start_PreemptsWaitingRequest_WhenShouldCancelReturnsTrue, TestSize.Level0)
@@ -249,7 +249,7 @@ HWTEST_F(RequestManagerImplTest, Start_PreemptsMultipleRequests_WhenShouldCancel
     manager_->Start(existingRequest1);
     manager_->Start(existingRequest2);
     manager_->Start(newRequest);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 // ============== Concurrency Control Tests (MaxConcurrency) ==============
@@ -267,7 +267,7 @@ HWTEST_F(RequestManagerImplTest, Start_AddsToRunningQueue_WhenBelowMaxConcurrenc
 
     manager_->Start(request1);
     manager_->Start(request2);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Start_AddsToWaitingQueue_WhenAtMaxConcurrency, TestSize.Level0)
@@ -307,7 +307,7 @@ HWTEST_F(RequestManagerImplTest, Start_CountsBothRunningAndWaiting_ForConcurrenc
     manager_->Start(request1);
     manager_->Start(request2);
     manager_->Start(request3);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Start_DifferentRequestTypes_HaveSeparateConcurrencyLimits, TestSize.Level0)
@@ -323,7 +323,7 @@ HWTEST_F(RequestManagerImplTest, Start_DifferentRequestTypes_HaveSeparateConcurr
 
     manager_->Start(tokenRequest1);
     manager_->Start(delegateRequest);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 // ============== Remove Tests (Waiting Queue Scheduling) ==============
@@ -371,7 +371,7 @@ HWTEST_F(RequestManagerImplTest, Remove_StartsWaitingRequest_WhenRunningRequestR
     EXPECT_CALL(*request2, Start()).Times(1);
 
     manager_->Remove(1);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Remove_DoesNotStartWaitingRequest_WhenWaitingRequestRemoved, TestSize.Level0)
@@ -420,7 +420,7 @@ HWTEST_F(RequestManagerImplTest, Remove_StartsOnlyMatchingTypeFromWaitingQueue, 
     EXPECT_CALL(*delegateRequest, Start()).Times(0);
 
     manager_->Remove(1);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Remove_StartsMultipleWaitingRequests_WhenMultipleSlotsAvailable, TestSize.Level0)
@@ -442,7 +442,7 @@ HWTEST_F(RequestManagerImplTest, Remove_StartsMultipleWaitingRequests_WhenMultip
     EXPECT_CALL(*request3, Start()).Times(1);
 
     manager_->Remove(1);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, Remove_NonExistentRequest_DoesNothing, TestSize.Level0)
@@ -477,7 +477,7 @@ HWTEST_F(RequestManagerImplTest, Remove_CountsOnlyRunningRequestsOfSameType, Tes
     TaskRunnerManager::GetInstance().ExecuteAll();
 
     manager_->Remove(1);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 // ============== Cancel Tests ==============
@@ -609,7 +609,7 @@ HWTEST_F(RequestManagerImplTest, CancelAll_CancelsAllRunningRequests, TestSize.L
     manager_->Start(request1);
     manager_->Start(request2);
 
-    manager_->CancelAll();
+    ASSERT_NO_THROW(manager_->CancelAll());
 }
 
 HWTEST_F(RequestManagerImplTest, CancelAll_CancelsAllWaitingRequests, TestSize.Level0)
@@ -626,12 +626,12 @@ HWTEST_F(RequestManagerImplTest, CancelAll_CancelsAllWaitingRequests, TestSize.L
     manager_->Start(request1);
     manager_->Start(request2);
 
-    manager_->CancelAll();
+    ASSERT_NO_THROW(manager_->CancelAll());
 }
 
 HWTEST_F(RequestManagerImplTest, CancelAll_EmptyManager_DoesNothing, TestSize.Level0)
 {
-    manager_->CancelAll();
+    ASSERT_NO_THROW(manager_->CancelAll());
 }
 
 HWTEST_F(RequestManagerImplTest, CancelAll_WithNullRequestsInList, TestSize.Level0)
@@ -645,7 +645,7 @@ HWTEST_F(RequestManagerImplTest, CancelAll_WithNullRequestsInList, TestSize.Leve
 
     EXPECT_CALL(*request1, Cancel(_)).Times(1).WillOnce(Return(true));
 
-    manager_->CancelAll();
+    ASSERT_NO_THROW(manager_->CancelAll());
 }
 
 HWTEST_F(RequestManagerImplTest, CancelAll_WithFailedCancel, TestSize.Level0)
@@ -661,7 +661,7 @@ HWTEST_F(RequestManagerImplTest, CancelAll_WithFailedCancel, TestSize.Level0)
     EXPECT_CALL(*request1, Cancel(_)).Times(1).WillOnce(Return(false));
     EXPECT_CALL(*request2, Cancel(_)).Times(1).WillOnce(Return(false));
 
-    manager_->CancelAll();
+    ASSERT_NO_THROW(manager_->CancelAll());
 }
 
 // ============== Get Tests ==============
@@ -740,7 +740,7 @@ HWTEST_F(RequestManagerImplTest, ComplexScenario_PreemptionAndConcurrency, TestS
     EXPECT_CALL(*existingToken1, Cancel(_)).Times(0);
 
     manager_->Start(newToken);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, ComplexScenario_WaitingQueueSchedulingOrder, TestSize.Level0)
@@ -767,7 +767,7 @@ HWTEST_F(RequestManagerImplTest, ComplexScenario_WaitingQueueSchedulingOrder, Te
     EXPECT_CALL(*waiting2, Start()).Times(1);
 
     manager_->Remove(2);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 HWTEST_F(RequestManagerImplTest, ComplexScenario_PreemptedRequestNotStartedFromWaiting, TestSize.Level0)
@@ -792,7 +792,7 @@ HWTEST_F(RequestManagerImplTest, ComplexScenario_PreemptedRequestNotStartedFromW
     EXPECT_CALL(*waiting, Start()).Times(0);
 
     manager_->Start(newRequest);
-    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
 } // namespace

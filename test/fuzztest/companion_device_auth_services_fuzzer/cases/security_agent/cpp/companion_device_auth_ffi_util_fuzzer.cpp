@@ -73,10 +73,10 @@ static void FuzzDecodePersistedCompanionStatus(FuzzedDataProvider &fuzzData)
         ffi.enabledBusinessIds.data[i] = fuzzData.ConsumeIntegral<uint32_t>();
     }
 
-    // deviceModel
-    ffi.deviceModel.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL64);
-    for (uint32_t i = 0; i < ffi.deviceModel.len && i < TEST_VAL64; ++i) {
-        ffi.deviceModel.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
+    // deviceModelInfo
+    ffi.deviceModelInfo.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL64);
+    for (uint32_t i = 0; i < ffi.deviceModelInfo.len && i < TEST_VAL64; ++i) {
+        ffi.deviceModelInfo.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
 
     // deviceUserName

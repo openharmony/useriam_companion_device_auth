@@ -55,6 +55,8 @@ public:
 
     virtual bool CheckOperationIntent(const DeviceKey &deviceKey, uint32_t tokenId,
         OnCheckOperationIntentResult &&resultCallback) = 0;
+
+    virtual void RefreshPhysicalDeviceStatus() = 0;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
