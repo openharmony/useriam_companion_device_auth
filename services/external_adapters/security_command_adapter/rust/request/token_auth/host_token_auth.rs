@@ -110,7 +110,7 @@ impl HostTokenAuthRequest {
         if let Some(time_period) = current_time.checked_sub(token_info.added_time) {
             if time_period > TOKEN_VALID_PERIOD {
                 log_e!("token is expired, current_time:{}, added_time:{}", current_time, token_info.added_time);
-                return Err(ErrorCode::GeneralError);
+                return Err(ErrorCode::Timeout);
             }
         } else {
             log_e!("bad time, current_time:{}, added_time:{}", current_time, token_info.added_time);

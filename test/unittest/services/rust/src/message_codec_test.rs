@@ -36,9 +36,9 @@ fn serialize_attribute_test() {
         MessageCodec::new(MessageSignParam::Executor(KeyPair { pub_key: Vec::<u8>::new(), pri_key: Vec::<u8>::new() }));
 
     let mut mock_crypto_engin = MockCryptoEngine::new();
-    mock_crypto_engin.expect_ed25519_sign().returning(|_, _| Err(ErrorCode::BadSign));
+    mock_crypto_engin.expect_ed25519_sign().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engin));
-    assert_eq!(message_codec_executor.serialize_attribute(&attr), Err(ErrorCode::BadSign));
+    assert_eq!(message_codec_executor.serialize_attribute(&attr), Err(ErrorCode::GeneralError));
 
     mock_crypto_engin = MockCryptoEngine::new();
     mock_crypto_engin.expect_ed25519_sign().returning(|_, _| Ok(Vec::<u8>::new()));
@@ -79,10 +79,10 @@ fn deserialize_attribute_test() {
     data_and_sign_attr.set_u8_slice(AttributeKey::AttrSignature, &[0u8; 32]);
     attr.set_u8_slice(AttributeKey::AttrRoot, &data_and_sign_attr.to_bytes().unwrap());
     let mut mock_crypto_engin = MockCryptoEngine::new();
-    mock_crypto_engin.expect_ed25519_verify().returning(|_, _| Err(ErrorCode::BadSign));
+    mock_crypto_engin.expect_ed25519_verify().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engin));
-    assert_eq!(message_codec_executor.deserialize_attribute(&attr.to_bytes().unwrap()), Err(ErrorCode::BadSign));
-    assert_eq!(message_codec_fwk.deserialize_attribute(&attr.to_bytes().unwrap()), Err(ErrorCode::BadSign));
+    assert_eq!(message_codec_executor.deserialize_attribute(&attr.to_bytes().unwrap()), Err(ErrorCode::GeneralError));
+    assert_eq!(message_codec_fwk.deserialize_attribute(&attr.to_bytes().unwrap()), Err(ErrorCode::GeneralError));
 
     mock_crypto_engin = MockCryptoEngine::new();
     mock_crypto_engin.expect_ed25519_verify().returning(|_, _| Ok(()));
