@@ -26,18 +26,14 @@ fn error_code_test() {
     assert_eq!(ErrorCode::try_from(0).unwrap(), ErrorCode::Success);
     assert_eq!(ErrorCode::try_from(1).unwrap(), ErrorCode::Fail);
     assert_eq!(ErrorCode::try_from(2).unwrap(), ErrorCode::GeneralError);
-    assert_eq!(ErrorCode::try_from(3).unwrap(), ErrorCode::Canceled);
     assert_eq!(ErrorCode::try_from(4).unwrap(), ErrorCode::Timeout);
-    assert_eq!(ErrorCode::try_from(5).unwrap(), ErrorCode::TypeNotSupport);
-    assert_eq!(ErrorCode::try_from(6).unwrap(), ErrorCode::TrustLevelNotSupport);
-    assert_eq!(ErrorCode::try_from(7).unwrap(), ErrorCode::Busy);
     assert_eq!(ErrorCode::try_from(8).unwrap(), ErrorCode::BadParam);
-    assert_eq!(ErrorCode::try_from(9).unwrap(), ErrorCode::ReadParcelError);
-    assert_eq!(ErrorCode::try_from(10).unwrap(), ErrorCode::WriteParcelError);
-    assert_eq!(ErrorCode::try_from(11).unwrap(), ErrorCode::NotFound);
-    assert_eq!(ErrorCode::try_from(12).unwrap(), ErrorCode::BadSign);
-    assert_eq!(ErrorCode::try_from(13).unwrap(), ErrorCode::IdExists);
-    assert_eq!(ErrorCode::try_from(14).unwrap(), ErrorCode::ExceedLimit);
+    assert_eq!(ErrorCode::try_from(1003).unwrap(), ErrorCode::ReadParcelError);
+    assert_eq!(ErrorCode::try_from(1004).unwrap(), ErrorCode::WriteParcelError);
+    assert_eq!(ErrorCode::try_from(10006).unwrap(), ErrorCode::NotFound);
+    assert_eq!(ErrorCode::try_from(10015).unwrap(), ErrorCode::IdExists);
+    assert_eq!(ErrorCode::try_from(10017).unwrap(), ErrorCode::ExceedLimit);
+    assert_eq!(ErrorCode::try_from(20005).unwrap(), ErrorCode::TokenNotFound);
     assert_eq!(ErrorCode::try_from(-1), Err(ErrorCode::BadParam));
 }
 

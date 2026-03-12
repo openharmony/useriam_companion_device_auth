@@ -35,18 +35,13 @@ enum class RustErrorCode : int32_t {
     SUCCESS = 0,                 // ErrorCode::Success
     FAIL = 1,                    // ErrorCode::Fail
     GENERAL_ERROR = 2,           // ErrorCode::GeneralError
-    CANCELED = 3,                // ErrorCode::Canceled
     TIMEOUT = 4,                 // ErrorCode::Timeout
-    TYPE_NOT_SUPPORT = 5,        // ErrorCode::TypeNotSupport
-    TRUST_LEVEL_NOT_SUPPORT = 6, // ErrorCode::TrustLevelNotSupport
-    BUSY = 7,                    // ErrorCode::Busy
     BAD_PARAM = 8,               // ErrorCode::BadParam
-    READ_PARCEL_ERROR = 9,       // ErrorCode::ReadParcelError
-    WRITE_PARCEL_ERROR = 10,     // ErrorCode::WriteParcelError
-    NOT_FOUND = 11,              // ErrorCode::NotFound
-    BAD_SIGN = 12,               // ErrorCode::BadSign
-    ID_EXISTS = 13,              // ErrorCode::IdExists
-    EXCEED_LIMIT = 14,           // ErrorCode::ExceedLimit
+    READ_PARCEL_ERROR = 1003,    // ErrorCode::ReadParcelError
+    WRITE_PARCEL_ERROR = 1004,   // ErrorCode::WriteParcelError
+    NOT_FOUND = 10006,           // ErrorCode::NotFound
+    ID_EXISTS = 10015,           // ErrorCode::IdExists
+    EXCEED_LIMIT = 100017,       // ErrorCode::ExceedLimit
     TOKEN_NOT_FOUND = 20005,     // ErrorCode::TokenNotFound
 };
 
@@ -59,18 +54,13 @@ static constexpr RustErrorCodeMapping RUST_ERROR_CODE_MAPPINGS[] = {
     { RustErrorCode::SUCCESS, ResultCode::SUCCESS },
     { RustErrorCode::FAIL, ResultCode::FAIL },
     { RustErrorCode::GENERAL_ERROR, ResultCode::GENERAL_ERROR },
-    { RustErrorCode::CANCELED, ResultCode::CANCELED },
     { RustErrorCode::TIMEOUT, ResultCode::TIMEOUT },
-    { RustErrorCode::TYPE_NOT_SUPPORT, ResultCode::TYPE_NOT_SUPPORT },
-    { RustErrorCode::TRUST_LEVEL_NOT_SUPPORT, ResultCode::TRUST_LEVEL_NOT_SUPPORT },
-    { RustErrorCode::BUSY, ResultCode::BUSY },
     { RustErrorCode::BAD_PARAM, ResultCode::INVALID_PARAMETERS },
     { RustErrorCode::READ_PARCEL_ERROR, ResultCode::GENERAL_ERROR },
     { RustErrorCode::WRITE_PARCEL_ERROR, ResultCode::GENERAL_ERROR },
     { RustErrorCode::NOT_FOUND, ResultCode::NOT_ENROLLED },
-    { RustErrorCode::BAD_SIGN, ResultCode::AUTH_TOKEN_CHECK_FAILED },
     { RustErrorCode::ID_EXISTS, ResultCode::INVALID_PARAMETERS },
-    { RustErrorCode::EXCEED_LIMIT, ResultCode::LOCKED },
+    { RustErrorCode::EXCEED_LIMIT, ResultCode::GENERAL_ERROR },
     { RustErrorCode::TOKEN_NOT_FOUND, ResultCode::TOKEN_NOT_FOUND },
 };
 
