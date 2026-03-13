@@ -32,17 +32,17 @@ namespace CompanionDeviceAuth {
 
 // Rust ErrorCode enumeration (mirrors services/security_agent/rust/common/constants.rs)
 enum class RustErrorCode : int32_t {
-    SUCCESS = 0,                 // ErrorCode::Success
-    FAIL = 1,                    // ErrorCode::Fail
-    GENERAL_ERROR = 2,           // ErrorCode::GeneralError
-    TIMEOUT = 4,                 // ErrorCode::Timeout
-    BAD_PARAM = 8,               // ErrorCode::BadParam
-    READ_PARCEL_ERROR = 1003,    // ErrorCode::ReadParcelError
-    WRITE_PARCEL_ERROR = 1004,   // ErrorCode::WriteParcelError
-    NOT_FOUND = 10006,           // ErrorCode::NotFound
-    ID_EXISTS = 10015,           // ErrorCode::IdExists
-    EXCEED_LIMIT = 100017,       // ErrorCode::ExceedLimit
-    TOKEN_NOT_FOUND = 20005,     // ErrorCode::TokenNotFound
+    SUCCESS = 0,               // ErrorCode::Success
+    FAIL = 1,                  // ErrorCode::Fail
+    GENERAL_ERROR = 2,         // ErrorCode::GeneralError
+    TIMEOUT = 4,               // ErrorCode::Timeout
+    BAD_PARAM = 8,             // ErrorCode::BadParam
+    READ_PARCEL_ERROR = 1003,  // ErrorCode::ReadParcelError
+    WRITE_PARCEL_ERROR = 1004, // ErrorCode::WriteParcelError
+    NOT_FOUND = 10006,         // ErrorCode::NotFound
+    ID_EXISTS = 10015,         // ErrorCode::IdExists
+    EXCEED_LIMIT = 100017,     // ErrorCode::ExceedLimit
+    TOKEN_NOT_FOUND = 20005,   // ErrorCode::TokenNotFound
 };
 
 struct RustErrorCodeMapping {

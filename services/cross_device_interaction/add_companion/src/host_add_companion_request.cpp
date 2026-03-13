@@ -237,6 +237,56 @@ void HostAddCompanionRequest::HandleBeginAddHostBindingReply(const Attributes &r
     errorGuard.Cancel();
 }
 
+std::optional<PersistedCompanionStatus> HostAddCompanionRequest::BuildPersistedCompanionStatus(
+    const DeviceStatus &deviceStatus)
+{
+    auto companionDeviceKey = GetPeerDeviceKey();
+    if (!companionDeviceKey.has_value()) {
+        return std::nullopt;
+    }
+
+    PersistedCompanionStatus companionStatus = {};
+    companionStatus.hostUserId = hostDeviceKey_.deviceUserId;
+    companionStatus.companionDeviceKey = *companionDeviceKey;
+    companionStatus.deviceModelInfo = deviceStatus.deviceModelInfo;
+    companionStatus.deviceUserName = deviceStatus.deviceUserName;
+    companionStatus.deviceName = deviceStatus.deviceName;
+    companionStatus.isValid = true;
+    return companionStatus;
+}
+
+EndAddCompanionInput HostAddCompanionRequest::BuildEndAddCompanionInput(const PersistedCompanionStatus &companionStatus,
+    const DeviceStatus &deviceStatus, const std::vector<uint8_t> &addHostBindingReply)
+{
+    std::vector<uint16_t> protocolVersionList = { static_cast<uint16_t>(deviceStatus.protocolId) };
+    std::vector<uint16_t> capabilityList = CapabilityConverter::ToUnderlyingVec(deviceStatus.capabilities);
+
+    EndAddCompanionInput input = {};
+    input.requestId = GetRequestId();
+    input.companionStatus = companionStatus;
+    input.secureProtocolId = secureProtocolId_;
+    input.protocolVersionList = protocolVersionList;
+    input.capabilityList = capabilityList;
+    input.addHostBindingReply = addHostBindingReply;
+    return input;
+}
+
+void HostAddCompanionRequest::ProcessEndAddCompanionOutput(const EndAddCompanionOutput &output,
+    std::vector<uint8_t> &fwkMsg)
+{
+    needCancelCompanionAdd_ = false;
+    templateId_ = output.templateId;
+    UpdateDescription(GenerateDescription(requestType_, requestId_, GetConnectionName(), templateId_));
+
+    fwkMsg = output.fwkMsg;
+    pendingTokenData_ = output.tokenData;
+    tokenAtl_ = output.atl;
+
+    eventCollector_.UpdateTemplateIdList({ templateId_ });
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.AppendExtraInfo("ESL", output.esl);
+}
+
 bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &reply, std::vector<uint8_t> &fwkMsg)
 {
     auto companionDeviceKey = GetPeerDeviceKey();
@@ -245,40 +295,18 @@ bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &re
     auto deviceStatus = GetCrossDeviceCommManager().GetDeviceStatus(*companionDeviceKey);
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), deviceStatus.has_value(), false);
 
-    PersistedCompanionStatus companionStatus = {};
-    companionStatus.hostUserId = hostDeviceKey_.deviceUserId;
-    companionStatus.companionDeviceKey = *companionDeviceKey;
-    companionStatus.deviceModelInfo = deviceStatus->deviceModelInfo;
-    companionStatus.deviceUserName = deviceStatus->deviceUserName;
-    companionStatus.deviceName = deviceStatus->deviceName;
-    companionStatus.isValid = true;
+    auto companionStatusOpt = BuildPersistedCompanionStatus(*deviceStatus);
+    ENSURE_OR_RETURN_DESC_VAL(GetDescription(), companionStatusOpt.has_value(), false);
 
-    std::vector<uint16_t> protocolVersionList = { static_cast<uint16_t>(deviceStatus->protocolId) };
-    std::vector<uint16_t> capabilityList = CapabilityConverter::ToUnderlyingVec(deviceStatus->capabilities);
-
-    EndAddCompanionInput input = { .requestId = GetRequestId(),
-        .companionStatus = companionStatus,
-        .secureProtocolId = secureProtocolId_,
-        .protocolVersionList = protocolVersionList,
-        .capabilityList = capabilityList,
-        .addHostBindingReply = std::move(reply.extraInfo) };
+    EndAddCompanionInput input = BuildEndAddCompanionInput(*companionStatusOpt, *deviceStatus, reply.extraInfo);
     EndAddCompanionOutput output = {};
     ResultCode ret = GetCompanionManager().EndAddCompanion(input, output);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s EndAddCompanion failed ret=%{public}d", GetDescription(), ret);
         return false;
     }
-    needCancelCompanionAdd_ = false;
-    templateId_ = output.templateId;
-    UpdateDescription(GenerateDescription(requestType_, requestId_, GetConnectionName(), templateId_));
 
-    fwkMsg = std::move(output.fwkMsg);
-    pendingTokenData_ = std::move(output.tokenData);
-    tokenAtl_ = output.atl;
-
-    eventCollector_.UpdateTemplateIdList({ templateId_ });
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
-    eventCollector_.AppendExtraInfo("ESL", output.esl);
+    ProcessEndAddCompanionOutput(output, fwkMsg);
     return true;
 }
 
