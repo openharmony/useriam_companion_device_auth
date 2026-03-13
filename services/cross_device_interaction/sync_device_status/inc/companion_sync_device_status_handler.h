@@ -36,6 +36,9 @@ protected:
 private:
     bool CompanionProcessCheck(const HostBindingStatus &hostBindingStatus, const SyncDeviceStatusRequest &syncRequest,
         std::vector<uint8_t> &outCompanionCheckResponse);
+    std::optional<SyncDeviceStatusReply> BuildSyncDeviceStatusReply(UserId companionUserId);
+    CompanionProcessCheckInput BuildCompanionProcessCheckInput(const HostBindingStatus &hostBindingStatus,
+        const SyncDeviceStatusRequest &syncRequest, SecureProtocolId secureProtocolId);
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

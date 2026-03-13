@@ -85,6 +85,11 @@ private:
     ResultCode AddCompanionInternal(const std::shared_ptr<Companion> &companion);
     ResultCode RemoveCompanionInternal(TemplateId templateId);
 
+    HostBeginAddCompanionInput BuildHostBeginAddCompanionInput(const BeginAddCompanionParams &params);
+    bool ValidateBeginAddCompanionOutput(const HostBeginAddCompanionOutput &output);
+    HostEndAddCompanionInput BuildHostEndAddCompanionInput(const EndAddCompanionInput &input);
+    void ProcessEndAddCompanionOutput(const HostEndAddCompanionOutput &secOutput, EndAddCompanionOutput &output);
+
     UserId hostUserId_ { INVALID_USER_ID };
     std::vector<std::shared_ptr<Companion>> companions_;
     std::map<SubscribeId, OnCompanionDeviceStatusChange> statusSubscribers_;

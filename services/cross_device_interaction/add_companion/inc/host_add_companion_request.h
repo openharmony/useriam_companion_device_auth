@@ -59,6 +59,10 @@ private:
     bool EndAddCompanion(const BeginAddHostBindingReply &reply, std::vector<uint8_t> &fwkMsg);
     bool SendEndAddHostBindingMsg(ResultCode result);
     void InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo);
+    std::optional<PersistedCompanionStatus> BuildPersistedCompanionStatus(const DeviceStatus &deviceStatus);
+    EndAddCompanionInput BuildEndAddCompanionInput(const PersistedCompanionStatus &companionStatus,
+        const DeviceStatus &deviceStatus, const std::vector<uint8_t> &addHostBindingReply);
+    void ProcessEndAddCompanionOutput(const EndAddCompanionOutput &output, std::vector<uint8_t> &fwkMsg);
 
     std::vector<uint8_t> fwkMsg_;
     uint32_t tokenId_ = 0;
