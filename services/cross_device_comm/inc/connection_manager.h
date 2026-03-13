@@ -125,7 +125,6 @@ private:
 
     std::vector<std::unique_ptr<Subscription>> physicalDeviceSubscriptions_;
 
-    // Helper methods
     std::string GenerateConnectionName(const PhysicalDeviceKey &localPhysicalKey,
         const PhysicalDeviceKey &remotePhysicalKey);
     bool CheckResourceLimits(const PhysicalDeviceKey &physicalDeviceKey);

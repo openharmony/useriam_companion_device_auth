@@ -103,13 +103,9 @@ bool CompanionAddCompanionRequest::OnStart(ErrorGuard &errorGuard)
     return true;
 }
 
-bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNegotiationRequest &request,
-    std::vector<uint8_t> &initKeyNegotiationReply)
+CompanionInitKeyNegotiationInput CompanionAddCompanionRequest::BuildCompanionInitKeyNegotiationInput(
+    const LocalDeviceProfile &profile, const std::vector<uint8_t> &initKeyNegotiationRequest)
 {
-    IAM_LOGI("%{public}s start", GetDescription());
-
-    auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
-
     CompanionInitKeyNegotiationInput input = {};
     input.requestId = GetRequestId();
     input.secureProtocolId = secureProtocolId_;
@@ -117,7 +113,34 @@ bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNego
     input.capabilityList = CapabilityConverter::ToUnderlyingVec(profile.capabilities);
     input.companionDeviceKey = companionDeviceKey_;
     input.hostDeviceKey = PeerDeviceKey();
-    input.initKeyNegotiationRequest = request.extraInfo;
+    input.initKeyNegotiationRequest = initKeyNegotiationRequest;
+    return input;
+}
+
+void CompanionAddCompanionRequest::ProcessCompanionInitKeyNegotiationOutput(
+    const CompanionInitKeyNegotiationOutput &output, const std::vector<uint8_t> &initKeyNegotiationRequest,
+    std::vector<uint8_t> &initKeyNegotiationReply)
+{
+    needCancelAddCompanion_ = true;
+
+    std::vector<uint16_t> algorithmList;
+    uint16_t selectedAlgorithm;
+    ParseAlgorithmListFromInitKeyNegotiationRequest(initKeyNegotiationRequest, algorithmList);
+    ParseSelectedAlgorithmFromInitKeyNegotiationReply(output.initKeyNegotiationReply, selectedAlgorithm);
+
+    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
+    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
+
+    initKeyNegotiationReply = output.initKeyNegotiationReply;
+}
+
+bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNegotiationRequest &request,
+    std::vector<uint8_t> &initKeyNegotiationReply)
+{
+    IAM_LOGI("%{public}s start", GetDescription());
+
+    auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
+    CompanionInitKeyNegotiationInput input = BuildCompanionInitKeyNegotiationInput(profile, request.extraInfo);
 
     CompanionInitKeyNegotiationOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionInitKeyNegotiation(input, output);
@@ -125,17 +148,8 @@ bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNego
         IAM_LOGE("%{public}s CompanionInitKeyNegotiation failed ret=%{public}d", GetDescription(), ret);
         return false;
     }
-    needCancelAddCompanion_ = true;
 
-    std::vector<uint16_t> algorithmList;
-    uint16_t selectedAlgorithm;
-    ParseAlgorithmListFromInitKeyNegotiationRequest(request.extraInfo, algorithmList);
-    ParseSelectedAlgorithmFromInitKeyNegotiationReply(output.initKeyNegotiationReply, selectedAlgorithm);
-
-    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
-    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
-
-    initKeyNegotiationReply = output.initKeyNegotiationReply;
+    ProcessCompanionInitKeyNegotiationOutput(output, request.extraInfo, initKeyNegotiationReply);
     return true;
 }
 
