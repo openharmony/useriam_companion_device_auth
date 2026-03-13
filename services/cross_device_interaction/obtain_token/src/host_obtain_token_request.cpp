@@ -202,14 +202,35 @@ void HostObtainTokenRequest::HandleObtainTokenMessage(const Attributes &request,
     CompleteWithSuccess();
 }
 
-bool HostObtainTokenRequest::HandleHostProcessObtainToken(const ObtainTokenRequest &request,
-    std::vector<uint8_t> &obtainTokenReply)
+HostProcessObtainTokenInput HostObtainTokenRequest::BuildHostProcessObtainTokenInput(
+    const std::vector<uint8_t> &obtainTokenRequest)
 {
     HostProcessObtainTokenInput input = {};
     input.requestId = GetRequestId();
     input.templateId = templateId_;
     input.secureProtocolId = secureProtocolId_;
-    input.obtainTokenRequest = request.extraInfo;
+    input.obtainTokenRequest = obtainTokenRequest;
+    return input;
+}
+
+bool HostObtainTokenRequest::ProcessHostProcessObtainTokenOutput(const HostProcessObtainTokenOutput &output,
+    std::vector<uint8_t> &obtainTokenReply)
+{
+    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    obtainTokenReply = output.obtainTokenReply;
+    IAM_LOGI("%{public}s HostProcessObtainToken success atl=%{public}d", GetDescription(), output.atl);
+
+    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAtl(templateId_, output.atl);
+    if (!setTokenAtlRet) {
+        IAM_LOGE("%{public}s SetCompanionTokenAtl failed", GetDescription());
+    }
+    return setTokenAtlRet;
+}
+
+bool HostObtainTokenRequest::HandleHostProcessObtainToken(const ObtainTokenRequest &request,
+    std::vector<uint8_t> &obtainTokenReply)
+{
+    HostProcessObtainTokenInput input = BuildHostProcessObtainTokenInput(request.extraInfo);
 
     HostProcessObtainTokenOutput output = {};
     ResultCode ret = GetSecurityAgent().HostProcessObtainToken(input, output);
@@ -218,17 +239,8 @@ bool HostObtainTokenRequest::HandleHostProcessObtainToken(const ObtainTokenReque
         return false;
     }
 
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
-
-    obtainTokenReply = output.obtainTokenReply;
-    IAM_LOGI("%{public}s HostProcessObtainToken success atl=%{public}d", GetDescription(), output.atl);
-
-    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAtl(templateId_, output.atl);
-    if (!setTokenAtlRet) {
-        IAM_LOGE("%{public}s SetCompanionTokenAtl failed", GetDescription());
-    }
     needCancelObtainToken_ = false;
-    return setTokenAtlRet;
+    return ProcessHostProcessObtainTokenOutput(output, obtainTokenReply);
 }
 
 void HostObtainTokenRequest::CompleteWithError(ResultCode result)

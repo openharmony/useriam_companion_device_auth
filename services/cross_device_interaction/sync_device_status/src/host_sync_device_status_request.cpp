@@ -119,27 +119,39 @@ void HostSyncDeviceStatusRequest::BeginCompanionCheck()
     errorGuard.Cancel();
 }
 
+void HostSyncDeviceStatusRequest::CollectSyncDeviceStatusEventInfo(const LocalDeviceProfile &profile)
+{
+    eventCollector_.AppendExtraInfo("protocolIdList", ProtocolIdConverter::ToUnderlyingVec(profile.protocols));
+    eventCollector_.AppendExtraInfo("capabilityList", CapabilityConverter::ToUnderlyingVec(profile.capabilities));
+}
+
+SyncDeviceStatusRequest HostSyncDeviceStatusRequest::BuildSyncDeviceStatusRequest(const LocalDeviceProfile &profile,
+    const std::vector<uint8_t> &salt, uint64_t challenge)
+{
+    SyncDeviceStatusRequest request = {};
+    request.protocolIdList = profile.protocols;
+    request.capabilityList = profile.capabilities;
+    request.hostDeviceKey.deviceUserId = hostUserId_;
+    request.salt = salt;
+    request.challenge = challenge;
+    return request;
+}
+
 bool HostSyncDeviceStatusRequest::SendSyncDeviceStatusRequest(const std::vector<uint8_t> &salt, uint64_t challenge)
 {
     auto localDeviceKey = GetCrossDeviceCommManager().GetLocalDeviceKeyByConnectionName(GetConnectionName());
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), localDeviceKey.has_value(), false);
 
     auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
-    eventCollector_.AppendExtraInfo("protocolIdList", ProtocolIdConverter::ToUnderlyingVec(profile.protocols));
-    eventCollector_.AppendExtraInfo("capabilityList", CapabilityConverter::ToUnderlyingVec(profile.capabilities));
+    CollectSyncDeviceStatusEventInfo(profile);
 
-    SyncDeviceStatusRequest syncDeviceStatusRequest = {};
-    syncDeviceStatusRequest.protocolIdList = profile.protocols;
-    syncDeviceStatusRequest.capabilityList = profile.capabilities;
-    syncDeviceStatusRequest.hostDeviceKey.deviceUserId = hostUserId_;
-    syncDeviceStatusRequest.salt = salt;
-    syncDeviceStatusRequest.challenge = challenge;
+    SyncDeviceStatusRequest request = BuildSyncDeviceStatusRequest(profile, salt, challenge);
 
-    Attributes request = {};
-    EncodeSyncDeviceStatusRequest(syncDeviceStatusRequest, request);
+    Attributes attrRequest = {};
+    EncodeSyncDeviceStatusRequest(request, attrRequest);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::SYNC_DEVICE_STATUS,
-        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
+        attrRequest, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN_DESC(description, self != nullptr);
             self->HandleSyncDeviceStatusReply(message);

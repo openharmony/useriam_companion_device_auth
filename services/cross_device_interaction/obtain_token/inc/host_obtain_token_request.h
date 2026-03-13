@@ -53,6 +53,9 @@ private:
     bool HandleHostProcessObtainToken(const ObtainTokenRequest &request, std::vector<uint8_t> &obtainTokenReply);
     bool EnsureCompanionAuthMaintainActive(const DeviceKey &deviceKey, ErrorGuard &errorGuard);
     void HandlePeerDeviceStatusChanged(const std::vector<DeviceStatus> &deviceStatusList);
+    HostProcessObtainTokenInput BuildHostProcessObtainTokenInput(const std::vector<uint8_t> &obtainTokenRequest);
+    bool ProcessHostProcessObtainTokenOutput(const HostProcessObtainTokenOutput &output,
+        std::vector<uint8_t> &obtainTokenReply);
 
     Attributes request_;
     OnMessageReply preObtainTokenReplyCallback_;

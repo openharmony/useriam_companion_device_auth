@@ -167,6 +167,24 @@ void CompanionManagerImpl::UnsubscribeCompanionDeviceStatusChange(SubscribeId su
     IAM_LOGD("Companion device status subscription removed: 0x%{public}016" PRIX64 "", subscriptionId);
 }
 
+HostBeginAddCompanionInput CompanionManagerImpl::BuildHostBeginAddCompanionInput(const BeginAddCompanionParams &params)
+{
+    HostBeginAddCompanionInput input {};
+    input.requestId = params.requestId;
+    input.scheduleId = params.scheduleId;
+    input.hostDeviceKey = params.hostDeviceKey;
+    input.companionDeviceKey = params.companionDeviceKey;
+    input.fwkMsg = params.fwkMsg;
+    input.secureProtocolId = params.secureProtocolId;
+    input.initKeyNegotiationReply = params.initKeyNegotiationReply;
+    return input;
+}
+
+bool CompanionManagerImpl::ValidateBeginAddCompanionOutput(const HostBeginAddCompanionOutput &output)
+{
+    return !output.addHostBindingRequest.empty();
+}
+
 ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams &params,
     std::vector<uint8_t> &outAddHostBindingRequest)
 {
@@ -183,14 +201,7 @@ ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams
         return ResultCode::GENERAL_ERROR;
     }
 
-    HostBeginAddCompanionInput input { .requestId = params.requestId,
-        .scheduleId = params.scheduleId,
-        .hostDeviceKey = params.hostDeviceKey,
-        .companionDeviceKey = params.companionDeviceKey,
-        .fwkMsg = params.fwkMsg,
-        .secureProtocolId = params.secureProtocolId,
-        .initKeyNegotiationReply = params.initKeyNegotiationReply };
-
+    HostBeginAddCompanionInput input = BuildHostBeginAddCompanionInput(params);
     HostBeginAddCompanionOutput output {};
     ResultCode ret = GetSecurityAgent().HostBeginAddCompanion(input, output);
     if (ret != ResultCode::SUCCESS) {
@@ -198,7 +209,7 @@ ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams
         return ret;
     }
 
-    if (output.addHostBindingRequest.empty()) {
+    if (!ValidateBeginAddCompanionOutput(output)) {
         IAM_LOGE("invalid begin add companion output");
         return ResultCode::GENERAL_ERROR;
     }
@@ -207,6 +218,28 @@ ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams
 
     IAM_LOGI("begin add companion success, request id 0x%{public}08X", params.requestId);
     return ResultCode::SUCCESS;
+}
+
+HostEndAddCompanionInput CompanionManagerImpl::BuildHostEndAddCompanionInput(const EndAddCompanionInput &input)
+{
+    HostEndAddCompanionInput secInput {};
+    secInput.requestId = input.requestId;
+    secInput.companionStatus = input.companionStatus;
+    secInput.secureProtocolId = input.secureProtocolId;
+    secInput.protocolVersionList = input.protocolVersionList;
+    secInput.capabilityList = input.capabilityList;
+    secInput.addHostBindingReply = input.addHostBindingReply;
+    return secInput;
+}
+
+void CompanionManagerImpl::ProcessEndAddCompanionOutput(const HostEndAddCompanionOutput &secOutput,
+    EndAddCompanionOutput &output)
+{
+    output.templateId = secOutput.templateId;
+    output.fwkMsg = secOutput.fwkMsg;
+    output.tokenData = secOutput.tokenData;
+    output.atl = secOutput.atl;
+    output.esl = secOutput.esl;
 }
 
 ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &input, EndAddCompanionOutput &output)
@@ -224,13 +257,7 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
         return ResultCode::GENERAL_ERROR;
     }
 
-    HostEndAddCompanionInput secInput { .requestId = input.requestId,
-        .companionStatus = input.companionStatus,
-        .secureProtocolId = input.secureProtocolId,
-        .protocolVersionList = input.protocolVersionList,
-        .capabilityList = input.capabilityList,
-        .addHostBindingReply = input.addHostBindingReply };
-
+    HostEndAddCompanionInput secInput = BuildHostEndAddCompanionInput(input);
     HostEndAddCompanionOutput secOutput {};
     ResultCode ret = GetSecurityAgent().HostEndAddCompanion(secInput, secOutput);
     if (ret != ResultCode::SUCCESS) {
@@ -255,12 +282,7 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
         return ret;
     }
 
-    output.templateId = secOutput.templateId;
-    output.fwkMsg.swap(secOutput.fwkMsg);
-    output.tokenData.swap(secOutput.tokenData);
-    output.atl = secOutput.atl;
-    output.esl = secOutput.esl;
-
+    ProcessEndAddCompanionOutput(secOutput, output);
     NotifyCompanionStatusChange();
 
     IAM_LOGI("end add companion success, request id 0x%{public}08X", input.requestId);
