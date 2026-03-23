@@ -27,7 +27,7 @@ namespace CompanionDeviceAuth {
 class MockRequestFactory : public IRequestFactory {
 public:
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostAddCompanionRequest,
-        (uint64_t, const std::vector<uint8_t> &, uint32_t, FwkResultCallback &&), (override));
+        (uint64_t, const std::vector<uint8_t> &, uint32_t, const std::string &, FwkResultCallback &&), (override));
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostTokenAuthRequest,
         (const AuthRequestParams &, FwkResultCallback &&), (override));
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostRemoveHostBindingRequest, (int32_t, uint64_t, const DeviceKey &),

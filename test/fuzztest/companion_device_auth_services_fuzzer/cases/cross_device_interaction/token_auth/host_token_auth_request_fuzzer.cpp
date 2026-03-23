@@ -143,6 +143,7 @@ void FuzzHostTokenAuthRequest(FuzzedDataProvider &fuzzData)
     UserId hostUserId = fuzzData.ConsumeIntegral<UserId>();
     TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
     int32_t authIntent = fuzzData.ConsumeIntegral<int32_t>();
+    DeviceKey companionDeviceKey = GenerateFuzzDeviceKey(fuzzData);
 
     FwkResultCallback callback = [](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (void)result;
@@ -154,7 +155,7 @@ void FuzzHostTokenAuthRequest(FuzzedDataProvider &fuzzData)
         .hostUserId = hostUserId,
         .templateId = templateId,
         .authIntent = authIntent };
-    auto request = std::make_shared<HostTokenAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostTokenAuthRequest>(params, companionDeviceKey, std::move(callback));
     if (!request) {
         return;
     }

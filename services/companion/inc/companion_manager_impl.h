@@ -57,7 +57,7 @@ public:
         const std::string &deviceUserName) override;
     ResultCode UpdateCompanionEnabledBusinessIds(TemplateId templateId,
         const std::vector<BusinessId> &enabledBusinessIds) override;
-    bool SetCompanionTokenAtl(TemplateId templateId, std::optional<Atl> atl) override;
+    bool SetCompanionTokenAuthAtl(TemplateId templateId, std::optional<Atl> atl) override;
     ResultCode UpdateToken(TemplateId templateId, const std::vector<uint8_t> &fwkMsg, bool &needRedistribute) override;
 
     ResultCode HandleCompanionCheckFail(TemplateId templateId) override;

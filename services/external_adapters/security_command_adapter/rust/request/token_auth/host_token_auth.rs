@@ -14,7 +14,7 @@
  */
 
 use crate::common::constants::{
-    AuthCapabilityLevel, AuthTrustLevel, Capability, DeviceType, ErrorCode, SecureProtocolId, CHALLENGE_LEN,
+    AuthCapabilityLevel, AuthTrustLevel, Capability, ProcessorType, ErrorCode, SecureProtocolId, CHALLENGE_LEN,
     HKDF_SALT_SIZE,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginTokenAuthInputFfi;
@@ -46,7 +46,7 @@ pub struct HostTokenAuthRequest {
     pub atl: AuthTrustLevel,
     pub acl: AuthCapabilityLevel,
     pub salt: [u8; HKDF_SALT_SIZE],
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
 }
 
 impl HostTokenAuthRequest {
@@ -74,7 +74,7 @@ impl HostTokenAuthRequest {
             atl: AuthTrustLevel::Atl0,
             acl: AuthCapabilityLevel::Acl0,
             salt,
-            device_type: DeviceType::Default,
+            processor_type: ProcessorType::default(),
         })
     }
 
@@ -98,14 +98,14 @@ impl HostTokenAuthRequest {
     }
 
     fn encode_sec_token_auth_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        self.device_type = if self.auth_param.secure_protocol_id == SecureProtocolId::Default as u16 {
+        self.processor_type = if self.auth_param.secure_protocol_id == SecureProtocolId::Default as u16 {
             self.acl = AuthCapabilityLevel::Acl3;
-            DeviceType::Default
+            ProcessorType::default()
         } else {
             log_e!("secure_protocol_id is not support secure_protocol_id: {}", self.auth_param.secure_protocol_id);
             return Err(ErrorCode::GeneralError);
         };
-        let token_info = HostDbManagerRegistry::get().get_token(self.auth_param.template_id, self.device_type)?;
+        let token_info = HostDbManagerRegistry::get().get_token(self.auth_param.template_id, self.processor_type)?;
         let current_time = TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?;
         if let Some(time_period) = current_time.checked_sub(token_info.added_time) {
             if time_period > TOKEN_VALID_PERIOD {
@@ -118,7 +118,7 @@ impl HostTokenAuthRequest {
         }
 
         let session_key =
-            host_db_helper::get_session_key(self.auth_param.template_id, token_info.device_type, &self.salt)?;
+            host_db_helper::get_session_key(self.auth_param.template_id, token_info.processor_type, &self.salt)?;
 
         let mut encrypt_attribute = Attribute::new();
         encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
@@ -128,18 +128,18 @@ impl HostTokenAuthRequest {
                 .map_err(|e| p!(e))?;
 
         let auth_request = Box::new(SecCommonRequest { salt: self.salt, tag, iv, encrypt_data });
-        auth_request.encode(self.device_type)
+        auth_request.encode(self.processor_type)
     }
 
     fn decode_sec_token_auth_reply_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecAuthReply::decode(sec_message, device_type)?;
+        let output = SecAuthReply::decode(sec_message, processor_type)?;
 
         let token_info =
-            HostDbManagerRegistry::get().get_token(self.auth_param.template_id, device_type).map_err(|e| p!(e))?;
+            HostDbManagerRegistry::get().get_token(self.auth_param.template_id, processor_type).map_err(|e| p!(e))?;
         let atl = token_info.atl as i32;
         let atl_bytes = atl.to_le_bytes();
         let challenge_bytes = self.host_challenge.to_le_bytes();
@@ -166,8 +166,8 @@ impl HostTokenAuthRequest {
     }
 
     fn decode_sec_token_auth_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        if let Err(e) = self.decode_sec_token_auth_reply_message(self.device_type, sec_message) {
-            log_e!("parse token auth reply message fail: device_type: {:?}, result: {:?}", self.device_type, e);
+        if let Err(e) = self.decode_sec_token_auth_reply_message(self.processor_type, sec_message) {
+            log_e!("parse token auth reply message fail: processor_type: {:?}, result: {:?}", self.processor_type, e);
             return Err(ErrorCode::GeneralError);
         }
 

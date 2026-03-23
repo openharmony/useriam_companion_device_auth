@@ -217,16 +217,18 @@ impl TryFrom<i32> for TrackAbilityLevel {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+/// Processor type for message encoding/decoding (represents authentication protocol type)
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(i32)]
-pub enum DeviceType {
+pub enum ProcessorType {
+    #[default]
     Default = 0,
 }
 
-impl DeviceType {
-    pub fn companion_from_secure_protocol_id(secure_protocol_id: u16) -> Result<DeviceType, ErrorCode> {
+impl ProcessorType {
+    pub fn from_secure_protocol_id(secure_protocol_id: u16) -> Result<ProcessorType, ErrorCode> {
         match SecureProtocolId::try_from(secure_protocol_id)? {
-            SecureProtocolId::Default => Ok(DeviceType::Default),
+            SecureProtocolId::Default => Ok(ProcessorType::default()),
             _ => {
                 log_e!("secure_protocol_id type is not support, secure_protocol_id: {}", secure_protocol_id);
                 Err(ErrorCode::BadParam)
@@ -235,24 +237,11 @@ impl DeviceType {
     }
 }
 
-impl TryFrom<i32> for DeviceType {
-    type Error = ErrorCode;
-    fn try_from(value: i32) -> core::result::Result<Self, ErrorCode> {
-        match value {
-            0 => Ok(DeviceType::Default),
-            _ => {
-                log_e!("device type: {:?}", value);
-                Err(ErrorCode::BadParam)
-            },
-        }
-    }
-}
-
-impl TryFrom<AttributeKey> for DeviceType {
+impl TryFrom<AttributeKey> for ProcessorType {
     type Error = ErrorCode;
     fn try_from(value: AttributeKey) -> core::result::Result<Self, ErrorCode> {
         match value {
-            AttributeKey::AttrMessage => Ok(DeviceType::Default),
+            AttributeKey::AttrMessage => Ok(ProcessorType::default()),
             _ => {
                 log_e!("attribute key: {:?}", value);
                 Err(ErrorCode::BadParam)
@@ -261,18 +250,60 @@ impl TryFrom<AttributeKey> for DeviceType {
     }
 }
 
-impl TryFrom<DeviceType> for AttributeKey {
+impl TryFrom<ProcessorType> for AttributeKey {
     type Error = ErrorCode;
-    fn try_from(value: DeviceType) -> core::result::Result<Self, ErrorCode> {
+    fn try_from(_value: ProcessorType) -> core::result::Result<Self, ErrorCode> {
+        Ok(AttributeKey::AttrMessage)
+    }
+}
+
+impl TryFrom<i32> for ProcessorType {
+    type Error = ErrorCode;
+    fn try_from(value: i32) -> core::result::Result<Self, ErrorCode> {
         match value {
-            DeviceType::Default => Ok(AttributeKey::AttrMessage),
+            0 => Ok(ProcessorType::Default),
+            _ => {
+                log_e!("Invalid processor type: {}", value);
+                Err(ErrorCode::BadParam)
+            },
+        }
+    }
+}
+
+/// Physical device form type
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
+#[repr(i32)]
+pub enum DeviceType {
+    #[default]
+    Invalid = 0,
+    Phone = 1,
+    Pad = 2,
+    TwoInOne = 3,
+    Pc = 4,
+    Unknown = 5,
+}
+
+impl TryFrom<i32> for DeviceType {
+    type Error = ErrorCode;
+    fn try_from(value: i32) -> core::result::Result<Self, ErrorCode> {
+        match value {
+            0 => Ok(DeviceType::Invalid),
+            1 => Ok(DeviceType::Phone),
+            2 => Ok(DeviceType::Pad),
+            3 => Ok(DeviceType::TwoInOne),
+            4 => Ok(DeviceType::Pc),
+            5 => Ok(DeviceType::Unknown),
+            _ => {
+                log_e!("Invalid device type: {}", value);
+                Err(ErrorCode::BadParam)
+            },
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DeviceCapability {
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
     pub esl: ExecutorSecurityLevel,
     pub track_ability_level: TrackAbilityLevel,
 }

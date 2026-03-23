@@ -1028,14 +1028,14 @@ impl crate::traits::host_db_manager::HostDbManager for MockHostDbManager {
     fn get_token(
         &self,
         _template_id: u64,
-        _device_type: DeviceType,
+        _processor_type: ProcessorType,
     ) -> Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode> {
         self.get_token.call()
     }
     fn remove_token(
         &mut self,
         _template_id: u64,
-        _device_type: DeviceType,
+        _processor_type: ProcessorType,
     ) -> Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode> {
         self.remove_token.call()
     }

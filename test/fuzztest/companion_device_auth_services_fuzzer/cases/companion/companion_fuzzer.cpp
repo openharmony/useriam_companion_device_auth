@@ -47,13 +47,13 @@ static void FuzzSetCompanionValid(std::shared_ptr<Companion> &companion, FuzzedD
     companion->SetCompanionValid(isValid);
 }
 
-static void FuzzSetCompanionTokenAtl(std::shared_ptr<Companion> &companion, FuzzedDataProvider &fuzzData)
+static void FuzzSetCompanionTokenAuthAtl(std::shared_ptr<Companion> &companion, FuzzedDataProvider &fuzzData)
 {
     if (fuzzData.ConsumeBool()) {
-        Atl tokenAtl = fuzzData.ConsumeIntegral<Atl>();
-        companion->SetCompanionTokenAtl(tokenAtl);
+        Atl tokenAuthAtl = fuzzData.ConsumeIntegral<Atl>();
+        companion->SetCompanionTokenAuthAtl(tokenAuthAtl);
     } else {
-        companion->SetCompanionTokenAtl(std::nullopt);
+        companion->SetCompanionTokenAuthAtl(std::nullopt);
     }
 }
 
@@ -103,7 +103,7 @@ static void FuzzDeviceStatusHandling(std::shared_ptr<Companion> &companion, Fuzz
 static const CompanionFuzzFunction g_fuzzFuncs[] = {
     FuzzSetEnabledBusinessIds,
     FuzzSetCompanionValid,
-    FuzzSetCompanionTokenAtl,
+    FuzzSetCompanionTokenAuthAtl,
     FuzzSetDeviceNames,
     FuzzNotifySubscribers,
     FuzzGetters,

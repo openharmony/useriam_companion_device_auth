@@ -111,6 +111,15 @@ enum class MessageType : uint16_t {
     REQUEST_ABORTED = 0x0D01,
 };
 
+enum class DeviceType : int32_t {
+    INVALID = 0,
+    PHONE = 1,
+    PAD = 2,
+    TWO_IN_ONE = 3,
+    PC = 4,
+    UNKNOWN = 5,
+};
+
 class DeviceKey {
 public:
     bool operator==(const DeviceKey &other) const
@@ -156,7 +165,7 @@ public:
             deviceName == other.deviceName && protocolId == other.protocolId &&
             secureProtocolId == other.secureProtocolId && capabilities == other.capabilities &&
             supportedBusinessIds == other.supportedBusinessIds && isOnline == other.isOnline &&
-            isAuthMaintainActive == other.isAuthMaintainActive;
+            isAuthMaintainActive == other.isAuthMaintainActive && deviceType == other.deviceType;
     }
 
     DeviceKey deviceKey {};
@@ -170,6 +179,7 @@ public:
     std::vector<BusinessId> supportedBusinessIds {};
     bool isOnline { false };
     bool isAuthMaintainActive { false };
+    DeviceType deviceType { DeviceType::INVALID };
 };
 
 struct LocalDeviceProfile {
@@ -195,6 +205,7 @@ struct PersistedCompanionStatus {
     std::string deviceModelInfo {};
     std::string deviceUserName {};
     std::string deviceName {};
+    DeviceType deviceType { DeviceType::INVALID };
 };
 
 struct CompanionStatus {
@@ -211,7 +222,8 @@ struct CompanionStatus {
         companionDeviceStatus.deviceModelInfo = persistedStatus.deviceModelInfo;
         companionDeviceStatus.deviceUserName = persistedStatus.deviceUserName;
         companionDeviceStatus.deviceName = persistedStatus.deviceName;
-        tokenAtl = std::nullopt;
+        companionDeviceStatus.deviceType = persistedStatus.deviceType;
+        tokenAuthAtl = std::nullopt;
         return *this;
     }
 
@@ -227,6 +239,7 @@ struct CompanionStatus {
         persistedStatus.deviceModelInfo = companionDeviceStatus.deviceModelInfo;
         persistedStatus.deviceUserName = companionDeviceStatus.deviceUserName;
         persistedStatus.deviceName = companionDeviceStatus.deviceName;
+        persistedStatus.deviceType = companionDeviceStatus.deviceType;
         return persistedStatus;
     }
 
@@ -234,7 +247,7 @@ struct CompanionStatus {
     UserId hostUserId { INVALID_USER_ID };
     DeviceStatus companionDeviceStatus {};
     bool isValid { true };
-    std::optional<Atl> tokenAtl { std::nullopt };
+    std::optional<Atl> tokenAuthAtl { std::nullopt };
     std::vector<BusinessId> enabledBusinessIds {};
     int64_t addedTime { 0 };
     uint64_t lastCheckTime { 0 };
@@ -276,6 +289,7 @@ constexpr uint64_t CONNECTION_IDLE_TIMEOUT_MS = 10 * 1000;          // 10 second
 constexpr uint32_t CONNECTION_IDLE_MONITOR_INTERVAL_MS = 10 * 1000; // 10 seconds
 constexpr uint32_t MAX_SYNC_WAIT_TIME_SEC = 2;                      // 2 second
 constexpr uint32_t MAX_ON_START_WAIT_TIME_SEC = UINT32_MAX;
+constexpr uint32_t SET_PARAM_DELAY_MS = 100;     // 100ms
 constexpr uint32_t ADAPTER_CALL_TIMEOUT_SEC = 3; // 3 seconds
 constexpr size_t MAX_MESSAGE_SIZE = 20000;
 constexpr int32_t MS_PER_SEC = 1000;

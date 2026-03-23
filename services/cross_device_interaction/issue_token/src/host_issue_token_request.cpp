@@ -33,15 +33,17 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-    const std::vector<uint8_t> &fwkUnlockMsg)
+    const std::vector<uint8_t> &fwkUnlockMsg, const DeviceKey &companionDeviceKey)
     : OutboundRequest(RequestType::HOST_ISSUE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       templateId_(templateId),
       fwkUnlockMsg_(fwkUnlockMsg),
       eventCollector_("host issue token request")
 {
+    SetPeerDeviceKey(companionDeviceKey);
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
     eventCollector_.UpdateHostUserId(hostUserId);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateTriggerReason("host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
     eventCollector_.UpdateTemplateIdList({ templateId });
 }
@@ -59,8 +61,6 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
     }
 
     const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
-    SetPeerDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     if (!EnsureCompanionAuthMaintainActive(companionDeviceKey, errorGuard)) {
         return false;
     }
@@ -228,9 +228,9 @@ void HostIssueTokenRequest::HandleIssueTokenReply(const Attributes &message)
         return;
     }
     IAM_LOGI("%{public}s HostEndIssueToken success atl=%{public}d", GetDescription(), output.atl);
-    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAtl(templateId_, output.atl);
+    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAuthAtl(templateId_, output.atl);
     if (!setTokenAtlRet) {
-        IAM_LOGE("%{public}s SetCompanionTokenAtl failed", GetDescription());
+        IAM_LOGE("%{public}s SetCompanionTokenAuthAtl failed", GetDescription());
     }
     errorGuard.Cancel();
     CompleteWithSuccess();
@@ -319,9 +319,14 @@ bool HostIssueTokenRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
     }
 
     // Spec: new HostIssueTokenRequest to same device preempts existing one
-    if (newRequestType == RequestType::HOST_ISSUE_TOKEN_REQUEST && GetPeerDeviceKey() == newPeerDevice) {
-        IAM_LOGI("%{public}s: preempted by new HostIssueToken to same device", GetDescription());
-        return true;
+    // Only preempt when both peerDeviceKeys are valid and equal
+    if (newRequestType == RequestType::HOST_ISSUE_TOKEN_REQUEST) {
+        auto currentPeerDevice = GetPeerDeviceKey();
+        if (currentPeerDevice.has_value() && newPeerDevice.has_value() &&
+            currentPeerDevice.value() == newPeerDevice.value()) {
+            IAM_LOGI("%{public}s: preempted by new HostIssueToken to same device", GetDescription());
+            return true;
+        }
     }
 
     return false;

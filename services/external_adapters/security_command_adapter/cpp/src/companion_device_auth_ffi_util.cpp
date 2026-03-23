@@ -216,16 +216,19 @@ bool DecodePersistedCompanionStatus(const PersistedCompanionStatusFfi &ffi, Pers
 {
     status.templateId = ffi.templateId;
     status.hostUserId = ffi.hostUserId;
-    status.addedTime = ffi.addedTime;
-    status.isValid = (ffi.isValid != 0);
 
     if (!DecodeDeviceKey(ffi.companionDeviceKey, status.companionDeviceKey)) {
         return false;
     }
 
+    status.deviceType = static_cast<DeviceType>(ffi.deviceType);
+    status.isValid = (ffi.isValid != 0);
+
     if (!FfiArrayToVector(ffi.enabledBusinessIds, status.enabledBusinessIds)) {
         return false;
     }
+
+    status.addedTime = ffi.addedTime;
 
     if (!DecodeDataArrayToString(ffi.deviceModelInfo, status.deviceModelInfo)) {
         return false;
@@ -244,16 +247,19 @@ bool EncodePersistedCompanionStatus(const PersistedCompanionStatus &status, Pers
 {
     ffi.templateId = status.templateId;
     ffi.hostUserId = status.hostUserId;
-    ffi.addedTime = status.addedTime;
-    ffi.isValid = status.isValid ? 1 : 0;
 
     if (!EncodeDeviceKey(status.companionDeviceKey, ffi.companionDeviceKey)) {
         return false;
     }
 
+    ffi.deviceType = static_cast<int32_t>(status.deviceType);
+    ffi.isValid = status.isValid ? 1 : 0;
+
     if (!VectorToFfiArray(status.enabledBusinessIds, ffi.enabledBusinessIds, "enabled business IDs")) {
         return false;
     }
+
+    ffi.addedTime = status.addedTime;
 
     if (!EncodeStringToDataArray(status.deviceModelInfo, ffi.deviceModelInfo, "device model info") ||
         !EncodeStringToDataArray(status.deviceUserName, ffi.deviceUserName, "device user name") ||

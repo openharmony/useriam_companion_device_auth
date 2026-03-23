@@ -46,25 +46,26 @@ fn create_test_base_info() -> CompanionDeviceBaseInfo {
         device_name: "TestDevice".to_string(),
         device_user_name: "TestUser".to_string(),
         business_ids: vec![1, 2, 3],
+        device_type: 0,
     }
 }
 
 fn create_test_capability_info() -> Vec<CompanionDeviceCapability> {
     vec![CompanionDeviceCapability {
-        device_type: DeviceType::Default,
+        processor_type: ProcessorType::Default,
         esl: ExecutorSecurityLevel::Esl0,
         track_ability_level: TrackAbilityLevel::Tal1,
     }]
 }
 
 fn create_test_sk_info() -> Vec<CompanionDeviceSk> {
-    vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]
+    vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]
 }
 
 fn create_test_token_info(template_id: u64) -> CompanionTokenInfo {
     CompanionTokenInfo {
         template_id,
-        device_type: DeviceType::Default,
+        processor_type: ProcessorType::Default,
         token: [0u8; TOKEN_KEY_LEN],
         atl: AuthTrustLevel::Atl3,
         added_time: 1000,
@@ -567,7 +568,7 @@ fn default_host_db_manager_get_token_test_success() {
     let token_info = create_test_token_info(123);
     let _ = manager.add_token(&token_info);
 
-    let result = manager.get_token(123, DeviceType::Default);
+    let result = manager.get_token(123, ProcessorType::Default);
     assert!(result.is_ok());
     let retrieved = result.unwrap();
     assert_eq!(retrieved.template_id, 123);
@@ -581,7 +582,7 @@ fn default_host_db_manager_get_token_test_not_found() {
 
     let manager = DefaultHostDbManager::new();
 
-    let result = manager.get_token(999, DeviceType::Default);
+    let result = manager.get_token(999, ProcessorType::Default);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
@@ -604,7 +605,7 @@ fn default_host_db_manager_remove_token_test_success() {
     let _ = manager.add_token(&token_info);
     assert_eq!(manager.companion_token_infos.len(), 1);
 
-    let result = manager.remove_token(123, DeviceType::Default);
+    let result = manager.remove_token(123, ProcessorType::Default);
     assert!(result.is_ok());
     assert_eq!(manager.companion_token_infos.len(), 0);
 }
@@ -616,7 +617,7 @@ fn default_host_db_manager_remove_token_test_not_found() {
 
     let mut manager = DefaultHostDbManager::new();
 
-    let result = manager.remove_token(999, DeviceType::Default);
+    let result = manager.remove_token(999, ProcessorType::Default);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
@@ -643,7 +644,7 @@ fn default_host_db_manager_update_token_test_success() {
 
     let result = manager.update_token(&updated_token);
     assert!(result.is_ok());
-    let retrieved = manager.get_token(123, DeviceType::Default).unwrap();
+    let retrieved = manager.get_token(123, ProcessorType::Default).unwrap();
     assert_eq!(retrieved.token, [1u8; TOKEN_KEY_LEN]);
 }
 
@@ -984,6 +985,7 @@ fn default_host_db_manager_read_device_base_info_test_success() {
     parcel.write_i32(1);
     parcel.write_i32(2);
     parcel.write_i32(3);
+    parcel.write_i32(0); // device_type
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -1209,7 +1211,7 @@ fn default_host_db_manager_read_device_capability_info_test_success() {
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
     parcel.write_i32(ExecutorSecurityLevel::Esl0 as i32);
     parcel.write_i32(1);
 
@@ -1313,7 +1315,7 @@ fn default_host_db_manager_read_device_capability_info_test_deserialize_miss_esl
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -1334,7 +1336,7 @@ fn default_host_db_manager_read_device_capability_info_test_deserialize_miss_lev
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
     parcel.write_i32(ExecutorSecurityLevel::Esl0 as i32);
 
     let serialized_data = parcel.as_slice().to_vec();
@@ -1379,7 +1381,7 @@ fn default_host_db_manager_read_device_capability_info_test_deserialize_esl_conv
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
     parcel.write_i32(999);
     parcel.write_i32(1);
 
@@ -1460,7 +1462,7 @@ fn default_host_db_manager_read_device_sk_test_success() {
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
     parcel.write_bytes(&[0u8; TOKEN_KEY_LEN]);
 
     let serialized_data = parcel.as_slice().to_vec();
@@ -1584,7 +1586,7 @@ fn default_host_db_manager_read_device_sk_test_deserialize_miss_len() {
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -1605,7 +1607,7 @@ fn default_host_db_manager_read_device_sk_test_deserialize_miss_sk() {
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_i32(DeviceType::Default as i32);
+    parcel.write_i32(ProcessorType::Default as i32);
     parcel.write_i32(4);
 
     let serialized_data = parcel.as_slice().to_vec();

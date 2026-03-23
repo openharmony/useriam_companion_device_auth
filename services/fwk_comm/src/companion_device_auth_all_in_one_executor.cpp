@@ -156,8 +156,16 @@ FwkResultCode Inner::Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
         (*callback)(result, extraInfo);
     };
 
-    auto request = GetRequestFactory().CreateHostAddCompanionRequest(scheduleId, param.extraInfo, param.tokenId,
-        std::move(requestCallback));
+    // Build fwkMsg with additionalInfo
+    std::vector<uint8_t> fwkMsg = param.extraInfo;
+    if (!param.additionalInfo.empty()) {
+        FwkAttribute fwkAttributes(fwkMsg);
+        fwkAttributes.SetStringValue(FwkAttributeKey::ATTR_ADDITIONAL_INFO, param.additionalInfo);
+        fwkMsg = fwkAttributes.Serialize();
+    }
+
+    auto request = GetRequestFactory().CreateHostAddCompanionRequest(scheduleId, fwkMsg, param.tokenId,
+        param.additionalInfo, std::move(requestCallback));
     if (request == nullptr) {
         IAM_LOGE("CreateHostAddCompanionRequest failed");
         callbackObj->OnResult(FwkResultCode::GENERAL_ERROR, {});
@@ -323,7 +331,7 @@ FwkResultCode Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const
 
     if (commandId == FwkPropertyMode::PROPERTY_MODE_FREEZE && lockStateAuthType == AuthType::PIN) {
         for (const auto &templateId : freezeCommand.templateIdList) {
-            GetCompanionManager().SetCompanionTokenAtl(templateId, std::nullopt);
+            GetCompanionManager().SetCompanionTokenAuthAtl(templateId, std::nullopt);
         }
         GetHostBindingManager().RevokeTokens(freezeCommand.userId);
     } else if (commandId == FwkPropertyMode::PROPERTY_MODE_UNFREEZE) {

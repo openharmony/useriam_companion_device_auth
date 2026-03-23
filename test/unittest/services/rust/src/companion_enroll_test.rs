@@ -34,7 +34,7 @@ fn create_mock_key_pair() -> KeyPair {
     KeyPair { pub_key: vec![1u8, 2, 3, 4, 5], pri_key: vec![4u8, 5, 6] }
 }
 
-fn genereate_companion_init_key_negotiation_input_ffi() -> CompanionInitKeyNegotiationInputFfi {
+fn generate_companion_init_key_negotiation_input_ffi() -> CompanionInitKeyNegotiationInputFfi {
     let mut protocol_list = Uint16Array64Ffi::default();
     protocol_list.data[0] = SUPPORTED_PROTOCOL_VERSIONS[0];
     protocol_list.len = 1;
@@ -52,7 +52,7 @@ fn genereate_companion_init_key_negotiation_input_ffi() -> CompanionInitKeyNegot
 
 fn create_valid_key_nego_request() -> Vec<u8> {
     let request = SecKeyNegoRequest { algorithm_list: vec![AlgoType::X25519 as u16] };
-    request.encode(DeviceType::Default).unwrap()
+    request.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_valid_binding_request(pub_key: &[u8], challenge: u64) -> Vec<u8> {
@@ -67,12 +67,12 @@ fn create_valid_binding_request(pub_key: &[u8], challenge: u64) -> Vec<u8> {
     let iv = [3u8; AES_GCM_IV_SIZE];
 
     let request = SecBindingRequest { pub_key: pub_key.to_vec(), challenge: 0, salt, tag, iv, encrypt_data };
-    request.encode(DeviceType::Default).unwrap()
+    request.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_valid_issue_token_message(challenge: u64, atl: i32) -> Vec<u8> {
     let issue_token = SecIssueToken { challenge, atl, token: vec![1u8; TOKEN_KEY_LEN] };
-    issue_token.encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], DeviceType::Default, &[]).unwrap()
+    issue_token.encrypt_issue_token(&[1u8; HKDF_SALT_SIZE], ProcessorType::Default, &[]).unwrap()
 }
 
 fn mock_set_crypto_engine() {
@@ -96,7 +96,7 @@ fn companion_enroll_request_prepare_test_wrong_input_type() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
 
@@ -122,7 +122,7 @@ fn companion_enroll_request_prepare_test_algorithm_not_supported() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let request_no_x25519 = SecKeyNegoRequest { algorithm_list: vec![AlgoType::None as u16] };
-    let sec_message = request_no_x25519.encode(DeviceType::Default).unwrap();
+    let sec_message = request_no_x25519.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionInitKeyNegotiationInputFfi {
         request_id: 1,
@@ -178,7 +178,7 @@ fn companion_enroll_request_begin_test_wrong_input_type() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
 
     let wrong_input =
@@ -199,7 +199,7 @@ fn companion_enroll_request_begin_test_get_key_pair_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = None;
@@ -227,7 +227,7 @@ fn companion_enroll_request_begin_test_x25519_ecdh_fail() {
     mock_crypto_engine.expect_x25519_ecdh().returning(|| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -256,7 +256,7 @@ fn companion_enroll_request_begin_test_hkdf_fail() {
     mock_crypto_engine.expect_hkdf().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -286,7 +286,7 @@ fn companion_enroll_request_begin_test_decrypt_sec_message_fail() {
     mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -311,7 +311,7 @@ fn companion_enroll_request_begin_test_device_id_mismatch() {
 
     mock_set_crypto_engine();
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -337,7 +337,7 @@ fn companion_enroll_request_begin_test_user_id_mismatch() {
 
     mock_set_crypto_engine();
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -364,7 +364,7 @@ fn companion_enroll_request_begin_test_challenge_mismatch() {
 
     mock_set_crypto_engine();
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -398,7 +398,7 @@ fn companion_enroll_request_begin_test_encrypt_sec_message_fail() {
     mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -430,7 +430,7 @@ fn companion_enroll_request_begin_test_generate_unique_binding_id_fail() {
     mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -466,7 +466,7 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
     mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -504,7 +504,7 @@ fn companion_enroll_request_begin_test_add_host_device_fail() {
     mock_time_keeper.expect_get_rtc_time().returning(|| Ok(1000));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -543,7 +543,7 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
     mock_time_keeper.expect_get_rtc_time().returning(|| Ok(1000));
     TimeKeeperRegistry::set(Box::new(mock_time_keeper));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.key_pair = Some(create_mock_key_pair());
@@ -573,7 +573,7 @@ fn companion_enroll_request_end_test_wrong_input_type() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
 
@@ -596,7 +596,7 @@ fn companion_enroll_request_end_test_challenge_mismatch() {
 
     mock_set_crypto_engine();
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.companion_challenge = 1;
@@ -621,7 +621,7 @@ fn companion_enroll_request_end_test_atl_try_from_fail() {
 
     mock_set_crypto_engine();
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.companion_challenge = 0;
@@ -650,7 +650,7 @@ fn companion_enroll_request_end_test_store_token_fail() {
     mock_companion_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
     CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
 
-    let input = genereate_companion_init_key_negotiation_input_ffi();
+    let input = generate_companion_init_key_negotiation_input_ffi();
 
     let mut request = CompanionDeviceEnrollRequest::new(&input).unwrap();
     request.key_nego_param.companion_challenge = 0;

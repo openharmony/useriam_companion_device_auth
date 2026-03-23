@@ -32,7 +32,7 @@ public:
     ~RequestFactoryImpl() override = default;
 
     std::shared_ptr<IRequest> CreateHostAddCompanionRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        uint32_t tokenId, FwkResultCallback &&requestCallback) override;
+        uint32_t tokenId, const std::string &additionalInfo, FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateHostTokenAuthRequest(const AuthRequestParams &params,
         FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateHostRemoveHostBindingRequest(UserId hostUserId, TemplateId templateId,

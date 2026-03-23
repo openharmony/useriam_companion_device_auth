@@ -33,7 +33,8 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostTokenAuthRequest::HostTokenAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
+HostTokenAuthRequest::HostTokenAuthRequest(const AuthRequestParams &params, const DeviceKey &companionDeviceKey,
+    FwkResultCallback &&requestCallback)
     : OutboundRequest(RequestType::HOST_TOKEN_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
       fwkMsg_(params.fwkMsg),
       hostUserId_(params.hostUserId),
@@ -41,8 +42,10 @@ HostTokenAuthRequest::HostTokenAuthRequest(const AuthRequestParams &params, FwkR
       requestCallback_(std::move(requestCallback)),
       eventCollector_("host token auth request")
 {
+    SetPeerDeviceKey(companionDeviceKey);
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
     eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateScheduleId(params.scheduleId);
     eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
     eventCollector_.UpdateTemplateIdList({ params.templateId });
@@ -66,8 +69,6 @@ bool HostTokenAuthRequest::OnStart(ErrorGuard &errorGuard)
     }
 
     const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
-    SetPeerDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     companionUserId_ = companionStatus->companionDeviceStatus.deviceKey.deviceUserId;
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
@@ -163,7 +164,7 @@ void HostTokenAuthRequest::HandleTokenAuthReply(const Attributes &reply)
             static_cast<int32_t>(replyMsg.result));
         if (replyMsg.result == ResultCode::TOKEN_NOT_FOUND) {
             IAM_LOGI("%{public}s token not found, revoke token", GetDescription());
-            (void)GetCompanionManager().SetCompanionTokenAtl(templateId_, std::nullopt);
+            (void)GetCompanionManager().SetCompanionTokenAuthAtl(templateId_, std::nullopt);
         }
         errorGuard.UpdateErrorCode(replyMsg.result);
         return;
@@ -246,9 +247,14 @@ bool HostTokenAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
     const std::optional<DeviceKey> &newPeerDevice, [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
     // Spec: new HostTokenAuthRequest to same peer device preempts existing one
-    if (newRequestType == RequestType::HOST_TOKEN_AUTH_REQUEST && GetPeerDeviceKey() == newPeerDevice) {
-        IAM_LOGI("%{public}s: preempted by new HostTokenAuth to same device", GetDescription());
-        return true;
+    // Only preempt when both peerDeviceKeys are valid and equal
+    if (newRequestType == RequestType::HOST_TOKEN_AUTH_REQUEST) {
+        auto currentPeerDevice = GetPeerDeviceKey();
+        if (currentPeerDevice.has_value() && newPeerDevice.has_value() &&
+            currentPeerDevice.value() == newPeerDevice.value()) {
+            IAM_LOGI("%{public}s: preempted by new HostTokenAuth to same device", GetDescription());
+            return true;
+        }
     }
 
     return false;
