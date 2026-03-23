@@ -38,6 +38,7 @@ HostRemoveHostBindingRequest::HostRemoveHostBindingRequest(UserId hostUserId, Te
       templateId_(templateId),
       eventCollector_("host remove host binding request")
 {
+    SetPeerDeviceKey(companionDeviceKey_);
     eventCollector_.UpdateHostUserId(hostUserId);
     eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateTemplateIdList({ templateId });
@@ -46,7 +47,6 @@ HostRemoveHostBindingRequest::HostRemoveHostBindingRequest(UserId hostUserId, Te
 bool HostRemoveHostBindingRequest::OnStart(ErrorGuard &errorGuard)
 {
     IAM_LOGI("%{public}s start", GetDescription());
-    SetPeerDeviceKey(companionDeviceKey_);
     if (!OpenConnection()) {
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;

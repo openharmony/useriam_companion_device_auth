@@ -139,6 +139,7 @@ BaseRequest::BaseRequest(RequestType requestType, ScheduleId scheduleId, uint32_
 {
     requestId_ = static_cast<RequestId>(GetMiscManager().GetNextGlobalId());
     description_ = GenerateDescription(requestType_, requestId_, connectionName);
+    IAM_LOGI("created request %{public}s", description_.c_str());
     StartTimeout();
 }
 

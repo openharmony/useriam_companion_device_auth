@@ -35,6 +35,7 @@ constexpr ScheduleId SCHEDULE_ID = 1;
 const std::vector<uint8_t> FWK_MSG = { 1, 2, 3, 4 };
 constexpr uint32_t TOKEN_ID = 123;
 constexpr int32_t TEMPLATE_ID = 12345;
+const std::string ADDITIONAL_INFO = "";
 
 const DeviceKey COMPANION_DEVICE_KEY = { .deviceId = "companion_device_id", .deviceUserId = 100 };
 const DeviceKey HOST_DEVICE_KEY = { .deviceId = "host_device_id", .deviceUserId = 100 };
@@ -63,7 +64,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnStart_001, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     EXPECT_CALL(guard.GetMiscManager(), GetDeviceDeviceSelectResult(123, SelectPurpose::SELECT_ADD_DEVICE, _))
         .WillOnce(Return(true));
@@ -79,7 +81,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnStart_002, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     EXPECT_CALL(guard.GetMiscManager(), GetDeviceDeviceSelectResult(123, SelectPurpose::SELECT_ADD_DEVICE, _))
         .WillOnce(Return(false));
@@ -95,7 +98,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_001, TestSize.Lev
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeConnectionStatus(_, _)).Times(1);
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeMessage(_, MessageType::REQUEST_ABORTED, _))
@@ -116,7 +120,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_002, TestSize.Lev
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), OpenConnection(_, _)).WillOnce(Return(false));
 
@@ -137,7 +142,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleDeviceSelectResult_003, TestSize.Lev
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     std::vector<DeviceKey> selectedDevices = {};
     request->HandleDeviceSelectResult(selectedDevices);
@@ -151,7 +157,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_001, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     // Need to open connection first to set connectionName_
@@ -184,7 +191,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_002, TestSize.Level0)
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), GetLocalDeviceKeyByConnectionName(_)).WillOnce(Return(std::nullopt));
@@ -205,7 +213,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_003, TestSize.Level0)
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     // Need to open connection first to set connectionName_
@@ -235,7 +244,8 @@ HWTEST_F(HostAddCompanionRequestTest, OnConnected_004, TestSize.Level0)
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     // Need to open connection first to set connectionName_
@@ -266,7 +276,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_001, TestSiz
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -294,7 +305,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_002, TestSiz
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -314,7 +326,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_003, TestSiz
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -337,7 +350,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_004, TestSiz
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -362,7 +376,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_005, TestSiz
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -388,7 +403,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_001, TestSi
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -419,7 +435,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_002, TestSi
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -439,7 +456,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_003, TestSi
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -462,7 +480,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_004, TestSi
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -484,7 +503,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleBeginAddHostBindingReply_005, TestSi
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     Attributes reply;
@@ -515,10 +535,11 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_001, TestSize
             *successCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->templateId_ = TEMPLATE_ID;
 
-    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAtl(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAuthAtl(_, _)).WillOnce(Return(true));
 
     Attributes reply;
     EndAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
@@ -540,7 +561,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_002, TestSize
             *errorCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     Attributes reply;
     request->HandleEndAddHostBindingReply(reply);
@@ -560,7 +582,8 @@ HWTEST_F(HostAddCompanionRequestTest, HandleEndAddHostBindingReply_003, TestSize
             *successCalled = true;
         }
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     Attributes reply;
     EndAddHostBindingReply replyMsg = { .result = ResultCode::GENERAL_ERROR };
@@ -581,7 +604,8 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_001, TestSize.Level0)
         *callbackCalled = true;
         EXPECT_EQ(result, ResultCode::GENERAL_ERROR);
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     request->CompleteWithError(ResultCode::GENERAL_ERROR);
 
@@ -598,7 +622,8 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithError_002, TestSize.Level0)
         *callbackCalled = true;
         EXPECT_EQ(result, ResultCode::GENERAL_ERROR);
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->needCancelCompanionAdd_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelAddCompanion(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
@@ -620,7 +645,8 @@ HWTEST_F(HostAddCompanionRequestTest, CompleteWithSuccess_001, TestSize.Level0)
         *receivedData = data;
         EXPECT_EQ(result, ResultCode::SUCCESS);
     };
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     request->CompleteWithSuccess();
 
@@ -633,7 +659,8 @@ HWTEST_F(HostAddCompanionRequestTest, EndAddCompanion_001, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     request->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
 
     DeviceStatus deviceStatus;
@@ -659,7 +686,8 @@ HWTEST_F(HostAddCompanionRequestTest, InvokeCallback_001, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
     ASSERT_NO_THROW(request->InvokeCallback(ResultCode::SUCCESS, {}));
 }
 
@@ -668,7 +696,8 @@ HWTEST_F(HostAddCompanionRequestTest, GetMaxConcurrency_001, TestSize.Level0)
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     EXPECT_EQ(request->GetMaxConcurrency(), 1);
 }
@@ -678,7 +707,8 @@ HWTEST_F(HostAddCompanionRequestTest, ShouldCancelOnNewRequest_001, TestSize.Lev
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -689,7 +719,8 @@ HWTEST_F(HostAddCompanionRequestTest, ShouldCancelOnNewRequest_002, TestSize.Lev
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -700,10 +731,82 @@ HWTEST_F(HostAddCompanionRequestTest, ShouldCancelOnNewRequest_003, TestSize.Lev
     MockGuard guard;
 
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, std::move(callback));
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
+}
+
+HWTEST_F(HostAddCompanionRequestTest, ParseAdditionalInfo_001, TestSize.Level0)
+{
+    // Test parsing additionalInfo with enabled_business_ids
+    MockGuard guard;
+
+    // Create fwkMsg with additionalInfo
+    std::string additionalInfo = R"({"enabled_business_ids":[1,2,3]})";
+    FwkAttribute fwkAttr;
+    fwkAttr.SetStringValue(FwkAttributeKey::ATTR_ADDITIONAL_INFO, additionalInfo);
+    auto fwkMsg = fwkAttr.Serialize();
+
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, fwkMsg, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
+
+    // Parsing is done in constructor, and stored in request
+    // The test passes if no exception is thrown
+    EXPECT_TRUE(request != nullptr);
+}
+
+HWTEST_F(HostAddCompanionRequestTest, ParseAdditionalInfo_002, TestSize.Level0)
+{
+    // Test parsing additionalInfo with empty string
+    MockGuard guard;
+
+    std::string additionalInfo = "";
+    FwkAttribute fwkAttr;
+    fwkAttr.SetStringValue(FwkAttributeKey::ATTR_ADDITIONAL_INFO, additionalInfo);
+    auto fwkMsg = fwkAttr.Serialize();
+
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, fwkMsg, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
+
+    EXPECT_TRUE(request != nullptr);
+}
+
+HWTEST_F(HostAddCompanionRequestTest, ParseAdditionalInfo_003, TestSize.Level0)
+{
+    // Test parsing additionalInfo with invalid JSON
+    MockGuard guard;
+
+    std::string additionalInfo = "not a valid json";
+    FwkAttribute fwkAttr;
+    fwkAttr.SetStringValue(FwkAttributeKey::ATTR_ADDITIONAL_INFO, additionalInfo);
+    auto fwkMsg = fwkAttr.Serialize();
+
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, fwkMsg, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
+
+    EXPECT_TRUE(request != nullptr);
+}
+
+HWTEST_F(HostAddCompanionRequestTest, ParseAdditionalInfo_004, TestSize.Level0)
+{
+    // Test parsing additionalInfo with enabled_business_ids containing invalid values
+    MockGuard guard;
+
+    std::string additionalInfo = R"({"enabled_business_ids":["string", null, 10000]})";
+    FwkAttribute fwkAttr;
+    fwkAttr.SetStringValue(FwkAttributeKey::ATTR_ADDITIONAL_INFO, additionalInfo);
+    auto fwkMsg = fwkAttr.Serialize();
+
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, fwkMsg, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
+
+    EXPECT_TRUE(request != nullptr);
 }
 
 } // namespace

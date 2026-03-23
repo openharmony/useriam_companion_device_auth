@@ -60,7 +60,7 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_001, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -85,7 +85,7 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_002, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_)).WillOnce(Return(std::nullopt));
 
@@ -101,7 +101,7 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_003, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -122,7 +122,7 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_004, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -155,7 +155,7 @@ HWTEST_F(HostDelegateAuthRequestTest, OnConnected_001, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -196,7 +196,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_001, TestSize.Level0
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -238,7 +238,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_002, TestSize.Level0
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -281,7 +281,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_003, TestSize.Level0
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->delegateResultSubscription_ = MakeSubscription();
 
     CompanionStatus companionStatus;
@@ -320,7 +320,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_001, TestSize
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -362,7 +362,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_002, TestSize
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -404,7 +404,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_003, TestSize
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -439,7 +439,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_001, TestSiz
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -479,7 +479,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_002, TestSiz
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -512,7 +512,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_003, TestSiz
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -551,7 +551,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_004, TestSiz
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -592,7 +592,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequestMsg_001, Test
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -638,7 +638,7 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequestMsg_002, Test
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     CompanionStatus companionStatus;
     EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
@@ -685,7 +685,7 @@ HWTEST_F(HostDelegateAuthRequestTest, CompleteWithError_001, TestSize.Level0)
         *callbackCalled = true;
         *callbackResult = result;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->needCancelDelegateAuth_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelDelegateAuth(_)).WillOnce(Return(ResultCode::SUCCESS));
@@ -705,7 +705,7 @@ HWTEST_F(HostDelegateAuthRequestTest, CompleteWithError_002, TestSize.Level0)
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->needCancelDelegateAuth_ = false;
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelDelegateAuth(_)).Times(0);
@@ -723,7 +723,7 @@ HWTEST_F(HostDelegateAuthRequestTest, CompleteWithError_003, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->needCancelDelegateAuth_ = true;
 
     EXPECT_CALL(guard.GetSecurityAgent(), HostCancelDelegateAuth(_)).WillOnce(Return(ResultCode::GENERAL_ERROR));
@@ -745,7 +745,7 @@ HWTEST_F(HostDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Level0)
         *callbackResult = result;
         *callbackFwkMsg = fwkMsg;
     };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     std::vector<uint8_t> testFwkMsg = { 1, 2, 3 };
     request->CompleteWithSuccess(testFwkMsg);
@@ -763,7 +763,7 @@ HWTEST_F(HostDelegateAuthRequestTest, GetWeakPtr_001, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto weakPtr = request->GetWeakPtr();
     EXPECT_FALSE(weakPtr.expired());
@@ -776,7 +776,7 @@ HWTEST_F(HostDelegateAuthRequestTest, InvokeCallback_001, TestSize.Level0)
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->callbackInvoked_ = true;
 
     request->InvokeCallback(ResultCode::SUCCESS, {});
@@ -792,7 +792,7 @@ HWTEST_F(HostDelegateAuthRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     EXPECT_EQ(request->GetMaxConcurrency(), 1);
 }
@@ -803,7 +803,7 @@ HWTEST_F(HostDelegateAuthRequestTest, ShouldCancelOnNewRequest_001, TestSize.Lev
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -815,7 +815,7 @@ HWTEST_F(HostDelegateAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Lev
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -827,7 +827,7 @@ HWTEST_F(HostDelegateAuthRequestTest, ShouldCancelOnNewRequest_003, TestSize.Lev
 
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);

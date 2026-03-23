@@ -102,15 +102,15 @@ static void FuzzUpdateCompanionEnabledBusinessIds(std::shared_ptr<CompanionManag
     (void)result;
 }
 
-static void FuzzSetCompanionTokenAtl(std::shared_ptr<CompanionManagerImpl> &manager, FuzzedDataProvider &fuzzData)
+static void FuzzSetCompanionTokenAuthAtl(std::shared_ptr<CompanionManagerImpl> &manager, FuzzedDataProvider &fuzzData)
 {
     TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
     if (fuzzData.ConsumeBool()) {
         Atl atl = fuzzData.ConsumeIntegral<Atl>();
-        bool result = manager->SetCompanionTokenAtl(templateId, atl);
+        bool result = manager->SetCompanionTokenAuthAtl(templateId, atl);
         (void)result;
     } else {
-        bool result = manager->SetCompanionTokenAtl(templateId, std::nullopt);
+        bool result = manager->SetCompanionTokenAuthAtl(templateId, std::nullopt);
         (void)result;
     }
 }
@@ -140,7 +140,7 @@ static void FuzzRevokeTokens(std::shared_ptr<CompanionManagerImpl> &manager, Fuz
     uint8_t count = fuzzData.ConsumeIntegralInRange<uint8_t>(0, FUZZ_MAX_DEVICE_STATUS_COUNT);
     for (uint8_t j = 0; j < count; ++j) {
         TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
-        manager->SetCompanionTokenAtl(templateId, std::nullopt);
+        manager->SetCompanionTokenAuthAtl(templateId, std::nullopt);
     }
 }
 
@@ -303,7 +303,7 @@ static const CompanionManagerImplFuzzFunction g_fuzzFuncs[] = {
     FuzzUnsubscribeCompanionDeviceStatusChange,
     FuzzUpdateCompanionStatus,
     FuzzUpdateCompanionEnabledBusinessIds,
-    FuzzSetCompanionTokenAtl,
+    FuzzSetCompanionTokenAuthAtl,
     FuzzUpdateToken,
     FuzzHandleCompanionCheckFail,
     FuzzStartIssueTokenRequests,

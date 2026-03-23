@@ -109,14 +109,14 @@ bool JsRefHolder::operator==(const JsRefHolder &other) const
 napi_status CompanionDeviceAuthNapiHelper::GetUint8ArrayValue(napi_env env, napi_value value,
     std::vector<uint8_t> &array)
 {
-    bool isTypedarray {};
-    napi_status result = napi_is_typedarray(env, value, &isTypedarray);
+    bool isTypedArray {};
+    napi_status result = napi_is_typedarray(env, value, &isTypedArray);
     if (result != napi_ok) {
         IAM_LOGE("napi_is_typedarray fail");
         return result;
     }
-    if (!isTypedarray) {
-        IAM_LOGE("value is not typedarray");
+    if (!isTypedArray) {
+        IAM_LOGE("value is not typedArray");
         return napi_array_expected;
     }
     napi_typedarray_type type;

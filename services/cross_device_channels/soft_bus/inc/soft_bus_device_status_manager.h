@@ -52,6 +52,7 @@ private:
     static std::string DeviceTypeIdToString(DistributedHardware::DmDeviceType deviceTypeId);
     static std::string GenerateDeviceModelInfo(DistributedHardware::DmDeviceType deviceTypeId);
     static bool IsDeviceTypeIdSupport(DistributedHardware::DmDeviceType deviceTypeId);
+    static DeviceType ConvertToDeviceType(DistributedHardware::DmDeviceType deviceTypeId);
     SoftBusDeviceStatusManager();
     bool Initialize();
 

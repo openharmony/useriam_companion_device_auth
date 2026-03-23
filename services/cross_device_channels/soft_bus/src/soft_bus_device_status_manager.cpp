@@ -59,6 +59,25 @@ bool SoftBusDeviceStatusManager::IsDeviceTypeIdSupport(DmDeviceType deviceTypeId
         deviceTypeId == DmDeviceType::DEVICE_TYPE_UNKNOWN;
 }
 
+DeviceType SoftBusDeviceStatusManager::ConvertToDeviceType(DmDeviceType deviceTypeId)
+{
+    switch (deviceTypeId) {
+        case DmDeviceType::DEVICE_TYPE_PHONE:
+            return DeviceType::PHONE;
+        case DmDeviceType::DEVICE_TYPE_PAD:
+            return DeviceType::PAD;
+        case DmDeviceType::DEVICE_TYPE_2IN1:
+            return DeviceType::TWO_IN_ONE;
+        case DmDeviceType::DEVICE_TYPE_PC:
+            return DeviceType::PC;
+        case DmDeviceType::DEVICE_TYPE_UNKNOWN:
+            return DeviceType::UNKNOWN;
+        default:
+            IAM_LOGE("unsupported device type: %{public}d", deviceTypeId);
+            return DeviceType::INVALID;
+    }
+}
+
 std::string SoftBusDeviceStatusManager::DeviceTypeIdToString(DmDeviceType deviceTypeId)
 {
     switch (deviceTypeId) {
@@ -286,9 +305,10 @@ bool SoftBusDeviceStatusManager::ConvertToPhysicalDevices(const std::vector<DmDe
 
         // Soft bus does not support cross-device isAuthMaintain sync, so it is always true; related verification is
         // done on the companion device.
+        DeviceType deviceType = ConvertToDeviceType(static_cast<DmDeviceType>(device.deviceTypeId));
         retPhysicalDeviceStatuses.emplace_back(
             PhysicalDeviceStatus { PhysicalDeviceKey { DeviceIdType::UNIFIED_DEVICE_ID, deviceIdResult.value() },
-                ChannelId::SOFTBUS, device.deviceName, deviceModelInfo, networkId, true });
+                ChannelId::SOFTBUS, device.deviceName, deviceModelInfo, networkId, true, deviceType });
     }
 
     return true;

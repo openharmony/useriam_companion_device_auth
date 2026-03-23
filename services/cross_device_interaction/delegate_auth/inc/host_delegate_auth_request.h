@@ -33,7 +33,8 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostDelegateAuthRequest : public std::enable_shared_from_this<HostDelegateAuthRequest>, public OutboundRequest {
 public:
-    HostDelegateAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback);
+    HostDelegateAuthRequest(const AuthRequestParams &params, const DeviceKey &companionDeviceKey,
+        FwkResultCallback &&requestCallback);
     ~HostDelegateAuthRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;

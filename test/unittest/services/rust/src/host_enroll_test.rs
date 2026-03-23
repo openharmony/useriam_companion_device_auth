@@ -48,7 +48,7 @@ fn create_valid_fwk_enroll_message(schedule_id: u64, atl: i32) -> Vec<u8> {
 
 fn create_valid_key_nego_reply(challenge: u64) -> Vec<u8> {
     let reply = SecKeyNegoReply { algorithm: AlgoType::X25519 as u16, challenge, pub_key: vec![1u8, 2, 3, 4, 5] };
-    reply.encode(DeviceType::Default).unwrap()
+    reply.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_valid_binding_reply(
@@ -71,12 +71,12 @@ fn create_valid_binding_reply(
     let encrypt_data = reply_info.encode().unwrap();
     let reply =
         SecBindingReply { challenge: 0, tag: [2u8; AES_GCM_TAG_SIZE], iv: [3u8; AES_GCM_IV_SIZE], encrypt_data };
-    reply.encode(DeviceType::Default).unwrap()
+    reply.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_key_negotial_param() -> KeyNegotialParam {
     KeyNegotialParam {
-        device_type: DeviceType::Default,
+        processor_type: ProcessorType::Default,
         algorithm: AlgoType::X25519 as u16,
         companion_challenge: 0,
         key_pair: Some(create_mock_key_pair()),
@@ -1103,7 +1103,7 @@ fn host_enroll_request_end_test_encrypt_issue_token_fail() {
     mock_host_db_manager.expect_add_token().returning(|| Ok(()));
     mock_host_db_manager
         .expect_read_device_sk()
-        .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
+        .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };

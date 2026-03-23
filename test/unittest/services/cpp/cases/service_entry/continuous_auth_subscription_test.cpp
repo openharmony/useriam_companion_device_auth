@@ -212,7 +212,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_002, TestSi
     status.hostUserId = userId;
     status.templateId = 12345;
     status.isValid = true;
-    status.tokenAtl = 2;
+    status.tokenAuthAtl = 2;
 
     std::vector<CompanionStatus> companionStatusList = { status };
 
@@ -221,7 +221,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_002, TestSi
     }
 
     EXPECT_TRUE(subscription->cachedAuthTrustLevel_.has_value());
-    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status.tokenAtl);
+    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status.tokenAuthAtl);
 }
 
 HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_003, TestSize.Level0)
@@ -245,7 +245,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_003, TestSi
     status.hostUserId = userId;
     status.templateId = templateId.value();
     status.isValid = true;
-    status.tokenAtl = 2;
+    status.tokenAuthAtl = 2;
 
     std::vector<CompanionStatus> companionStatusList = { status };
 
@@ -254,7 +254,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_003, TestSi
     }
 
     EXPECT_TRUE(subscription->cachedAuthTrustLevel_.has_value());
-    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status.tokenAtl);
+    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status.tokenAuthAtl);
 }
 
 HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_004, TestSize.Level0)
@@ -278,7 +278,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_004, TestSi
     status.hostUserId = userId;
     status.templateId = 99999;
     status.isValid = true;
-    status.tokenAtl = 2;
+    status.tokenAuthAtl = 2;
 
     std::vector<CompanionStatus> companionStatusList = { status };
 
@@ -310,7 +310,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_005, TestSi
     status.hostUserId = 200;
     status.templateId = 12345;
     status.isValid = true;
-    status.tokenAtl = 2;
+    status.tokenAuthAtl = 2;
 
     std::vector<CompanionStatus> companionStatusList = { status };
 
@@ -342,7 +342,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_006, TestSi
     status.hostUserId = userId;
     status.templateId = 12345;
     status.isValid = false;
-    status.tokenAtl = std::nullopt;
+    status.tokenAuthAtl = std::nullopt;
 
     std::vector<CompanionStatus> companionStatusList = { status };
 
@@ -374,13 +374,13 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_007, TestSi
     status1.hostUserId = userId;
     status1.templateId = 12345;
     status1.isValid = true;
-    status1.tokenAtl = 1;
+    status1.tokenAuthAtl = 1;
 
     CompanionStatus status2 {};
     status2.hostUserId = userId;
     status2.templateId = 67890;
     status2.isValid = true;
-    status2.tokenAtl = 3;
+    status2.tokenAuthAtl = 3;
 
     std::vector<CompanionStatus> companionStatusList = { status1, status2 };
 
@@ -389,7 +389,7 @@ HWTEST_F(ContinuousAuthSubscriptionTest, HandleCompanionStatusChange_007, TestSi
     }
 
     EXPECT_TRUE(subscription->cachedAuthTrustLevel_.has_value());
-    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status2.tokenAtl);
+    EXPECT_EQ(subscription->cachedAuthTrustLevel_.value(), status2.tokenAuthAtl);
 }
 
 HWTEST_F(ContinuousAuthSubscriptionTest, Create_WithNonExistentTemplateId, TestSize.Level0)

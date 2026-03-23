@@ -73,7 +73,7 @@ public:
 
     void SetEnabledBusinessIds(const std::vector<BusinessId> &enabledBusinessIds);
     void SetCompanionValid(bool isValid);
-    void SetCompanionTokenAtl(std::optional<Atl> tokenAtl);
+    void SetCompanionTokenAuthAtl(std::optional<Atl> tokenAuthAtl);
     void SetDeviceNames(const std::string &deviceName, const std::string &deviceUserName);
     void RefreshTokenTimer();
     void NotifySubscribers();

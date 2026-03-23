@@ -14,7 +14,7 @@
  */
 
 use crate::common::constants::{
-    DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
+    ProcessorType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginCompanionCheckInputFfi;
 use crate::jobs::host_db_helper;
@@ -58,11 +58,11 @@ impl HostDeviceSyncStatusRequest {
 
     fn decode_sec_status_sync_reply_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonReply::decode(sec_message, device_type)?;
-        let session_key = host_db_helper::get_session_key(self.template_id, device_type, &self.salt)?;
+        let output = SecCommonReply::decode(sec_message, processor_type)?;
+        let session_key = host_db_helper::get_session_key(self.template_id, processor_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -93,12 +93,12 @@ impl HostDeviceSyncStatusRequest {
     }
 
     fn decode_sec_status_sync_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_capabilitys = HostDbManagerRegistry::get_mut().read_device_capability_info(self.template_id)?;
-        for device_capability in &device_capabilitys {
-            if let Err(e) = self.decode_sec_status_sync_reply_message(device_capability.device_type, sec_message) {
+        let device_capabilities = HostDbManagerRegistry::get_mut().read_device_capability_info(self.template_id)?;
+        for device_capability in &device_capabilities {
+            if let Err(e) = self.decode_sec_status_sync_reply_message(device_capability.processor_type, sec_message) {
                 log_e!(
                     "parse sync status reply message fail: device_type: {:?}, result: {:?}",
-                    device_capability.device_type,
+                    device_capability.processor_type,
                     e
                 );
                 return Err(ErrorCode::GeneralError);

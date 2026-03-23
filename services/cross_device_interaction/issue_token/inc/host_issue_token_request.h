@@ -32,7 +32,7 @@ namespace CompanionDeviceAuth {
 class HostIssueTokenRequest : public std::enable_shared_from_this<HostIssueTokenRequest>, public OutboundRequest {
 public:
     HostIssueTokenRequest(UserId hostUserId, TemplateId templateId, uint32_t lockStateAuthTypeValue,
-        const std::vector<uint8_t> &fwkUnlockMsg);
+        const std::vector<uint8_t> &fwkUnlockMsg, const DeviceKey &companionDeviceKey);
     ~HostIssueTokenRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;

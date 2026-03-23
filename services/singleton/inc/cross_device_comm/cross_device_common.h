@@ -64,12 +64,13 @@ public:
     std::string deviceModelInfo;
     std::string networkId {};
     bool isAuthMaintainActive { false };
+    DeviceType deviceType { DeviceType::INVALID };
 
     bool operator==(const PhysicalDeviceStatus &other) const
     {
         return physicalDeviceKey == other.physicalDeviceKey && channelId == other.channelId &&
             deviceName == other.deviceName && deviceModelInfo == other.deviceModelInfo &&
-            isAuthMaintainActive == other.isAuthMaintainActive;
+            isAuthMaintainActive == other.isAuthMaintainActive && deviceType == other.deviceType;
     }
 };
 

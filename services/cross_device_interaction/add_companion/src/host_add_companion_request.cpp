@@ -15,8 +15,12 @@
 
 #include "host_add_companion_request.h"
 
+#include <algorithm>
+#include <nlohmann/json.hpp>
+
 #include "iam_check.h"
 #include "iam_logger.h"
+#include "iam_para2str.h"
 
 #include "adapter_manager.h"
 #include "add_companion_message.h"
@@ -25,6 +29,7 @@
 #include "companion_manager.h"
 #include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
+#include "fwk_common.h"
 #include "misc_manager.h"
 #include "security_agent.h"
 #include "service_converter.h"
@@ -37,13 +42,86 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 HostAddCompanionRequest::HostAddCompanionRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-    uint32_t tokenId, FwkResultCallback &&requestCallback)
+    uint32_t tokenId, const std::string &additionalInfo, FwkResultCallback &&requestCallback)
     : OutboundRequest(RequestType::HOST_ADD_COMPANION_REQUEST, scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
       fwkMsg_(fwkMsg),
       tokenId_(tokenId),
+      additionalInfo_(additionalInfo),
       requestCallback_(std::move(requestCallback)),
       eventCollector_("host add companion request")
 {
+    ParseAdditionalInfo();
+}
+
+void HostAddCompanionRequest::ParseAdditionalInfo()
+{
+    if (additionalInfo_.empty()) {
+        IAM_LOGI("%{public}s additionalInfo is empty", GetDescription());
+        return;
+    }
+
+    IAM_LOGI("%{public}s parsing additionalInfo", GetDescription());
+    try {
+        auto json = nlohmann::json::parse(additionalInfo_);
+        ENSURE_OR_RETURN(json.is_object());
+
+        auto it = json.find("enabled_business_ids");
+        if (it == json.end() || !it->is_array()) {
+            IAM_LOGI("%{public}s no enabled_business_ids array in additionalInfo", GetDescription());
+            return;
+        }
+
+        std::vector<BusinessId> parsedIds = ParseBusinessIdsFromJson(*it);
+        ValidateAndFilterBusinessIds(parsedIds);
+    } catch (const nlohmann::json::exception &e) {
+        IAM_LOGE("%{public}s failed to parse additionalInfo JSON: %{public}s", GetDescription(), e.what());
+    }
+}
+
+std::vector<BusinessId> HostAddCompanionRequest::ParseBusinessIdsFromJson(const nlohmann::json &businessIdsArray)
+{
+    std::vector<BusinessId> parsedIds;
+    for (const auto &item : businessIdsArray) {
+        ENSURE_OR_CONTINUE(item.is_number());
+        BusinessId id = static_cast<BusinessId>(item.get<int32_t>());
+        parsedIds.push_back(id);
+    }
+    return parsedIds;
+}
+
+void HostAddCompanionRequest::ValidateAndFilterBusinessIds(const std::vector<BusinessId> &parsedIds)
+{
+    auto deviceKey = GetPeerDeviceKey();
+    if (!deviceKey.has_value()) {
+        IAM_LOGW("%{public}s peer device key not available yet, keeping all parsed business IDs", GetDescription());
+        enabledBusinessIdsFromAdditionalInfo_ = parsedIds;
+        return;
+    }
+
+    auto deviceStatus = GetCrossDeviceCommManager().GetDeviceStatus(*deviceKey);
+    if (!deviceStatus.has_value()) {
+        IAM_LOGW("%{public}s failed to get device status, keeping all parsed business IDs", GetDescription());
+        enabledBusinessIdsFromAdditionalInfo_ = parsedIds;
+        return;
+    }
+
+    const auto &supportedIds = deviceStatus->supportedBusinessIds;
+    for (const auto &id : parsedIds) {
+        if (std::find(supportedIds.begin(), supportedIds.end(), id) != supportedIds.end()) {
+            enabledBusinessIdsFromAdditionalInfo_.push_back(id);
+            IAM_LOGI("%{public}s enabled business id: %{public}d is valid", GetDescription(), static_cast<int32_t>(id));
+        } else {
+            IAM_LOGE("%{public}s enabled business id: %{public}d is not supported, skipping", GetDescription(),
+                static_cast<int32_t>(id));
+        }
+    }
+
+    std::vector<int32_t> businessIdValues;
+    for (const auto &id : enabledBusinessIdsFromAdditionalInfo_) {
+        businessIdValues.push_back(static_cast<int32_t>(id));
+    }
+    IAM_LOGI("%{public}s parsed %{public}zu valid business IDs from additionalInfo: %{public}s", GetDescription(),
+        enabledBusinessIdsFromAdditionalInfo_.size(), GetVectorString(businessIdValues).c_str());
 }
 
 bool HostAddCompanionRequest::OnStart([[maybe_unused]] ErrorGuard &errorGuard)
@@ -251,6 +329,7 @@ std::optional<PersistedCompanionStatus> HostAddCompanionRequest::BuildPersistedC
     companionStatus.deviceModelInfo = deviceStatus.deviceModelInfo;
     companionStatus.deviceUserName = deviceStatus.deviceUserName;
     companionStatus.deviceName = deviceStatus.deviceName;
+    companionStatus.deviceType = deviceStatus.deviceType;
     companionStatus.isValid = true;
     return companionStatus;
 }
@@ -280,11 +359,22 @@ void HostAddCompanionRequest::ProcessEndAddCompanionOutput(const EndAddCompanion
 
     fwkMsg = output.fwkMsg;
     pendingTokenData_ = output.tokenData;
-    tokenAtl_ = output.atl;
+    tokenAuthAtl_ = output.atl;
 
     eventCollector_.UpdateTemplateIdList({ templateId_ });
     eventCollector_.AppendExtraInfo("ATL", output.atl);
     eventCollector_.AppendExtraInfo("ESL", output.esl);
+
+    // Update enabled business IDs if parsed from additionalInfo
+    if (!enabledBusinessIdsFromAdditionalInfo_.empty() && templateId_ != 0) {
+        ResultCode ret =
+            GetCompanionManager().UpdateCompanionEnabledBusinessIds(templateId_, enabledBusinessIdsFromAdditionalInfo_);
+        if (ret != ResultCode::SUCCESS) {
+            IAM_LOGE("%{public}s UpdateCompanionEnabledBusinessIds failed ret=%{public}d", GetDescription(), ret);
+        } else {
+            IAM_LOGI("%{public}s updated enabled business IDs from additionalInfo", GetDescription());
+        }
+    }
 }
 
 bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &reply, std::vector<uint8_t> &fwkMsg)
@@ -354,7 +444,7 @@ void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &rep
     }
 
     ENSURE_OR_RETURN_DESC(GetDescription(), templateId_ != 0);
-    GetCompanionManager().SetCompanionTokenAtl(templateId_, tokenAtl_);
+    GetCompanionManager().SetCompanionTokenAuthAtl(templateId_, tokenAuthAtl_);
     IAM_LOGI("%{public}s token activated successfully", GetDescription());
 
     errorGuard.Cancel();

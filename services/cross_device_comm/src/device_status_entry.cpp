@@ -30,7 +30,13 @@ DeviceStatusEntry::DeviceStatusEntry(const PhysicalDeviceStatus &physicalStatus,
     : physicalDeviceKey(physicalStatus.physicalDeviceKey),
       channelId(physicalStatus.channelId),
       deviceModelInfo(physicalStatus.deviceModelInfo),
+      deviceUserName(),
       deviceName(physicalStatus.deviceName),
+      protocolId(ProtocolId::INVALID),
+      secureProtocolId(SecureProtocolId::INVALID),
+      deviceType(physicalStatus.deviceType),
+      capabilities(),
+      supportedBusinessIds(),
       isAuthMaintainActive(physicalStatus.isAuthMaintainActive),
       isSynced(false),
       isSyncInProgress(false)
@@ -49,6 +55,8 @@ DeviceStatusEntry::DeviceStatusEntry(DeviceStatusEntry &&other) noexcept
       deviceUserName(std::move(other.deviceUserName)),
       deviceName(std::move(other.deviceName)),
       protocolId(other.protocolId),
+      secureProtocolId(other.secureProtocolId),
+      deviceType(other.deviceType),
       capabilities(std::move(other.capabilities)),
       supportedBusinessIds(std::move(other.supportedBusinessIds)),
       isAuthMaintainActive(other.isAuthMaintainActive),
@@ -107,6 +115,7 @@ DeviceStatus DeviceStatusEntry::BuildDeviceStatus(UserId userId) const
     status.supportedBusinessIds = supportedBusinessIds;
     status.isOnline = isSynced;
     status.isAuthMaintainActive = isAuthMaintainActive;
+    status.deviceType = deviceType;
     return status;
 }
 
