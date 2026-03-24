@@ -77,6 +77,21 @@
       },
       "inner_kits":[
         {
+          "name":"//base/useriam/companion_device_auth/frameworks/native/client:companion_device_auth_client",
+          "header":{
+            "header_base":"//base/useriam/companion_device_auth/interface",
+            "header_files":[
+              "companion_device_auth_client.h",
+              "companion_device_auth_common_defines.h",
+              "idevice_select_callback.h",
+              "set_device_select_result_callback.h",
+              "itemplate_status_callback.h",
+              "iavailable_device_status_callback.h",
+              "icontinuous_auth_status_callback.h"
+            ]
+          }
+        },
+        {
           "name":"//base/useriam/companion_device_auth/services:companion_device_auth_service_static"
         },
         {
@@ -88,7 +103,6 @@
       ],
       "test":[
         "//base/useriam/companion_device_auth/test/unittest:companion_device_auth_unittest",
-        "//base/useriam/companion_device_auth/test/moduletest:companion_device_auth_moduletest",
         "//base/useriam/companion_device_auth/test/fuzztest:companion_device_auth_fuzztest"
       ]
     }

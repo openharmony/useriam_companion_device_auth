@@ -13,34 +13,30 @@
  * limitations under the License.
  */
 
-/**
- * @file template_status_callback.h
- *
- * @brief Callback invoked when template statuses change.
- * @since todo
- * @version todo
- */
+#ifndef SET_DEVICE_SELECT_RESULT_CALLBACK_H
+#define SET_DEVICE_SELECT_RESULT_CALLBACK_H
 
-#ifndef ITEMPLATE_STATUS_CALLBACK_H
-#define ITEMPLATE_STATUS_CALLBACK_H
+#include <mutex>
 
 #include "companion_device_auth_common_defines.h"
+#include "companion_device_auth_types.h"
+#include "iipc_set_device_select_result_callback.h"
+#include "ipc_device_select_callback_stub.h"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-class ITemplateStatusCallback {
+class SetDeviceSelectResultCallback {
 public:
-    virtual ~ITemplateStatusCallback() = default;
+    explicit SetDeviceSelectResultCallback(const sptr<IIpcSetDeviceSelectResultCallback> &callback);
+    ~SetDeviceSelectResultCallback() = default;
+    int32_t OnSetDeviceSelectResult(const ClientDeviceSelectResult &result);
 
-    /**
-     * @brief Callback invoked when template statuses change.
-     *
-     * @param templateStatusList Latest template status list.
-     */
-    virtual void OnTemplateStatusChange(const std::vector<ClientTemplateStatus> templateStatusList) = 0;
+private:
+    sptr<IIpcSetDeviceSelectResultCallback> callback_ { nullptr };
+    std::recursive_mutex mutex_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
-#endif // ITEMPLATE_STATUS_CALLBACK_H
+#endif // SET_DEVICE_SELECT_RESULT_CALLBACK_H

@@ -605,8 +605,9 @@ HWTEST_F(HostTokenAuthRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0
     auto request = std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->peerDeviceKey_ = std::nullopt;
 
+    // When peerDeviceKey is nullopt, cannot determine if same device, so should not cancel
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_TOKEN_AUTH_REQUEST, std::nullopt, 0);
-    EXPECT_TRUE(result);
+    EXPECT_FALSE(result);
 }
 
 HWTEST_F(HostTokenAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level0)
