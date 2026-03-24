@@ -163,7 +163,7 @@ fn parse_begin_sec_message_test_get_session_key_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: attr.to_bytes().unwrap(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -204,7 +204,7 @@ fn parse_begin_sec_message_test_decrypt_sec_message_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: attr.to_bytes().unwrap(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -241,7 +241,7 @@ fn parse_begin_sec_message_test_try_from_bytes_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: Vec::new(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -281,7 +281,7 @@ fn parse_begin_sec_message_test_get_challenge_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: attr.to_bytes().unwrap(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -321,7 +321,7 @@ fn parse_begin_sec_message_test_get_atl_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: attr.to_bytes().unwrap(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -362,7 +362,7 @@ fn parse_begin_sec_message_test_atl_try_from_fail() {
         iv: [0u8; AES_GCM_IV_SIZE],
         encrypt_data: attr.to_bytes().unwrap(),
     };
-    let sec_message = sec_common_request.encode(DeviceType::Default).unwrap();
+    let sec_message = sec_common_request.encode(ProcessorType::Default).unwrap();
 
     let input = CompanionBeginDelegateAuthInputFfi {
         request_id: 1,

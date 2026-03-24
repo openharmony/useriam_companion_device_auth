@@ -221,7 +221,7 @@ HWTEST_F(CompanionTest, HandleDeviceStatusUpdate_001, TestSize.Level0)
     auto status = companion->GetStatus();
     EXPECT_TRUE(status.companionDeviceStatus.isOnline);
     EXPECT_FALSE(status.companionDeviceStatus.isAuthMaintainActive);
-    EXPECT_FALSE(status.tokenAtl.has_value());
+    EXPECT_FALSE(status.tokenAuthAtl.has_value());
 }
 
 HWTEST_F(CompanionTest, HandleDeviceStatusUpdate_002, TestSize.Level0)
@@ -305,45 +305,45 @@ HWTEST_F(CompanionTest, SetCompanionValid_002, TestSize.Level0)
     EXPECT_TRUE(companion->GetStatus().isValid);
 }
 
-HWTEST_F(CompanionTest, SetCompanionTokenAtl_001, TestSize.Level0)
+HWTEST_F(CompanionTest, SetCompanionTokenAuthAtl_001, TestSize.Level0)
 {
     auto persistedStatus = MakePersistedStatus(TEMPLATE_ID_12345, USER_ID_100, "test_device_id", USER_ID_200);
     auto companion = Companion::Create(persistedStatus, false, mockCompanionManager_);
     ASSERT_NE(nullptr, companion);
 
-    companion->SetCompanionTokenAtl(INT32_3);
+    companion->SetCompanionTokenAuthAtl(INT32_3);
 
     auto status = companion->GetStatus();
-    ASSERT_TRUE(status.tokenAtl.has_value());
-    EXPECT_EQ(INT32_3, status.tokenAtl.value());
+    ASSERT_TRUE(status.tokenAuthAtl.has_value());
+    EXPECT_EQ(INT32_3, status.tokenAuthAtl.value());
 }
 
-HWTEST_F(CompanionTest, SetCompanionTokenAtl_002, TestSize.Level0)
+HWTEST_F(CompanionTest, SetCompanionTokenAuthAtl_002, TestSize.Level0)
 {
     auto persistedStatus = MakePersistedStatus(TEMPLATE_ID_12345, USER_ID_100, "test_device_id", USER_ID_200);
     auto companion = Companion::Create(persistedStatus, false, mockCompanionManager_);
     ASSERT_NE(nullptr, companion);
 
-    // HostRevokeToken is called twice: once in SetCompanionTokenAtl, once in destructor
+    // HostRevokeToken is called twice: once in SetCompanionTokenAuthAtl, once in destructor
     EXPECT_CALL(mockSecurityAgent_, HostRevokeToken(_)).WillRepeatedly(Return(ResultCode::SUCCESS));
 
-    companion->status_.tokenAtl = INT32_1;
-    companion->SetCompanionTokenAtl(std::nullopt);
+    companion->status_.tokenAuthAtl = INT32_1;
+    companion->SetCompanionTokenAuthAtl(std::nullopt);
 
-    EXPECT_FALSE(companion->GetStatus().tokenAtl.has_value());
+    EXPECT_FALSE(companion->GetStatus().tokenAuthAtl.has_value());
 }
 
-HWTEST_F(CompanionTest, SetCompanionTokenAtl_003, TestSize.Level0)
+HWTEST_F(CompanionTest, SetCompanionTokenAuthAtl_003, TestSize.Level0)
 {
     auto persistedStatus = MakePersistedStatus(TEMPLATE_ID_12345, USER_ID_100, "test_device_id", USER_ID_200);
     auto companion = Companion::Create(persistedStatus, false, mockCompanionManager_);
     ASSERT_NE(nullptr, companion);
 
-    companion->SetCompanionTokenAtl(INT32_3);
+    companion->SetCompanionTokenAuthAtl(INT32_3);
 
     RelativeTimer::GetInstance().ExecuteAll();
 
-    EXPECT_FALSE(companion->GetStatus().tokenAtl.has_value());
+    EXPECT_FALSE(companion->GetStatus().tokenAuthAtl.has_value());
 }
 
 HWTEST_F(CompanionTest, SetDeviceNames_001, TestSize.Level0)

@@ -100,8 +100,8 @@ SecurityCommandAdapterImpl::~SecurityCommandAdapterImpl()
 
 ResultCode SecurityCommandAdapterImpl::Initialize()
 {
-    if (inited_) {
-        IAM_LOGE("SecurityCommandAdapter is already inited");
+    if (initialized_) {
+        IAM_LOGE("SecurityCommandAdapter is already initialized");
         return ResultCode::SUCCESS;
     }
     int32_t ret = init_rust_env();
@@ -120,7 +120,7 @@ ResultCode SecurityCommandAdapterImpl::Initialize()
         sizeof(InitInputFfi), reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(InitOutputFfi));
     ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
 
-    inited_ = true;
+    initialized_ = true;
     IAM_LOGI("initialize security command adapter success");
     return ResultCode::SUCCESS;
 }
@@ -131,8 +131,8 @@ ResultCode SecurityCommandAdapterImpl::InvokeCommand(int32_t commandId, const ui
     ENSURE_OR_RETURN_VAL(inputData != nullptr && inputDataLen != 0, ResultCode::GENERAL_ERROR);
     ENSURE_OR_RETURN_VAL(outputData != nullptr && outputDataLen != 0, ResultCode::GENERAL_ERROR);
 
-    if (!inited_ && commandId != CommandId::INIT) {
-        IAM_LOGE("SecurityCommandAdapter is not inited");
+    if (!initialized_ && commandId != CommandId::INIT) {
+        IAM_LOGE("SecurityCommandAdapter is not initialized");
         return ResultCode::GENERAL_ERROR;
     }
 

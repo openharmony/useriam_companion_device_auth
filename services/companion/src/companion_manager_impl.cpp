@@ -293,7 +293,7 @@ ResultCode CompanionManagerImpl::RemoveCompanion(TemplateId templateId)
 {
     auto companion = FindCompanionByTemplateId(templateId);
     if (companion != nullptr) {
-        companion->SetCompanionTokenAtl(std::nullopt);
+        companion->SetCompanionTokenAuthAtl(std::nullopt);
     }
 
     HostRemoveCompanionInput input { templateId };
@@ -377,7 +377,7 @@ ResultCode CompanionManagerImpl::UpdateCompanionEnabledBusinessIds(TemplateId te
     return ResultCode::SUCCESS;
 }
 
-bool CompanionManagerImpl::SetCompanionTokenAtl(TemplateId templateId, std::optional<Atl> atl)
+bool CompanionManagerImpl::SetCompanionTokenAuthAtl(TemplateId templateId, std::optional<Atl> atl)
 {
     auto companion = FindCompanionByTemplateId(templateId);
     if (companion == nullptr) {
@@ -385,7 +385,7 @@ bool CompanionManagerImpl::SetCompanionTokenAtl(TemplateId templateId, std::opti
         return false;
     }
 
-    companion->SetCompanionTokenAtl(atl);
+    companion->SetCompanionTokenAuthAtl(atl);
     return true;
 }
 

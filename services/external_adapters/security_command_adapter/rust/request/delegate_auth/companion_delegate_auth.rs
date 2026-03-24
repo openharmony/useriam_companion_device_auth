@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, HKDF_SALT_SIZE};
+use crate::common::constants::{AuthTrustLevel, ErrorCode, HKDF_SALT_SIZE, ProcessorType};
 use crate::entry::companion_device_auth_ffi::CompanionBeginDelegateAuthInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
@@ -56,7 +56,7 @@ impl CompanionDelegateAuthRequest {
     fn decode_sec_delegate_auth_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let output = SecCommonRequest::decode(
             sec_message,
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
+            ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?,
         )?;
 
         self.session_key = companion_db_helper::get_session_key(self.binding_id, &output.salt)?;
@@ -87,7 +87,7 @@ impl CompanionDelegateAuthRequest {
                 .map_err(|e| p!(e))?;
 
         let sec_auth_reply = Box::new(SecCommonReply { tag, iv, encrypt_data });
-        let output = sec_auth_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = sec_auth_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 }

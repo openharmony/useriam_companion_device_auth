@@ -82,7 +82,7 @@ public:
         const std::string &deviceUserName) = 0;
     virtual ResultCode UpdateCompanionEnabledBusinessIds(TemplateId templateId,
         const std::vector<BusinessId> &enabledBusinessIds) = 0;
-    virtual bool SetCompanionTokenAtl(TemplateId templateId, std::optional<Atl> atl) = 0;
+    virtual bool SetCompanionTokenAuthAtl(TemplateId templateId, std::optional<Atl> atl) = 0;
 
     virtual ResultCode UpdateToken(TemplateId templateId, const std::vector<uint8_t> &fwkMsg,
         bool &needRedistribute) = 0;

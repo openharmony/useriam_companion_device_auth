@@ -26,6 +26,7 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
         device_name: String::from("TestDevice"),
         device_user_name: String::from("TestUser"),
         business_ids: vec![1, 2, 3],
+        device_type: 0,
     }
 }
 
@@ -77,6 +78,6 @@ fn get_session_key_test_fail() {
     mock_host_db_manager.expect_read_device_sk().returning(|| Ok(Vec::new()));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 
-    let result = get_session_key(123, DeviceType::Default, &[]);
+    let result = get_session_key(123, ProcessorType::Default, &[]);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }

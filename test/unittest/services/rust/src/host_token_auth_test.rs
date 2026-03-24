@@ -48,7 +48,7 @@ fn create_valid_fwk_auth_request(schedule_id: u64, template_ids: &[u64], atl: i3
 
 fn create_valid_auth_reply_message(hmac: &[u8]) -> Vec<u8> {
     let reply = SecAuthReply { hmac: hmac.to_vec() };
-    reply.encode(DeviceType::Default).unwrap()
+    reply.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
@@ -65,7 +65,7 @@ fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
 fn create_mock_companion_token_info(added_time: u64) -> CompanionTokenInfo {
     CompanionTokenInfo {
         template_id: 123,
-        device_type: DeviceType::Default,
+        processor_type: ProcessorType::Default,
         token: [1u8; TOKEN_KEY_LEN],
         atl: AuthTrustLevel::Atl3,
         added_time,
@@ -119,7 +119,7 @@ fn host_token_auth_request_new_test_success() {
     assert_eq!(request.auth_param.template_id, 123);
     assert_eq!(request.atl, AuthTrustLevel::Atl0);
     assert_eq!(request.acl, AuthCapabilityLevel::Acl0);
-    assert_eq!(request.device_type, DeviceType::Default);
+    assert_eq!(request.processor_type, ProcessorType::Default);
 }
 
 #[test]
@@ -551,7 +551,7 @@ fn host_token_auth_request_begin_test_aes_gcm_encrypt_fail() {
     mock_host_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
     mock_host_db_manager
         .expect_read_device_sk()
-        .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
+        .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
     mock_set_time_keeper(2000);
 
@@ -624,7 +624,7 @@ fn host_token_auth_request_end_test_get_token_fail() {
     };
 
     let mut request = HostTokenAuthRequest::new(&input).unwrap();
-    request.device_type = DeviceType::Default;
+    request.processor_type = ProcessorType::Default;
 
     let hmac = vec![1u8, 2, 3, 4, 5];
     let sec_message = create_valid_auth_reply_message(&hmac);
@@ -669,7 +669,7 @@ fn host_token_auth_request_end_test_hmac_sha256_fail() {
     };
 
     let mut request = HostTokenAuthRequest::new(&input).unwrap();
-    request.device_type = DeviceType::Default;
+    request.processor_type = ProcessorType::Default;
 
     let hmac = vec![1u8, 2, 3, 4, 5];
     let sec_message = create_valid_auth_reply_message(&hmac);
@@ -714,7 +714,7 @@ fn host_token_auth_request_end_test_hmac_verification_fail() {
     };
 
     let mut request = HostTokenAuthRequest::new(&input).unwrap();
-    request.device_type = DeviceType::Default;
+    request.processor_type = ProcessorType::Default;
 
     let hmac = vec![1u8, 2, 3, 4, 5];
     let sec_message = create_valid_auth_reply_message(&hmac);
@@ -758,7 +758,7 @@ fn host_token_auth_request_end_test_get_local_key_pair_fail() {
     };
 
     let mut request = HostTokenAuthRequest::new(&input).unwrap();
-    request.device_type = DeviceType::Default;
+    request.processor_type = ProcessorType::Default;
 
     let hmac = vec![1u8, 2, 3, 4, 5];
     let sec_message = create_valid_auth_reply_message(&hmac);

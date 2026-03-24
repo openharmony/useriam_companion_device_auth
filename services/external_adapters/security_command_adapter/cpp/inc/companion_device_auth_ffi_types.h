@@ -193,6 +193,7 @@ typedef struct PersistedCompanionStatusFfi {
     uint64_t templateId;
     int32_t hostUserId;
     struct DeviceKeyFfi companionDeviceKey;
+    int32_t deviceType;
     uint8_t isValid;
     struct Int32Array64Ffi enabledBusinessIds;
     uint64_t addedTime;

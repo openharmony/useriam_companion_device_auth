@@ -393,6 +393,39 @@ HWTEST_F(SoftBusDeviceStatusManagerTest, GenerateDeviceModelInfo_001, TestSize.L
     EXPECT_EQ(info, "{\"deviceType\":\"pc\",\"type\":\"deviceType\"}");
 }
 
+HWTEST_F(SoftBusDeviceStatusManagerTest, ConvertToDeviceType_001, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto manager = SoftBusDeviceStatusManager::Create();
+    ASSERT_NE(manager, nullptr);
+
+    // Test all supported device types
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_PHONE), DeviceType::PHONE);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_PAD), DeviceType::PAD);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_2IN1),
+        DeviceType::TWO_IN_ONE);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_PC), DeviceType::PC);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_UNKNOWN),
+        DeviceType::UNKNOWN);
+}
+
+HWTEST_F(SoftBusDeviceStatusManagerTest, ConvertToDeviceType_002, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto manager = SoftBusDeviceStatusManager::Create();
+    ASSERT_NE(manager, nullptr);
+
+    // Test unsupported device types - should return INVALID
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_WATCH), DeviceType::INVALID);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_TV), DeviceType::INVALID);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_SMART_DISPLAY),
+        DeviceType::INVALID);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_AUDIO), DeviceType::INVALID);
+    EXPECT_EQ(manager->ConvertToDeviceType(DistributedHardware::DmDeviceType::DEVICE_TYPE_CAR), DeviceType::INVALID);
+}
+
 HWTEST_F(SoftBusDeviceStatusManagerTest, HandleDeviceManagerServiceReady_001, TestSize.Level0)
 {
     MockGuard guard;

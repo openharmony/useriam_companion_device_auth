@@ -245,10 +245,11 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Enroll_001, TestSize.Level0)
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _))
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _, _))
         .WillOnce(Invoke([](ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg, uint32_t tokenId,
-                             FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, std::move(requestCallback));
+                             const std::string &additionalInfo, FwkResultCallback &&requestCallback) {
+            return std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, additionalInfo,
+                std::move(requestCallback));
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
@@ -284,7 +285,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Enroll_003, TestSize.Level0)
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _, _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*callback, OnResult(FwkResultCode::GENERAL_ERROR, _)).Times(1);
 
     FwkResultCode ret = executor->Enroll(scheduleId, param, callback);
@@ -304,10 +305,11 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, Enroll_004, TestSize.Level0)
 
     auto callback = std::make_shared<NiceMock<MockFwkExecuteCallback>>();
 
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _))
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostAddCompanionRequest(_, _, _, _, _))
         .WillOnce(Invoke([](ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg, uint32_t tokenId,
-                             FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, std::move(requestCallback));
+                             const std::string &additionalInfo, FwkResultCallback &&requestCallback) {
+            return std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, additionalInfo,
+                std::move(requestCallback));
         }));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(false));
     EXPECT_CALL(*callback, OnResult(FwkResultCode::GENERAL_ERROR, _)).Times(1);
@@ -892,9 +894,9 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_006
     std::vector<uint8_t> extraInfo = info.Serialize();
 
     EXPECT_CALL(*callback, OnResult(FwkResultCode::SUCCESS, _)).Times(1);
-    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAtl(UINT64_123, testing::Eq(std::optional<Atl>())))
+    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAuthAtl(UINT64_123, testing::Eq(std::optional<Atl>())))
         .Times(1);
-    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAtl(UINT64_456, testing::Eq(std::optional<Atl>())))
+    EXPECT_CALL(guard.GetCompanionManager(), SetCompanionTokenAuthAtl(UINT64_456, testing::Eq(std::optional<Atl>())))
         .Times(1);
     EXPECT_CALL(guard.GetHostBindingManager(), RevokeTokens(_, _)).Times(1);
 

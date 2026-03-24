@@ -44,12 +44,12 @@ fn create_valid_obtain_token_request(challenge_server: u64, challenge_client: u6
     let iv = [2u8; AES_GCM_IV_SIZE];
 
     let request = SecPreObtainTokenReply { challenge: challenge_server, tag, iv, encrypt_data };
-    request.encode(DeviceType::Default).unwrap()
+    request.encode(ProcessorType::Default).unwrap()
 }
 
 fn create_mock_companion_device_capability() -> CompanionDeviceCapability {
     CompanionDeviceCapability {
-        device_type: DeviceType::Default,
+        processor_type: ProcessorType::Default,
         esl: ExecutorSecurityLevel::Esl3,
         track_ability_level: TrackAbilityLevel::Tal1,
     }
@@ -84,7 +84,7 @@ fn mock_set_host_db_manager() {
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
     mock_host_db_manager
         .expect_read_device_sk()
-        .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
+        .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     mock_host_db_manager.expect_add_token().returning(|| Ok(()));
     mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
@@ -579,7 +579,7 @@ fn host_obtain_token_request_end_test_add_token_fail() {
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
     mock_host_db_manager
         .expect_read_device_sk()
-        .returning(|| Ok(vec![CompanionDeviceSk { device_type: DeviceType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
+        .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     mock_host_db_manager.expect_add_token().returning(|| Err(ErrorCode::GeneralError));
     HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
 

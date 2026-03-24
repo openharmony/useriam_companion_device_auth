@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
+use crate::common::constants::{AuthTrustLevel, ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionPreIssueTokenInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::request::jobs::common_message::SecIssueToken;
@@ -72,7 +72,7 @@ impl CompanionDeviceIssueTokenRequest {
     }
 
     fn decode_sec_token_pre_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
+        let device_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecPreIssueRequest::decode(sec_message, device_type)?;
         self.pre_issue_param.salt = output.salt;
         Ok(())
@@ -82,12 +82,12 @@ impl CompanionDeviceIssueTokenRequest {
         self.session_key = companion_db_helper::get_session_key(self.binding_id, &self.pre_issue_param.salt)?;
         let sec_pre_issue_reply = Box::new(SecPreIssueReply { challenge: self.pre_issue_param.companion_challenge });
         let output =
-            sec_pre_issue_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+            sec_pre_issue_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
     fn decode_sec_token_issue_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
+        let device_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
         let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
 
         if issue_token.challenge != self.pre_issue_param.companion_challenge {
@@ -108,7 +108,7 @@ impl CompanionDeviceIssueTokenRequest {
     fn encode_sec_token_issue_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let issue_token_reply = Box::new(SecIssueTokenReply { result: ErrorCode::Success as i32 });
         let output =
-            issue_token_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+            issue_token_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 

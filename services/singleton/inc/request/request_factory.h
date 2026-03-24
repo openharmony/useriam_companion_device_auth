@@ -58,7 +58,8 @@ public:
     virtual ~IRequestFactory() = default;
 
     virtual std::shared_ptr<IRequest> CreateHostAddCompanionRequest(ScheduleId scheduleId,
-        const std::vector<uint8_t> &fwkMsg, uint32_t tokenId, FwkResultCallback &&requestCallback) = 0;
+        const std::vector<uint8_t> &fwkMsg, uint32_t tokenId, const std::string &additionalInfo,
+        FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostTokenAuthRequest(const AuthRequestParams &params,
         FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostRemoveHostBindingRequest(UserId hostUserId, TemplateId templateId,

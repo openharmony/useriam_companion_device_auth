@@ -42,11 +42,13 @@ static void FuzzCreateHostAddCompanionRequest(std::shared_ptr<RequestFactoryImpl
     std::vector<uint8_t> fwkMsg =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
     uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
+    std::string additionalInfo = fuzzData.ConsumeRandomLengthString(FUZZ_MAX_MESSAGE_LENGTH);
     FwkResultCallback callback = [](ResultCode result, const std::vector<uint8_t> &extraInfo) {
         (void)result;
         (void)extraInfo;
     };
-    auto request = factory->CreateHostAddCompanionRequest(scheduleId, fwkMsg, tokenId, std::move(callback));
+    auto request =
+        factory->CreateHostAddCompanionRequest(scheduleId, fwkMsg, tokenId, additionalInfo, std::move(callback));
     (void)request;
 }
 

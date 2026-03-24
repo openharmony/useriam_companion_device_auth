@@ -53,7 +53,7 @@ void HostRevokeTokenHandler::HandleRequest(const Attributes &request, Attributes
         return;
     }
 
-    GetCompanionManager().SetCompanionTokenAtl(companionStatus->templateId, std::nullopt);
+    GetCompanionManager().SetCompanionTokenAuthAtl(companionStatus->templateId, std::nullopt);
 
     RevokeTokenReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeRevokeTokenReply(replyMsg, reply);

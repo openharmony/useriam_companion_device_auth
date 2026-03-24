@@ -15,6 +15,7 @@
 
 #include "request_factory_impl.h"
 
+#include <cinttypes>
 #include <new>
 
 #include "iam_check.h"
@@ -23,6 +24,7 @@
 #include "companion_add_companion_request.h"
 #include "companion_delegate_auth_request.h"
 #include "companion_issue_token_request.h"
+#include "companion_manager.h"
 #include "companion_obtain_token_request.h"
 #include "companion_revoke_token_request.h"
 #include "host_add_companion_request.h"
@@ -49,9 +51,11 @@ std::shared_ptr<RequestFactoryImpl> RequestFactoryImpl::Create()
 }
 
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostAddCompanionRequest(ScheduleId scheduleId,
-    const std::vector<uint8_t> &fwkMsg, uint32_t tokenId, FwkResultCallback &&requestCallback)
+    const std::vector<uint8_t> &fwkMsg, uint32_t tokenId, const std::string &additionalInfo,
+    FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, std::move(requestCallback));
+    auto request = std::make_shared<HostAddCompanionRequest>(scheduleId, fwkMsg, tokenId, additionalInfo,
+        std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -59,7 +63,14 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostAddCompanionRequest(Sche
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostTokenAuthRequest(const AuthRequestParams &params,
     FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostTokenAuthRequest>(params, std::move(requestCallback));
+    auto companionStatus = GetCompanionManager().GetCompanionStatus(params.templateId);
+    if (!companionStatus.has_value()) {
+        IAM_LOGE("GetCompanionStatus failed for templateId %{public}" PRIu64, params.templateId);
+        return nullptr;
+    }
+    const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
+
+    auto request = std::make_shared<HostTokenAuthRequest>(params, companionDeviceKey, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -84,8 +95,15 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSyncDeviceStatusRequest(
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostIssueTokenRequest(UserId hostUserId, TemplateId templateId,
     uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
 {
-    auto request =
-        std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue, fwkUnlockMsg);
+    auto companionStatus = GetCompanionManager().GetCompanionStatus(templateId);
+    if (!companionStatus.has_value()) {
+        IAM_LOGE("GetCompanionStatus failed for templateId %{public}" PRIu64, templateId);
+        return nullptr;
+    }
+    const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
+
+    auto request = std::make_shared<HostIssueTokenRequest>(hostUserId, templateId, lockStateAuthTypeValue, fwkUnlockMsg,
+        companionDeviceKey);
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }
@@ -93,7 +111,14 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostIssueTokenRequest(UserId
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostDelegateAuthRequest(const AuthRequestParams &params,
     FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostDelegateAuthRequest>(params, std::move(requestCallback));
+    auto companionStatus = GetCompanionManager().GetCompanionStatus(params.templateId);
+    if (!companionStatus.has_value()) {
+        IAM_LOGE("GetCompanionStatus failed for templateId %{public}" PRIu64, params.templateId);
+        return nullptr;
+    }
+    const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
+
+    auto request = std::make_shared<HostDelegateAuthRequest>(params, companionDeviceKey, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }

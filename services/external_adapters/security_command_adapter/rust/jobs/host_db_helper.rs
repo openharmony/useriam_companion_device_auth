@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{Capability, DeviceType, ErrorCode};
+use crate::common::constants::{Capability, ErrorCode, ProcessorType};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::CompanionDeviceInfo;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
@@ -57,7 +57,7 @@ pub fn get_companion_device_by_user_id(user_id: i32) -> Result<Vec<CompanionDevi
 }
 
 pub fn delete_companion_device_token(template_id: u64) -> Result<(), ErrorCode> {
-    HostDbManagerRegistry::get_mut().remove_token(template_id, DeviceType::Default)?;
+    HostDbManagerRegistry::get_mut().remove_token(template_id, ProcessorType::default())?;
     Ok(())
 }
 
@@ -86,10 +86,10 @@ pub fn update_device_business_id(template_id: u64, business_ids: Vec<i32>) -> Re
     HostDbManagerRegistry::get_mut().write_device_base_info(template_id, &device_base_info)
 }
 
-pub fn get_session_key(template_id: u64, device_type: DeviceType, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {
+pub fn get_session_key(template_id: u64, processor_type: ProcessorType, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {
     let sk_infos = HostDbManagerRegistry::get_mut().read_device_sk(template_id).map_err(|e| p!(e))?;
     for sk_info in sk_infos {
-        if sk_info.device_type == device_type {
+        if sk_info.processor_type == processor_type {
             return CryptoEngineRegistry::get().hkdf(salt, &sk_info.sk).map_err(|e| p!(e));
         }
     }

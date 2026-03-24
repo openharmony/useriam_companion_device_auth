@@ -50,6 +50,7 @@ public:
     std::string deviceName {};
     ProtocolId protocolId { ProtocolId::INVALID };
     SecureProtocolId secureProtocolId { SecureProtocolId::INVALID };
+    DeviceType deviceType { DeviceType::INVALID };
     std::vector<Capability> capabilities {};
     std::vector<BusinessId> supportedBusinessIds {};
     bool isAuthMaintainActive { false };

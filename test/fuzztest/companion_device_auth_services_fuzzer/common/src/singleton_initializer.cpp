@@ -154,7 +154,7 @@ public:
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 
-    bool SetCompanionTokenAtl(TemplateId templateId, std::optional<Atl> atl) override
+    bool SetCompanionTokenAuthAtl(TemplateId templateId, std::optional<Atl> atl) override
     {
         (void)templateId;
         (void)atl;
@@ -1122,10 +1122,11 @@ public:
     }
 
     std::shared_ptr<IRequest> CreateHostAddCompanionRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg,
-        uint32_t tokenId, FwkResultCallback &&requestCallback) override
+        uint32_t tokenId, const std::string &additionalInfo, FwkResultCallback &&requestCallback) override
     {
         (void)fwkMsg;
         (void)tokenId;
+        (void)additionalInfo;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
             ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, scheduleId)

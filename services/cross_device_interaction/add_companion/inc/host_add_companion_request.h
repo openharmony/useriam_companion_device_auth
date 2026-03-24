@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 #include "add_companion_message.h"
 #include "companion_manager.h"
 #include "error_guard.h"
@@ -35,7 +37,7 @@ namespace CompanionDeviceAuth {
 class HostAddCompanionRequest : public std::enable_shared_from_this<HostAddCompanionRequest>, public OutboundRequest {
 public:
     HostAddCompanionRequest(ScheduleId scheduleId, const std::vector<uint8_t> &fwkMsg, uint32_t tokenId,
-        FwkResultCallback &&requestCallback);
+        const std::string &additionalInfo, FwkResultCallback &&requestCallback);
     ~HostAddCompanionRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
@@ -63,18 +65,23 @@ private:
     EndAddCompanionInput BuildEndAddCompanionInput(const PersistedCompanionStatus &companionStatus,
         const DeviceStatus &deviceStatus, const std::vector<uint8_t> &addHostBindingReply);
     void ProcessEndAddCompanionOutput(const EndAddCompanionOutput &output, std::vector<uint8_t> &fwkMsg);
+    void ParseAdditionalInfo();
+    std::vector<BusinessId> ParseBusinessIdsFromJson(const nlohmann::json &businessIdsArray);
+    void ValidateAndFilterBusinessIds(const std::vector<BusinessId> &parsedIds);
 
     std::vector<uint8_t> fwkMsg_;
     uint32_t tokenId_ = 0;
+    std::string additionalInfo_; // Store additionalInfo for parsing
     std::vector<uint8_t> addCompanionFwkMsg_ {};
     std::vector<uint8_t> pendingTokenData_ {}; // Token data for EndAddHostBinding message
     TemplateId templateId_ {};                 // TemplateId after successful binding
-    Atl tokenAtl_ = 0;                         // ATL level of token
+    Atl tokenAuthAtl_ = 0;                     // ATL level of token auth
     bool needCancelCompanionAdd_ = false;
     FwkResultCallback requestCallback_;
     DeviceKey hostDeviceKey_ {};
     SecureProtocolId secureProtocolId_ = SecureProtocolId::INVALID;
     InteractionEventCollector eventCollector_;
+    std::vector<BusinessId> enabledBusinessIdsFromAdditionalInfo_; // Parsed from additionalInfo
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

@@ -14,7 +14,7 @@
  */
 
 use crate::common::constants::{
-    AlgoType, AuthTrustLevel, DeviceType, ErrorCode, ExecutorSecurityLevel, TrackAbilityLevel, CHALLENGE_LEN,
+    AlgoType, AuthTrustLevel, ErrorCode, ExecutorSecurityLevel, ProcessorType, TrackAbilityLevel, CHALLENGE_LEN,
     HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS,
 };
 use crate::entry::companion_device_auth_ffi::{
@@ -130,8 +130,8 @@ impl CompanionDeviceEnrollRequest {
     }
 
     fn decode_sec_key_nego_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
-        let output = SecKeyNegoRequest::decode(sec_message, device_type)?;
+        let processor_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
+        let output = SecKeyNegoRequest::decode(sec_message, processor_type)?;
         if !output.algorithm_list.contains(&(AlgoType::X25519 as u16)) {
             log_e!("algorithm list is not contain X25519");
             return Err(ErrorCode::GeneralError);
@@ -148,7 +148,7 @@ impl CompanionDeviceEnrollRequest {
             challenge: self.key_nego_param.companion_challenge,
             pub_key: key_pair.pub_key.clone(),
         });
-        let output = key_nego_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = key_nego_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
@@ -173,12 +173,12 @@ impl CompanionDeviceEnrollRequest {
     }
 
     fn decode_sec_binding_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
-        let output = SecBindingRequest::decode(sec_message, device_type)?;
+        let processor_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
+        let output = SecBindingRequest::decode(sec_message, processor_type)?;
 
         let key_pair = self.get_key_pair()?;
         let sk = CryptoEngineRegistry::get().x25519_ecdh(key_pair, &output.pub_key).map_err(|e| {
-            log_e!("x25519 computation failed for device_type: {:?}, result: {:?}", device_type, e);
+            log_e!("x25519 computation failed for processor_type: {:?}, result: {:?}", processor_type, e);
             ErrorCode::GeneralError
         })?;
 
@@ -231,13 +231,13 @@ impl CompanionDeviceEnrollRequest {
 
         let binding_reply =
             Box::new(SecBindingReply { challenge: self.key_nego_param.companion_challenge, tag, iv, encrypt_data });
-        let output = binding_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = binding_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
     fn decode_sec_token_issue(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
-        let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
+        let processor_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
+        let issue_token = SecIssueToken::decrypt_issue_token(sec_message, processor_type, &self.session_key)?;
 
         if issue_token.challenge != self.key_nego_param.companion_challenge {
             log_e!("Challenge verification failed");

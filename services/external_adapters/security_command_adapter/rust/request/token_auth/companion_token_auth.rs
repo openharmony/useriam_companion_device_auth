@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{DeviceType, ErrorCode, HKDF_SALT_SIZE};
+use crate::common::constants::{ErrorCode, HKDF_SALT_SIZE, ProcessorType};
 use crate::entry::companion_device_auth_ffi::CompanionProcessTokenAuthInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
@@ -49,10 +49,10 @@ impl CompanionTokenAuthRequest {
 
     fn decode_sec_token_auth_request_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonRequest::decode(sec_message, device_type)?;
+        let output = SecCommonRequest::decode(sec_message, processor_type)?;
 
         let session_key = companion_db_helper::get_session_key(self.binding_id, &output.salt)?;
         let decrypt_data =
@@ -68,7 +68,7 @@ impl CompanionTokenAuthRequest {
 
     fn decode_sec_token_auth_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         if let Err(e) = self.decode_sec_token_auth_request_message(
-            DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?,
+            ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?,
             sec_message,
         ) {
             log_e!("parse device auth fail: {:?}", e);
@@ -89,7 +89,7 @@ impl CompanionTokenAuthRequest {
         let hmac = CryptoEngineRegistry::get().hmac_sha256(&token_info.token, &data).map_err(|e| p!(e))?;
 
         let sec_auth_reply = Box::new(SecAuthReply { hmac: hmac.to_vec() });
-        let output = sec_auth_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = sec_auth_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 }

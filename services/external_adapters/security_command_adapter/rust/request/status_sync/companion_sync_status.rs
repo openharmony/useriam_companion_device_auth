@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{DeviceType, ErrorCode, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS};
+use crate::common::constants::{ErrorCode, HKDF_SALT_SIZE, ProcessorType, SUPPORTED_PROTOCOL_VERSIONS};
 use crate::entry::companion_device_auth_ffi::CompanionProcessCheckInputFfi;
 use crate::jobs::companion_db_helper;
 use crate::jobs::message_crypto;
@@ -81,7 +81,7 @@ impl CompanionDeviceSyncStatusRequest {
 
         let status_sync_reply = Box::new(SecCommonReply { tag, iv, encrypt_data });
         let output =
-            status_sync_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+            status_sync_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 }
