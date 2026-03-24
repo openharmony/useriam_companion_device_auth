@@ -24,7 +24,6 @@
 
 #include "common_defines.h"
 #include "companion_device_auth_client.h"
-#include "companion_device_auth_common_defines.h"
 
 #ifndef ENABLE_TEST
 #include "ipc_client_fetcher.h"

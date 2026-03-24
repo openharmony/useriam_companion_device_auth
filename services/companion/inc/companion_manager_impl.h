@@ -87,8 +87,11 @@ private:
 
     HostBeginAddCompanionInput BuildHostBeginAddCompanionInput(const BeginAddCompanionParams &params);
     bool ValidateBeginAddCompanionOutput(const HostBeginAddCompanionOutput &output);
+    ResultCode InvokeHostBeginAddCompanion(const HostBeginAddCompanionInput &input,
+        HostBeginAddCompanionOutput &output);
     HostEndAddCompanionInput BuildHostEndAddCompanionInput(const EndAddCompanionInput &input);
     void ProcessEndAddCompanionOutput(const HostEndAddCompanionOutput &secOutput, EndAddCompanionOutput &output);
+    ResultCode InvokeHostEndAddCompanion(const HostEndAddCompanionInput &input, HostEndAddCompanionOutput &output);
 
     UserId hostUserId_ { INVALID_USER_ID };
     std::vector<std::shared_ptr<Companion>> companions_;

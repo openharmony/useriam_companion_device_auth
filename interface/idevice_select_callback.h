@@ -14,33 +14,36 @@
  */
 
 /**
- * @file available_device_status_callback.h
+ * @file device_select_callback.h
  *
- * @brief Callback invoked when available device status changes.
+ * @brief Device selection callback signature that returns appropriate devices for the requested purpose.
+ * @since todo
+ * @version todo
  */
 
-#ifndef IAVAILABLE_DEVICE_STATUS_CALLBACK_H
-#define IAVAILABLE_DEVICE_STATUS_CALLBACK_H
-
-#include <vector>
+#ifndef IDEVICE_SELECT_CALLBACK_H
+#define IDEVICE_SELECT_CALLBACK_H
 
 #include "companion_device_auth_common_defines.h"
+#include "set_device_select_result_callback.h"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-class IAvailableDeviceStatusCallback {
+class IDeviceSelectCallback {
 public:
-    virtual ~IAvailableDeviceStatusCallback() = default;
+    virtual ~IDeviceSelectCallback() = default;
 
     /**
-     * @brief Callback invoked when available device status changes.
+     * @brief Device selection callback signature that returns appropriate devices for the requested purpose.
      *
-     * @param deviceStatusList Status list of available devices.
+     * @param selectPurpose Purpose value.
+     * @param callback Set device select result callback.
      */
-    virtual void OnAvailableDeviceStatusChange(const std::vector<ClientDeviceStatus> deviceStatusList) = 0;
+    virtual void OnDeviceSelect(int32_t selectPurpose,
+        const std::shared_ptr<SetDeviceSelectResultCallback> &callback) = 0;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
-#endif // IAVAILABLE_DEVICE_STATUS_CALLBACK_H
+#endif // IDEVICE_SELECT_CALLBACK_H

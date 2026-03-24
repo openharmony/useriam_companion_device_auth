@@ -418,7 +418,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_001, TestSiz
         .WillOnce(Return(std::make_optional(HOST_BINDING_STATUS)));
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    bool result = request->CompanionBeginObtainToken(preObtainTokenReply);
+    bool result = request->CompanionBeginObtainToken(preObtainTokenReply.extraInfo);
 
     EXPECT_FALSE(result);
 }
@@ -457,7 +457,7 @@ HWTEST_F(CompanionObtainTokenRequestTest, CompanionBeginObtainToken_002, TestSiz
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionBeginObtainToken(_, _)).WillOnce(Return(ResultCode::SUCCESS));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, _, _, _)).WillOnce(Return(false));
 
-    bool result = request->CompanionBeginObtainToken(preObtainTokenReply);
+    bool result = request->CompanionBeginObtainToken(preObtainTokenReply.extraInfo);
 
     EXPECT_FALSE(result);
 }

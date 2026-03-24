@@ -556,8 +556,9 @@ HWTEST_F(HostIssueTokenRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level
         FWK_UNLOCK_MSG, COMPANION_DEVICE_KEY);
     request->peerDeviceKey_ = std::nullopt;
 
+    // When peerDeviceKey is nullopt, cannot determine if same device, so should not cancel
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_ISSUE_TOKEN_REQUEST, std::nullopt, 0);
-    EXPECT_TRUE(result);
+    EXPECT_FALSE(result);
 }
 
 HWTEST_F(HostIssueTokenRequestTest, ShouldCancelOnNewRequest_003, TestSize.Level0)

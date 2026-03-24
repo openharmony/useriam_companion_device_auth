@@ -112,12 +112,9 @@ static void FuzzHandlePreObtainTokenReply(std::shared_ptr<CompanionObtainTokenRe
 static void FuzzCompanionBeginObtainToken(std::shared_ptr<CompanionObtainTokenRequest> &request,
     FuzzedDataProvider &fuzzData)
 {
-    (void)fuzzData;
-    PreObtainTokenReply reply = {};
-    reply.result = fuzzData.ConsumeIntegral<int32_t>();
-    reply.extraInfo =
+    std::vector<uint8_t> extraInfo =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
-    (void)request->CompanionBeginObtainToken(reply);
+    (void)request->CompanionBeginObtainToken(extraInfo);
 }
 
 static void FuzzSendObtainTokenRequest(std::shared_ptr<CompanionObtainTokenRequest> &request,

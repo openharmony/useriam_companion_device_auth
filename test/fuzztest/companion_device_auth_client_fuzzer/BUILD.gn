@@ -38,10 +38,10 @@ ohos_fuzztest("CompanionDeviceAuthClientFuzzer") {
     "${companion_device_auth_path}/test/fuzztest/common_fuzzer_config:fuzz_common_config",
   ]
 
-  include_dirs = companion_device_auth_fake_include_dirs + [
-                   "${companion_device_auth_path}/frameworks/native/client/inc",
-                   "${companion_device_auth_path}/services/utils/inc",
-                   "${companion_device_auth_path}/services/common/inc",
+  include_dirs = companion_device_auth_fake_include_dirs +
+                 companion_device_auth_client_include_dirs +
+                 [
+                   "${companion_device_auth_path}/frameworks/native/ipc/inc",
                    ".",
                    "cases",
                  ]

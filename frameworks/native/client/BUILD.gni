@@ -30,7 +30,10 @@ foreach(src, companion_device_auth_client_sources) {
       [ "${companion_device_auth_path}/frameworks/native/client/" + src ]
 }
 
-companion_device_auth_client_include_dirs = [ "inc" ]
+companion_device_auth_client_include_dirs = [
+  "${companion_device_auth_path}/frameworks/native/client/inc",
+  "${companion_device_auth_path}/interface",
+]
 
 companion_device_auth_client_external_deps = [
   "access_token:libaccesstoken_sdk",
