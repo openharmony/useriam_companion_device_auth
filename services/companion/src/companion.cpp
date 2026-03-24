@@ -72,7 +72,7 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
 Companion::~Companion()
 {
     IAM_LOGI("%{public}s destroyed", GetDescription());
-    SetCompanionTokenAtl(std::nullopt);
+    SetCompanionTokenAuthAtl(std::nullopt);
 }
 
 bool Companion::Initialize()
@@ -154,39 +154,39 @@ void Companion::SetCompanionValid(bool isValid)
     NotifySubscribers();
 }
 
-void Companion::SetCompanionTokenAtl(std::optional<Atl> tokenAtl)
+void Companion::SetCompanionTokenAuthAtl(std::optional<Atl> tokenAuthAtl)
 {
-    std::optional<Atl> oldTokenAtl = status_.tokenAtl;
-    status_.tokenAtl = tokenAtl;
-    IAM_LOGI("%{public}s set token atl %{public}s -> %{public}s", GetDescription(),
-        GetOptionalString(oldTokenAtl).c_str(), GetOptionalString(tokenAtl).c_str());
+    std::optional<Atl> oldTokenAuthAtl = status_.tokenAuthAtl;
+    status_.tokenAuthAtl = tokenAuthAtl;
+    IAM_LOGI("%{public}s set token auth atl %{public}s -> %{public}s", GetDescription(),
+        GetOptionalString(oldTokenAuthAtl).c_str(), GetOptionalString(tokenAuthAtl).c_str());
 
     tokenTimeoutSubscription_.reset();
-    if (oldTokenAtl.has_value() && !tokenAtl.has_value()) {
+    if (oldTokenAuthAtl.has_value() && !tokenAuthAtl.has_value()) {
         HostRevokeTokenInput input = { status_.templateId };
         (void)GetSecurityAgent().HostRevokeToken(input);
-    } else if (tokenAtl.has_value()) {
+    } else if (tokenAuthAtl.has_value()) {
         tokenTimeoutSubscription_ = RelativeTimer::GetInstance().Register(
             [weakSelf = weak_from_this(), description = GetDescription()]() {
                 auto self = weakSelf.lock();
                 ENSURE_OR_RETURN_DESC(description, self != nullptr);
                 IAM_LOGI("%{public}s token timeout, revoking token", description);
-                self->SetCompanionTokenAtl(std::nullopt);
+                self->SetCompanionTokenAuthAtl(std::nullopt);
             },
             TOKEN_TIMEOUT_MS);
         ENSURE_OR_RETURN_DESC(GetDescription(), tokenTimeoutSubscription_ != nullptr);
         IAM_LOGI("%{public}s registered token timeout timer", GetDescription());
     }
 
-    if (status_.tokenAtl != oldTokenAtl) {
+    if (status_.tokenAuthAtl != oldTokenAuthAtl) {
         NotifySubscribers();
     }
 }
 
 void Companion::RefreshTokenTimer()
 {
-    if (!status_.tokenAtl.has_value()) {
-        IAM_LOGE("%{public}s no token atl, skip refresh timer", GetDescription());
+    if (!status_.tokenAuthAtl.has_value()) {
+        IAM_LOGE("%{public}s no token auth atl, skip refresh timer", GetDescription());
         return;
     }
 
@@ -196,7 +196,7 @@ void Companion::RefreshTokenTimer()
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN_DESC(description, self != nullptr);
             IAM_LOGI("%{public}s token timeout, revoking token", description);
-            self->SetCompanionTokenAtl(std::nullopt);
+            self->SetCompanionTokenAuthAtl(std::nullopt);
         },
         TOKEN_TIMEOUT_MS);
     ENSURE_OR_RETURN_DESC(GetDescription(), tokenTimeoutSubscription_ != nullptr);

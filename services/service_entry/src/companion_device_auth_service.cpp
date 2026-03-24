@@ -56,6 +56,7 @@
 
 #include "driver_manager_adapter_impl.h"
 #include "idm_adapter_impl.h"
+#include "relative_timer.h"
 #include "user_auth_adapter_impl.h"
 
 #define LOG_TAG "CDA_SA"
@@ -131,14 +132,14 @@ void CompanionDeviceAuthService::OnStart()
             -> std::pair<std::shared_ptr<BaseServiceInitializer>, std::shared_ptr<BaseServiceCore>> {
             auto baseServiceInitializer = initializerCreator();
             ENSURE_OR_RETURN_VAL(baseServiceInitializer != nullptr, std::make_pair(nullptr, nullptr));
-            GetSystemParamManager().SetParam(CDA_IS_FUNCTION_READY_KEY, TRUE_STR);
-            IAM_LOGI("created base service initializer");
 
             auto core = coreCreator(baseServiceInitializer->GetSubscriptionManager(),
                 baseServiceInitializer->GetSupportedBusinessIds());
             ENSURE_OR_RETURN_VAL(core != nullptr, std::make_pair(nullptr, nullptr));
             IAM_LOGI("created inner service");
 
+            RelativeTimer::GetInstance().PostTask(
+                []() { GetSystemParamManager().SetParam(CDA_IS_FUNCTION_READY_KEY, TRUE_STR); }, SET_PARAM_DELAY_MS);
             return std::make_pair(baseServiceInitializer, core);
         },
         MAX_ON_START_WAIT_TIME_SEC);

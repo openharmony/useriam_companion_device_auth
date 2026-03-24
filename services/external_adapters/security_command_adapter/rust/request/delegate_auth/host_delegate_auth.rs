@@ -14,7 +14,7 @@
  */
 
 use crate::common::constants::{
-    AuthCapabilityLevel, AuthTrustLevel, Capability, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE,
+    AuthCapabilityLevel, AuthTrustLevel, Capability, ProcessorType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginDelegateAuthInputFfi;
 use crate::jobs::host_db_helper;
@@ -89,12 +89,12 @@ impl HostDelegateAuthRequest {
 
     fn encode_sec_delegate_auth_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
-        let device_capabilitys =
+        let device_capabilities =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
-        for device_capability in &device_capabilitys {
+        for device_capability in &device_capabilities {
             let session_key = host_db_helper::get_session_key(
                 self.auth_param.template_id,
-                device_capability.device_type,
+                device_capability.processor_type,
                 &self.salt,
             )?;
 
@@ -107,18 +107,18 @@ impl HostDelegateAuthRequest {
                     .map_err(|e| p!(e))?;
 
             let sec_auth_request = Box::new(SecCommonRequest { salt: self.salt, tag, iv, encrypt_data });
-            output.extend(sec_auth_request.encode(device_capability.device_type)?);
+            output.extend(sec_auth_request.encode(device_capability.processor_type)?);
         }
         Ok(output)
     }
 
     fn decode_sec_delegate_auth_reply_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         message_data: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecCommonReply::decode(message_data, device_type)?;
-        let session_key = host_db_helper::get_session_key(self.auth_param.template_id, device_type, &self.salt)?;
+        let output = SecCommonReply::decode(message_data, processor_type)?;
+        let session_key = host_db_helper::get_session_key(self.auth_param.template_id, processor_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -146,13 +146,13 @@ impl HostDelegateAuthRequest {
     }
 
     fn decode_sec_delegate_auth_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_capabilitys =
+        let device_capabilities =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
-        for device_capability in &device_capabilitys {
-            if let Err(e) = self.decode_sec_delegate_auth_reply_message(device_capability.device_type, sec_message) {
+        for device_capability in &device_capabilities {
+            if let Err(e) = self.decode_sec_delegate_auth_reply_message(device_capability.processor_type, sec_message) {
                 log_e!(
                     "parse auth reply message fail: device_type: {:?}, result: {:?}",
-                    device_capability.device_type,
+                    device_capability.processor_type,
                     e
                 );
                 return Err(ErrorCode::GeneralError);
@@ -212,7 +212,7 @@ impl Request for HostDelegateAuthRequest {
         let result = match self.decode_sec_delegate_auth_reply(ffi_input.sec_message.as_slice()?) {
             Ok(_) => ErrorCode::Success,
             Err(result) => {
-                log_e!("Decoding delagate auth reply failed: {:?}", result);
+                log_e!("Decoding delegate auth reply failed: {:?}", result);
                 result
             },
         };

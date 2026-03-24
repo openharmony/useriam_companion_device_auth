@@ -33,7 +33,8 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
+HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params, const DeviceKey &companionDeviceKey,
+    FwkResultCallback &&requestCallback)
     : OutboundRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS),
       fwkMsg_(params.fwkMsg),
       hostUserId_(params.hostUserId),
@@ -41,8 +42,10 @@ HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params
       requestCallback_(std::move(requestCallback)),
       eventCollector_("host delegate auth request")
 {
+    SetPeerDeviceKey(companionDeviceKey);
     UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
     eventCollector_.UpdateHostUserId(params.hostUserId);
+    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateScheduleId(params.scheduleId);
     eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
     eventCollector_.UpdateTemplateIdList({ params.templateId });
@@ -51,21 +54,17 @@ HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params
 bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
 {
     IAM_LOGI("%{public}s start", GetDescription());
-    auto companionStatus = GetCompanionManager().GetCompanionStatus(templateId_);
-    if (!companionStatus.has_value()) {
-        IAM_LOGI("%{public}s GetCompanionStatus fail", GetDescription());
-        return false;
-    }
-
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::DELEGATE_AUTH)) {
         IAM_LOGE("%{public}s DELEGATE_AUTH capability not supported by companion device", GetDescription());
         return false;
     }
 
-    const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
-    SetPeerDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
-    auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(companionDeviceKey);
+    auto peerDeviceKey = GetPeerDeviceKey();
+    if (!peerDeviceKey.has_value()) {
+        IAM_LOGE("%{public}s peerDeviceKey not set", GetDescription());
+        return false;
+    }
+    auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(*peerDeviceKey);
     if (!secureProtocolOpt.has_value()) {
         IAM_LOGI("%{public}s HostGetSecureProtocolId fail", GetDescription());
         return false;

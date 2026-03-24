@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{DeviceType, ErrorCode};
+use crate::common::constants::{ErrorCode, ProcessorType};
 use crate::traits::db_manager::{
     CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo,
 };
@@ -38,8 +38,8 @@ pub trait HostDbManager {
     fn generate_unique_template_id(&self) -> Result<u64, ErrorCode>;
 
     fn add_token(&mut self, token: &CompanionTokenInfo) -> Result<(), ErrorCode>;
-    fn get_token(&self, template_id: u64, device_type: DeviceType) -> Result<CompanionTokenInfo, ErrorCode>;
-    fn remove_token(&mut self, template_id: u64, device_type: DeviceType) -> Result<CompanionTokenInfo, ErrorCode>;
+    fn get_token(&self, template_id: u64, processor_type: ProcessorType) -> Result<CompanionTokenInfo, ErrorCode>;
+    fn remove_token(&mut self, template_id: u64, processor_type: ProcessorType) -> Result<CompanionTokenInfo, ErrorCode>;
     fn update_token(&mut self, device_info: &CompanionTokenInfo) -> Result<(), ErrorCode>;
 
     fn read_device_db(&mut self) -> Result<(), ErrorCode>;
@@ -96,11 +96,11 @@ impl HostDbManager for DummyHostDbManager {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn get_token(&self, _template_id: u64, _device_type: DeviceType) -> Result<CompanionTokenInfo, ErrorCode> {
+    fn get_token(&self, _template_id: u64, _processor_type: ProcessorType) -> Result<CompanionTokenInfo, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn remove_token(&mut self, _template_id: u64, _device_type: DeviceType) -> Result<CompanionTokenInfo, ErrorCode> {
+    fn remove_token(&mut self, _template_id: u64, _processor_type: ProcessorType) -> Result<CompanionTokenInfo, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }

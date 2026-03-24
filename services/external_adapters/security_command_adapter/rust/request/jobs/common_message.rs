@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{DeviceType, ErrorCode, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
+use crate::common::constants::{ErrorCode, ProcessorType, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
 use crate::jobs::message_crypto;
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, p, Box, Vec};
@@ -27,8 +27,8 @@ pub struct SecCommonRequest {
 }
 
 impl SecCommonRequest {
-    pub fn decode(message: &[u8], device_type: DeviceType) -> Result<Box<Self>, ErrorCode> {
-        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+    pub fn decode(message: &[u8], processor_type: ProcessorType) -> Result<Box<Self>, ErrorCode> {
+        let message_type = AttributeKey::try_from(processor_type).map_err(|e| p!(e))?;
         let attribute = Attribute::try_from_bytes(message).map_err(|e| p!(e))?;
         let message_data = attribute.get_u8_slice(message_type).map_err(|e| p!(e))?;
 
@@ -55,8 +55,8 @@ impl SecCommonRequest {
         }))
     }
 
-    pub fn encode(&self, device_type: DeviceType) -> Result<Vec<u8>, ErrorCode> {
-        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+    pub fn encode(&self, processor_type: ProcessorType) -> Result<Vec<u8>, ErrorCode> {
+        let message_type = AttributeKey::try_from(processor_type).map_err(|e| p!(e))?;
         let mut attribute = Attribute::new();
         attribute.set_u8_slice(AttributeKey::AttrSalt, &self.salt);
         attribute.set_u8_slice(AttributeKey::AttrTag, &self.tag);
@@ -77,8 +77,8 @@ pub struct SecCommonReply {
 }
 
 impl SecCommonReply {
-    pub fn decode(message: &[u8], device_type: DeviceType) -> Result<Box<Self>, ErrorCode> {
-        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+    pub fn decode(message: &[u8], processor_type: ProcessorType) -> Result<Box<Self>, ErrorCode> {
+        let message_type = AttributeKey::try_from(processor_type).map_err(|e| p!(e))?;
         let attribute = Attribute::try_from_bytes(message).map_err(|e| p!(e))?;
         let message_data = attribute.get_u8_slice(message_type).map_err(|e| p!(e))?;
 
@@ -99,8 +99,8 @@ impl SecCommonReply {
         }))
     }
 
-    pub fn encode(&self, device_type: DeviceType) -> Result<Vec<u8>, ErrorCode> {
-        let message_type = AttributeKey::try_from(device_type).map_err(|e| p!(e))?;
+    pub fn encode(&self, processor_type: ProcessorType) -> Result<Vec<u8>, ErrorCode> {
+        let message_type = AttributeKey::try_from(processor_type).map_err(|e| p!(e))?;
         let mut attribute = Attribute::new();
         attribute.set_u8_slice(AttributeKey::AttrTag, &self.tag);
         attribute.set_u8_slice(AttributeKey::AttrIv, &self.iv);
@@ -122,10 +122,10 @@ pub struct SecIssueToken {
 impl SecIssueToken {
     pub fn decrypt_issue_token(
         sec_message: &[u8],
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         session_key: &[u8],
     ) -> Result<Self, ErrorCode> {
-        let output = SecCommonRequest::decode(sec_message, device_type)?;
+        let output = SecCommonRequest::decode(sec_message, processor_type)?;
 
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, session_key, &output.tag, &output.iv)
@@ -142,7 +142,7 @@ impl SecIssueToken {
     pub fn encrypt_issue_token(
         &self,
         salt: &[u8],
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         session_key: &[u8],
     ) -> Result<Vec<u8>, ErrorCode> {
         let mut encrypt_attribute = Attribute::new();
@@ -163,7 +163,7 @@ impl SecIssueToken {
             iv,
             encrypt_data,
         });
-        let output = issue_token_request.encode(device_type)?;
+        let output = issue_token_request.encode(processor_type)?;
         Ok(output)
     }
 }

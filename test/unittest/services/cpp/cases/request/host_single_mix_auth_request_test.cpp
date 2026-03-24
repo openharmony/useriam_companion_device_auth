@@ -45,6 +45,9 @@ constexpr UserId HOST_USER_ID = 100;
 constexpr TemplateId TEMPLATE_ID = 12345;
 const std::vector<uint8_t> EXTRA_INFO = { 5, 6, 7, 8 };
 const int32_t AUTH_INTENTION = 1;
+const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "companion_device_id",
+    .deviceUserId = 200 };
 
 class HostSingleMixAuthRequestTest : public Test {
 public:
@@ -78,11 +81,12 @@ public:
         ON_CALL(mockCompanionManager_, IsCapabilitySupported(_, Capability::DELEGATE_AUTH)).WillByDefault(Return(true));
         ON_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
             .WillByDefault(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-                return std::make_shared<HostTokenAuthRequest>(params, std::move(requestCallback));
+                return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
             }));
         ON_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
             .WillByDefault(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-                return std::make_shared<HostDelegateAuthRequest>(params, std::move(requestCallback));
+                return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY,
+                    std::move(requestCallback));
             }));
         ON_CALL(mockRequestManager_, Start(_)).WillByDefault(Return(true));
         ON_CALL(mockEventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
@@ -118,7 +122,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_001, TestSize.Level0)
 
     EXPECT_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
         .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostTokenAuthRequest>(params, std::move(requestCallback));
+            return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
         }));
     // HostTokenAuthRequest Start will be called first
     // If it fails, HostDelegateAuthRequest Start may be called, so allow up to 2 Start calls
@@ -167,7 +171,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_003, TestSize.Level0)
 
     EXPECT_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
         .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostTokenAuthRequest>(params, std::move(requestCallback));
+            return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
         }));
     // Allow multiple calls during cleanup - return false for the first call, then true for any additional calls
     EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(false)).WillRepeatedly(Return(true));
@@ -290,7 +294,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_002, TestSize.Level
 
     EXPECT_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
         .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostDelegateAuthRequest>(params, std::move(requestCallback));
+            return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
         }));
     EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(true)).WillOnce(Return(true));
 
@@ -355,7 +359,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_005, TestSize.Level
 
     EXPECT_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
         .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostDelegateAuthRequest>(params, std::move(requestCallback));
+            return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
         }));
     EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(true)).WillOnce(Return(false));
 

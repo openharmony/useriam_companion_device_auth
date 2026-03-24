@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, DeviceType, ErrorCode, TOKEN_KEY_LEN};
+use crate::common::constants::{AuthTrustLevel, ProcessorType, ErrorCode, TOKEN_KEY_LEN};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::db_manager::CompanionTokenInfo;
 use crate::traits::host_db_manager::HostDbManagerRegistry;
@@ -22,14 +22,14 @@ use crate::{log_e, p, Vec};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DeviceTokenInfo {
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
     pub challenge: u64,
     pub atl: AuthTrustLevel,
     pub token: Vec<u8>,
 }
 
 pub fn generate_token(
-    device_type: DeviceType,
+    processor_type: ProcessorType,
     challenge: u64,
     atl: AuthTrustLevel,
 ) -> Result<DeviceTokenInfo, ErrorCode> {
@@ -39,7 +39,7 @@ pub fn generate_token(
         ErrorCode::GeneralError
     })?;
 
-    let token_info = DeviceTokenInfo { device_type, challenge, atl, token: token.to_vec() };
+    let token_info = DeviceTokenInfo { processor_type, challenge, atl, token: token.to_vec() };
 
     Ok(token_info)
 }
@@ -48,7 +48,7 @@ pub fn add_companion_device_token(template_id: u64, token_infos: &Vec<DeviceToke
     for token_info in token_infos {
         let companion_token = CompanionTokenInfo {
             template_id,
-            device_type: token_info.device_type,
+            processor_type: token_info.processor_type,
             token: token_info.token.clone().try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
                 ErrorCode::GeneralError

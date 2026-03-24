@@ -35,7 +35,7 @@ private:
     ResultCode Initialize();
     SecurityCommandAdapterImpl();
 
-    bool inited_ = false;
+    bool initialized_ = false;
 };
 
 } // namespace CompanionDeviceAuth

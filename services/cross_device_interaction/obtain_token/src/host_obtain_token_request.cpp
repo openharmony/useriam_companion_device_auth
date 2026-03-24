@@ -220,9 +220,9 @@ bool HostObtainTokenRequest::ProcessHostProcessObtainTokenOutput(const HostProce
     obtainTokenReply = output.obtainTokenReply;
     IAM_LOGI("%{public}s HostProcessObtainToken success atl=%{public}d", GetDescription(), output.atl);
 
-    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAtl(templateId_, output.atl);
+    bool setTokenAtlRet = GetCompanionManager().SetCompanionTokenAuthAtl(templateId_, output.atl);
     if (!setTokenAtlRet) {
-        IAM_LOGE("%{public}s SetCompanionTokenAtl failed", GetDescription());
+        IAM_LOGE("%{public}s SetCompanionTokenAuthAtl failed", GetDescription());
     }
     return setTokenAtlRet;
 }

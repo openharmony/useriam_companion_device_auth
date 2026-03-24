@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, AuthType, Capability, DeviceType, ErrorCode, HKDF_SALT_SIZE};
+use crate::common::constants::{AuthTrustLevel, AuthType, Capability, ProcessorType, ErrorCode, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostPreIssueTokenInputFfi;
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
 use crate::jobs::host_db_helper;
@@ -92,18 +92,18 @@ impl HostDeviceIssueTokenRequest {
         let capability_infos =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.token_issue_param.template_id)?;
         for capability_info in capability_infos {
-            output.extend(pre_issue_request.encode(capability_info.device_type)?);
+            output.extend(pre_issue_request.encode(capability_info.processor_type)?);
         }
         Ok(output)
     }
 
     fn decode_sec_pre_issue_reply_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecPreIssueReply::decode(sec_message, device_type)?;
-        self.token_infos.push(token_helper::generate_token(device_type, output.challenge, self.atl)?);
+        let output = SecPreIssueReply::decode(sec_message, processor_type)?;
+        self.token_infos.push(token_helper::generate_token(processor_type, output.challenge, self.atl)?);
         Ok(())
     }
 
@@ -111,10 +111,10 @@ impl HostDeviceIssueTokenRequest {
         let capability_infos =
             HostDbManagerRegistry::get_mut().read_device_capability_info(self.token_issue_param.template_id)?;
         for capability_info in capability_infos {
-            if let Err(e) = self.decode_sec_pre_issue_reply_message(capability_info.device_type, sec_message) {
+            if let Err(e) = self.decode_sec_pre_issue_reply_message(capability_info.processor_type, sec_message) {
                 log_e!(
                     "parse pre issue token reply message fail: device_type: {:?}, result: {:?}",
-                    capability_info.device_type,
+                    capability_info.processor_type,
                     e
                 );
                 return Err(ErrorCode::GeneralError);
@@ -134,7 +134,7 @@ impl HostDeviceIssueTokenRequest {
         for token_info in &self.token_infos {
             let session_key = host_db_helper::get_session_key(
                 self.token_issue_param.template_id,
-                token_info.device_type,
+                token_info.processor_type,
                 &self.salt,
             )?;
 
@@ -144,7 +144,7 @@ impl HostDeviceIssueTokenRequest {
                 token: token_info.token.clone(),
             };
 
-            output.extend(issue_token.encrypt_issue_token(&self.salt, token_info.device_type, &session_key)?);
+            output.extend(issue_token.encrypt_issue_token(&self.salt, token_info.processor_type, &session_key)?);
         }
 
         Ok(output)
@@ -152,10 +152,10 @@ impl HostDeviceIssueTokenRequest {
 
     fn decode_issue_token_reply_message(
         &mut self,
-        device_type: DeviceType,
+        processor_type: ProcessorType,
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
-        let output = SecIssueTokenReply::decode(sec_message, device_type)?;
+        let output = SecIssueTokenReply::decode(sec_message, processor_type)?;
         if output.result != ErrorCode::Success as i32 {
             log_e!("issue token returned error: {}", output.result);
             return Err(ErrorCode::GeneralError);
@@ -165,10 +165,10 @@ impl HostDeviceIssueTokenRequest {
     }
 
     fn decode_issue_token_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_types: Vec<DeviceType> = self.token_infos.iter().map(|param| param.device_type).collect();
-        for device_type in device_types {
-            if let Err(e) = self.decode_issue_token_reply_message(device_type, sec_message) {
-                log_e!("parse issue token replay message fail: device_type: {:?}, result: {:?}", device_type, e);
+        let processor_types: Vec<ProcessorType> = self.token_infos.iter().map(|param| param.processor_type).collect();
+        for processor_type in processor_types {
+            if let Err(e) = self.decode_issue_token_reply_message(processor_type, sec_message) {
+                log_e!("parse issue token replay message fail: processor_type: {:?}, result: {:?}", processor_type, e);
                 return Err(ErrorCode::GeneralError);
             }
         }
@@ -228,7 +228,9 @@ impl Request for HostDeviceIssueTokenRequest {
 
         self.decode_issue_token_reply(ffi_input.sec_message.as_slice()?)?;
         self.store_token()?;
-        ffi_output.atl = self.atl as i32;
+        // Calculate the max ATL from token_infos
+        let max_atl = self.token_infos.iter().map(|info| info.atl as i32).max().unwrap_or(self.atl as i32);
+        ffi_output.atl = max_atl;
         Ok(())
     }
 }

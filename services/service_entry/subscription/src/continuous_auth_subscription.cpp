@@ -137,9 +137,9 @@ void ContinuousAuthSubscription::HandleCompanionStatusChange(const std::vector<C
             continue;
         }
 
-        if (status.isValid && status.tokenAtl.has_value()) {
-            if (!authTrustLevel.has_value() || status.tokenAtl.value() > authTrustLevel.value()) {
-                authTrustLevel = status.tokenAtl;
+        if (status.isValid && status.tokenAuthAtl.has_value()) {
+            if (!authTrustLevel.has_value() || status.tokenAuthAtl.value() > authTrustLevel.value()) {
+                authTrustLevel = status.tokenAuthAtl;
             }
         }
     }

@@ -212,6 +212,7 @@ pub struct PersistedCompanionStatusFfi {
     pub template_id: u64,
     pub host_user_id: i32,
     pub companion_device_key: DeviceKeyFfi,
+    pub device_type: i32,
     pub is_valid: u8,
     pub enabled_business_ids: Int32Array64Ffi,
     pub added_time: u64,

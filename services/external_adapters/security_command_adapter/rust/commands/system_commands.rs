@@ -134,6 +134,7 @@ pub fn host_get_persisted_status(
                     template_id: device_info.template_id,
                     host_user_id: device_info.user_info.user_id,
                     companion_device_key: DeviceKeyFfi::try_from(device_info.device_key)?,
+                    device_type: device_base_info.device_type,
                     is_valid: device_info.is_valid as u8,
                     enabled_business_ids: Int32Array64Ffi::try_from(device_base_info.business_ids)?,
                     added_time: device_info.added_time,
@@ -432,9 +433,9 @@ pub fn host_update_token(
     let message_codec = MessageCodec::new(MessageSignParam::Framework(pub_key));
     let attribute = message_codec.deserialize_attribute(input.fwk_message.as_slice()?).map_err(|e| p!(e))?;
     let atl = attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
-    let device_capabilitys = HostDbManagerRegistry::get_mut().read_device_capability_info(input.template_id)?;
-    for device_capability in &device_capabilitys {
-        match HostDbManagerRegistry::get_mut().get_token(input.template_id, device_capability.device_type) {
+    let device_capabilities = HostDbManagerRegistry::get_mut().read_device_capability_info(input.template_id)?;
+    for device_capability in &device_capabilities {
+        match HostDbManagerRegistry::get_mut().get_token(input.template_id, device_capability.processor_type) {
             Ok(token_info) => {
                 if token_info.atl as i32 != atl {
                     output.need_redistribute = true;
@@ -573,9 +574,9 @@ pub fn companion_begin_delegate_auth(
     input: &CompanionBeginDelegateAuthInputFfi,
     output: &mut CompanionBeginDelegateAuthOutputFfi,
 ) -> Result<(), ErrorCode> {
-    let mut delagate_auth_request = CompanionDelegateAuthRequest::new(input)?;
-    delagate_auth_request.begin(RequestParam::CompanionDelegateAuthBegin(input, output))?;
-    RequestManagerRegistry::get_mut().add_request(Box::new(delagate_auth_request))?;
+    let mut delegate_auth_request = CompanionDelegateAuthRequest::new(input)?;
+    delegate_auth_request.begin(RequestParam::CompanionDelegateAuthBegin(input, output))?;
+    RequestManagerRegistry::get_mut().add_request(Box::new(delegate_auth_request))?;
     Ok(())
 }
 
@@ -584,8 +585,8 @@ pub fn companion_end_delegate_auth(
     input: &CompanionEndDelegateAuthInputFfi,
     output: &mut CompanionEndDelegateAuthOutputFfi,
 ) -> Result<(), ErrorCode> {
-    let mut delagate_auth_request = RequestManagerRegistry::get_mut().remove_request(input.request_id)?;
-    delagate_auth_request.end(RequestParam::CompanionDelegateAuthEnd(input, output))?;
+    let mut delegate_auth_request = RequestManagerRegistry::get_mut().remove_request(input.request_id)?;
+    delegate_auth_request.end(RequestParam::CompanionDelegateAuthEnd(input, output))?;
     Ok(())
 }
 

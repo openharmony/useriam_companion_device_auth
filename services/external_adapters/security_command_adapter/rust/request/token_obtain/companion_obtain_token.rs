@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, AuthType, DeviceType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE};
+use crate::common::constants::{AuthTrustLevel, AuthType, ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
 use crate::entry::companion_device_auth_ffi::{CompanionBeginObtainTokenInputFfi, CompanionEndObtainTokenOutputFfi};
 use crate::jobs::companion_db_helper;
@@ -71,7 +71,7 @@ impl CompanionDeviceObtainTokenRequest {
         self.request_id
     }
 
-    fn decode_fwk_token_obtaion_reqest(&mut self, fwk_message: &[u8]) -> Result<(), ErrorCode> {
+    fn decode_fwk_token_obtain_request(&mut self, fwk_message: &[u8]) -> Result<(), ErrorCode> {
         let output = FwkObtainTokenRequest::decode(fwk_message)?;
 
         if output.property_mode != PROPERTY_MODE_UNFREEZE {
@@ -91,8 +91,8 @@ impl CompanionDeviceObtainTokenRequest {
         Ok(())
     }
 
-    fn decode_sec_token_pre_obtaion_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
+    fn decode_sec_token_pre_obtain_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
+        let device_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
         let output = SecPreObtainTokenRequest::decode(sec_message, device_type)?;
         if output.salt.len() != HKDF_SALT_SIZE {
             log_e!("salt len is err: {}", output.salt.len());
@@ -117,12 +117,12 @@ impl CompanionDeviceObtainTokenRequest {
         let pre_obtain_token_reply =
             Box::new(SecPreObtainTokenReply { challenge: self.companion_challenge, tag, iv, encrypt_data });
         let output =
-            pre_obtain_token_reply.encode(DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?)?;
+            pre_obtain_token_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
     fn parse_obtain_token_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_type = DeviceType::companion_from_secure_protocol_id(self.secure_protocol_id)?;
+        let device_type = ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?;
         let issue_token = SecIssueToken::decrypt_issue_token(sec_message, device_type, &self.session_key)?;
 
         if issue_token.challenge != self.companion_challenge {
@@ -170,8 +170,8 @@ impl Request for CompanionDeviceObtainTokenRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        self.decode_fwk_token_obtaion_reqest(ffi_input.fwk_message.as_slice()?)?;
-        self.decode_sec_token_pre_obtaion_request(ffi_input.sec_message.as_slice()?)?;
+        self.decode_fwk_token_obtain_request(ffi_input.fwk_message.as_slice()?)?;
+        self.decode_sec_token_pre_obtain_request(ffi_input.sec_message.as_slice()?)?;
 
         let sec_message = self.encode_sec_token_obtain_request()?;
         ffi_output.atl = self.atl as i32;

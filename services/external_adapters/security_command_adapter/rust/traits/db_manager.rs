@@ -14,7 +14,7 @@
  */
 
 use crate::common::constants::{
-    AuthTrustLevel, DeviceType, ErrorCode, ExecutorSecurityLevel, TrackAbilityLevel, SHARE_KEY_LEN, TOKEN_KEY_LEN,
+    AuthTrustLevel, ErrorCode, ExecutorSecurityLevel, ProcessorType, TrackAbilityLevel, SHARE_KEY_LEN, TOKEN_KEY_LEN,
 };
 use crate::entry::companion_device_auth_ffi::DeviceKeyFfi;
 use crate::String;
@@ -75,18 +75,19 @@ pub struct CompanionDeviceBaseInfo {
     pub device_name: String,
     pub device_user_name: String,
     pub business_ids: Vec<i32>,
+    pub device_type: i32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CompanionDeviceCapability {
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
     pub esl: ExecutorSecurityLevel,
     pub track_ability_level: TrackAbilityLevel,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CompanionDeviceSk {
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
     pub sk: [u8; SHARE_KEY_LEN],
 }
 
@@ -105,7 +106,7 @@ pub struct CompanionDeviceInfo {
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
 pub struct CompanionTokenInfo {
     pub template_id: u64,
-    pub device_type: DeviceType,
+    pub processor_type: ProcessorType,
     pub token: [u8; TOKEN_KEY_LEN],
     pub atl: AuthTrustLevel,
     pub added_time: u64,

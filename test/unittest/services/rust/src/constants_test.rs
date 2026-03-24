@@ -96,8 +96,8 @@ fn device_type_test() {
     let _guard = ut_registry_guard!();
     log_i!("device_type_test start");
 
-    assert_eq!(DeviceType::try_from(0).unwrap(), DeviceType::Default);
-    assert_eq!(DeviceType::try_from(-1), Err(ErrorCode::BadParam));
+    assert_eq!(ProcessorType::try_from(0).unwrap(), ProcessorType::Default);
+    assert_eq!(ProcessorType::try_from(-1), Err(ErrorCode::BadParam));
 }
 
 #[test]
