@@ -21,11 +21,9 @@ use crate::entry::companion_device_auth_ffi::{
 use crate::log_i;
 use crate::request::delegate_auth::host_delegate_auth::HostDelegateAuthRequest;
 use crate::request::jobs::common_message::SecCommonReply;
+use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager};
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, KeyPair, MockCryptoEngine};
-use crate::traits::db_manager::{
-    CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, DeviceKey, UserInfo,
-};
-use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
+use crate::traits::db_manager::{CompanionDevice, CompanionDeviceCapability, CompanionDeviceSk, DeviceKey, UserInfo};
 use crate::traits::misc_manager::{MiscManagerRegistry, MockMiscManager};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::ut_registry_guard;
@@ -84,24 +82,24 @@ fn mock_set_misc_manager() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 }
 
-fn mock_set_host_db_manager() {
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+fn mock_set_companion_device_db_manager() {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
+    mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
-    CompanionDeviceInfo {
+fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+    CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
         user_info: UserInfo { user_id: 100, user_type: 0 },
@@ -241,9 +239,9 @@ fn host_delegate_auth_request_begin_test_schedule_id_mismatch() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_message(99999, AuthTrustLevel::Atl3 as i32);
     let input = HostBeginDelegateAuthInputFfi {
@@ -269,9 +267,9 @@ fn host_delegate_auth_request_begin_test_atl_try_from_fail() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_message(1, 99999);
     let input = HostBeginDelegateAuthInputFfi {
@@ -296,7 +294,7 @@ fn host_delegate_auth_request_begin_test_success() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let fwk_message = create_valid_fwk_message(1, AuthTrustLevel::Atl3 as i32);
     let input = HostBeginDelegateAuthInputFfi {
@@ -322,10 +320,10 @@ fn host_delegate_auth_request_begin_test_read_device_capability_info_fail() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_message(1, AuthTrustLevel::Atl3 as i32);
     let input = HostBeginDelegateAuthInputFfi {
@@ -351,17 +349,17 @@ fn host_delegate_auth_request_begin_test_get_session_key_fail() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_message(1, AuthTrustLevel::Atl3 as i32);
     let input = HostBeginDelegateAuthInputFfi {
@@ -386,7 +384,7 @@ fn host_delegate_auth_request_end_test_success() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -418,7 +416,7 @@ fn host_delegate_auth_request_end_test_challenge_mismatch() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -450,7 +448,7 @@ fn host_delegate_auth_request_end_test_atl_try_from_fail() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -483,16 +481,16 @@ fn host_delegate_auth_request_end_test_sec_message_decode_fail() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -521,17 +519,17 @@ fn host_delegate_auth_request_end_test_get_session_key_fail() {
     mock_set_crypto_engine();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -563,7 +561,7 @@ fn host_delegate_auth_request_end_test_try_from_bytes_fail() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -600,7 +598,7 @@ fn host_delegate_auth_request_end_test_get_type_fail() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -641,7 +639,7 @@ fn host_delegate_auth_request_end_test_get_atl_fail() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,
@@ -682,7 +680,7 @@ fn host_delegate_auth_request_end_test_get_challenge_fail() {
 
     mock_set_crypto_engine();
     mock_set_misc_manager();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input_ffi = HostBeginDelegateAuthInputFfi {
         request_id: 1,

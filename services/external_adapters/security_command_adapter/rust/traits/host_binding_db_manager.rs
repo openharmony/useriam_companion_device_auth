@@ -14,54 +14,54 @@
  */
 
 use crate::common::constants::ErrorCode;
-use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo};
+use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken};
 use crate::{log_e, singleton_registry, Box, Vec};
 
-pub type HostDeviceFilter = Box<dyn Fn(&HostDeviceInfo) -> bool>;
+pub type HostDeviceFilter = Box<dyn Fn(&HostBindingInfo) -> bool>;
 
-pub trait CompanionDbManager {
-    fn add_device(&mut self, device_info: &HostDeviceInfo, sk_info: &HostDeviceSk) -> Result<(), ErrorCode>;
-    fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostDeviceInfo, ErrorCode>;
-    fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostDeviceInfo, ErrorCode>;
-    fn remove_device(&mut self, binding_id: i32) -> Result<HostDeviceInfo, ErrorCode>;
-    fn update_device(&mut self, device_info: &HostDeviceInfo) -> Result<(), ErrorCode>;
+pub trait HostBindingDbManager {
+    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<(), ErrorCode>;
+    fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode>;
+    fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostBindingInfo, ErrorCode>;
+    fn remove_device(&mut self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode>;
+    fn update_device(&mut self, device_info: &HostBindingInfo) -> Result<(), ErrorCode>;
 
     fn generate_unique_binding_id(&self) -> Result<i32, ErrorCode>;
 
     fn read_device_db(&mut self) -> Result<(), ErrorCode>;
 
-    fn read_device_token(&self, binding_id: i32) -> Result<HostTokenInfo, ErrorCode>;
-    fn write_device_token(&self, binding_id: i32, token: &HostTokenInfo) -> Result<(), ErrorCode>;
+    fn read_device_token(&self, binding_id: i32) -> Result<HostBindingToken, ErrorCode>;
+    fn write_device_token(&self, binding_id: i32, token: &HostBindingToken) -> Result<(), ErrorCode>;
     fn delete_device_token(&self, binding_id: i32) -> Result<(), ErrorCode>;
     fn is_device_token_valid(&self, binding_id: i32) -> Result<bool, ErrorCode>;
 
-    fn read_device_sk(&self, binding_id: i32) -> Result<HostDeviceSk, ErrorCode>;
-    fn write_device_sk(&self, binding_id: i32, sk_info: &HostDeviceSk) -> Result<(), ErrorCode>;
+    fn read_device_sk(&self, binding_id: i32) -> Result<HostBindingSk, ErrorCode>;
+    fn write_device_sk(&self, binding_id: i32, sk_info: &HostBindingSk) -> Result<(), ErrorCode>;
     fn delete_device_sk(&self, binding_id: i32) -> Result<(), ErrorCode>;
 
-    fn get_device_list(&self, user_id: i32) -> Vec<HostDeviceInfo>;
+    fn get_device_list(&self, user_id: i32) -> Vec<HostBindingInfo>;
 }
 
-pub struct DummyCompanionDbManager;
+pub struct DummyHostBindingDbManager;
 
-impl CompanionDbManager for DummyCompanionDbManager {
-    fn add_device(&mut self, _device_info: &HostDeviceInfo, _sk_info: &HostDeviceSk) -> Result<(), ErrorCode> {
+impl HostBindingDbManager for DummyHostBindingDbManager {
+    fn add_device(&mut self, _device_info: &HostBindingInfo, _sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn get_device_by_binding_id(&self, _binding_id: i32) -> Result<HostDeviceInfo, ErrorCode> {
+    fn get_device_by_binding_id(&self, _binding_id: i32) -> Result<HostBindingInfo, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn get_device_by_device_key(&self, _user_id: i32, _device_key: &DeviceKey) -> Result<HostDeviceInfo, ErrorCode> {
+    fn get_device_by_device_key(&self, _user_id: i32, _device_key: &DeviceKey) -> Result<HostBindingInfo, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn remove_device(&mut self, _binding_id: i32) -> Result<HostDeviceInfo, ErrorCode> {
+    fn remove_device(&mut self, _binding_id: i32) -> Result<HostBindingInfo, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn update_device(&mut self, _device_info: &HostDeviceInfo) -> Result<(), ErrorCode> {
+    fn update_device(&mut self, _device_info: &HostBindingInfo) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
@@ -74,11 +74,11 @@ impl CompanionDbManager for DummyCompanionDbManager {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn read_device_token(&self, _binding_id: i32) -> Result<HostTokenInfo, ErrorCode> {
+    fn read_device_token(&self, _binding_id: i32) -> Result<HostBindingToken, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn write_device_token(&self, _binding_id: i32, _token: &HostTokenInfo) -> Result<(), ErrorCode> {
+    fn write_device_token(&self, _binding_id: i32, _token: &HostBindingToken) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
@@ -91,12 +91,12 @@ impl CompanionDbManager for DummyCompanionDbManager {
         Err(ErrorCode::GeneralError)
     }
 
-    fn read_device_sk(&self, _binding_id: i32) -> Result<HostDeviceSk, ErrorCode> {
+    fn read_device_sk(&self, _binding_id: i32) -> Result<HostBindingSk, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
 
-    fn write_device_sk(&self, _binding_id: i32, _sk_info: &HostDeviceSk) -> Result<(), ErrorCode> {
+    fn write_device_sk(&self, _binding_id: i32, _sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
@@ -106,13 +106,13 @@ impl CompanionDbManager for DummyCompanionDbManager {
         Err(ErrorCode::GeneralError)
     }
 
-    fn get_device_list(&self, _user_id: i32) -> Vec<HostDeviceInfo> {
+    fn get_device_list(&self, _user_id: i32) -> Vec<HostBindingInfo> {
         log_e!("not implemented");
         Vec::new()
     }
 }
 
-singleton_registry!(CompanionDbManagerRegistry, CompanionDbManager, DummyCompanionDbManager);
+singleton_registry!(HostBindingDbManagerRegistry, HostBindingDbManager, DummyHostBindingDbManager);
 
 #[cfg(any(test, feature = "test-utils"))]
-pub use crate::test_utils::mock::MockCompanionDbManager;
+pub use crate::test_utils::mock::MockHostBindingDbManager;

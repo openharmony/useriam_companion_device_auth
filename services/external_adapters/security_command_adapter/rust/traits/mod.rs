@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-pub mod companion_db_manager;
+pub mod companion_device_db_manager;
 pub mod crypto_engine;
 pub mod db_manager;
 pub mod event_manager;
-pub mod host_db_manager;
+pub mod host_binding_db_manager;
 pub mod logger;
 pub mod misc_manager;
 pub mod request_manager;

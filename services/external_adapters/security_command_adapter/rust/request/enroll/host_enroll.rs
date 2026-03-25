@@ -18,19 +18,19 @@ use crate::common::constants::{
     TrackAbilityLevel, CHALLENGE_LEN, HKDF_SALT_SIZE,
 };
 use crate::entry::companion_device_auth_ffi::HostGetInitKeyNegotiationInputFfi;
-use crate::jobs::{host_db_helper, message_crypto};
+use crate::jobs::{companion_device_db_helper, message_crypto};
 use crate::request::enroll::enroll_message::{
     FwkEnrollReply, FwkEnrollRequest, SecBindingReply, SecBindingReplyInfo, SecBindingRequest, SecKeyNegoReply,
     SecKeyNegoRequest,
 };
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};
 use crate::traits::db_manager::{
-    CompanionDeviceBaseInfo, CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, CompanionTokenInfo,
+    CompanionDevice, CompanionDeviceCapability, CompanionDeviceProfile, CompanionDeviceSk, CompanionDeviceToken,
     DeviceKey, UserInfo,
 };
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::utils::{Attribute, AttributeKey};
@@ -314,7 +314,11 @@ impl HostDeviceEnrollRequest {
             track_ability_level: TrackAbilityLevel::try_from(reply_info.track_ability_level).map_err(|e| p!(e))?,
         };
         self.device_capability.push(device_capability);
-        self.token_infos.push(token_helper::generate_token(processor_type, key_nego_param.companion_challenge, self.atl)?);
+        self.token_infos.push(token_helper::generate_token(
+            processor_type,
+            key_nego_param.companion_challenge,
+            self.atl,
+        )?);
 
         let acl = match esl {
             ExecutorSecurityLevel::Esl0 => AuthCapabilityLevel::Acl0,
@@ -329,7 +333,8 @@ impl HostDeviceEnrollRequest {
     }
 
     fn decode_sec_binding_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let processor_types: Vec<ProcessorType> = self.key_negotial_param.iter().map(|param| param.processor_type).collect();
+        let processor_types: Vec<ProcessorType> =
+            self.key_negotial_param.iter().map(|param| param.processor_type).collect();
         for processor_type in processor_types {
             if let Err(e) = self.decode_sec_binding_reply_message(processor_type, sec_message) {
                 log_e!("parse binding reply message fail: processor_type: {:?}, result: {:?}", processor_type, e);
@@ -343,7 +348,8 @@ impl HostDeviceEnrollRequest {
     fn encode_sec_token_issue(&mut self, template_id: u64) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
         for token_info in &self.token_infos {
-            let session_key = host_db_helper::get_session_key(template_id, token_info.processor_type, &self.salt)?;
+            let session_key =
+                companion_device_db_helper::get_session_key(template_id, token_info.processor_type, &self.salt)?;
             let issue_token = SecIssueToken {
                 challenge: token_info.challenge,
                 atl: self.atl as i32,
@@ -371,16 +377,11 @@ impl HostDeviceEnrollRequest {
     fn init_device_info(
         &mut self,
     ) -> Result<
-        (
-            Box<CompanionDeviceInfo>,
-            Box<CompanionDeviceBaseInfo>,
-            Vec<CompanionDeviceCapability>,
-            Vec<CompanionDeviceSk>,
-        ),
+        (Box<CompanionDevice>, Box<CompanionDeviceProfile>, Vec<CompanionDeviceCapability>, Vec<CompanionDeviceSk>),
         ErrorCode,
     > {
-        let template_id = HostDbManagerRegistry::get().generate_unique_template_id().map_err(|e| p!(e))?;
-        let device_info = Box::new(CompanionDeviceInfo {
+        let template_id = CompanionDeviceDbManagerRegistry::get().generate_unique_template_id().map_err(|e| p!(e))?;
+        let device_info = Box::new(CompanionDevice {
             template_id,
             device_key: self.enroll_param.companion_device_key.clone(),
             user_info: UserInfo { user_id: self.enroll_param.host_device_key.user_id, user_type: 0 },
@@ -389,7 +390,7 @@ impl HostDeviceEnrollRequest {
             capability_list: self.expected_capability_list.clone(),
         });
 
-        let base_info = Box::new(CompanionDeviceBaseInfo {
+        let base_info = Box::new(CompanionDeviceProfile {
             device_model_info: self.device_model_info.clone(),
             device_name: self.device_name.clone(),
             device_user_name: self.device_user_name.clone(),
@@ -422,15 +423,20 @@ impl HostDeviceEnrollRequest {
         Ok((device_info, base_info, capability_infos, sk_infos))
     }
 
-    fn store_device_info(&mut self) -> Result<CompanionDeviceInfo, ErrorCode> {
+    fn store_device_info(&mut self) -> Result<CompanionDevice, ErrorCode> {
         let (device_info, device_base_info, capability_infos, sk_infos) = self.init_device_info()?;
-        HostDbManagerRegistry::get_mut().add_device(&device_info, &device_base_info, &capability_infos, &sk_infos)?;
+        CompanionDeviceDbManagerRegistry::get_mut().add_device(
+            &device_info,
+            &device_base_info,
+            &capability_infos,
+            &sk_infos,
+        )?;
         Ok(*device_info)
     }
 
     fn store_token(&self, template_id: u64) -> Result<(), ErrorCode> {
         for token_info in &self.token_infos {
-            let companion_token = CompanionTokenInfo {
+            let companion_token = CompanionDeviceToken {
                 template_id,
                 processor_type: token_info.processor_type,
                 token: token_info.token.clone().try_into().map_err(|e| {
@@ -440,7 +446,7 @@ impl HostDeviceEnrollRequest {
                 atl: self.atl,
                 added_time: TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?,
             };
-            HostDbManagerRegistry::get_mut().add_token(&companion_token)?;
+            CompanionDeviceDbManagerRegistry::get_mut().add_token(&companion_token)?;
         }
 
         Ok(())

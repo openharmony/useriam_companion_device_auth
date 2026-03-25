@@ -26,17 +26,17 @@ mod companion_device_auth_entry_test;
 mod companion_device_auth_ffi_test;
 
 // impls
-mod default_companion_db_manager_test;
+mod default_companion_device_db_manager_test;
 mod default_event_manager_test;
-mod default_host_db_manager_test;
+mod default_host_binding_db_manager_test;
 mod default_misc_manager_test;
 mod default_request_manager_test;
 mod default_time_keeper_test;
 mod openssl_crypto_engine_test;
 
 // jobs
-mod companion_db_helper_test;
-mod host_db_helper_test;
+mod companion_device_db_helper_test;
+mod host_binding_db_helper_test;
 mod message_crypto_test;
 
 // Request
@@ -73,10 +73,10 @@ mod host_obtain_token_test;
 mod token_obtain_message_test;
 
 // traits
-mod companion_db_manager_test;
+mod companion_device_db_manager_test;
 mod crypto_engine_test;
 mod event_manager_test;
-mod host_db_manager_test;
+mod host_binding_db_manager_test;
 mod misc_manager_test;
 mod request_manager_test;
 #[cfg(test)]
