@@ -62,9 +62,6 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_001, TestSize.Level0)
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -87,7 +84,9 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_002, TestSize.Level0)
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_)).WillOnce(Return(std::nullopt));
+    // Test: DELEGATE_AUTH capability not supported
+    EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
+        .WillOnce(Return(false));
 
     ErrorGuard errorGuard([](ResultCode) {});
     bool result = request->OnStart(errorGuard);
@@ -103,9 +102,6 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_003, TestSize.Level0)
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_)).WillOnce(Return(std::nullopt));
@@ -124,9 +120,6 @@ HWTEST_F(HostDelegateAuthRequestTest, OnStart_004, TestSize.Level0)
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -157,9 +150,6 @@ HWTEST_F(HostDelegateAuthRequestTest, OnConnected_001, TestSize.Level0)
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -198,9 +188,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_001, TestSize.Level0
     };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -240,9 +227,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_002, TestSize.Level0
     };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -284,9 +268,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HostBeginDelegateAuth_003, TestSize.Level0
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
     request->delegateResultSubscription_ = MakeSubscription();
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -322,9 +303,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_001, TestSize
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -364,9 +342,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_002, TestSize
     };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -406,9 +381,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleStartDelegateAuthReply_003, TestSize
     };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -441,9 +413,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_001, TestSiz
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -481,9 +450,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_002, TestSiz
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -514,9 +480,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_003, TestSiz
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -553,9 +516,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequest_004, TestSiz
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -594,9 +554,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequestMsg_001, Test
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))
@@ -640,9 +597,6 @@ HWTEST_F(HostDelegateAuthRequestTest, HandleSendDelegateAuthRequestMsg_002, Test
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
-    CompanionStatus companionStatus;
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(_))
-        .WillOnce(Return(std::make_optional(companionStatus)));
     EXPECT_CALL(guard.GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
         .WillOnce(Return(true));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), HostGetSecureProtocolId(_))

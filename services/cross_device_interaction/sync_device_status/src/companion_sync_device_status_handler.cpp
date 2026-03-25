@@ -34,6 +34,12 @@ CompanionSyncDeviceStatusHandler::CompanionSyncDeviceStatusHandler()
 {
 }
 
+void CompanionSyncDeviceStatusHandler::SetCompanionDeviceKeyUserId(SyncDeviceStatusReply &syncReply,
+    UserId companionUserId)
+{
+    syncReply.companionDeviceKey.deviceUserId = companionUserId;
+}
+
 std::optional<SyncDeviceStatusReply> CompanionSyncDeviceStatusHandler::BuildSyncDeviceStatusReply(
     UserId companionUserId)
 {
@@ -49,7 +55,7 @@ std::optional<SyncDeviceStatusReply> CompanionSyncDeviceStatusHandler::BuildSync
     syncReply.protocolIdList = profile.protocols;
     syncReply.capabilityList = profile.capabilities;
     syncReply.secureProtocolId = profile.companionSecureProtocolId;
-    syncReply.companionDeviceKey.deviceUserId = companionUserId;
+    SetCompanionDeviceKeyUserId(syncReply, companionUserId);
     syncReply.deviceUserName = userNameOpt.value();
     return syncReply;
 }

@@ -130,7 +130,7 @@ void CompanionObtainTokenRequest::HandlePreObtainTokenReply(const Attributes &re
         return;
     }
 
-    bool beginRet = CompanionBeginObtainToken(preObtainTokenReply);
+    bool beginRet = CompanionBeginObtainToken(preObtainTokenReply.extraInfo);
     if (!beginRet) {
         IAM_LOGE("%{public}s CompanionBeginObtainToken failed", GetDescription());
         return;
@@ -138,7 +138,7 @@ void CompanionObtainTokenRequest::HandlePreObtainTokenReply(const Attributes &re
     errorGuard.Cancel();
 }
 
-bool CompanionObtainTokenRequest::CompanionBeginObtainToken(const PreObtainTokenReply &preObtainTokenReply)
+bool CompanionObtainTokenRequest::GetBindingIdFromHostBindingStatus()
 {
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), GetPeerDeviceKey().has_value(), false);
     auto hostBindingStatus =
@@ -148,13 +148,21 @@ bool CompanionObtainTokenRequest::CompanionBeginObtainToken(const PreObtainToken
         return false;
     }
     bindingId_ = hostBindingStatus->bindingId;
+    return true;
+}
+
+bool CompanionObtainTokenRequest::CompanionBeginObtainToken(const std::vector<uint8_t> &extraInfo)
+{
+    if (!GetBindingIdFromHostBindingStatus()) {
+        return false;
+    }
 
     CompanionBeginObtainTokenInput input = {};
     input.requestId = GetRequestId();
     input.bindingId = bindingId_;
     input.fwkUnlockMsg = fwkUnlockMsg_;
     input.secureProtocolId = secureProtocolId_;
-    input.preObtainTokenReply = preObtainTokenReply.extraInfo;
+    input.preObtainTokenReply = extraInfo;
 
     CompanionBeginObtainTokenOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionBeginObtainToken(input, output);
