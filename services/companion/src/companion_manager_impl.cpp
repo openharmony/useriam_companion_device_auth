@@ -185,6 +185,12 @@ bool CompanionManagerImpl::ValidateBeginAddCompanionOutput(const HostBeginAddCom
     return !output.addHostBindingRequest.empty();
 }
 
+ResultCode CompanionManagerImpl::InvokeHostBeginAddCompanion(const HostBeginAddCompanionInput &input,
+    HostBeginAddCompanionOutput &output)
+{
+    return GetSecurityAgent().HostBeginAddCompanion(input, output);
+}
+
 ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams &params,
     std::vector<uint8_t> &outAddHostBindingRequest)
 {
@@ -203,7 +209,7 @@ ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams
 
     HostBeginAddCompanionInput input = BuildHostBeginAddCompanionInput(params);
     HostBeginAddCompanionOutput output {};
-    ResultCode ret = GetSecurityAgent().HostBeginAddCompanion(input, output);
+    ResultCode ret = InvokeHostBeginAddCompanion(input, output);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("security agent failed to begin add companion, ret %{public}d", ret);
         return ret;
@@ -242,6 +248,12 @@ void CompanionManagerImpl::ProcessEndAddCompanionOutput(const HostEndAddCompanio
     output.esl = secOutput.esl;
 }
 
+ResultCode CompanionManagerImpl::InvokeHostEndAddCompanion(const HostEndAddCompanionInput &input,
+    HostEndAddCompanionOutput &output)
+{
+    return GetSecurityAgent().HostEndAddCompanion(input, output);
+}
+
 ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &input, EndAddCompanionOutput &output)
 {
     IAM_LOGI("end add companion, request id 0x%{public}08X", input.requestId);
@@ -259,7 +271,7 @@ ResultCode CompanionManagerImpl::EndAddCompanion(const EndAddCompanionInput &inp
 
     HostEndAddCompanionInput secInput = BuildHostEndAddCompanionInput(input);
     HostEndAddCompanionOutput secOutput {};
-    ResultCode ret = GetSecurityAgent().HostEndAddCompanion(secInput, secOutput);
+    ResultCode ret = InvokeHostEndAddCompanion(secInput, secOutput);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("security agent failed to end add companion, ret %{public}d", ret);
         return ret;

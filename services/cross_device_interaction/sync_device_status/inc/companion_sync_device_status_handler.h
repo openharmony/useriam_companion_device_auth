@@ -37,6 +37,7 @@ private:
     bool CompanionProcessCheck(const HostBindingStatus &hostBindingStatus, const SyncDeviceStatusRequest &syncRequest,
         std::vector<uint8_t> &outCompanionCheckResponse);
     std::optional<SyncDeviceStatusReply> BuildSyncDeviceStatusReply(UserId companionUserId);
+    void SetCompanionDeviceKeyUserId(SyncDeviceStatusReply &syncReply, UserId companionUserId);
     CompanionProcessCheckInput BuildCompanionProcessCheckInput(const HostBindingStatus &hostBindingStatus,
         const SyncDeviceStatusRequest &syncRequest, SecureProtocolId secureProtocolId);
 };
