@@ -22,9 +22,9 @@ use crate::log_i;
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::token_issue::companion_issue_token::CompanionDeviceIssueTokenRequest;
 use crate::request::token_issue::token_issue_message::SecPreIssueRequest;
-use crate::traits::companion_db_manager::{CompanionDbManagerRegistry, MockCompanionDbManager};
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, MockCryptoEngine};
-use crate::traits::db_manager::HostDeviceSk;
+use crate::traits::db_manager::HostBindingSk;
+use crate::traits::host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::ut_registry_guard;
 use std::boxed::Box;
@@ -133,9 +133,9 @@ fn companion_issue_token_request_begin_test_get_session_key_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let salt = [1u8; HKDF_SALT_SIZE];
     let sec_message = create_valid_pre_issue_request(&salt);
@@ -164,9 +164,9 @@ fn companion_issue_token_request_begin_test_hkdf_fail() {
     mock_crypto_engine.expect_hkdf().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let salt = [1u8; HKDF_SALT_SIZE];
     let sec_message = create_valid_pre_issue_request(&salt);
@@ -276,9 +276,9 @@ fn companion_issue_token_request_end_test_store_token_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let input = CompanionPreIssueTokenInputFfi {
         request_id: 1,

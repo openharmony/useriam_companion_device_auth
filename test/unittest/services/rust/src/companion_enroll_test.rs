@@ -22,8 +22,8 @@ use crate::log_i;
 use crate::request::enroll::companion_enroll::CompanionDeviceEnrollRequest;
 use crate::request::enroll::enroll_message::{SecBindingRequest, SecKeyNegoRequest};
 use crate::request::jobs::common_message::SecIssueToken;
-use crate::traits::companion_db_manager::{CompanionDbManagerRegistry, MockCompanionDbManager};
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, KeyPair, MockCryptoEngine};
+use crate::traits::host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::{MockTimeKeeper, TimeKeeperRegistry};
 use crate::ut_registry_guard;
@@ -426,9 +426,9 @@ fn companion_enroll_request_begin_test_generate_unique_binding_id_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Err(ErrorCode::GeneralError));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Err(ErrorCode::GeneralError));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let input = generate_companion_init_key_negotiation_input_ffi();
 
@@ -458,9 +458,9 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
     mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
@@ -494,11 +494,11 @@ fn companion_enroll_request_begin_test_add_host_device_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
-    mock_companion_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
-    mock_companion_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
+    mock_host_binding_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
+    mock_host_binding_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
     mock_time_keeper.expect_get_rtc_time().returning(|| Ok(1000));
@@ -532,12 +532,12 @@ fn companion_enroll_request_begin_test_get_device_by_binding_id_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
-    mock_companion_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
-    mock_companion_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_companion_db_manager.expect_get_device_by_binding_id().returning(|| Err(ErrorCode::NotFound));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
+    mock_host_binding_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
+    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Err(ErrorCode::NotFound));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
     mock_time_keeper.expect_get_rtc_time().returning(|| Ok(1000));
@@ -646,9 +646,9 @@ fn companion_enroll_request_end_test_store_token_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_write_device_token().returning(|| Err(ErrorCode::GeneralError));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let input = generate_companion_init_key_negotiation_input_ffi();
 

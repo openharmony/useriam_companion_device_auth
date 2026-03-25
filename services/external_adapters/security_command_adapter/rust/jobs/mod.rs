@@ -13,6 +13,6 @@
  * limitations under the License.
  */
 
-pub mod companion_db_helper;
-pub mod host_db_helper;
+pub mod companion_device_db_helper;
+pub mod host_binding_db_helper;
 pub mod message_crypto;

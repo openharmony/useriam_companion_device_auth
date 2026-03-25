@@ -14,16 +14,16 @@
  */
 
 use crate::common::constants::{
-    AuthCapabilityLevel, AuthTrustLevel, Capability, ProcessorType, ErrorCode, SecureProtocolId, CHALLENGE_LEN,
+    AuthCapabilityLevel, AuthTrustLevel, Capability, ErrorCode, ProcessorType, SecureProtocolId, CHALLENGE_LEN,
     HKDF_SALT_SIZE,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginTokenAuthInputFfi;
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::SecCommonRequest;
 use crate::request::token_auth::token_auth_message::{FwkAuthReply, FwkAuthRequest, SecAuthReply};
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::utils::{Attribute, AttributeKey};
@@ -105,7 +105,8 @@ impl HostTokenAuthRequest {
             log_e!("secure_protocol_id is not support secure_protocol_id: {}", self.auth_param.secure_protocol_id);
             return Err(ErrorCode::GeneralError);
         };
-        let token_info = HostDbManagerRegistry::get().get_token(self.auth_param.template_id, self.processor_type)?;
+        let token_info =
+            CompanionDeviceDbManagerRegistry::get().get_token(self.auth_param.template_id, self.processor_type)?;
         let current_time = TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?;
         if let Some(time_period) = current_time.checked_sub(token_info.added_time) {
             if time_period > TOKEN_VALID_PERIOD {
@@ -117,8 +118,11 @@ impl HostTokenAuthRequest {
             return Err(ErrorCode::GeneralError);
         }
 
-        let session_key =
-            host_db_helper::get_session_key(self.auth_param.template_id, token_info.processor_type, &self.salt)?;
+        let session_key = companion_device_db_helper::get_session_key(
+            self.auth_param.template_id,
+            token_info.processor_type,
+            &self.salt,
+        )?;
 
         let mut encrypt_attribute = Attribute::new();
         encrypt_attribute.set_u64(AttributeKey::AttrHostChallenge, self.host_challenge);
@@ -138,8 +142,9 @@ impl HostTokenAuthRequest {
     ) -> Result<(), ErrorCode> {
         let output = SecAuthReply::decode(sec_message, processor_type)?;
 
-        let token_info =
-            HostDbManagerRegistry::get().get_token(self.auth_param.template_id, processor_type).map_err(|e| p!(e))?;
+        let token_info = CompanionDeviceDbManagerRegistry::get()
+            .get_token(self.auth_param.template_id, processor_type)
+            .map_err(|e| p!(e))?;
         let atl = token_info.atl as i32;
         let atl_bytes = atl.to_le_bytes();
         let challenge_bytes = self.host_challenge.to_le_bytes();
@@ -206,7 +211,7 @@ impl Request for HostTokenAuthRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        host_db_helper::check_device_capability(self.auth_param.template_id, Capability::TokenAuth)?;
+        companion_device_db_helper::check_device_capability(self.auth_param.template_id, Capability::TokenAuth)?;
 
         self.decode_fwk_token_auth_request(ffi_input.fwk_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_auth_request()?;

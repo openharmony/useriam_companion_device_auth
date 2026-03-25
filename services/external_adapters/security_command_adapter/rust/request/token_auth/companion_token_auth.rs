@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{ErrorCode, HKDF_SALT_SIZE, ProcessorType};
+use crate::common::constants::{ErrorCode, ProcessorType, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionProcessTokenAuthInputFfi;
-use crate::jobs::companion_db_helper;
+use crate::jobs::host_binding_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::SecCommonRequest;
 use crate::request::token_auth::token_auth_message::SecAuthReply;
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, log_i, p, Box, Vec};
@@ -54,7 +54,7 @@ impl CompanionTokenAuthRequest {
     ) -> Result<(), ErrorCode> {
         let output = SecCommonRequest::decode(sec_message, processor_type)?;
 
-        let session_key = companion_db_helper::get_session_key(self.binding_id, &output.salt)?;
+        let session_key = host_binding_db_helper::get_session_key(self.binding_id, &output.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -78,7 +78,8 @@ impl CompanionTokenAuthRequest {
     }
 
     fn encode_sec_token_auth_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        let token_info = CompanionDbManagerRegistry::get_mut().read_device_token(self.binding_id).map_err(|e| p!(e))?;
+        let token_info =
+            HostBindingDbManagerRegistry::get_mut().read_device_token(self.binding_id).map_err(|e| p!(e))?;
         let atl = token_info.atl as i32;
         let atl_bytes = atl.to_le_bytes();
         let challenge_bytes = self.host_challenge.to_le_bytes();
@@ -113,7 +114,7 @@ impl Request for CompanionTokenAuthRequest {
 
         self.decode_sec_token_auth_request(ffi_input.sec_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_auth_reply()?;
-        companion_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         Ok(())
     }

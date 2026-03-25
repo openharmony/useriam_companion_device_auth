@@ -21,11 +21,9 @@ use crate::entry::companion_device_auth_ffi::{
 use crate::log_i;
 use crate::request::jobs::common_message::SecCommonReply;
 use crate::request::status_sync::host_sync_status::HostDeviceSyncStatusRequest;
+use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager};
 use crate::traits::crypto_engine::{CryptoEngineRegistry, MockCryptoEngine};
-use crate::traits::db_manager::{
-    CompanionDeviceCapability, CompanionDeviceInfo, CompanionDeviceSk, DeviceKey, UserInfo,
-};
-use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
+use crate::traits::db_manager::{CompanionDevice, CompanionDeviceCapability, CompanionDeviceSk, DeviceKey, UserInfo};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::ut_registry_guard;
 use crate::utils::{Attribute, AttributeKey};
@@ -45,8 +43,8 @@ fn create_valid_sync_reply_message(challenge: u64, protocol_list: &[u16], capabi
     reply.encode(ProcessorType::Default).unwrap()
 }
 
-fn create_mock_companion_device_info() -> CompanionDeviceInfo {
-    CompanionDeviceInfo {
+fn create_mock_companion_device_info() -> CompanionDevice {
+    CompanionDevice {
         template_id: 123,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
         user_info: UserInfo { user_id: 100, user_type: 0 },
@@ -64,21 +62,21 @@ fn mock_set_crypto_engine() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 }
 
-fn mock_set_host_db_manager() {
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+fn mock_set_companion_device_db_manager() {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
+    mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
 
 #[test]
@@ -184,17 +182,17 @@ fn host_sync_status_request_end_test_protocol_list_convert_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -226,17 +224,17 @@ fn host_sync_status_request_end_test_capability_list_convert_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -268,11 +266,11 @@ fn host_sync_status_request_end_test_read_device_capability_info_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -307,20 +305,20 @@ fn host_sync_status_request_end_test_decode_sec_message_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager
+    mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -350,18 +348,18 @@ fn host_sync_status_request_end_test_get_session_key_fail() {
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_capability_info().returning(|| {
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
             esl: ExecutorSecurityLevel::Esl3,
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
-    mock_host_db_manager.expect_update_device().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_update_device().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -387,7 +385,7 @@ fn host_sync_status_request_end_test_decrypt_sec_message_fail() {
     let _guard = ut_registry_guard!();
     log_i!("host_sync_status_request_end_test_decrypt_sec_message_fail start");
 
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
@@ -424,7 +422,7 @@ fn host_sync_status_request_end_test_attribute_try_from_bytes_fail() {
     let _guard = ut_registry_guard!();
     log_i!("host_sync_status_request_end_test_attribute_try_from_bytes_fail start");
 
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
@@ -462,7 +460,7 @@ fn host_sync_status_request_end_test_challenge_mismatch() {
     log_i!("host_sync_status_request_end_test_challenge_mismatch start");
 
     mock_set_crypto_engine();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -495,7 +493,7 @@ fn host_sync_status_request_end_test_protocol_list_mismatch() {
     log_i!("host_sync_status_request_end_test_protocol_list_mismatch start");
 
     mock_set_crypto_engine();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -529,7 +527,7 @@ fn host_sync_status_request_end_test_capability_list_mismatch() {
     log_i!("host_sync_status_request_end_test_capability_list_mismatch start");
 
     mock_set_crypto_engine();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();
@@ -564,7 +562,7 @@ fn host_sync_status_request_end_test_success() {
     log_i!("host_sync_status_request_end_test_success start");
 
     mock_set_crypto_engine();
-    mock_set_host_db_manager();
+    mock_set_companion_device_db_manager();
 
     let input = HostBeginCompanionCheckInputFfi { request_id: 1, user_id: 0 };
     let mut request = HostDeviceSyncStatusRequest::new(&input).unwrap();

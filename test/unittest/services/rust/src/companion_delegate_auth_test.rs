@@ -20,9 +20,9 @@ use crate::entry::companion_device_auth_ffi::{
 use crate::log_i;
 use crate::request::delegate_auth::companion_delegate_auth::CompanionDelegateAuthRequest;
 use crate::request::jobs::common_message::SecCommonRequest;
-use crate::traits::companion_db_manager::{CompanionDbManagerRegistry, MockCompanionDbManager};
 use crate::traits::crypto_engine::{CryptoEngineRegistry, MockCryptoEngine};
-use crate::traits::db_manager::HostDeviceSk;
+use crate::traits::db_manager::HostBindingSk;
+use crate::traits::host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::ut_registry_guard;
 use crate::utils::{Attribute, AttributeKey};
@@ -149,9 +149,9 @@ fn parse_begin_sec_message_test_get_session_key_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_get_session_key_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut attr = Attribute::new();
     attr.set_u64(AttributeKey::AttrHostChallenge, 0);
@@ -185,9 +185,9 @@ fn parse_begin_sec_message_test_decrypt_sec_message_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_decrypt_sec_message_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
@@ -226,9 +226,9 @@ fn parse_begin_sec_message_test_try_from_bytes_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_try_from_bytes_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
@@ -263,9 +263,9 @@ fn parse_begin_sec_message_test_get_challenge_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_get_challenge_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
@@ -303,9 +303,9 @@ fn parse_begin_sec_message_test_get_atl_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_get_atl_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
@@ -343,9 +343,9 @@ fn parse_begin_sec_message_test_atl_try_from_fail() {
     let _guard = ut_registry_guard!();
     log_i!("parse_begin_sec_message_test_atl_try_from_fail start");
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_sk().returning(|| Ok(HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_sk().returning(|| Ok(HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));

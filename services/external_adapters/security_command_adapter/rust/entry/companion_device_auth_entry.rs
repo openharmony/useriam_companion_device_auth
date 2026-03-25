@@ -43,10 +43,10 @@ use crate::entry::companion_device_auth_ffi::CommandId::{
     HostUpdateCompanionEnabledBusinessIds, HostUpdateCompanionStatus, HostUpdateToken, Init, SetActiveUserId,
 };
 use crate::entry::companion_device_auth_ffi::{CommandId, CommonOutputFfi};
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
 use crate::traits::event_manager::EventManagerRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::logger::LoggerRegistry;
 use crate::traits::misc_manager::MiscManagerRegistry;
 use crate::traits::request_manager::RequestManagerRegistry;
@@ -232,13 +232,15 @@ pub fn handle_rust_env_init() -> Result<(), ErrorCode> {
     EventManagerRegistry::set(Box::new(crate::impls::default_event_manager::DefaultEventManager::new()));
     MiscManagerRegistry::set(Box::new(crate::impls::default_misc_manager::DefaultMiscManager::new()));
 
-    CompanionDbManagerRegistry::set(Box::new(
-        crate::impls::default_companion_db_manager::DefaultCompanionDbManager::new(),
+    HostBindingDbManagerRegistry::set(Box::new(
+        crate::impls::default_host_binding_db_manager::DefaultHostBindingDbManager::new(),
     ));
 
     RequestManagerRegistry::set(Box::new(crate::impls::default_request_manager::DefaultRequestManager::new()));
 
-    HostDbManagerRegistry::set(Box::new(crate::impls::default_host_db_manager::DefaultHostDbManager::new()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(
+        crate::impls::default_companion_device_db_manager::DefaultCompanionDeviceDbManager::new(),
+    ));
 
     crate::log_i!("init_rust_env: all trait implementations registered successfully");
     Ok(())
@@ -253,9 +255,9 @@ pub fn handle_rust_env_uninit() -> Result<(), ErrorCode> {
     CryptoEngineRegistry::reset();
     EventManagerRegistry::reset();
     MiscManagerRegistry::reset();
-    CompanionDbManagerRegistry::reset();
+    HostBindingDbManagerRegistry::reset();
     RequestManagerRegistry::reset();
-    HostDbManagerRegistry::reset();
+    CompanionDeviceDbManagerRegistry::reset();
 
     crate::log_i!("uninit_rust_env end");
     Ok(())

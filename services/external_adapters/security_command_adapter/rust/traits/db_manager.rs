@@ -46,13 +46,13 @@ pub struct UserInfo {
 // Companion Db
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct HostDeviceSk {
+pub struct HostBindingSk {
     pub sk: [u8; SHARE_KEY_LEN],
 }
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct HostDeviceInfo {
+pub struct HostBindingInfo {
     pub device_key: DeviceKey,
     pub binding_id: i32,
     pub user_info: UserInfo,
@@ -62,7 +62,7 @@ pub struct HostDeviceInfo {
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct HostTokenInfo {
+pub struct HostBindingToken {
     pub token: [u8; TOKEN_KEY_LEN],
     pub atl: AuthTrustLevel,
 }
@@ -70,7 +70,7 @@ pub struct HostTokenInfo {
 // Host Db
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct CompanionDeviceBaseInfo {
+pub struct CompanionDeviceProfile {
     pub device_model_info: String,
     pub device_name: String,
     pub device_user_name: String,
@@ -93,7 +93,7 @@ pub struct CompanionDeviceSk {
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct CompanionDeviceInfo {
+pub struct CompanionDevice {
     pub template_id: u64,
     pub device_key: DeviceKey,
     pub user_info: UserInfo,
@@ -104,7 +104,7 @@ pub struct CompanionDeviceInfo {
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct CompanionTokenInfo {
+pub struct CompanionDeviceToken {
     pub template_id: u64,
     pub processor_type: ProcessorType,
     pub token: [u8; TOKEN_KEY_LEN],

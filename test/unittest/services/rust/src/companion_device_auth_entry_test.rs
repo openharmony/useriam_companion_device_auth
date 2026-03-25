@@ -17,9 +17,9 @@ use crate::common::constants::ErrorCode;
 use crate::entry::companion_device_auth_entry::{handle_rust_command, handle_rust_env_uninit};
 use crate::entry::companion_device_auth_ffi::{CommandId, CommonOutputFfi, InitInputFfi, InitOutputFfi};
 use crate::log_i;
-use crate::traits::companion_db_manager::{CompanionDbManagerRegistry, MockCompanionDbManager};
+use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager};
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair, MockCryptoEngine};
-use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
+use crate::traits::host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager};
 use crate::traits::misc_manager::{MiscManagerRegistry, MockMiscManager};
 use crate::ut_registry_guard;
 use core::mem::size_of;
@@ -35,13 +35,13 @@ fn mock_set_init_command_env() {
     mock_misc_manager.expect_set_local_key_pair().returning(|| Ok(()));
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_db().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_db().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
-    let mut mock_companion_db_manager = MockCompanionDbManager::new();
-    mock_companion_db_manager.expect_read_device_db().returning(|| Ok(()));
-    CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_read_device_db().returning(|| Ok(()));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 }
 
 #[test]

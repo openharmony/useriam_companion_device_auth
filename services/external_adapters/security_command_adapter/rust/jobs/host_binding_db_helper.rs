@@ -14,32 +14,32 @@
  */
 
 use crate::common::constants::ErrorCode;
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::db_manager::{HostDeviceInfo, HostDeviceSk};
+use crate::traits::db_manager::{HostBindingInfo, HostBindingSk};
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::{log_e, p, Vec};
 
-pub fn add_host_device(device_info: &HostDeviceInfo, sk_info: &HostDeviceSk) -> Result<(), ErrorCode> {
-    if let Ok(info) = CompanionDbManagerRegistry::get()
+pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
+    if let Ok(info) = HostBindingDbManagerRegistry::get()
         .get_device_by_device_key(device_info.user_info.user_id, &device_info.device_key)
     {
-        if CompanionDbManagerRegistry::get_mut().remove_device(info.binding_id).is_err() {
+        if HostBindingDbManagerRegistry::get_mut().remove_device(info.binding_id).is_err() {
             log_e!("remove device fail");
         }
     }
 
-    CompanionDbManagerRegistry::get_mut().add_device(device_info, sk_info)
+    HostBindingDbManagerRegistry::get_mut().add_device(device_info, sk_info)
 }
 
 pub fn update_host_device_last_used_time(binding_id: i32) -> Result<(), ErrorCode> {
-    let mut device_info = CompanionDbManagerRegistry::get_mut().get_device_by_binding_id(binding_id)?;
+    let mut device_info = HostBindingDbManagerRegistry::get_mut().get_device_by_binding_id(binding_id)?;
     device_info.last_used_time = TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?;
-    CompanionDbManagerRegistry::get_mut().update_device(&device_info)?;
+    HostBindingDbManagerRegistry::get_mut().update_device(&device_info)?;
     Ok(())
 }
 
 pub fn get_session_key(binding_id: i32, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {
-    let sk = CompanionDbManagerRegistry::get_mut().read_device_sk(binding_id).map_err(|e| p!(e))?;
+    let sk = HostBindingDbManagerRegistry::get_mut().read_device_sk(binding_id).map_err(|e| p!(e))?;
     CryptoEngineRegistry::get().hkdf(salt, &sk.sk).map_err(|e| p!(e))
 }

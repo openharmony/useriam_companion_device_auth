@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, ProcessorType, ErrorCode, TOKEN_KEY_LEN};
+use crate::common::constants::{AuthTrustLevel, ErrorCode, ProcessorType, TOKEN_KEY_LEN};
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::db_manager::CompanionTokenInfo;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
+use crate::traits::db_manager::CompanionDeviceToken;
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::{log_e, p, Vec};
 
@@ -46,7 +46,7 @@ pub fn generate_token(
 
 pub fn add_companion_device_token(template_id: u64, token_infos: &Vec<DeviceTokenInfo>) -> Result<(), ErrorCode> {
     for token_info in token_infos {
-        let companion_token = CompanionTokenInfo {
+        let companion_token = CompanionDeviceToken {
             template_id,
             processor_type: token_info.processor_type,
             token: token_info.token.clone().try_into().map_err(|e| {
@@ -56,7 +56,7 @@ pub fn add_companion_device_token(template_id: u64, token_infos: &Vec<DeviceToke
             atl: token_info.atl,
             added_time: TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?,
         };
-        HostDbManagerRegistry::get_mut().add_token(&companion_token)?;
+        CompanionDeviceDbManagerRegistry::get_mut().add_token(&companion_token)?;
     }
 
     Ok(())

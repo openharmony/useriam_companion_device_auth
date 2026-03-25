@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{ErrorCode, HKDF_SALT_SIZE, ProcessorType, SUPPORTED_PROTOCOL_VERSIONS};
+use crate::common::constants::{ErrorCode, ProcessorType, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS};
 use crate::entry::companion_device_auth_ffi::CompanionProcessCheckInputFfi;
-use crate::jobs::companion_db_helper;
+use crate::jobs::host_binding_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::SecCommonReply;
 use crate::traits::request_manager::{Request, RequestParam};
@@ -75,13 +75,12 @@ impl CompanionDeviceSyncStatusRequest {
 
         let attribute_bytes = encrypt_attribute.to_bytes()?;
 
-        let session_key = companion_db_helper::get_session_key(self.binding_id, &self.salt)?;
+        let session_key = host_binding_db_helper::get_session_key(self.binding_id, &self.salt)?;
         let (encrypt_data, tag, iv) =
             message_crypto::encrypt_sec_message(&attribute_bytes, &session_key).map_err(|e| p!(e))?;
 
         let status_sync_reply = Box::new(SecCommonReply { tag, iv, encrypt_data });
-        let output =
-            status_sync_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = status_sync_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 }
