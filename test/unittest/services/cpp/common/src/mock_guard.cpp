@@ -109,6 +109,9 @@ void MockGuard::CreateMocks()
 
     executorFactory_ = std::make_shared<MockExecutorFactory>();
     SingletonManager::GetInstance().SetExecutorFactory(executorFactory_);
+
+    eventBus_ = std::make_shared<MockEventBus>();
+    SingletonManager::GetInstance().SetEventBus(eventBus_);
 }
 
 void MockGuard::SetupDefaultBehaviors()
@@ -123,6 +126,7 @@ void MockGuard::SetupDefaultBehaviors()
     SetupHostBindingManagerDefaults();
     SetupSecurityAgentDefaults();
     SetupEventManagerAdapterDefaults();
+    SetupEventBusDefaults();
 }
 
 void MockGuard::SetupMiscManagerDefaults()
@@ -248,6 +252,15 @@ void MockGuard::SetupEventManagerAdapterDefaults()
 {
     ON_CALL(*eventManagerAdapter_, ReportSystemFault(_, _, _)).WillByDefault(Return());
     ON_CALL(*eventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
+}
+
+void MockGuard::SetupEventBusDefaults()
+{
+    ON_CALL(*eventBus_, Publish(_, _)).WillByDefault(Return());
+    ON_CALL(*eventBus_, Subscribe(_, _))
+        .WillByDefault(Invoke([](EventType, EventDataHandler &&) {
+            return std::make_shared<Subscription>([]() {});
+        }));
 }
 
 MockGuard::~MockGuard()

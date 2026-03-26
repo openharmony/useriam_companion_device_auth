@@ -34,7 +34,8 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-using DeviceSelectResultHandler = std::function<void(const std::vector<DeviceKey> &)>;
+using DeviceSelectResultHandler =
+    std::function<void(const std::vector<DeviceKey> &, const std::optional<std::vector<uint8_t>> &)>;
 
 class IMiscManager : public NoCopyable {
 public:

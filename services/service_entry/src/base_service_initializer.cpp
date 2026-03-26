@@ -25,6 +25,7 @@
 #include "companion_manager_impl.h"
 #include "cross_device_comm_manager_impl.h"
 #include "default_executor_factory.h"
+#include "event_bus_impl.h"
 #include "driver_manager_adapter_impl.h"
 #include "event_manager_adapter_impl.h"
 #include "fwk_comm_manager.h"
@@ -258,6 +259,14 @@ bool BaseServiceInitializer::InitializeIncomingMessageHandlerRegistry()
     return true;
 }
 
+bool BaseServiceInitializer::InitializeEventBus()
+{
+    auto eventBus = EventBusImpl::Create();
+    ENSURE_OR_RETURN_VAL(eventBus != nullptr, false);
+    SingletonManager::GetInstance().SetEventBus(eventBus);
+    return true;
+}
+
 bool BaseServiceInitializer::InitializeChannels()
 {
 #ifdef HAS_SOFT_BUS_CHANNEL
@@ -333,6 +342,7 @@ const BaseServiceInitializer::BasicInitStep BaseServiceInitializer::BASIC_INIT_T
     { &BaseServiceInitializer::InitializeMiscManager, "InitializeMiscManager" },
     { &BaseServiceInitializer::InitializeSecurityAgent, "InitializeSecurityAgent" },
     { &BaseServiceInitializer::InitializeIncomingMessageHandlerRegistry, "InitializeIncomingMessageHandlerRegistry" },
+    { &BaseServiceInitializer::InitializeEventBus, "InitializeEventBus" },
 };
 
 const size_t BaseServiceInitializer::BASIC_INIT_TABLE_SIZE = sizeof(BASIC_INIT_TABLE) / sizeof(BASIC_INIT_TABLE[0]);

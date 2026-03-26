@@ -42,6 +42,7 @@ int32_t SetDeviceSelectResultCallback::OnSetDeviceSelectResult(const ClientDevic
     IpcDeviceSelectResult ipcResult;
     if (result.selectionContext.has_value()) {
         IAM_LOGI("selectionContext exist");
+        ipcResult.hasSelectionContext = true;
         ipcResult.selectionContext = result.selectionContext.value();
     } else {
         IAM_LOGI("selectionContext not exist");

@@ -504,7 +504,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
     EXPECT_CALL(guard.GetMiscManager(), GetDeviceDeviceSelectResult(_, _, _))
         .WillOnce([](uint32_t tokenId, SelectPurpose purpose, DeviceSelectResultHandler &&handler) {
             // Invoke handler with empty device list, which triggers StartAuthWithTemplateList
-            handler({});
+            handler({}, std::nullopt);
             return true;
         });
 

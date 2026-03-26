@@ -30,7 +30,7 @@
 #include "relative_timer.h"
 #include "request_factory.h"
 #include "request_manager.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
