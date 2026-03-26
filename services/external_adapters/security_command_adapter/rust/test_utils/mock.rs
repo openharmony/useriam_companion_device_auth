@@ -858,21 +858,21 @@ impl crate::traits::event_manager::EventManager for MockEventManager {
 
 // ============== Database Manager Mocks ==============
 
-/// Mock implementation for HostDbManager trait
+/// Mock implementation for CompanionDeviceDbManager trait
 #[cfg(any(test, feature = "test-utils"))]
-pub struct MockHostDbManager {
+pub struct MockCompanionDeviceDbManager {
     add_device: Expectation0<Result<(), ErrorCode>>,
-    get_device: Expectation0<Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode>>,
-    get_device_list: Expectation0<Vec<crate::traits::db_manager::CompanionDeviceInfo>>,
-    remove_device: Expectation0<Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode>>,
+    get_device: Expectation0<Result<crate::traits::db_manager::CompanionDevice, ErrorCode>>,
+    get_device_list: Expectation0<Vec<crate::traits::db_manager::CompanionDevice>>,
+    remove_device: Expectation0<Result<crate::traits::db_manager::CompanionDevice, ErrorCode>>,
     update_device: Expectation0<Result<(), ErrorCode>>,
     generate_unique_template_id: Expectation0<Result<u64, ErrorCode>>,
     add_token: Expectation0<Result<(), ErrorCode>>,
-    get_token: Expectation0<Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode>>,
-    remove_token: Expectation0<Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode>>,
+    get_token: Expectation0<Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode>>,
+    remove_token: Expectation0<Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode>>,
     update_token: Expectation0<Result<(), ErrorCode>>,
     read_device_db: Expectation0<Result<(), ErrorCode>>,
-    read_device_base_info: Expectation0<Result<crate::traits::db_manager::CompanionDeviceBaseInfo, ErrorCode>>,
+    read_device_base_info: Expectation0<Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode>>,
     write_device_base_info: Expectation0<Result<(), ErrorCode>>,
     delete_device_base_info: Expectation0<Result<(), ErrorCode>>,
     read_device_capability_info:
@@ -885,7 +885,7 @@ pub struct MockHostDbManager {
 }
 
 #[cfg(any(test, feature = "test-utils"))]
-impl MockHostDbManager {
+impl MockCompanionDeviceDbManager {
     pub fn new() -> Self {
         Self {
             add_device: Expectation0::new(),
@@ -916,15 +916,15 @@ impl MockHostDbManager {
     }
     pub fn expect_get_device(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDevice, ErrorCode>> {
         &mut self.get_device
     }
-    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::CompanionDeviceInfo>> {
+    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::CompanionDevice>> {
         &mut self.get_device_list
     }
     pub fn expect_remove_device(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDevice, ErrorCode>> {
         &mut self.remove_device
     }
     pub fn expect_update_device(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -938,12 +938,12 @@ impl MockHostDbManager {
     }
     pub fn expect_get_token(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode>> {
         &mut self.get_token
     }
     pub fn expect_remove_token(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode>> {
         &mut self.remove_token
     }
     pub fn expect_update_token(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -954,7 +954,7 @@ impl MockHostDbManager {
     }
     pub fn expect_read_device_base_info(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceBaseInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode>> {
         &mut self.read_device_base_info
     }
     pub fn expect_write_device_base_info(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -988,58 +988,55 @@ impl MockHostDbManager {
 }
 
 #[cfg(any(test, feature = "test-utils"))]
-impl crate::traits::host_db_manager::HostDbManager for MockHostDbManager {
+impl crate::traits::companion_device_db_manager::CompanionDeviceDbManager for MockCompanionDeviceDbManager {
     fn add_device(
         &mut self,
-        _device_info: &crate::traits::db_manager::CompanionDeviceInfo,
-        _base_info: &crate::traits::db_manager::CompanionDeviceBaseInfo,
+        _device_info: &crate::traits::db_manager::CompanionDevice,
+        _base_info: &crate::traits::db_manager::CompanionDeviceProfile,
         _capability_info: &[crate::traits::db_manager::CompanionDeviceCapability],
         _sk_info: &[crate::traits::db_manager::CompanionDeviceSk],
     ) -> Result<(), ErrorCode> {
         self.add_device.call()
     }
-    fn get_device(&self, _template_id: u64) -> Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode> {
+    fn get_device(&self, _template_id: u64) -> Result<crate::traits::db_manager::CompanionDevice, ErrorCode> {
         self.get_device.call()
     }
     fn get_device_list(
         &self,
-        _filter: crate::traits::host_db_manager::CompanionDeviceFilter,
-    ) -> Vec<crate::traits::db_manager::CompanionDeviceInfo> {
+        _filter: crate::traits::companion_device_db_manager::CompanionDeviceFilter,
+    ) -> Vec<crate::traits::db_manager::CompanionDevice> {
         self.get_device_list.call()
     }
-    fn remove_device(
-        &mut self,
-        _template_id: u64,
-    ) -> Result<crate::traits::db_manager::CompanionDeviceInfo, ErrorCode> {
+    fn remove_device(&mut self, _template_id: u64) -> Result<crate::traits::db_manager::CompanionDevice, ErrorCode> {
         self.remove_device.call()
     }
-    fn update_device(
-        &mut self,
-        _device_info: &crate::traits::db_manager::CompanionDeviceInfo,
-    ) -> Result<(), ErrorCode> {
+    fn update_device(&mut self, _device_info: &crate::traits::db_manager::CompanionDevice) -> Result<(), ErrorCode> {
         self.update_device.call()
     }
     fn generate_unique_template_id(&self) -> Result<u64, ErrorCode> {
         self.generate_unique_template_id.call()
     }
-    fn add_token(&mut self, _token: &crate::traits::db_manager::CompanionTokenInfo) -> Result<(), ErrorCode> {
+    fn add_token(&mut self, _token: &crate::traits::db_manager::CompanionDeviceToken) -> Result<(), ErrorCode> {
         self.add_token.call()
     }
     fn get_token(
         &self,
         _template_id: u64,
         _processor_type: ProcessorType,
-    ) -> Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode> {
         self.get_token.call()
     }
     fn remove_token(
         &mut self,
         _template_id: u64,
         _processor_type: ProcessorType,
-    ) -> Result<crate::traits::db_manager::CompanionTokenInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode> {
         self.remove_token.call()
     }
-    fn update_token(&mut self, _device_info: &crate::traits::db_manager::CompanionTokenInfo) -> Result<(), ErrorCode> {
+    fn update_token(
+        &mut self,
+        _device_info: &crate::traits::db_manager::CompanionDeviceToken,
+    ) -> Result<(), ErrorCode> {
         self.update_token.call()
     }
     fn read_device_db(&mut self) -> Result<(), ErrorCode> {
@@ -1048,13 +1045,13 @@ impl crate::traits::host_db_manager::HostDbManager for MockHostDbManager {
     fn read_device_base_info(
         &self,
         _template_id: u64,
-    ) -> Result<crate::traits::db_manager::CompanionDeviceBaseInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode> {
         self.read_device_base_info.call()
     }
     fn write_device_base_info(
         &self,
         _template_id: u64,
-        _base_info: &crate::traits::db_manager::CompanionDeviceBaseInfo,
+        _base_info: &crate::traits::db_manager::CompanionDeviceProfile,
     ) -> Result<(), ErrorCode> {
         self.write_device_base_info.call()
     }
@@ -1095,28 +1092,28 @@ impl crate::traits::host_db_manager::HostDbManager for MockHostDbManager {
     }
 }
 
-/// Mock implementation for CompanionDbManager trait
+/// Mock implementation for HostBindingDbManager trait
 #[cfg(any(test, feature = "test-utils"))]
-pub struct MockCompanionDbManager {
+pub struct MockHostBindingDbManager {
     add_device: Expectation0<Result<(), ErrorCode>>,
-    get_device_by_binding_id: Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>>,
-    get_device_by_device_key: Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>>,
-    remove_device: Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>>,
+    get_device_by_binding_id: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
+    get_device_by_device_key: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
+    remove_device: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
     update_device: Expectation0<Result<(), ErrorCode>>,
     generate_unique_binding_id: Expectation0<Result<i32, ErrorCode>>,
     read_device_db: Expectation0<Result<(), ErrorCode>>,
-    read_device_token: Expectation0<Result<crate::traits::db_manager::HostTokenInfo, ErrorCode>>,
+    read_device_token: Expectation0<Result<crate::traits::db_manager::HostBindingToken, ErrorCode>>,
     write_device_token: Expectation0<Result<(), ErrorCode>>,
     delete_device_token: Expectation0<Result<(), ErrorCode>>,
     is_device_token_valid: Expectation0<Result<bool, ErrorCode>>,
-    read_device_sk: Expectation0<Result<crate::traits::db_manager::HostDeviceSk, ErrorCode>>,
+    read_device_sk: Expectation0<Result<crate::traits::db_manager::HostBindingSk, ErrorCode>>,
     write_device_sk: Expectation0<Result<(), ErrorCode>>,
     delete_device_sk: Expectation0<Result<(), ErrorCode>>,
-    get_device_list: Expectation0<Vec<crate::traits::db_manager::HostDeviceInfo>>,
+    get_device_list: Expectation0<Vec<crate::traits::db_manager::HostBindingInfo>>,
 }
 
 #[cfg(any(test, feature = "test-utils"))]
-impl MockCompanionDbManager {
+impl MockHostBindingDbManager {
     pub fn new() -> Self {
         Self {
             add_device: Expectation0::new(),
@@ -1142,17 +1139,17 @@ impl MockCompanionDbManager {
     }
     pub fn expect_get_device_by_binding_id(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
         &mut self.get_device_by_binding_id
     }
     pub fn expect_get_device_by_device_key(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
         &mut self.get_device_by_device_key
     }
     pub fn expect_remove_device(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
         &mut self.remove_device
     }
     pub fn expect_update_device(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -1166,7 +1163,7 @@ impl MockCompanionDbManager {
     }
     pub fn expect_read_device_token(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostTokenInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingToken, ErrorCode>> {
         &mut self.read_device_token
     }
     pub fn expect_write_device_token(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -1180,7 +1177,7 @@ impl MockCompanionDbManager {
     }
     pub fn expect_read_device_sk(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostDeviceSk, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingSk, ErrorCode>> {
         &mut self.read_device_sk
     }
     pub fn expect_write_device_sk(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -1189,37 +1186,37 @@ impl MockCompanionDbManager {
     pub fn expect_delete_device_sk(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
         &mut self.delete_device_sk
     }
-    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::HostDeviceInfo>> {
+    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::HostBindingInfo>> {
         &mut self.get_device_list
     }
 }
 
 #[cfg(any(test, feature = "test-utils"))]
-impl crate::traits::companion_db_manager::CompanionDbManager for MockCompanionDbManager {
+impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBindingDbManager {
     fn add_device(
         &mut self,
-        _device_info: &crate::traits::db_manager::HostDeviceInfo,
-        _sk_info: &crate::traits::db_manager::HostDeviceSk,
+        _device_info: &crate::traits::db_manager::HostBindingInfo,
+        _sk_info: &crate::traits::db_manager::HostBindingSk,
     ) -> Result<(), ErrorCode> {
         self.add_device.call()
     }
     fn get_device_by_binding_id(
         &self,
         _binding_id: i32,
-    ) -> Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
         self.get_device_by_binding_id.call()
     }
     fn get_device_by_device_key(
         &self,
         _user_id: i32,
         _device_key: &crate::traits::db_manager::DeviceKey,
-    ) -> Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
         self.get_device_by_device_key.call()
     }
-    fn remove_device(&mut self, _binding_id: i32) -> Result<crate::traits::db_manager::HostDeviceInfo, ErrorCode> {
+    fn remove_device(&mut self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
         self.remove_device.call()
     }
-    fn update_device(&mut self, _device_info: &crate::traits::db_manager::HostDeviceInfo) -> Result<(), ErrorCode> {
+    fn update_device(&mut self, _device_info: &crate::traits::db_manager::HostBindingInfo) -> Result<(), ErrorCode> {
         self.update_device.call()
     }
     fn generate_unique_binding_id(&self) -> Result<i32, ErrorCode> {
@@ -1228,13 +1225,13 @@ impl crate::traits::companion_db_manager::CompanionDbManager for MockCompanionDb
     fn read_device_db(&mut self) -> Result<(), ErrorCode> {
         self.read_device_db.call()
     }
-    fn read_device_token(&self, _binding_id: i32) -> Result<crate::traits::db_manager::HostTokenInfo, ErrorCode> {
+    fn read_device_token(&self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBindingToken, ErrorCode> {
         self.read_device_token.call()
     }
     fn write_device_token(
         &self,
         _binding_id: i32,
-        _token: &crate::traits::db_manager::HostTokenInfo,
+        _token: &crate::traits::db_manager::HostBindingToken,
     ) -> Result<(), ErrorCode> {
         self.write_device_token.call()
     }
@@ -1244,20 +1241,20 @@ impl crate::traits::companion_db_manager::CompanionDbManager for MockCompanionDb
     fn is_device_token_valid(&self, _binding_id: i32) -> Result<bool, ErrorCode> {
         self.is_device_token_valid.call()
     }
-    fn read_device_sk(&self, _binding_id: i32) -> Result<crate::traits::db_manager::HostDeviceSk, ErrorCode> {
+    fn read_device_sk(&self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBindingSk, ErrorCode> {
         self.read_device_sk.call()
     }
     fn write_device_sk(
         &self,
         _binding_id: i32,
-        _sk_info: &crate::traits::db_manager::HostDeviceSk,
+        _sk_info: &crate::traits::db_manager::HostBindingSk,
     ) -> Result<(), ErrorCode> {
         self.write_device_sk.call()
     }
     fn delete_device_sk(&self, _binding_id: i32) -> Result<(), ErrorCode> {
         self.delete_device_sk.call()
     }
-    fn get_device_list(&self, _user_id: i32) -> Vec<crate::traits::db_manager::HostDeviceInfo> {
+    fn get_device_list(&self, _user_id: i32) -> Vec<crate::traits::db_manager::HostBindingInfo> {
         self.get_device_list.call()
     }
 }

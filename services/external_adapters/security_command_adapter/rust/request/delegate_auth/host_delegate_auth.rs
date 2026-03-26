@@ -14,15 +14,15 @@
  */
 
 use crate::common::constants::{
-    AuthCapabilityLevel, AuthTrustLevel, Capability, ProcessorType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE,
+    AuthCapabilityLevel, AuthTrustLevel, Capability, ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginDelegateAuthInputFfi;
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::delegate_auth::delegate_auth_message::{FwkAuthReply, FwkAuthRequest};
 use crate::request::jobs::common_message::{SecCommonReply, SecCommonRequest};
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, log_i, p, Box, Vec};
@@ -90,9 +90,9 @@ impl HostDelegateAuthRequest {
     fn encode_sec_delegate_auth_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
         let device_capabilities =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
+            CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
         for device_capability in &device_capabilities {
-            let session_key = host_db_helper::get_session_key(
+            let session_key = companion_device_db_helper::get_session_key(
                 self.auth_param.template_id,
                 device_capability.processor_type,
                 &self.salt,
@@ -118,7 +118,8 @@ impl HostDelegateAuthRequest {
         message_data: &[u8],
     ) -> Result<(), ErrorCode> {
         let output = SecCommonReply::decode(message_data, processor_type)?;
-        let session_key = host_db_helper::get_session_key(self.auth_param.template_id, processor_type, &self.salt)?;
+        let session_key =
+            companion_device_db_helper::get_session_key(self.auth_param.template_id, processor_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -147,7 +148,7 @@ impl HostDelegateAuthRequest {
 
     fn decode_sec_delegate_auth_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let device_capabilities =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
+            CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(self.auth_param.template_id)?;
         for device_capability in &device_capabilities {
             if let Err(e) = self.decode_sec_delegate_auth_reply_message(device_capability.processor_type, sec_message) {
                 log_e!(
@@ -194,7 +195,7 @@ impl Request for HostDelegateAuthRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        host_db_helper::check_device_capability(self.auth_param.template_id, Capability::DelegateAuth)?;
+        companion_device_db_helper::check_device_capability(self.auth_param.template_id, Capability::DelegateAuth)?;
 
         self.decode_fwk_delegate_auth_request(ffi_input.fwk_message.as_slice()?)?;
         let sec_message = self.encode_sec_delegate_auth_request()?;

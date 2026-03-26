@@ -15,14 +15,14 @@
 
 use crate::common::constants::{AuthTrustLevel, Capability, ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostProcessPreObtainTokenInputFfi;
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
 use crate::request::jobs::token_helper::DeviceTokenInfo;
 use crate::request::token_obtain::token_obtain_message::{SecPreObtainTokenReply, SecPreObtainTokenRequest};
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, log_i, p, Box, Vec};
@@ -70,7 +70,7 @@ impl HostDeviceObtainTokenRequest {
         let obtain_token_request =
             Box::new(SecPreObtainTokenRequest { salt: self.salt, challenge: self.host_challenge });
         let capability_infos =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.obtain_param.template_id)?;
+            CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(self.obtain_param.template_id)?;
         for capability_info in capability_infos {
             output.extend(obtain_token_request.encode(capability_info.processor_type)?);
         }
@@ -89,7 +89,8 @@ impl HostDeviceObtainTokenRequest {
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
         let output = SecPreObtainTokenReply::decode(sec_message, processor_type)?;
-        let session_key = host_db_helper::get_session_key(self.obtain_param.template_id, processor_type, &self.salt)?;
+        let session_key =
+            companion_device_db_helper::get_session_key(self.obtain_param.template_id, processor_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -112,7 +113,7 @@ impl HostDeviceObtainTokenRequest {
 
     fn decode_sec_token_obtain_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
         let capability_infos =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.obtain_param.template_id)?;
+            CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(self.obtain_param.template_id)?;
         for capability_info in capability_infos {
             if let Err(e) = self.decode_sec_token_obtain_request_message(capability_info.processor_type, sec_message) {
                 log_e!(
@@ -130,8 +131,11 @@ impl HostDeviceObtainTokenRequest {
     fn encode_sec_token_obtain_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
         for token_info in &self.token_infos {
-            let session_key =
-                host_db_helper::get_session_key(self.obtain_param.template_id, token_info.processor_type, &self.salt)?;
+            let session_key = companion_device_db_helper::get_session_key(
+                self.obtain_param.template_id,
+                token_info.processor_type,
+                &self.salt,
+            )?;
             let issue_token = SecIssueToken {
                 challenge: token_info.challenge,
                 atl: token_info.atl as i32,
@@ -170,7 +174,7 @@ impl Request for HostDeviceObtainTokenRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        host_db_helper::check_device_capability(self.obtain_param.template_id, Capability::ObtainToken)?;
+        companion_device_db_helper::check_device_capability(self.obtain_param.template_id, Capability::ObtainToken)?;
 
         let sec_message = self.encode_sec_token_pre_obtain_request()?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;

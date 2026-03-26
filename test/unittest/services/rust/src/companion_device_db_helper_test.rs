@@ -14,14 +14,16 @@
  */
 
 use crate::common::constants::*;
-use crate::jobs::host_db_helper::{get_session_key, update_companion_device_info, update_device_business_id};
+use crate::jobs::companion_device_db_helper::{
+    get_session_key, update_companion_device_info, update_device_business_id,
+};
 use crate::log_i;
-use crate::traits::db_manager::{CompanionDeviceBaseInfo, CompanionDeviceInfo, DeviceKey, UserInfo};
-use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
+use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager};
+use crate::traits::db_manager::{CompanionDevice, CompanionDeviceProfile, DeviceKey, UserInfo};
 use crate::ut_registry_guard;
 
-fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
-    CompanionDeviceBaseInfo {
+fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
+    CompanionDeviceProfile {
         device_model_info: String::from("TestModelInfo"),
         device_name: String::from("TestDevice"),
         device_user_name: String::from("TestUser"),
@@ -30,8 +32,8 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceBaseInfo {
     }
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDeviceInfo {
-    CompanionDeviceInfo {
+fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+    CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
         user_info: UserInfo { user_id: 100, user_type: 0 },
@@ -46,12 +48,15 @@ fn update_companion_device_info_test_write_device_base_info_fail() {
     let _guard = ut_registry_guard!();
     log_i!("update_companion_device_info_test_write_device_base_info_fail start");
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_base_info().returning(|| Ok(create_mock_companion_device_base_info()));
-    mock_host_db_manager.expect_write_device_base_info().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager
+        .expect_read_device_base_info()
+        .returning(|| Ok(create_mock_companion_device_base_info()));
+    mock_companion_device_db_manager.expect_write_device_base_info().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
-    let result = update_companion_device_info(123, "model_info".to_string(), "name".to_string(), "user_name".to_string());
+    let result =
+        update_companion_device_info(123, "model_info".to_string(), "name".to_string(), "user_name".to_string());
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
@@ -60,10 +65,10 @@ fn update_device_business_id_test_read_device_base_info_fail() {
     let _guard = ut_registry_guard!();
     log_i!("update_device_business_id_test_read_device_base_info_fail start");
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_host_db_manager.expect_read_device_base_info().returning(|| Err(ErrorCode::NotFound));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_read_device_base_info().returning(|| Err(ErrorCode::NotFound));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let result = update_device_business_id(123, vec![1, 2, 3]);
     assert_eq!(result, Err(ErrorCode::NotFound));
@@ -74,9 +79,9 @@ fn get_session_key_test_fail() {
     let _guard = ut_registry_guard!();
     log_i!("get_session_key_test_fail start");
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_read_device_sk().returning(|| Ok(Vec::new()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_read_device_sk().returning(|| Ok(Vec::new()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let result = get_session_key(123, ProcessorType::Default, &[]);
     assert_eq!(result, Err(ErrorCode::GeneralError));

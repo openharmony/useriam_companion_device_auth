@@ -14,18 +14,18 @@
  */
 
 use crate::common::constants::*;
-use crate::impls::default_companion_db_manager::{DefaultCompanionDbManager, MAX_DEVICE_NUM_PER_USER};
+use crate::impls::default_host_binding_db_manager::{DefaultHostBindingDbManager, MAX_DEVICE_NUM_PER_USER};
 use crate::log_i;
-use crate::traits::companion_db_manager::CompanionDbManager;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, MockCryptoEngine};
-use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::host_binding_db_manager::HostBindingDbManager;
 use crate::traits::storage_io::{MockStorageIo, StorageIoRegistry};
 use crate::ut_registry_guard;
 use crate::utils::parcel::Parcel;
 use std::boxed::Box;
 
-fn create_test_device_info(binding_id: i32, device_id: &str, user_id: i32) -> HostDeviceInfo {
-    HostDeviceInfo {
+fn create_test_device_info(binding_id: i32, device_id: &str, user_id: i32) -> HostBindingInfo {
+    HostBindingInfo {
         device_key: DeviceKey { device_id: device_id.to_string(), device_id_type: 1, user_id },
         binding_id,
         user_info: UserInfo { user_id, user_type: 1 },
@@ -34,12 +34,12 @@ fn create_test_device_info(binding_id: i32, device_id: &str, user_id: i32) -> Ho
     }
 }
 
-fn create_test_sk_info(_sk: Vec<u8>) -> HostDeviceSk {
-    HostDeviceSk { sk: [0u8; SHARE_KEY_LEN] }
+fn create_test_sk_info(_sk: Vec<u8>) -> HostBindingSk {
+    HostBindingSk { sk: [0u8; SHARE_KEY_LEN] }
 }
 
-fn create_test_token_info() -> HostTokenInfo {
-    HostTokenInfo { token: [0u8; TOKEN_KEY_LEN], atl: AuthTrustLevel::Atl3 }
+fn create_test_token_info() -> HostBindingToken {
+    HostBindingToken { token: [0u8; TOKEN_KEY_LEN], atl: AuthTrustLevel::Atl3 }
 }
 
 fn mock_set_storage_io_success() {
@@ -52,22 +52,22 @@ fn mock_set_storage_io_success() {
 }
 
 #[test]
-fn default_companion_db_manager_new_test() {
+fn default_host_binding_db_manager_new_test() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_new_test start");
+    log_i!("default_host_binding_db_manager_new_test start");
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     assert_eq!(manager.get_device_list(0).len(), 0);
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_success() {
+fn default_host_binding_db_manager_add_device_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_success start");
+    log_i!("default_host_binding_db_manager_add_device_test_success start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -78,11 +78,11 @@ fn default_companion_db_manager_add_device_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_empty_device_id() {
+fn default_host_binding_db_manager_add_device_test_empty_device_id() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_empty_device_id start");
+    log_i!("default_host_binding_db_manager_add_device_test_empty_device_id start");
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -92,13 +92,13 @@ fn default_companion_db_manager_add_device_test_empty_device_id() {
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_device_key_exists() {
+fn default_host_binding_db_manager_add_device_test_device_key_exists() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_device_key_exists start");
+    log_i!("default_host_binding_db_manager_add_device_test_device_key_exists start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -113,13 +113,13 @@ fn default_companion_db_manager_add_device_test_device_key_exists() {
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_binding_id_exists() {
+fn default_host_binding_db_manager_add_device_test_binding_id_exists() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_binding_id_exists start");
+    log_i!("default_host_binding_db_manager_add_device_test_binding_id_exists start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info1 = create_test_device_info(123, "device1", 100);
     let device_info2 = create_test_device_info(123, "device2", 200);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
@@ -132,13 +132,13 @@ fn default_companion_db_manager_add_device_test_binding_id_exists() {
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_max_devices_per_user() {
+fn default_host_binding_db_manager_add_device_test_max_devices_per_user() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_max_devices_per_user start");
+    log_i!("default_host_binding_db_manager_add_device_test_max_devices_per_user start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let user_id = 100;
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -156,13 +156,13 @@ fn default_companion_db_manager_add_device_test_max_devices_per_user() {
 }
 
 #[test]
-fn default_companion_db_manager_add_device_test_write_db_fail() {
+fn default_host_binding_db_manager_add_device_test_write_db_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_add_device_test_write_db_fail start");
+    log_i!("default_host_binding_db_manager_add_device_test_write_db_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|file_name, _| {
-        if file_name.contains("host_device_db") {
+        if file_name.contains("host_binding_db") {
             Err(ErrorCode::GeneralError)
         } else {
             Ok(())
@@ -171,7 +171,7 @@ fn default_companion_db_manager_add_device_test_write_db_fail() {
     mock_storage_io.expect_delete().returning(|| Ok(()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -181,13 +181,13 @@ fn default_companion_db_manager_add_device_test_write_db_fail() {
 }
 
 #[test]
-fn default_companion_db_manager_get_device_by_binding_id_test_success() {
+fn default_host_binding_db_manager_get_device_by_binding_id_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_get_device_by_binding_id_test_success start");
+    log_i!("default_host_binding_db_manager_get_device_by_binding_id_test_success start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -201,24 +201,24 @@ fn default_companion_db_manager_get_device_by_binding_id_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_get_device_by_binding_id_test_not_found() {
+fn default_host_binding_db_manager_get_device_by_binding_id_test_not_found() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_get_device_by_binding_id_test_not_found start");
+    log_i!("default_host_binding_db_manager_get_device_by_binding_id_test_not_found start");
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.get_device_by_binding_id(999);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
 #[test]
-fn default_companion_db_manager_get_device_by_device_key_test_success() {
+fn default_host_binding_db_manager_get_device_by_device_key_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_get_device_by_device_key_test_success start");
+    log_i!("default_host_binding_db_manager_get_device_by_device_key_test_success start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -233,11 +233,11 @@ fn default_companion_db_manager_get_device_by_device_key_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_get_device_by_device_key_test_not_found() {
+fn default_host_binding_db_manager_get_device_by_device_key_test_not_found() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_get_device_by_device_key_test_not_found start");
+    log_i!("default_host_binding_db_manager_get_device_by_device_key_test_not_found start");
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let device_key = DeviceKey { device_id: "device999".to_string(), device_id_type: 1, user_id: 100 };
 
@@ -246,13 +246,13 @@ fn default_companion_db_manager_get_device_by_device_key_test_not_found() {
 }
 
 #[test]
-fn default_companion_db_manager_remove_device_test_success() {
+fn default_host_binding_db_manager_remove_device_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_remove_device_test_success start");
+    log_i!("default_host_binding_db_manager_remove_device_test_success start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -265,20 +265,20 @@ fn default_companion_db_manager_remove_device_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_remove_device_test_not_found() {
+fn default_host_binding_db_manager_remove_device_test_not_found() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_remove_device_test_not_found start");
+    log_i!("default_host_binding_db_manager_remove_device_test_not_found start");
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
 
     let result = manager.remove_device(999);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
 #[test]
-fn default_companion_db_manager_remove_device_test_write_db_fail() {
+fn default_host_binding_db_manager_remove_device_test_write_db_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_remove_device_test_write_db_fail start");
+    log_i!("default_host_binding_db_manager_remove_device_test_write_db_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|_, _| Ok(()));
@@ -287,7 +287,7 @@ fn default_companion_db_manager_remove_device_test_write_db_fail() {
     mock_storage_io.expect_exists().returning(|| Ok(true));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -308,13 +308,13 @@ fn default_companion_db_manager_remove_device_test_write_db_fail() {
 }
 
 #[test]
-fn default_companion_db_manager_update_device_test_success() {
+fn default_host_binding_db_manager_update_device_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_update_device_test_success start");
+    log_i!("default_host_binding_db_manager_update_device_test_success start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -330,11 +330,11 @@ fn default_companion_db_manager_update_device_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_update_device_test_binding_id_not_found() {
+fn default_host_binding_db_manager_update_device_test_binding_id_not_found() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_update_device_test_binding_id_not_found start");
+    log_i!("default_host_binding_db_manager_update_device_test_binding_id_not_found start");
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(999, "device1", 100);
 
     let result = manager.update_device(&device_info);
@@ -342,13 +342,13 @@ fn default_companion_db_manager_update_device_test_binding_id_not_found() {
 }
 
 #[test]
-fn default_companion_db_manager_update_device_test_device_key_not_found() {
+fn default_host_binding_db_manager_update_device_test_device_key_not_found() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_update_device_test_device_key_not_found start");
+    log_i!("default_host_binding_db_manager_update_device_test_device_key_not_found start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -362,13 +362,13 @@ fn default_companion_db_manager_update_device_test_device_key_not_found() {
 }
 
 #[test]
-fn default_companion_db_manager_update_device_test_mismatch() {
+fn default_host_binding_db_manager_update_device_test_mismatch() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_update_device_test_mismatch start");
+    log_i!("default_host_binding_db_manager_update_device_test_mismatch start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info1 = create_test_device_info(123, "device1", 100);
     let device_info2 = create_test_device_info(456, "device2", 200);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
@@ -384,9 +384,9 @@ fn default_companion_db_manager_update_device_test_mismatch() {
 }
 
 #[test]
-fn default_companion_db_manager_update_device_test_write_db_fail() {
+fn default_host_binding_db_manager_update_device_test_write_db_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_update_device_test_write_db_fail start");
+    log_i!("default_host_binding_db_manager_update_device_test_write_db_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|_, _| Ok(()));
@@ -395,7 +395,7 @@ fn default_companion_db_manager_update_device_test_write_db_fail() {
     mock_storage_io.expect_exists().returning(|| Ok(true));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
@@ -419,42 +419,42 @@ fn default_companion_db_manager_update_device_test_write_db_fail() {
 }
 
 #[test]
-fn default_companion_db_manager_generate_unique_binding_id_test_success() {
+fn default_host_binding_db_manager_generate_unique_binding_id_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_generate_unique_binding_id_test_success start");
+    log_i!("default_host_binding_db_manager_generate_unique_binding_id_test_success start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.generate_unique_binding_id();
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_db_manager_generate_unique_binding_id_test_crypto_fail() {
+fn default_host_binding_db_manager_generate_unique_binding_id_test_crypto_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_generate_unique_binding_id_test_crypto_fail start");
+    log_i!("default_host_binding_db_manager_generate_unique_binding_id_test_crypto_fail start");
 
     let mut mock_crypto_engine = MockCryptoEngine::new();
     mock_crypto_engine.expect_secure_random().returning(|_buf| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.generate_unique_binding_id();
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_db_manager_generate_unique_binding_id_test_collision() {
+fn default_host_binding_db_manager_generate_unique_binding_id_test_collision() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_generate_unique_binding_id_test_collision start");
+    log_i!("default_host_binding_db_manager_generate_unique_binding_id_test_collision start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
@@ -484,13 +484,13 @@ fn default_companion_db_manager_generate_unique_binding_id_test_collision() {
 }
 
 #[test]
-fn default_companion_db_manager_generate_unique_binding_id_test_max_attempts() {
+fn default_host_binding_db_manager_generate_unique_binding_id_test_max_attempts() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_generate_unique_binding_id_test_max_attempts start");
+    log_i!("default_host_binding_db_manager_generate_unique_binding_id_test_max_attempts start");
 
     mock_set_storage_io_success();
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
@@ -507,7 +507,7 @@ fn default_companion_db_manager_generate_unique_binding_id_test_max_attempts() {
     });
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let device_info = create_test_device_info(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
@@ -517,9 +517,9 @@ fn default_companion_db_manager_generate_unique_binding_id_test_max_attempts() {
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_success() {
+fn default_host_binding_db_manager_read_device_db_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_success start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_success start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -539,7 +539,7 @@ fn default_companion_db_manager_read_device_db_test_success() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert!(result.is_ok());
     assert!(manager.get_device_by_binding_id(123).is_ok());
@@ -548,51 +548,51 @@ fn default_companion_db_manager_read_device_db_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_empty() {
+fn default_host_binding_db_manager_read_device_db_test_empty() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_empty start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_empty start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(Vec::new()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_storage_error() {
+fn default_host_binding_db_manager_read_device_db_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_storage_error start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Err(ErrorCode::GeneralError));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_version_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_version_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_version_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_version_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(vec![1, 2, 3]));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_count_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_count_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_count_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_count_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -603,40 +603,19 @@ fn default_companion_db_manager_read_device_db_test_deserialize_count_fail() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_device_id_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_device_id_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_device_id_fail start");
-
-    let mut parcel = Parcel::new();
-    parcel.write_i32(0);
-    parcel.write_i32(1);
-
-    let serialized_data = parcel.as_slice().to_vec();
-
-    let mut mock_storage_io = MockStorageIo::new();
-    mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
-    StorageIoRegistry::set(Box::new(mock_storage_io));
-
-    let mut manager = DefaultCompanionDbManager::new();
-    let result = manager.read_device_db();
-    assert_eq!(result, Err(ErrorCode::ReadParcelError));
-}
-
-#[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_device_id_type_fail() {
-    let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_device_id_type_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_device_id_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
-    parcel.write_string("device1");
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -644,21 +623,20 @@ fn default_companion_db_manager_read_device_db_test_deserialize_device_id_type_f
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_user_id_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_device_id_type_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_user_id_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_device_id_type_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
     parcel.write_string("device1");
-    parcel.write_i32(1);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -666,22 +644,21 @@ fn default_companion_db_manager_read_device_db_test_deserialize_user_id_fail() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_binding_id_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_user_id_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_binding_id_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_user_id_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
     parcel.write_i32(1);
     parcel.write_string("device1");
     parcel.write_i32(1);
-    parcel.write_i32(100);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -689,15 +666,15 @@ fn default_companion_db_manager_read_device_db_test_deserialize_binding_id_fail(
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_id_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_binding_id_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_user_info_user_id_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_binding_id_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -705,7 +682,6 @@ fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_i
     parcel.write_string("device1");
     parcel.write_i32(1);
     parcel.write_i32(100);
-    parcel.write_i32(123);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -713,15 +689,15 @@ fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_i
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_type_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_user_info_user_id_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_user_info_user_type_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_user_info_user_id_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -730,7 +706,6 @@ fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_t
     parcel.write_i32(1);
     parcel.write_i32(100);
     parcel.write_i32(123);
-    parcel.write_i32(100);
 
     let serialized_data = parcel.as_slice().to_vec();
 
@@ -738,15 +713,15 @@ fn default_companion_db_manager_read_device_db_test_deserialize_user_info_user_t
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_binding_time_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_user_info_user_type_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_binding_time_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_user_info_user_type_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -756,6 +731,31 @@ fn default_companion_db_manager_read_device_db_test_deserialize_binding_time_fai
     parcel.write_i32(100);
     parcel.write_i32(123);
     parcel.write_i32(100);
+
+    let serialized_data = parcel.as_slice().to_vec();
+
+    let mut mock_storage_io = MockStorageIo::new();
+    mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
+    StorageIoRegistry::set(Box::new(mock_storage_io));
+
+    let mut manager = DefaultHostBindingDbManager::new();
+    let result = manager.read_device_db();
+    assert_eq!(result, Err(ErrorCode::ReadParcelError));
+}
+
+#[test]
+fn default_host_binding_db_manager_read_device_db_test_deserialize_binding_time_fail() {
+    let _guard = ut_registry_guard!();
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_binding_time_fail start");
+
+    let mut parcel = Parcel::new();
+    parcel.write_i32(0);
+    parcel.write_i32(1);
+    parcel.write_string("device1");
+    parcel.write_i32(1);
+    parcel.write_i32(100);
+    parcel.write_i32(123);
+    parcel.write_i32(100);
     parcel.write_i32(1);
 
     let serialized_data = parcel.as_slice().to_vec();
@@ -764,15 +764,15 @@ fn default_companion_db_manager_read_device_db_test_deserialize_binding_time_fai
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_db_test_deserialize_last_used_time_fail() {
+fn default_host_binding_db_manager_read_device_db_test_deserialize_last_used_time_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_db_test_deserialize_last_used_time_fail start");
+    log_i!("default_host_binding_db_manager_read_device_db_test_deserialize_last_used_time_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -791,15 +791,15 @@ fn default_companion_db_manager_read_device_db_test_deserialize_last_used_time_f
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let mut manager = DefaultCompanionDbManager::new();
+    let mut manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_db();
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_success() {
+fn default_host_binding_db_manager_read_device_token_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_success start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_success start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -812,7 +812,7 @@ fn default_companion_db_manager_read_device_token_test_success() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert!(result.is_ok());
     let token_info = result.unwrap();
@@ -821,51 +821,51 @@ fn default_companion_db_manager_read_device_token_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_empty() {
+fn default_host_binding_db_manager_read_device_token_test_empty() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_empty start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_empty start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(Vec::new()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::TokenNotFound));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_storage_error() {
+fn default_host_binding_db_manager_read_device_token_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_storage_error start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Err(ErrorCode::NotFound));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_miss_version() {
+fn default_host_binding_db_manager_read_device_token_test_miss_version() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_miss_version start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_miss_version start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(vec![1, 2, 3]));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_version_too_high() {
+fn default_host_binding_db_manager_read_device_token_test_version_too_high() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_version_too_high start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_version_too_high start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(999);
@@ -876,15 +876,15 @@ fn default_companion_db_manager_read_device_token_test_version_too_high() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_miss_token_len() {
+fn default_host_binding_db_manager_read_device_token_test_miss_token_len() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_miss_token_len start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_miss_token_len start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -895,15 +895,15 @@ fn default_companion_db_manager_read_device_token_test_miss_token_len() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_miss_token() {
+fn default_host_binding_db_manager_read_device_token_test_miss_token() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_miss_token start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_miss_token start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -915,15 +915,15 @@ fn default_companion_db_manager_read_device_token_test_miss_token() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_miss_atl() {
+fn default_host_binding_db_manager_read_device_token_test_miss_atl() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_miss_atl start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_miss_atl start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -936,15 +936,15 @@ fn default_companion_db_manager_read_device_token_test_miss_atl() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_token_test_atl_try_from_fail() {
+fn default_host_binding_db_manager_read_device_token_test_atl_try_from_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_token_test_atl_try_from_fail start");
+    log_i!("default_host_binding_db_manager_read_device_token_test_atl_try_from_fail start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -957,19 +957,19 @@ fn default_companion_db_manager_read_device_token_test_atl_try_from_fail() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_token(123);
     assert_eq!(result, Err(ErrorCode::BadParam));
 }
 
 #[test]
-fn default_companion_db_manager_write_device_token_test_success() {
+fn default_host_binding_db_manager_write_device_token_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_write_device_token_test_success start");
+    log_i!("default_host_binding_db_manager_write_device_token_test_success start");
 
     mock_set_storage_io_success();
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let token_info = create_test_token_info();
 
     let result = manager.write_device_token(123, &token_info);
@@ -977,15 +977,15 @@ fn default_companion_db_manager_write_device_token_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_write_device_token_test_storage_error() {
+fn default_host_binding_db_manager_write_device_token_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_write_device_token_test_storage_error start");
+    log_i!("default_host_binding_db_manager_write_device_token_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|_, _| Err(ErrorCode::GeneralError));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let token_info = create_test_token_info();
 
     let result = manager.write_device_token(123, &token_info);
@@ -993,41 +993,41 @@ fn default_companion_db_manager_write_device_token_test_storage_error() {
 }
 
 #[test]
-fn default_companion_db_manager_delete_device_token_test_success() {
+fn default_host_binding_db_manager_delete_device_token_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_delete_device_token_test_success start");
+    log_i!("default_host_binding_db_manager_delete_device_token_test_success start");
 
     mock_set_storage_io_success();
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.delete_device_token(123);
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_db_manager_delete_device_token_test_storage_error() {
+fn default_host_binding_db_manager_delete_device_token_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_delete_device_token_test_storage_error start");
+    log_i!("default_host_binding_db_manager_delete_device_token_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_delete().returning(|| Err(ErrorCode::NotFound));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.delete_device_token(123);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
 #[test]
-fn default_companion_db_manager_is_device_token_valid_test_exists() {
+fn default_host_binding_db_manager_is_device_token_valid_test_exists() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_is_device_token_valid_test_exists start");
+    log_i!("default_host_binding_db_manager_is_device_token_valid_test_exists start");
 
     mock_set_storage_io_success();
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.is_device_token_valid(123);
     assert!(result.is_ok());
@@ -1035,15 +1035,15 @@ fn default_companion_db_manager_is_device_token_valid_test_exists() {
 }
 
 #[test]
-fn default_companion_db_manager_is_device_token_valid_test_not_exists() {
+fn default_host_binding_db_manager_is_device_token_valid_test_not_exists() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_is_device_token_valid_test_not_exists start");
+    log_i!("default_host_binding_db_manager_is_device_token_valid_test_not_exists start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_exists().returning(|| Ok(false));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.is_device_token_valid(123);
     assert!(result.is_ok());
@@ -1051,24 +1051,24 @@ fn default_companion_db_manager_is_device_token_valid_test_not_exists() {
 }
 
 #[test]
-fn default_companion_db_manager_is_device_token_valid_test_storage_error() {
+fn default_host_binding_db_manager_is_device_token_valid_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_is_device_token_valid_test_storage_error start");
+    log_i!("default_host_binding_db_manager_is_device_token_valid_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_exists().returning(|| Err(ErrorCode::GeneralError));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.is_device_token_valid(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_success() {
+fn default_host_binding_db_manager_read_device_sk_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_success start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_success start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1080,7 +1080,7 @@ fn default_companion_db_manager_read_device_sk_test_success() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert!(result.is_ok());
     let sk_info = result.unwrap();
@@ -1088,51 +1088,51 @@ fn default_companion_db_manager_read_device_sk_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_empty() {
+fn default_host_binding_db_manager_read_device_sk_test_empty() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_empty start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_empty start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(Vec::new()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_storage_error() {
+fn default_host_binding_db_manager_read_device_sk_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_storage_error start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Err(ErrorCode::NotFound));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_miss_version() {
+fn default_host_binding_db_manager_read_device_sk_test_miss_version() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_miss_version start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_miss_version start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(vec![1, 2, 3]));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_sk_len() {
+fn default_host_binding_db_manager_read_device_sk_test_sk_len() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_sk_len start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_sk_len start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1143,15 +1143,15 @@ fn default_companion_db_manager_read_device_sk_test_sk_len() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_read_device_sk_test_miss_sk() {
+fn default_host_binding_db_manager_read_device_sk_test_miss_sk() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_read_device_sk_test_miss_sk start");
+    log_i!("default_host_binding_db_manager_read_device_sk_test_miss_sk start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1163,19 +1163,19 @@ fn default_companion_db_manager_read_device_sk_test_miss_sk() {
     mock_storage_io.expect_read().returning(move || Ok(serialized_data.clone()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let result = manager.read_device_sk(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_db_manager_write_device_sk_test_success() {
+fn default_host_binding_db_manager_write_device_sk_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_write_device_sk_test_success start");
+    log_i!("default_host_binding_db_manager_write_device_sk_test_success start");
 
     mock_set_storage_io_success();
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let sk_info = create_test_sk_info(vec![1, 2, 3]);
 
     let result = manager.write_device_sk(123, &sk_info);
@@ -1183,15 +1183,15 @@ fn default_companion_db_manager_write_device_sk_test_success() {
 }
 
 #[test]
-fn default_companion_db_manager_write_device_sk_test_storage_error() {
+fn default_host_binding_db_manager_write_device_sk_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_write_device_sk_test_storage_error start");
+    log_i!("default_host_binding_db_manager_write_device_sk_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|_, _| Err(ErrorCode::GeneralError));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
     let sk_info = create_test_sk_info(vec![1, 2, 3]);
 
     let result = manager.write_device_sk(123, &sk_info);
@@ -1199,28 +1199,28 @@ fn default_companion_db_manager_write_device_sk_test_storage_error() {
 }
 
 #[test]
-fn default_companion_db_manager_delete_device_sk_test_success() {
+fn default_host_binding_db_manager_delete_device_sk_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_delete_device_sk_test_success start");
+    log_i!("default_host_binding_db_manager_delete_device_sk_test_success start");
 
     mock_set_storage_io_success();
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.delete_device_sk(123);
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_db_manager_delete_device_sk_test_storage_error() {
+fn default_host_binding_db_manager_delete_device_sk_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_db_manager_delete_device_sk_test_storage_error start");
+    log_i!("default_host_binding_db_manager_delete_device_sk_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_delete().returning(|| Err(ErrorCode::NotFound));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
-    let manager = DefaultCompanionDbManager::new();
+    let manager = DefaultHostBindingDbManager::new();
 
     let result = manager.delete_device_sk(123);
     assert_eq!(result, Err(ErrorCode::NotFound));

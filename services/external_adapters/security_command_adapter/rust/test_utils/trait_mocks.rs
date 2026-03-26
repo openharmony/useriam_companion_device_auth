@@ -16,10 +16,10 @@
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_utils {
     use crate::traits::{
-        companion_db_manager::{CompanionDbManagerRegistry, MockCompanionDbManager},
+        companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager},
         crypto_engine::{CryptoEngineRegistry, MockCryptoEngine},
         event_manager::{EventManagerRegistry, MockEventManager},
-        host_db_manager::{HostDbManagerRegistry, MockHostDbManager},
+        host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager},
         logger::{LogLevel, Logger, LoggerRegistry},
         misc_manager::{MiscManagerRegistry, MockMiscManager},
         request_manager::{MockRequestManager, RequestManagerRegistry},
@@ -87,10 +87,10 @@ pub mod test_utils {
             CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
             let mock_event_manager = MockEventManager::new();
             EventManagerRegistry::set(Box::new(mock_event_manager));
-            let mock_host_db_manager = MockHostDbManager::new();
-            HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
-            let mock_companion_db_manager = MockCompanionDbManager::new();
-            CompanionDbManagerRegistry::set(Box::new(mock_companion_db_manager));
+            let mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+            CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
+            let mock_host_binding_db_manager = MockHostBindingDbManager::new();
+            HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
             let mock_request_manager = MockRequestManager::new();
             RequestManagerRegistry::set(Box::new(mock_request_manager));
             Self { _lock_guard }
@@ -106,8 +106,8 @@ pub mod test_utils {
             StorageIoRegistry::reset();
             TimeKeeperRegistry::reset();
             EventManagerRegistry::reset();
-            HostDbManagerRegistry::reset();
-            CompanionDbManagerRegistry::reset();
+            CompanionDeviceDbManagerRegistry::reset();
+            HostBindingDbManagerRegistry::reset();
             RequestManagerRegistry::reset();
         }
     }

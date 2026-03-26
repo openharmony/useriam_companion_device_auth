@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, AuthType, Capability, ProcessorType, ErrorCode, HKDF_SALT_SIZE};
+use crate::common::constants::{AuthTrustLevel, AuthType, Capability, ErrorCode, ProcessorType, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::HostPreIssueTokenInputFfi;
 use crate::entry::companion_device_auth_ffi::PROPERTY_MODE_UNFREEZE;
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::jobs::token_helper;
 use crate::request::jobs::token_helper::DeviceTokenInfo;
 use crate::request::token_issue::token_issue_message::{
     FwkIssueTokenRequest, SecIssueTokenReply, SecPreIssueReply, SecPreIssueRequest,
 };
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::{log_e, log_i, Box, Vec};
 
@@ -89,8 +89,8 @@ impl HostDeviceIssueTokenRequest {
     fn encode_sec_token_pre_issue_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let pre_issue_request = Box::new(SecPreIssueRequest { salt: self.salt });
         let mut output = Vec::new();
-        let capability_infos =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.token_issue_param.template_id)?;
+        let capability_infos = CompanionDeviceDbManagerRegistry::get_mut()
+            .read_device_capability_info(self.token_issue_param.template_id)?;
         for capability_info in capability_infos {
             output.extend(pre_issue_request.encode(capability_info.processor_type)?);
         }
@@ -108,8 +108,8 @@ impl HostDeviceIssueTokenRequest {
     }
 
     fn decode_sec_pre_issue_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let capability_infos =
-            HostDbManagerRegistry::get_mut().read_device_capability_info(self.token_issue_param.template_id)?;
+        let capability_infos = CompanionDeviceDbManagerRegistry::get_mut()
+            .read_device_capability_info(self.token_issue_param.template_id)?;
         for capability_info in capability_infos {
             if let Err(e) = self.decode_sec_pre_issue_reply_message(capability_info.processor_type, sec_message) {
                 log_e!(
@@ -132,7 +132,7 @@ impl HostDeviceIssueTokenRequest {
     fn encode_sec_token_issue_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let mut output = Vec::new();
         for token_info in &self.token_infos {
-            let session_key = host_db_helper::get_session_key(
+            let session_key = companion_device_db_helper::get_session_key(
                 self.token_issue_param.template_id,
                 token_info.processor_type,
                 &self.salt,
@@ -198,7 +198,7 @@ impl Request for HostDeviceIssueTokenRequest {
             return Err(ErrorCode::BadParam);
         };
 
-        host_db_helper::check_device_capability(self.token_issue_param.template_id, Capability::TokenAuth)?;
+        companion_device_db_helper::check_device_capability(self.token_issue_param.template_id, Capability::TokenAuth)?;
 
         self.decode_fwk_token_issue_request(ffi_input.fwk_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_pre_issue_request()?;
