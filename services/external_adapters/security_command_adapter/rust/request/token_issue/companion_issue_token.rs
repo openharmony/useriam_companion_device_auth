@@ -15,12 +15,12 @@
 
 use crate::common::constants::{AuthTrustLevel, ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionPreIssueTokenInputFfi;
-use crate::jobs::companion_db_helper;
+use crate::jobs::host_binding_db_helper;
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::request::token_issue::token_issue_message::{SecIssueTokenReply, SecPreIssueReply, SecPreIssueRequest};
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::db_manager::HostTokenInfo;
+use crate::traits::db_manager::HostBindingToken;
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::{log_e, log_i, Box, Vec};
 
@@ -79,10 +79,9 @@ impl CompanionDeviceIssueTokenRequest {
     }
 
     fn encode_sec_token_pre_issue_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        self.session_key = companion_db_helper::get_session_key(self.binding_id, &self.pre_issue_param.salt)?;
+        self.session_key = host_binding_db_helper::get_session_key(self.binding_id, &self.pre_issue_param.salt)?;
         let sec_pre_issue_reply = Box::new(SecPreIssueReply { challenge: self.pre_issue_param.companion_challenge });
-        let output =
-            sec_pre_issue_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = sec_pre_issue_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
@@ -107,13 +106,12 @@ impl CompanionDeviceIssueTokenRequest {
 
     fn encode_sec_token_issue_reply(&mut self) -> Result<Vec<u8>, ErrorCode> {
         let issue_token_reply = Box::new(SecIssueTokenReply { result: ErrorCode::Success as i32 });
-        let output =
-            issue_token_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
+        let output = issue_token_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
         Ok(output)
     }
 
     fn store_token(&self) -> Result<(), ErrorCode> {
-        let token_info = HostTokenInfo {
+        let token_info = HostBindingToken {
             token: self.token_info.token.clone().try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
                 ErrorCode::GeneralError
@@ -121,7 +119,7 @@ impl CompanionDeviceIssueTokenRequest {
             atl: self.token_info.atl,
         };
 
-        CompanionDbManagerRegistry::get_mut().write_device_token(self.binding_id, &token_info)?;
+        HostBindingDbManagerRegistry::get_mut().write_device_token(self.binding_id, &token_info)?;
         Ok(())
     }
 }

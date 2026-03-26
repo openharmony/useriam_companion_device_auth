@@ -50,7 +50,7 @@ use crate::entry::companion_device_auth_ffi::{
     Int32Array64Ffi, PersistedCompanionStatusFfi, PersistedHostBindingStatusFfi, SetActiveUserInputFfi,
     SetActiveUserOutputFfi,
 };
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::request::delegate_auth::companion_delegate_auth::CompanionDelegateAuthRequest;
 use crate::request::delegate_auth::host_delegate_auth::HostDelegateAuthRequest;
 use crate::request::enroll::companion_enroll::CompanionDeviceEnrollRequest;
@@ -63,9 +63,9 @@ use crate::request::token_issue::companion_issue_token::CompanionDeviceIssueToke
 use crate::request::token_issue::host_issue_token::HostDeviceIssueTokenRequest;
 use crate::request::token_obtain::companion_obtain_token::CompanionDeviceObtainTokenRequest;
 use crate::request::token_obtain::host_obtain_token::HostDeviceObtainTokenRequest;
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::misc_manager::MiscManagerRegistry;
 use crate::traits::request_manager::{Request, RequestManagerRegistry, RequestParam};
 use crate::utils::message_codec::MessageCodec;
@@ -82,8 +82,8 @@ pub fn init(_input: &InitInputFfi, _output: &mut InitOutputFfi) -> Result<(), Er
     let key_pair = CryptoEngineRegistry::get().generate_ed25519_key_pair().map_err(|e| p!(e))?;
     MiscManagerRegistry::get_mut().set_local_key_pair(key_pair).map_err(|e| p!(e))?;
 
-    CompanionDbManagerRegistry::get_mut().read_device_db().map_err(|e| p!(e))?;
-    HostDbManagerRegistry::get_mut().read_device_db().map_err(|e| p!(e))?;
+    HostBindingDbManagerRegistry::get_mut().read_device_db().map_err(|e| p!(e))?;
+    CompanionDeviceDbManagerRegistry::get_mut().read_device_db().map_err(|e| p!(e))?;
     Ok(())
 }
 
@@ -114,7 +114,7 @@ pub fn host_on_register_finish(
     _output: &mut HostRegisterFinishOutputFfi,
 ) -> Result<(), ErrorCode> {
     MiscManagerRegistry::get_mut().set_fwk_pub_key(input.public_key.to_vec()?)?;
-    host_db_helper::verify_template(input.template_ids.try_into().map_err(|e| p!(e))?)?;
+    companion_device_db_helper::verify_template(input.template_ids.try_into().map_err(|e| p!(e))?)?;
     Ok(())
 }
 
@@ -124,11 +124,11 @@ pub fn host_get_persisted_status(
     output: &mut HostGetPersistedStatusOutputFfi,
 ) -> Result<(), ErrorCode> {
     let mut companion_status_list: Vec<PersistedCompanionStatusFfi> = Vec::new();
-    match host_db_helper::get_companion_device_by_user_id(input.user_id) {
+    match companion_device_db_helper::get_companion_device_by_user_id(input.user_id) {
         Ok(device_list) => {
             for device_info in device_list {
                 let device_base_info =
-                    HostDbManagerRegistry::get_mut().read_device_base_info(device_info.template_id)?;
+                    CompanionDeviceDbManagerRegistry::get_mut().read_device_base_info(device_info.template_id)?;
 
                 let companion_status = PersistedCompanionStatusFfi {
                     template_id: device_info.template_id,
@@ -235,10 +235,10 @@ pub fn host_remove_companion(
     input: &HostRemoveCompanionInputFfi,
     output: &mut HostRemoveCompanionOutputFfi,
 ) -> Result<(), ErrorCode> {
-    let device_info = HostDbManagerRegistry::get().get_device(input.template_id)?;
+    let device_info = CompanionDeviceDbManagerRegistry::get().get_device(input.template_id)?;
     let user_id = device_info.user_info.user_id;
     let companion_device_key = DeviceKeyFfi::try_from(device_info.device_key)?;
-    HostDbManagerRegistry::get_mut().remove_device(input.template_id)?;
+    CompanionDeviceDbManagerRegistry::get_mut().remove_device(input.template_id)?;
     output.user_id = user_id;
     output.companion_device_key = companion_device_key;
     Ok(())
@@ -310,7 +310,7 @@ pub fn host_revoke_token(
     input: &HostRevokeTokenInputFfi,
     _output: &mut HostRevokeTokenOutputFfi,
 ) -> Result<(), ErrorCode> {
-    host_db_helper::delete_companion_device_token(input.template_id)?;
+    companion_device_db_helper::delete_companion_device_token(input.template_id)?;
     Ok(())
 }
 
@@ -319,7 +319,7 @@ pub fn host_update_companion_status(
     input: &HostUpdateCompanionStatusInputFfi,
     _output: &mut HostUpdateCompanionStatusOutputFfi,
 ) -> Result<(), ErrorCode> {
-    host_db_helper::update_companion_device_info(
+    companion_device_db_helper::update_companion_device_info(
         input.template_id,
         input.device_model_info.to_string()?,
         input.device_name.to_string()?,
@@ -333,7 +333,7 @@ pub fn host_update_companion_enabled_business_ids(
     input: &HostUpdateCompanionEnabledBusinessIdsInputFfi,
     _output: &mut HostUpdateCompanionEnabledBusinessIdsOutputFfi,
 ) -> Result<(), ErrorCode> {
-    host_db_helper::update_device_business_id(
+    companion_device_db_helper::update_device_business_id(
         input.template_id,
         Vec::<i32>::try_from(input.business_ids).map_err(|e| p!(e))?,
     )?;
@@ -405,7 +405,7 @@ pub fn host_check_template_enrolled(
     input: &HostCheckTemplateEnrolledInputFfi,
     output: &mut HostCheckTemplateEnrolledOutputFfi,
 ) -> Result<(), ErrorCode> {
-    match HostDbManagerRegistry::get().get_device(input.template_id) {
+    match CompanionDeviceDbManagerRegistry::get().get_device(input.template_id) {
         Ok(_) => {
             log_i!("template_id {:x} enrolled", input.template_id as u16);
             output.enrolled = 1;
@@ -427,15 +427,17 @@ pub fn host_update_token(
     input: &HostUpdateTokenInputFfi,
     output: &mut HostUpdateTokenOutputFfi,
 ) -> Result<(), ErrorCode> {
-    crate::jobs::host_db_helper::check_device_capability(input.template_id, Capability::TokenAuth)?;
+    crate::jobs::companion_device_db_helper::check_device_capability(input.template_id, Capability::TokenAuth)?;
 
     let pub_key = MiscManagerRegistry::get_mut().get_fwk_pub_key().map_err(|e| p!(e))?;
     let message_codec = MessageCodec::new(MessageSignParam::Framework(pub_key));
     let attribute = message_codec.deserialize_attribute(input.fwk_message.as_slice()?).map_err(|e| p!(e))?;
     let atl = attribute.get_i32(AttributeKey::AttrAuthTrustLevel).map_err(|e| p!(e))?;
-    let device_capabilities = HostDbManagerRegistry::get_mut().read_device_capability_info(input.template_id)?;
+    let device_capabilities =
+        CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(input.template_id)?;
     for device_capability in &device_capabilities {
-        match HostDbManagerRegistry::get_mut().get_token(input.template_id, device_capability.processor_type) {
+        match CompanionDeviceDbManagerRegistry::get_mut().get_token(input.template_id, device_capability.processor_type)
+        {
             Ok(token_info) => {
                 if token_info.atl as i32 != atl {
                     output.need_redistribute = true;
@@ -458,13 +460,13 @@ pub fn companion_get_persisted_status(
     output: &mut CompanionGetPersistedStatusOutputFfi,
 ) -> Result<(), ErrorCode> {
     let mut binding_status_list: Vec<PersistedHostBindingStatusFfi> = Vec::new();
-    let device_info_list = CompanionDbManagerRegistry::get().get_device_list(input.user_id);
+    let device_info_list = HostBindingDbManagerRegistry::get().get_device_list(input.user_id);
     for device_info in device_info_list {
         let binding_status = PersistedHostBindingStatusFfi {
             binding_id: device_info.binding_id,
             companion_user_id: device_info.user_info.user_id,
             host_device_key: DeviceKeyFfi::try_from(device_info.device_key)?,
-            is_token_valid: CompanionDbManagerRegistry::get().is_device_token_valid(device_info.binding_id)?,
+            is_token_valid: HostBindingDbManagerRegistry::get().is_device_token_valid(device_info.binding_id)?,
         };
         binding_status_list.push(binding_status);
     }
@@ -517,7 +519,7 @@ pub fn companion_remove_host_binding(
     input: &CompanionRemoveHostBindingInputFfi,
     _output: &mut CompanionRemoveHostBindingOutputFfi,
 ) -> Result<(), ErrorCode> {
-    CompanionDbManagerRegistry::get_mut().remove_device(input.binding_id)?;
+    HostBindingDbManagerRegistry::get_mut().remove_device(input.binding_id)?;
     Ok(())
 }
 
@@ -566,7 +568,7 @@ pub fn companion_revoke_token(
     input: &CompanionRevokeTokenInputFfi,
     _output: &mut CompanionRevokeTokenOutputFfi,
 ) -> Result<(), ErrorCode> {
-    CompanionDbManagerRegistry::get_mut().delete_device_token(input.binding_id)
+    HostBindingDbManagerRegistry::get_mut().delete_device_token(input.binding_id)
 }
 
 // CompanionBeginDelegateAuth

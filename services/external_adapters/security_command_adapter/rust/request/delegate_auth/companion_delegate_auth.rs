@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{AuthTrustLevel, ErrorCode, HKDF_SALT_SIZE, ProcessorType};
+use crate::common::constants::{AuthTrustLevel, ErrorCode, ProcessorType, HKDF_SALT_SIZE};
 use crate::entry::companion_device_auth_ffi::CompanionBeginDelegateAuthInputFfi;
-use crate::jobs::companion_db_helper;
+use crate::jobs::host_binding_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::{SecCommonReply, SecCommonRequest};
 use crate::traits::request_manager::{Request, RequestParam};
@@ -54,12 +54,10 @@ impl CompanionDelegateAuthRequest {
     }
 
     fn decode_sec_delegate_auth_request(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let output = SecCommonRequest::decode(
-            sec_message,
-            ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?,
-        )?;
+        let output =
+            SecCommonRequest::decode(sec_message, ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
 
-        self.session_key = companion_db_helper::get_session_key(self.binding_id, &output.salt)?;
+        self.session_key = host_binding_db_helper::get_session_key(self.binding_id, &output.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &self.session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -142,7 +140,7 @@ impl Request for CompanionDelegateAuthRequest {
         self.atl = auth_token.token_data_plain.auth_trust_level;
 
         let sec_message = self.encode_sec_delegate_auth_reply()?;
-        companion_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
 
         ffi_output.auth_type = auth_token.token_data_plain.auth_type as i32;
         ffi_output.atl = auth_token.token_data_plain.auth_trust_level as i32;

@@ -22,9 +22,9 @@ use crate::entry::companion_device_auth_ffi::{
 use crate::log_i;
 use crate::request::enroll::enroll_message::{SecBindingReply, SecBindingReplyInfo, SecKeyNegoReply};
 use crate::request::enroll::host_enroll::{HostDeviceEnrollRequest, KeyNegotialParam};
+use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistry, MockCompanionDeviceDbManager};
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, KeyPair, MockCryptoEngine};
 use crate::traits::db_manager::{CompanionDeviceSk, DeviceKey};
-use crate::traits::host_db_manager::{HostDbManagerRegistry, MockHostDbManager};
 use crate::traits::misc_manager::{MiscManagerRegistry, MockMiscManager};
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::{MockTimeKeeper, TimeKeeperRegistry};
@@ -855,9 +855,9 @@ fn host_enroll_request_end_test_get_rtc_time_fail() {
 
     mock_set_crypto_engine();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
     mock_time_keeper.expect_get_rtc_time().returning(|| Err(ErrorCode::GeneralError));
@@ -902,10 +902,10 @@ fn host_enroll_request_end_test_add_device_fail() {
     mock_set_crypto_engine();
     mock_set_time_keeper();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    mock_companion_device_db_manager.expect_add_device().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
 
@@ -946,11 +946,11 @@ fn host_enroll_request_end_test_add_token_fail() {
     mock_set_crypto_engine();
     mock_set_time_keeper();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_host_db_manager.expect_add_token().returning(|| Err(ErrorCode::GeneralError));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    mock_companion_device_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_companion_device_db_manager.expect_add_token().returning(|| Err(ErrorCode::GeneralError));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
 
@@ -991,11 +991,11 @@ fn host_enroll_request_end_test_fwk_message_encode_fail() {
     mock_set_crypto_engine();
     mock_set_time_keeper();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_host_db_manager.expect_add_token().returning(|| Ok(()));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    mock_companion_device_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();
     mock_misc_manager.expect_get_local_key_pair().returning(|| Err(ErrorCode::GeneralError));
@@ -1041,12 +1041,12 @@ fn host_enroll_request_end_test_get_session_key_fail() {
     mock_set_time_keeper();
     mock_set_misc_manager();
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_host_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_host_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    mock_companion_device_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
+    mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
 
@@ -1097,14 +1097,14 @@ fn host_enroll_request_end_test_encrypt_issue_token_fail() {
     mock_crypto_engine.expect_aes_gcm_encrypt().returning(|_, _| Err(ErrorCode::GeneralError));
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
-    let mut mock_host_db_manager = MockHostDbManager::new();
-    mock_host_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
-    mock_host_db_manager.expect_add_device().returning(|| Ok(()));
-    mock_host_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_host_db_manager
+    let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
+    mock_companion_device_db_manager.expect_generate_unique_template_id().returning(|| Ok(123));
+    mock_companion_device_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
+    mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    HostDbManagerRegistry::set(Box::new(mock_host_db_manager));
+    CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
 

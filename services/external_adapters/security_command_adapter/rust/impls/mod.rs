@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-pub mod default_companion_db_manager;
+pub mod default_companion_device_db_manager;
 pub mod default_event_manager;
-pub mod default_host_db_manager;
+pub mod default_host_binding_db_manager;
 pub mod default_misc_manager;
 pub mod default_request_manager;
 pub mod default_storage_io;

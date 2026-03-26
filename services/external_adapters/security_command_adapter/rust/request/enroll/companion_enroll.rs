@@ -20,15 +20,15 @@ use crate::common::constants::{
 use crate::entry::companion_device_auth_ffi::{
     CompanionInitKeyNegotiationInputFfi, DeviceKeyFfi, PersistedHostBindingStatusFfi,
 };
-use crate::jobs::companion_db_helper;
+use crate::jobs::host_binding_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::enroll::enroll_message::{
     SecBindingReply, SecBindingReplyInfo, SecBindingRequest, SecKeyNegoReply, SecKeyNegoRequest,
 };
 use crate::request::jobs::common_message::SecIssueToken;
-use crate::traits::companion_db_manager::CompanionDbManagerRegistry;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};
-use crate::traits::db_manager::{DeviceKey, HostDeviceInfo, HostDeviceSk, HostTokenInfo, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::utils::{Attribute, AttributeKey};
@@ -152,9 +152,9 @@ impl CompanionDeviceEnrollRequest {
         Ok(output)
     }
 
-    fn init_device_info(&mut self) -> Result<(Box<HostDeviceInfo>, Box<HostDeviceSk>), ErrorCode> {
-        let binding_id = CompanionDbManagerRegistry::get().generate_unique_binding_id().map_err(|e| p!(e))?;
-        let device_info = Box::new(HostDeviceInfo {
+    fn init_device_info(&mut self) -> Result<(Box<HostBindingInfo>, Box<HostBindingSk>), ErrorCode> {
+        let binding_id = HostBindingDbManagerRegistry::get().generate_unique_binding_id().map_err(|e| p!(e))?;
+        let device_info = Box::new(HostBindingInfo {
             binding_id,
             device_key: self.key_nego_param.host_device_key.clone(),
             user_info: UserInfo { user_id: self.key_nego_param.companion_device_key.user_id, user_type: 0 },
@@ -162,7 +162,7 @@ impl CompanionDeviceEnrollRequest {
             last_used_time: 0,
         });
 
-        let sk_info = Box::new(HostDeviceSk {
+        let sk_info = Box::new(HostBindingSk {
             sk: self.sk.clone().try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
                 ErrorCode::GeneralError
@@ -254,7 +254,7 @@ impl CompanionDeviceEnrollRequest {
     }
 
     fn store_token(&self) -> Result<(), ErrorCode> {
-        let token_info = HostTokenInfo {
+        let token_info = HostBindingToken {
             token: self.token_info.token.clone().try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
                 ErrorCode::GeneralError
@@ -262,13 +262,13 @@ impl CompanionDeviceEnrollRequest {
             atl: self.token_info.atl,
         };
 
-        CompanionDbManagerRegistry::get_mut().write_device_token(self.binding_id, &token_info)?;
+        HostBindingDbManagerRegistry::get_mut().write_device_token(self.binding_id, &token_info)?;
         Ok(())
     }
 
-    fn store_device_info(&mut self) -> Result<HostDeviceInfo, ErrorCode> {
+    fn store_device_info(&mut self) -> Result<HostBindingInfo, ErrorCode> {
         let (device_info, sk_info) = self.init_device_info()?;
-        companion_db_helper::add_host_device(&device_info, &sk_info)?;
+        host_binding_db_helper::add_host_device(&device_info, &sk_info)?;
         Ok(*device_info)
     }
 }
@@ -328,7 +328,7 @@ impl Request for CompanionDeviceEnrollRequest {
 
         self.decode_sec_token_issue(ffi_input.sec_message.as_slice()?)?;
         self.store_token()?;
-        companion_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
         ffi_output.binding_id = self.binding_id;
         ffi_output.atl = self.token_info.atl as i32;
         ffi_output.esl = ExecutorSecurityLevel::Esl3 as i32;

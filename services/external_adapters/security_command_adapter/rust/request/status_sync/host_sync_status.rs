@@ -14,14 +14,14 @@
  */
 
 use crate::common::constants::{
-    ProcessorType, ErrorCode, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
+    ErrorCode, ProcessorType, CHALLENGE_LEN, HKDF_SALT_SIZE, SUPPORTED_PROTOCOL_VERSIONS, SUPPORT_CAPABILITIES,
 };
 use crate::entry::companion_device_auth_ffi::HostBeginCompanionCheckInputFfi;
-use crate::jobs::host_db_helper;
+use crate::jobs::companion_device_db_helper;
 use crate::jobs::message_crypto;
 use crate::request::jobs::common_message::SecCommonReply;
+use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::host_db_manager::HostDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::utils::{Attribute, AttributeKey};
 use crate::{log_e, log_i, p};
@@ -62,7 +62,7 @@ impl HostDeviceSyncStatusRequest {
         sec_message: &[u8],
     ) -> Result<(), ErrorCode> {
         let output = SecCommonReply::decode(sec_message, processor_type)?;
-        let session_key = host_db_helper::get_session_key(self.template_id, processor_type, &self.salt)?;
+        let session_key = companion_device_db_helper::get_session_key(self.template_id, processor_type, &self.salt)?;
         let decrypt_data =
             message_crypto::decrypt_sec_message(&output.encrypt_data, &session_key, &output.tag, &output.iv)
                 .map_err(|e| p!(e))?;
@@ -93,7 +93,8 @@ impl HostDeviceSyncStatusRequest {
     }
 
     fn decode_sec_status_sync_reply(&mut self, sec_message: &[u8]) -> Result<(), ErrorCode> {
-        let device_capabilities = HostDbManagerRegistry::get_mut().read_device_capability_info(self.template_id)?;
+        let device_capabilities =
+            CompanionDeviceDbManagerRegistry::get_mut().read_device_capability_info(self.template_id)?;
         for device_capability in &device_capabilities {
             if let Err(e) = self.decode_sec_status_sync_reply_message(device_capability.processor_type, sec_message) {
                 log_e!(
@@ -140,9 +141,9 @@ impl Request for HostDeviceSyncStatusRequest {
         self.template_id = ffi_input.template_id;
 
         if self.decode_sec_status_sync_reply(ffi_input.sec_message.as_slice()?).is_ok() {
-            host_db_helper::update_companion_device_valid_flag(self.template_id, true)?;
+            companion_device_db_helper::update_companion_device_valid_flag(self.template_id, true)?;
         } else {
-            host_db_helper::update_companion_device_valid_flag(self.template_id, false)?;
+            companion_device_db_helper::update_companion_device_valid_flag(self.template_id, false)?;
             log_e!("proc status sync reply fail");
             return Err(ErrorCode::GeneralError);
         }

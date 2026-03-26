@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-use crate::common::constants::{ProcessorType, ErrorCode, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
+use crate::common::constants::{ErrorCode, ProcessorType, AES_GCM_IV_SIZE, AES_GCM_TAG_SIZE, HKDF_SALT_SIZE};
 use crate::traits::misc_manager::MiscManagerRegistry;
 use crate::utils::message_codec::MessageCodec;
 use crate::utils::message_codec::MessageSignParam;
