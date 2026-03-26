@@ -67,7 +67,8 @@ bool HostMixAuthRequest::AnyTemplateValid() const
     return false;
 }
 
-void HostMixAuthRequest::HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices)
+void HostMixAuthRequest::HandleDeviceSelectResult(
+    const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext)
 {
     IAM_LOGI("%{public}s HandleDeviceSelectResult size:%{public}zu", GetDescription(), selectedDevices.size());
 
@@ -84,6 +85,7 @@ void HostMixAuthRequest::HandleDeviceSelectResult(const std::vector<DeviceKey> &
         return;
     }
 
+    selectContext_ = selectContext;
     StartAuthWithTemplateList(filteredList);
 }
 
@@ -170,10 +172,11 @@ void HostMixAuthRequest::Start()
     }
 
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_.value(), SelectPurpose::SELECT_AUTH_DEVICE,
-        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices) {
+        [weakSelf = weak_from_this()](
+            const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN(self != nullptr);
-            self->HandleDeviceSelectResult(selectedDevices);
+            self->HandleDeviceSelectResult(selectedDevices, selectContext);
         });
     if (!selectorSet) {
         IAM_LOGE("%{public}s no device selector set", GetDescription());
@@ -235,7 +238,7 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
         }
     }
     eventCollector_.AppendExtraInfo("success template id", templateId);
-    CompleteWithSuccess(extraInfo);
+    CompleteWithSuccess(templateId, extraInfo);
 }
 
 uint32_t HostMixAuthRequest::GetMaxConcurrency() const
@@ -278,9 +281,18 @@ void HostMixAuthRequest::CompleteWithError(ResultCode result)
     Destroy();
 }
 
-void HostMixAuthRequest::CompleteWithSuccess(const std::vector<uint8_t> &extraInfo)
+void HostMixAuthRequest::CompleteWithSuccess(TemplateId templateId, const std::vector<uint8_t> &extraInfo)
 {
     IAM_LOGI("%{public}s complete with success", GetDescription());
+    Attributes attributes;
+    attributes.SetInt32Value(Attributes::ATTR_CDA_SA_AUTH_INTENT, authIntent_);
+    attributes.SetInt32Value(Attributes::ATTR_CDA_SA_HOST_USER_ID, hostUserId_);
+    attributes.SetUint64Value(Attributes::ATTR_CDA_SA_TEMPLATE_ID, templateId);
+    if (selectContext_) {
+        attributes.SetUint8ArrayValue(Attributes::ATTR_CDA_SA_SELECT_CONTEXT, *selectContext_);
+    }
+    GetEventBus().Publish(EventType::AUTH_SUCCESS, attributes.Serialize());
+
     InvokeCallback(ResultCode::SUCCESS, extraInfo);
     eventCollector_.Report(ResultCode::SUCCESS);
     Destroy();

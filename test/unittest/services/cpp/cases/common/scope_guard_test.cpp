@@ -15,7 +15,7 @@
 
 #include <gtest/gtest.h>
 
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 
 using namespace testing;
 using namespace testing::ext;

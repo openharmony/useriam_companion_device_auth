@@ -22,7 +22,7 @@
 #include "companion_manager.h"
 #include "interaction_event_collector.h"
 #include "outbound_request.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "security_agent.h"
 #include "sync_device_status_message.h"
 

@@ -76,7 +76,7 @@ public:
     {
         auto it = pendingHandlers_.find(tokenId);
         if (it != pendingHandlers_.end() && it->second) {
-            it->second(selectedDevices);
+            it->second(selectedDevices, std::nullopt);
             pendingHandlers_.erase(it);
         }
     }
