@@ -49,7 +49,7 @@ public:
     void UnsubscribeCompanionDeviceStatusChange(SubscribeId subscriptionId) override;
 
     ResultCode BeginAddCompanion(const BeginAddCompanionParams &params,
-        std::vector<uint8_t> &outAddHostBindingRequest) override;
+        std::vector<uint8_t> &outAddHostBindingRequest, uint16_t &selectedAlgorithm) override;
     ResultCode EndAddCompanion(const EndAddCompanionInput &input, EndAddCompanionOutput &output) override;
     ResultCode RemoveCompanion(TemplateId templateId) override;
 

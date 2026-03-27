@@ -189,11 +189,9 @@ void HostAddCompanionRequest::OnConnected()
         return;
     }
 
-    std::vector<uint16_t> algorithmList;
-    ParseAlgorithmListFromInitKeyNegotiationRequest(output.initKeyNegotiationRequest, algorithmList);
     needCancelCompanionAdd_ = true;
 
-    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
+    eventCollector_.AppendExtraInfo("algorithmList", output.algorithmList);
 
     InitKeyNegotiationRequest initRequest { .hostDeviceKey = hostDeviceKey_,
         .extraInfo = std::move(output.initKeyNegotiationRequest) };
@@ -235,10 +233,6 @@ void HostAddCompanionRequest::HandleInitKeyNegotiationReply(const Attributes &re
         return;
     }
 
-    uint16_t selectedAlgorithm;
-    ParseSelectedAlgorithmFromInitKeyNegotiationReply(initReply.extraInfo, selectedAlgorithm);
-    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
-
     auto companionDeviceKey = GetPeerDeviceKey();
     ENSURE_OR_RETURN_DESC(GetDescription(), companionDeviceKey.has_value());
 
@@ -279,12 +273,14 @@ bool HostAddCompanionRequest::BeginAddCompanion(const InitKeyNegotiationReply &r
     params.fwkMsg = fwkMsg_;
     params.secureProtocolId = secureProtocolId_;
     params.initKeyNegotiationReply = reply.extraInfo;
-    ResultCode ret = GetCompanionManager().BeginAddCompanion(params, addHostBindingRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = GetCompanionManager().BeginAddCompanion(params, addHostBindingRequest, selectedAlgorithm);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s HostBeginAddCompanion failed ret=%{public}d", GetDescription(), ret);
         errorGuard.UpdateErrorCode(ret);
         return false;
     }
+    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
     return true;
 }
 

@@ -67,6 +67,8 @@ pub struct CompanionDeviceEnrollRequest {
     pub sk: Vec<u8>,
     pub binding_id: i32,
     pub token_info: TokenInfo,
+    pub algorithm_list: Vec<u16>,
+    pub selected_algorithm: u16,
 }
 
 impl CompanionDeviceEnrollRequest {
@@ -112,6 +114,8 @@ impl CompanionDeviceEnrollRequest {
             sk: Vec::new(),
             binding_id: 0,
             token_info: TokenInfo { token: Vec::new(), atl: AuthTrustLevel::Atl0 },
+            algorithm_list: Vec::new(),
+            selected_algorithm: 0,
         })
     }
 
@@ -136,6 +140,7 @@ impl CompanionDeviceEnrollRequest {
             log_e!("algorithm list is not contain X25519");
             return Err(ErrorCode::GeneralError);
         }
+        self.algorithm_list = output.algorithm_list.clone();
         Ok(())
     }
 
@@ -143,12 +148,14 @@ impl CompanionDeviceEnrollRequest {
         let key_pair = CryptoEngineRegistry::get().generate_x25519_key_pair().map_err(|e| p!(e))?;
         self.key_nego_param.key_pair = Some(key_pair.clone());
 
+        let selected_algorithm = AlgoType::X25519 as u16;
         let key_nego_reply = Box::new(SecKeyNegoReply {
-            algorithm: AlgoType::X25519 as u16,
+            algorithm: selected_algorithm,
             challenge: self.key_nego_param.companion_challenge,
             pub_key: key_pair.pub_key.clone(),
         });
         let output = key_nego_reply.encode(ProcessorType::from_secure_protocol_id(self.secure_protocol_id)?)?;
+        self.selected_algorithm = selected_algorithm;
         Ok(output)
     }
 
@@ -288,6 +295,10 @@ impl Request for CompanionDeviceEnrollRequest {
         self.decode_sec_key_nego_request(ffi_input.sec_message.as_slice()?)?;
         let sec_message = self.encode_sec_key_nego_reply()?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
+        let (algo_data, algo_len) = crate::commands::common_command::try_array_from_vec(self.algorithm_list.clone())?;
+        ffi_output.algorithm_list.data = algo_data;
+        ffi_output.algorithm_list.len = algo_len;
+        ffi_output.selected_algorithm = self.selected_algorithm;
         Ok(())
     }
 

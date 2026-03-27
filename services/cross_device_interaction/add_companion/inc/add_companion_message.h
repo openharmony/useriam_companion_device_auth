@@ -78,10 +78,6 @@ std::optional<EndAddHostBindingRequest> DecodeEndAddHostBindingRequest(const Att
 void EncodeEndAddHostBindingReply(const EndAddHostBindingReply &reply, Attributes &attributes);
 std::optional<EndAddHostBindingReply> DecodeEndAddHostBindingReply(const Attributes &attributes);
 
-void ParseAlgorithmListFromInitKeyNegotiationRequest(const std::vector<uint8_t> &extraInfo,
-    std::vector<uint16_t> &algorithmList);
-void ParseSelectedAlgorithmFromInitKeyNegotiationReply(const std::vector<uint8_t> &extraInfo,
-    uint16_t &selectedAlgorithm);
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

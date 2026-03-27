@@ -172,7 +172,8 @@ static void FuzzBeginAddCompanion(std::shared_ptr<CompanionManagerImpl> &manager
     uint32_t replySize = fuzzData.ConsumeIntegralInRange<uint32_t>(0, FUZZ_MAX_MESSAGE_LENGTH);
     params.initKeyNegotiationReply = fuzzData.ConsumeBytes<uint8_t>(replySize);
     std::vector<uint8_t> outAddHostBindingRequest;
-    manager->BeginAddCompanion(params, outAddHostBindingRequest);
+    uint16_t selectedAlgorithm;
+    manager->BeginAddCompanion(params, outAddHostBindingRequest, selectedAlgorithm);
 }
 
 static void FuzzEndAddCompanion(std::shared_ptr<CompanionManagerImpl> &manager, FuzzedDataProvider &fuzzData)
@@ -283,8 +284,9 @@ static void FuzzAddCompanionInternal(std::shared_ptr<CompanionManagerImpl> &mana
     uint32_t replySize = fuzzData.ConsumeIntegralInRange<uint32_t>(0, FUZZ_MAX_MESSAGE_LENGTH);
     params.initKeyNegotiationReply = fuzzData.ConsumeBytes<uint8_t>(replySize);
     std::vector<uint8_t> outAddHostBindingRequest;
+    uint16_t selectedAlgorithm;
 
-    manager->BeginAddCompanion(params, outAddHostBindingRequest);
+    manager->BeginAddCompanion(params, outAddHostBindingRequest, selectedAlgorithm);
 }
 
 static void FuzzRemoveCompanionInternal(std::shared_ptr<CompanionManagerImpl> &manager, FuzzedDataProvider &fuzzData)

@@ -396,6 +396,7 @@ assert_max_size!(HostGetInitKeyNegotiationInputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostGetInitKeyNegotiationOutputFfi {
     pub sec_message: DataArray1024Ffi, /* algorithm_list */
+    pub algorithm_list: Uint16Array64Ffi, /* algorithm_list for big data reporting */
 }
 assert_max_size!(HostGetInitKeyNegotiationOutputFfi);
 
@@ -419,6 +420,7 @@ assert_max_size!(HostBeginAddCompanionInputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostBeginAddCompanionOutputFfi {
     pub sec_message: DataArray20000Ffi, /* device_id, user_id, pub_key, salt, tag, iv, encrypt_data(challenge, device_id, user_id) */
+    pub selected_algorithm: u16,
 }
 assert_max_size!(HostBeginAddCompanionOutputFfi);
 
@@ -822,6 +824,8 @@ assert_max_size!(CompanionInitKeyNegotiationInputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionInitKeyNegotiationOutputFfi {
     pub sec_message: DataArray20000Ffi, /* challenge, algorithm, algorithm_data */
+    pub algorithm_list: Uint16Array64Ffi, /* algorithm_list for big data reporting */
+    pub selected_algorithm: u16,
 }
 assert_max_size!(CompanionInitKeyNegotiationOutputFfi);
 

@@ -184,7 +184,7 @@ void MockGuard::SetupCompanionManagerDefaults()
         .WillByDefault(
             Invoke([](OnCompanionDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
     ON_CALL(*companionManager_, UnsubscribeCompanionDeviceStatusChange(_)).WillByDefault(Return());
-    ON_CALL(*companionManager_, BeginAddCompanion(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
+    ON_CALL(*companionManager_, BeginAddCompanion(_, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*companionManager_, EndAddCompanion(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*companionManager_, RemoveCompanion(_)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*companionManager_, UpdateCompanionStatus(_, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));

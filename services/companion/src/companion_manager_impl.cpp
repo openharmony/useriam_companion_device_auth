@@ -192,7 +192,7 @@ ResultCode CompanionManagerImpl::InvokeHostBeginAddCompanion(const HostBeginAddC
 }
 
 ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams &params,
-    std::vector<uint8_t> &outAddHostBindingRequest)
+    std::vector<uint8_t> &outAddHostBindingRequest, uint16_t &selectedAlgorithm)
 {
     IAM_LOGI("begin add companion, request id 0x%{public}08X", params.requestId);
 
@@ -221,6 +221,7 @@ ResultCode CompanionManagerImpl::BeginAddCompanion(const BeginAddCompanionParams
     }
 
     outAddHostBindingRequest.swap(output.addHostBindingRequest);
+    selectedAlgorithm = output.selectedAlgorithm;
 
     IAM_LOGI("begin add companion success, request id 0x%{public}08X", params.requestId);
     return ResultCode::SUCCESS;
