@@ -339,7 +339,6 @@ bool DecodeHostInitKeyNegotiationOutput(const HostGetInitKeyNegotiationOutputFfi
     if (!DecodeMessageArray(ffi.secMessage, output.initKeyNegotiationRequest)) {
         return false;
     }
-    // Decode algorithmList for big data reporting (avoid C++ decoding Rust attribute)
     return FfiArrayToVector(ffi.algorithmList, output.algorithmList);
 }
 
