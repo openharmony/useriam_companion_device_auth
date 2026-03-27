@@ -31,10 +31,6 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-enum class FaultType : uint32_t {
-    NONE = 0,
-};
-
 class InteractionEventCollector {
 public:
     explicit InteractionEventCollector(const std::string &requestType) : requestType_(requestType)
@@ -121,14 +117,14 @@ private:
 class IEventManagerAdapter : public NoCopyable {
 public:
     virtual ~IEventManagerAdapter() = default;
-    virtual void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo) = 0;
+    virtual void ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo) = 0;
     virtual void ReportInteractionEvent(const InteractionEventCollector &eventCollector) = 0;
 
 protected:
     IEventManagerAdapter() = default;
 };
 
-void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo);
+void ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo);
 void ReportInteractionEvent(const InteractionEventCollector &eventCollector);
 
 template <typename T>

@@ -224,7 +224,7 @@ public:
     {
     }
 
-    void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo) override
+    void ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo) override
     {
         (void)faultType;
         (void)faultId;
