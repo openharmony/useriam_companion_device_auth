@@ -95,6 +95,7 @@ typedef struct HostGetInitKeyNegotiationInputFfi {
 
 typedef struct HostGetInitKeyNegotiationOutputFfi {
     struct DataArray1024Ffi secMessage;
+    struct Uint16Array64Ffi algorithmList;
 } HostGetInitKeyNegotiationOutputFfi;
 
 typedef struct HostBeginAddCompanionInputFfi {
@@ -109,6 +110,7 @@ typedef struct HostBeginAddCompanionInputFfi {
 
 typedef struct HostBeginAddCompanionOutputFfi {
     struct DataArray20000Ffi secMessage;
+    uint16_t selectedAlgorithm;
 } HostBeginAddCompanionOutputFfi;
 
 typedef struct HostEndAddCompanionInputFfi {
@@ -333,6 +335,8 @@ typedef struct CompanionInitKeyNegotiationInputFfi {
 
 typedef struct CompanionInitKeyNegotiationOutputFfi {
     struct DataArray20000Ffi secMessage;
+    struct Uint16Array64Ffi algorithmList;
+    uint16_t selectedAlgorithm;
 } CompanionInitKeyNegotiationOutputFfi;
 
 typedef struct CompanionBeginAddHostBindingInputFfi {

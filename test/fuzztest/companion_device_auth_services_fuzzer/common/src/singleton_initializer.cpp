@@ -109,10 +109,11 @@ public:
     }
 
     ResultCode BeginAddCompanion(const BeginAddCompanionParams &params,
-        std::vector<uint8_t> &outAddHostBindingRequest) override
+        std::vector<uint8_t> &outAddHostBindingRequest, uint16_t &selectedAlgorithm) override
     {
         (void)params;
         outAddHostBindingRequest = fuzzData_.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
+        selectedAlgorithm = fuzzData_.ConsumeIntegral<uint16_t>();
         return ResultCode::SUCCESS;
     }
 

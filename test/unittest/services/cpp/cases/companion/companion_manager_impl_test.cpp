@@ -421,7 +421,8 @@ HWTEST_F(CompanionManagerImplTest, BeginAddCompanion_001, TestSize.Level0)
 
     BeginAddCompanionParams params;
     std::vector<uint8_t> outRequest;
-    ResultCode ret = manager->BeginAddCompanion(params, outRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = manager->BeginAddCompanion(params, outRequest, selectedAlgorithm);
 
     EXPECT_EQ(ret, ResultCode::GENERAL_ERROR);
 }
@@ -437,7 +438,8 @@ HWTEST_F(CompanionManagerImplTest, BeginAddCompanion_002, TestSize.Level0)
     BeginAddCompanionParams params;
     params.hostDeviceKey.deviceUserId = USER_ID_999;
     std::vector<uint8_t> outRequest;
-    ResultCode ret = manager->BeginAddCompanion(params, outRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = manager->BeginAddCompanion(params, outRequest, selectedAlgorithm);
 
     EXPECT_EQ(ret, ResultCode::GENERAL_ERROR);
 }
@@ -456,7 +458,8 @@ HWTEST_F(CompanionManagerImplTest, BeginAddCompanion_003, TestSize.Level0)
     params.requestId = UINT32_1;
     params.hostDeviceKey.deviceUserId = activeUserId_;
     std::vector<uint8_t> outRequest;
-    ResultCode ret = manager->BeginAddCompanion(params, outRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = manager->BeginAddCompanion(params, outRequest, selectedAlgorithm);
 
     EXPECT_EQ(ret, ResultCode::GENERAL_ERROR);
 }
@@ -479,7 +482,8 @@ HWTEST_F(CompanionManagerImplTest, BeginAddCompanion_004, TestSize.Level0)
     params.requestId = UINT32_1;
     params.hostDeviceKey.deviceUserId = activeUserId_;
     std::vector<uint8_t> outRequest;
-    ResultCode ret = manager->BeginAddCompanion(params, outRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = manager->BeginAddCompanion(params, outRequest, selectedAlgorithm);
 
     EXPECT_EQ(ret, ResultCode::GENERAL_ERROR);
 }
@@ -502,7 +506,8 @@ HWTEST_F(CompanionManagerImplTest, BeginAddCompanion_005, TestSize.Level0)
     params.requestId = UINT32_1;
     params.hostDeviceKey.deviceUserId = activeUserId_;
     std::vector<uint8_t> outRequest;
-    ResultCode ret = manager->BeginAddCompanion(params, outRequest);
+    uint16_t selectedAlgorithm;
+    ResultCode ret = manager->BeginAddCompanion(params, outRequest, selectedAlgorithm);
 
     EXPECT_EQ(ret, ResultCode::SUCCESS);
 }

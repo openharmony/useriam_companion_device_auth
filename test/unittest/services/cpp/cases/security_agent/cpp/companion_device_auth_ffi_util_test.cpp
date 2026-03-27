@@ -710,10 +710,14 @@ HWTEST_F(FfiUtilTest, DecodeHostInitKeyNegotiationOutput_001, TestSize.Level0)
     ffi.secMessage.data[0] = UINT8_0XAA;
     ffi.secMessage.data[1] = UINT8_0XBB;
     ffi.secMessage.data[2] = UINT8_0XCC;
+    ffi.algorithmList.len = 2;
+    ffi.algorithmList.data[0] = 1;
+    ffi.algorithmList.data[1] = 2;
 
     HostGetInitKeyNegotiationRequestOutput output;
     EXPECT_TRUE(DecodeHostInitKeyNegotiationOutput(ffi, output));
     EXPECT_EQ(output.initKeyNegotiationRequest.size(), 3U);
+    EXPECT_EQ(output.algorithmList.size(), 2U);
 }
 
 HWTEST_F(FfiUtilTest, EncodeHostBeginAddCompanionInput_001, TestSize.Level0)
@@ -745,6 +749,7 @@ HWTEST_F(FfiUtilTest, DecodeHostBeginAddCompanionOutput_001, TestSize.Level0)
     ffi.secMessage.len = 2;
     ffi.secMessage.data[0] = UINT8_0XDD;
     ffi.secMessage.data[1] = UINT8_0XEE;
+    ffi.selectedAlgorithm = 1;
 
     HostBeginAddCompanionOutput output;
     EXPECT_TRUE(DecodeHostBeginAddCompanionOutput(ffi, output));
@@ -1121,10 +1126,16 @@ HWTEST_F(FfiUtilTest, DecodeCompanionInitKeyNegotiationOutput_001, TestSize.Leve
     ffi.secMessage.len = 2;
     ffi.secMessage.data[0] = UINT8_0XFF;
     ffi.secMessage.data[1] = UINT8_0X00;
+    ffi.algorithmList.len = 2;
+    ffi.algorithmList.data[0] = 1;
+    ffi.algorithmList.data[1] = 2;
+    ffi.selectedAlgorithm = 1;
 
     CompanionInitKeyNegotiationOutput output;
     EXPECT_TRUE(DecodeCompanionInitKeyNegotiationOutput(ffi, output));
     EXPECT_EQ(output.initKeyNegotiationReply.size(), 2U);
+    EXPECT_EQ(output.algorithmList.size(), 2U);
+    EXPECT_EQ(output.selectedAlgorithm, 1U);
 }
 
 HWTEST_F(FfiUtilTest, EncodeCompanionBeginAddHostBindingInput_001, TestSize.Level0)

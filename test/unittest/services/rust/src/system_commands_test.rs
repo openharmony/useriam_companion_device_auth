@@ -639,7 +639,7 @@ fn host_get_init_key_negotiation_test_success() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi::default();
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert!(result.is_ok());
 }
@@ -654,7 +654,7 @@ fn host_get_init_key_negotiation_test_request_new_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi::default();
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -673,7 +673,7 @@ fn host_get_init_key_negotiation_test_add_request_fail() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let input = HostGetInitKeyNegotiationInputFfi { request_id: 1, secure_protocol_id: 1 };
-    let mut output = HostGetInitKeyNegotiationOutputFfi { sec_message: DataArray1024Ffi::default() };
+    let mut output = HostGetInitKeyNegotiationOutputFfi::default();
     let result = host_get_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -2455,7 +2455,7 @@ fn companion_init_key_negotiation_test_success() {
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = CompanionInitKeyNegotiationOutputFfi::default();
     let result = companion_init_key_negotiation(&input, &mut output);
     assert!(result.is_ok());
 }
@@ -2478,7 +2478,7 @@ fn companion_init_key_negotiation_test_request_new_fail() {
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray1024Ffi::default(),
     };
-    let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = CompanionInitKeyNegotiationOutputFfi::default();
     let result = companion_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
@@ -2501,7 +2501,7 @@ fn companion_init_key_negotiation_test_request_prepare_fail() {
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray1024Ffi::default(),
     };
-    let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = CompanionInitKeyNegotiationOutputFfi::default();
     let result = companion_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::BadParam));
 }
@@ -2532,7 +2532,7 @@ fn companion_init_key_negotiation_test_add_request_fail() {
         host_device_key: DeviceKeyFfi::default(),
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionInitKeyNegotiationOutputFfi { sec_message: DataArray20000Ffi::default() };
+    let mut output = CompanionInitKeyNegotiationOutputFfi::default();
     let result = companion_init_key_negotiation(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }

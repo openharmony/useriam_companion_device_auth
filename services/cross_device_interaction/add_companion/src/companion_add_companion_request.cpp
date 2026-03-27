@@ -118,18 +118,12 @@ CompanionInitKeyNegotiationInput CompanionAddCompanionRequest::BuildCompanionIni
 }
 
 void CompanionAddCompanionRequest::ProcessCompanionInitKeyNegotiationOutput(
-    const CompanionInitKeyNegotiationOutput &output, const std::vector<uint8_t> &initKeyNegotiationRequest,
-    std::vector<uint8_t> &initKeyNegotiationReply)
+    const CompanionInitKeyNegotiationOutput &output, std::vector<uint8_t> &initKeyNegotiationReply)
 {
     needCancelAddCompanion_ = true;
 
-    std::vector<uint16_t> algorithmList;
-    uint16_t selectedAlgorithm;
-    ParseAlgorithmListFromInitKeyNegotiationRequest(initKeyNegotiationRequest, algorithmList);
-    ParseSelectedAlgorithmFromInitKeyNegotiationReply(output.initKeyNegotiationReply, selectedAlgorithm);
-
-    eventCollector_.AppendExtraInfo("algorithmList", algorithmList);
-    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
+    eventCollector_.AppendExtraInfo("algorithmList", output.algorithmList);
+    eventCollector_.AppendExtraInfo("selectedAlgorithm", output.selectedAlgorithm);
 
     initKeyNegotiationReply = output.initKeyNegotiationReply;
 }
@@ -149,7 +143,7 @@ bool CompanionAddCompanionRequest::CompanionInitKeyNegotiation(const InitKeyNego
         return false;
     }
 
-    ProcessCompanionInitKeyNegotiationOutput(output, request.extraInfo, initKeyNegotiationReply);
+    ProcessCompanionInitKeyNegotiationOutput(output, initKeyNegotiationReply);
     return true;
 }
 

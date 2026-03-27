@@ -115,10 +115,6 @@ std::string ConvertFaultTypeToString(FaultType faultType)
     switch (faultType) {
         case FaultType::NONE:
             return "NONE";
-        case FaultType::TA_CRASH:
-            return "TA_CRASH";
-        case FaultType::TA_INIT_FAILED:
-            return "TA_INIT_FAILED";
         default:
             return "UNKNOWN";
     }

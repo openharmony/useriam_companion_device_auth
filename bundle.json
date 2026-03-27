@@ -65,8 +65,7 @@
         "base_group":[
         ],
         "fwk_group":[
-          "//base/useriam/companion_device_auth/frameworks/js/napi:companiondeviceauth",
-          "//base/useriam/companion_device_auth/frameworks/ets/ani:companion_device_auth_ani"
+          "//base/useriam/companion_device_auth/frameworks/js/napi:companiondeviceauth"
         ],
         "service_group":[
           "//base/useriam/companion_device_auth/frameworks/native/client:companion_device_auth_client",

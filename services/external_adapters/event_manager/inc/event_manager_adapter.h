@@ -33,8 +33,6 @@ namespace CompanionDeviceAuth {
 
 enum class FaultType : uint32_t {
     NONE = 0,
-    TA_CRASH = 1,
-    TA_INIT_FAILED = 2,
 };
 
 class InteractionEventCollector {

@@ -33,8 +33,6 @@ std::optional<DeviceKey> DecodeCompanionDeviceKey(const Attributes &attributes);
 void EncodeHostDeviceKey(const DeviceKey &deviceKey, Attributes &attributes);
 void EncodeCompanionDeviceKey(const DeviceKey &deviceKey, Attributes &attributes);
 
-std::string ConvertUint16VectorToString(const std::vector<uint16_t> &vec);
-
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
