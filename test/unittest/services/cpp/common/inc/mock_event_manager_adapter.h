@@ -26,7 +26,7 @@ namespace CompanionDeviceAuth {
 
 class MockEventManagerAdapter : public IEventManagerAdapter {
 public:
-    MOCK_METHOD(void, ReportSystemFault, (FaultType faultType, std::string faultId, std::string faultInfo), (override));
+    MOCK_METHOD(void, ReportSystemFault, (std::string faultType, std::string faultId, std::string faultInfo), (override));
     MOCK_METHOD(void, ReportInteractionEvent, (const InteractionEventCollector &eventCollector), (override));
 };
 
