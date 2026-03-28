@@ -336,7 +336,10 @@ bool EncodeHostGetInitKeyNegotiationInput(const HostGetInitKeyNegotiationRequest
 bool DecodeHostInitKeyNegotiationOutput(const HostGetInitKeyNegotiationOutputFfi &ffi,
     HostGetInitKeyNegotiationRequestOutput &output)
 {
-    return DecodeMessageArray(ffi.secMessage, output.initKeyNegotiationRequest);
+    if (!DecodeMessageArray(ffi.secMessage, output.initKeyNegotiationRequest)) {
+        return false;
+    }
+    return FfiArrayToVector(ffi.algorithmList, output.algorithmList);
 }
 
 bool EncodeHostBeginAddCompanionInput(const HostBeginAddCompanionInput &input, HostBeginAddCompanionInputFfi &ffi)
@@ -360,7 +363,11 @@ bool EncodeHostBeginAddCompanionInput(const HostBeginAddCompanionInput &input, H
 
 bool DecodeHostBeginAddCompanionOutput(const HostBeginAddCompanionOutputFfi &ffi, HostBeginAddCompanionOutput &output)
 {
-    return DecodeMessageArray(ffi.secMessage, output.addHostBindingRequest);
+    if (!DecodeMessageArray(ffi.secMessage, output.addHostBindingRequest)) {
+        return false;
+    }
+    output.selectedAlgorithm = ffi.selectedAlgorithm;
+    return true;
 }
 
 bool EncodeHostEndAddCompanionInput(const HostEndAddCompanionInput &input, HostEndAddCompanionInputFfi &ffi)
@@ -620,7 +627,14 @@ bool EncodeCompanionInitKeyNegotiationInput(const CompanionInitKeyNegotiationInp
 bool DecodeCompanionInitKeyNegotiationOutput(const CompanionInitKeyNegotiationOutputFfi &ffi,
     CompanionInitKeyNegotiationOutput &output)
 {
-    return DecodeMessageArray(ffi.secMessage, output.initKeyNegotiationReply);
+    if (!DecodeMessageArray(ffi.secMessage, output.initKeyNegotiationReply)) {
+        return false;
+    }
+    if (!FfiArrayToVector(ffi.algorithmList, output.algorithmList)) {
+        return false;
+    }
+    output.selectedAlgorithm = ffi.selectedAlgorithm;
+    return true;
 }
 
 bool EncodeCompanionBeginAddHostBindingInput(const CompanionBeginAddHostBindingInput &input,

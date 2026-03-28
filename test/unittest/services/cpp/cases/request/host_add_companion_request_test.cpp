@@ -284,9 +284,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_001, TestSiz
     InitKeyNegotiationReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = { 1, 2, 3, 4 } };
     EncodeInitKeyNegotiationReply(replyMsg, reply);
 
-    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _))
-        .WillOnce(Invoke([](const BeginAddCompanionParams &, std::vector<uint8_t> &out) {
+    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _, _))
+        .WillOnce(Invoke([](const BeginAddCompanionParams &, std::vector<uint8_t> &out, uint16_t &selectedAlgorithm) {
             out = { 4, 5, 6 };
+            selectedAlgorithm = 1;
             return ResultCode::SUCCESS;
         }));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, MessageType::BEGIN_ADD_HOST_BINDING, _, _))
@@ -358,7 +359,7 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_004, TestSiz
     InitKeyNegotiationReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = { 1, 2, 3, 4 } };
     EncodeInitKeyNegotiationReply(replyMsg, reply);
 
-    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
+    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     request->HandleInitKeyNegotiationReply(reply);
 
@@ -384,9 +385,10 @@ HWTEST_F(HostAddCompanionRequestTest, HandleInitKeyNegotiationReply_005, TestSiz
     InitKeyNegotiationReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = { 1, 2, 3, 4 } };
     EncodeInitKeyNegotiationReply(replyMsg, reply);
 
-    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _))
-        .WillOnce(Invoke([](const BeginAddCompanionParams &, std::vector<uint8_t> &out) {
+    EXPECT_CALL(guard.GetCompanionManager(), BeginAddCompanion(_, _, _))
+        .WillOnce(Invoke([](const BeginAddCompanionParams &, std::vector<uint8_t> &out, uint16_t &selectedAlgorithm) {
             out = { 4, 5, 6 };
+            selectedAlgorithm = 1;
             return ResultCode::SUCCESS;
         }));
     EXPECT_CALL(guard.GetCrossDeviceCommManager(), SendMessage(_, MessageType::BEGIN_ADD_HOST_BINDING, _, _))

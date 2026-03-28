@@ -111,6 +111,7 @@ struct HostGetInitKeyNegotiationRequestInput {
 
 struct HostGetInitKeyNegotiationRequestOutput {
     std::vector<uint8_t> initKeyNegotiationRequest;
+    std::vector<uint16_t> algorithmList;
 };
 
 struct HostBeginAddCompanionInput {
@@ -125,6 +126,7 @@ struct HostBeginAddCompanionInput {
 
 struct HostBeginAddCompanionOutput {
     std::vector<uint8_t> addHostBindingRequest;
+    uint16_t selectedAlgorithm;
 };
 
 struct HostEndAddCompanionInput {
@@ -162,6 +164,8 @@ struct CompanionInitKeyNegotiationInput {
 struct CompanionInitKeyNegotiationOutput {
     RequestId requestId;
     std::vector<uint8_t> initKeyNegotiationReply;
+    std::vector<uint16_t> algorithmList;
+    uint16_t selectedAlgorithm;
 };
 
 struct CompanionBeginAddHostBindingInput {

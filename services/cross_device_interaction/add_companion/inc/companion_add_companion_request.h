@@ -54,7 +54,7 @@ private:
     CompanionInitKeyNegotiationInput BuildCompanionInitKeyNegotiationInput(const LocalDeviceProfile &profile,
         const std::vector<uint8_t> &initKeyNegotiationRequest);
     void ProcessCompanionInitKeyNegotiationOutput(const CompanionInitKeyNegotiationOutput &output,
-        const std::vector<uint8_t> &initKeyNegotiationRequest, std::vector<uint8_t> &initKeyNegotiationReply);
+        std::vector<uint8_t> &initKeyNegotiationReply);
 
     void HandleBeginAddCompanion(const Attributes &attrInput, OnMessageReply &onMessageReply);
     void HandleEndAddCompanion(const Attributes &attrInput, OnMessageReply &onMessageReply);

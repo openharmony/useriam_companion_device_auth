@@ -53,23 +53,15 @@ bool SecurityAgentImpl::Initialize()
     activeUserSubscription_ = userIdManager.SubscribeActiveUserId([this](UserId userId) {
         auto result = SetActiveUser(SetActiveUserInput { userId });
         if (result != SUCCESS) {
-            std::string faultInfo =
-                "SetActiveUser " + std::to_string(userId) + " failed, result: " + std::to_string(result);
-            ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
             IAM_LOGE("failed to update active user %{public}d", result);
         }
     });
     if (activeUserSubscription_ == nullptr) {
-        std::string faultInfo = "SubscribeActiveUserId failed";
-        ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
         return false;
     }
 
     auto result = SetActiveUser(SetActiveUserInput { userIdManager.GetActiveUserId() });
     if (result != SUCCESS) {
-        std::string faultInfo = "SetActiveUser " + std::to_string(userIdManager.GetActiveUserId()) +
-            " failed, result: " + std::to_string(result);
-        ReportSystemFault(FaultType::TA_INIT_FAILED, "TA_INIT_FAILED", faultInfo);
         return false;
     }
 
