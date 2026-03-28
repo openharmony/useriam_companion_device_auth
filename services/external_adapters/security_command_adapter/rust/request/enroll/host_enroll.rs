@@ -79,6 +79,8 @@ pub struct HostDeviceEnrollRequest {
     pub device_name: String,
     pub device_user_name: String,
     pub device_type: i32,
+    pub algorithm_list: Vec<u16>,
+    pub selected_algorithm: u16,
 }
 
 impl HostDeviceEnrollRequest {
@@ -116,6 +118,8 @@ impl HostDeviceEnrollRequest {
             device_name: String::new(),
             device_user_name: String::new(),
             device_type: 0,
+            algorithm_list: Vec::new(),
+            selected_algorithm: 0,
         })
     }
 
@@ -151,7 +155,8 @@ impl HostDeviceEnrollRequest {
     }
 
     fn encode_sec_algo_nego_request(&mut self) -> Result<Vec<u8>, ErrorCode> {
-        let key_nego_request = Box::new(SecKeyNegoRequest { algorithm_list: Vec::from([AlgoType::X25519 as u16]) });
+        let algorithm_list = Vec::from([AlgoType::X25519 as u16]);
+        let key_nego_request = Box::new(SecKeyNegoRequest { algorithm_list: algorithm_list.clone() });
         let output = match SecureProtocolId::try_from(self.secure_protocol_id).map_err(|e| p!(e))? {
             SecureProtocolId::Default => key_nego_request.encode(ProcessorType::default())?,
             _ => {
@@ -159,6 +164,7 @@ impl HostDeviceEnrollRequest {
                 return Err(ErrorCode::GeneralError);
             },
         };
+        self.algorithm_list = algorithm_list;
         Ok(output)
     }
 
@@ -195,6 +201,7 @@ impl HostDeviceEnrollRequest {
             sk,
         };
         self.key_negotial_param.push(key_nego_param);
+        self.selected_algorithm = output.algorithm;
         Ok(())
     }
 
@@ -467,6 +474,10 @@ impl Request for HostDeviceEnrollRequest {
 
         let sec_message = self.encode_sec_algo_nego_request()?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
+
+        let (algo_data, algo_len) = crate::commands::common_command::try_array_from_vec(self.algorithm_list.clone())?;
+        ffi_output.algorithm_list.data = algo_data;
+        ffi_output.algorithm_list.len = algo_len;
         Ok(())
     }
 
@@ -488,6 +499,7 @@ impl Request for HostDeviceEnrollRequest {
 
         let sec_message = self.encode_sec_binding_request()?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
+        ffi_output.selected_algorithm = self.selected_algorithm;
         Ok(())
     }
 

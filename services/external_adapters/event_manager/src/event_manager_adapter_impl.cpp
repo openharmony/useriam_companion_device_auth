@@ -110,26 +110,10 @@ constexpr char STR_FAULT_TYPE[] = "FAULT_TYPE";
 constexpr char STR_FAULT_ID[] = "FAULT_ID";
 constexpr char STR_FAULT_INFO[] = "FAULT_INFO";
 
-std::string ConvertFaultTypeToString(FaultType faultType)
+void EventManagerAdapterImpl::ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo)
 {
-    switch (faultType) {
-        case FaultType::NONE:
-            return "NONE";
-        case FaultType::TA_CRASH:
-            return "TA_CRASH";
-        case FaultType::TA_INIT_FAILED:
-            return "TA_INIT_FAILED";
-        default:
-            return "UNKNOWN";
-    }
-}
-
-void EventManagerAdapterImpl::ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo)
-{
-    std::string faultTypeStr = ConvertFaultTypeToString(faultType);
-
     int32_t ret = HiSysEventWrite(HiSysEvent::Domain::COMPANION_AUTH, "SYSTEM_FAULT", HiSysEvent::EventType::FAULT,
-        STR_FAULT_TYPE, faultTypeStr, STR_FAULT_ID, faultId, STR_FAULT_INFO, faultInfo);
+        STR_FAULT_TYPE, faultType, STR_FAULT_ID, faultId, STR_FAULT_INFO, faultInfo);
     if (ret != 0) {
         IAM_LOGE("hisysevent write failed! ret %{public}d", ret);
     }
@@ -163,7 +147,7 @@ void EventManagerAdapterImpl::ReportInteractionEvent(const InteractionEventColle
     }
 }
 
-void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo)
+void ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo)
 {
     GetEventManagerAdapter().ReportSystemFault(faultType, faultId, faultInfo);
 }

@@ -209,6 +209,11 @@ static void FuzzDecodeCompanionInitKeyNegotiationOutput(FuzzedDataProvider &fuzz
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
+    ffi.algorithmList.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL64);
+    for (uint32_t i = 0; i < ffi.algorithmList.len && i < TEST_VAL64; ++i) {
+        ffi.algorithmList.data[i] = fuzzData.ConsumeIntegral<uint16_t>();
+    }
+    ffi.selectedAlgorithm = fuzzData.ConsumeIntegral<uint16_t>();
 
     CompanionInitKeyNegotiationOutput output;
     (void)DecodeCompanionInitKeyNegotiationOutput(ffi, output);
@@ -309,6 +314,10 @@ static void FuzzDecodeHostInitKeyNegotiationOutput(FuzzedDataProvider &fuzzData)
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
+    ffi.algorithmList.len = fuzzData.ConsumeIntegralInRange<uint32_t>(0, TEST_VAL64);
+    for (uint32_t i = 0; i < ffi.algorithmList.len && i < TEST_VAL64; ++i) {
+        ffi.algorithmList.data[i] = fuzzData.ConsumeIntegral<uint16_t>();
+    }
 
     HostGetInitKeyNegotiationRequestOutput output;
     (void)DecodeHostInitKeyNegotiationOutput(ffi, output);
@@ -321,6 +330,7 @@ static void FuzzDecodeHostBeginAddCompanionOutput(FuzzedDataProvider &fuzzData)
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
+    ffi.selectedAlgorithm = fuzzData.ConsumeIntegral<uint16_t>();
 
     HostBeginAddCompanionOutput output;
     (void)DecodeHostBeginAddCompanionOutput(ffi, output);

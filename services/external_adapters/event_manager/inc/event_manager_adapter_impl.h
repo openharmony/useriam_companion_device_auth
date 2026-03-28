@@ -27,7 +27,7 @@ public:
     EventManagerAdapterImpl() = default;
     ~EventManagerAdapterImpl() override = default;
 
-    void ReportSystemFault(FaultType faultType, std::string faultId, std::string faultInfo) override;
+    void ReportSystemFault(std::string faultType, std::string faultId, std::string faultInfo) override;
     void ReportInteractionEvent(const InteractionEventCollector &eventCollector) override;
 };
 

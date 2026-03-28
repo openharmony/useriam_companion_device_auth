@@ -79,24 +79,6 @@ void EncodeCompanionDeviceKey(const DeviceKey &deviceKey, Attributes &attributes
     attributes.SetStringValue(Attributes::ATTR_CDA_SA_SRC_IDENTIFIER, deviceKey.deviceId);
     attributes.SetInt32Value(Attributes::ATTR_CDA_SA_COMPANION_USER_ID, deviceKey.deviceUserId);
 }
-
-std::string ConvertUint16VectorToString(const std::vector<uint16_t> &vec)
-{
-    if (vec.empty()) {
-        return "[]";
-    }
-
-    std::string result = "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i > 0) {
-            result += ", ";
-        }
-        result += std::to_string(vec[i]);
-    }
-
-    result += "]";
-    return result;
-}
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

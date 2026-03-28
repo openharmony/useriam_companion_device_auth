@@ -74,7 +74,7 @@ public:
     virtual void UnsubscribeCompanionDeviceStatusChange(SubscribeId subscriptionId) = 0;
 
     virtual ResultCode BeginAddCompanion(const BeginAddCompanionParams &params,
-        std::vector<uint8_t> &outAddHostBindingRequest) = 0;
+        std::vector<uint8_t> &outAddHostBindingRequest, uint16_t &selectedAlgorithm) = 0;
     virtual ResultCode EndAddCompanion(const EndAddCompanionInput &input, EndAddCompanionOutput &output) = 0;
     virtual ResultCode RemoveCompanion(TemplateId templateId) = 0;
 
