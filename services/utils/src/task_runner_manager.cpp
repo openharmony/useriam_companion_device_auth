@@ -24,7 +24,9 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
+#include "iam_para2str.h"
 
+#include "event_manager_adapter.h"
 #include "resident_task_runner.h"
 #include "temporary_task_runner.h"
 #include "xcollie_helper.h"
@@ -56,10 +58,15 @@ void TaskRunnerManager::SetRunningOnDefaultTaskRunner(bool value)
     g_runningOnDefaultTaskRunner = value;
 }
 
-void TaskRunnerManager::AssertRunningOnResidentThread() const
+void TaskRunnerManager::AssertRunningOnResidentThread(const char *callerInterface) const
 {
+    ENSURE_OR_RETURN(callerInterface != nullptr);
     if (!RunningOnDefaultTaskRunner()) {
-        IAM_LOGF("FATAL: Not running on resident thread! This violates the design principle");
+        IAM_LOGF("FATAL: %{public}s not running on resident thread!", callerInterface);
+
+        std::string faultInfo =
+            std::string(callerInterface) + ": Not running on resident thread\nCallStack:\n" + GetCallStack();
+        ReportSystemFault("THREAD_ASSERTION_FAILED", "THREAD_ASSERTION", faultInfo);
     }
 }
 

@@ -311,7 +311,7 @@ HWTEST_F(CrossDeviceCommManagerImplTest, CloseConnection_001, TestSize.Level0)
         { Capability::DELEGATE_AUTH, Capability::TOKEN_AUTH, Capability::OBTAIN_TOKEN }, channels, false);
     ASSERT_NE(manager, nullptr);
 
-    manager->CloseConnection("test-connection");
+    manager->CloseConnection("test-connection", "test");
 }
 
 HWTEST_F(CrossDeviceCommManagerImplTest, IsConnectionOpen_001, TestSize.Level0)

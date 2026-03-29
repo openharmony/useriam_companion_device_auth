@@ -44,7 +44,7 @@ public:
         (const DeviceKey &deviceKey, bool needSync, OnDeviceStatusChange &&onDeviceStatusChange), (override));
 
     MOCK_METHOD(bool, OpenConnection, (const DeviceKey &deviceKey, std::string &outConnectionName), (override));
-    MOCK_METHOD(void, CloseConnection, (const std::string &connectionName), (override));
+    MOCK_METHOD(void, CloseConnection, (const std::string &connectionName, const std::string &reason), (override));
     MOCK_METHOD(bool, IsConnectionOpen, (const std::string &connectionName), (override));
     MOCK_METHOD(ConnectionStatus, GetConnectionStatus, (const std::string &connectionName), (override));
     MOCK_METHOD(std::optional<DeviceKey>, GetLocalDeviceKeyByConnectionName, (const std::string &connectionName),

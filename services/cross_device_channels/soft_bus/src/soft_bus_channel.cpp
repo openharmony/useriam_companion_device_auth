@@ -108,11 +108,10 @@ bool SoftBusChannel::OpenConnection(const std::string &connectionName, const Phy
     return connectionManager_->OpenConnection(connectionName, physicalDeviceKey, status->networkId);
 }
 
-void SoftBusChannel::CloseConnection(const std::string &connectionName)
+void SoftBusChannel::CloseConnection(const std::string &connectionName, const std::string &reason)
 {
     ENSURE_OR_RETURN(connectionManager_ != nullptr);
-
-    connectionManager_->CloseConnection(connectionName);
+    connectionManager_->CloseConnection(connectionName, reason);
 }
 
 bool SoftBusChannel::SendMessage(const std::string &connectionName, const std::vector<uint8_t> &rawMsg)
@@ -226,7 +225,7 @@ void SoftBusChannel::OnRemoteDisconnect(const std::string &connectionName, const
     IAM_LOGI("OnRemoteDisconnect: conn=%{public}s, reason=%{public}s", connectionName.c_str(), reason.c_str());
 
     if (connectionManager_ != nullptr) {
-        connectionManager_->CloseConnection(connectionName);
+        connectionManager_->CloseConnection(connectionName, reason);
     }
 }
 } // namespace CompanionDeviceAuth

@@ -244,7 +244,7 @@ HWTEST_F(SoftBusConnectionManagerTest, CloseConnection_001, TestSize.Level0)
     auto manager = SoftBusConnectionManager::Create();
     ASSERT_NE(manager, nullptr);
 
-    manager->CloseConnection("non-existent-connection");
+    manager->CloseConnection("non-existent-connection", "test");
 }
 
 HWTEST_F(SoftBusConnectionManagerTest, CloseConnection_002, TestSize.Level0)
@@ -262,7 +262,7 @@ HWTEST_F(SoftBusConnectionManagerTest, CloseConnection_002, TestSize.Level0)
         std::make_shared<SoftbusConnection>(DEFAULT_TEST_SOCKET_ID, DEFAULT_TEST_CONNECTION_NAME, key, manager);
     manager->connections_.push_back(connection);
 
-    manager->CloseConnection("test-connection");
+    manager->CloseConnection("test-connection", "test");
 
     EXPECT_TRUE(manager->connections_.empty());
 }

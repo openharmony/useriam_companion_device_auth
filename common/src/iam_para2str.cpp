@@ -16,6 +16,7 @@
 #include "iam_para2str.h"
 
 #include <algorithm>
+#include <execinfo.h>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -23,6 +24,7 @@
 #include <vector>
 
 #include "iam_logger.h"
+#include "scope_guard.h"
 
 namespace OHOS {
 namespace UserIam {
@@ -130,6 +132,31 @@ void PrintUint8ArrayStr(const char *prefix, const std::vector<uint8_t> &val)
         std::string chunkStr(chunks[i]);
         IAM_LOGI("%{public}s[part %{public}zu]%{public}s", prefix, i, chunkStr.c_str());
     }
+}
+
+std::string GetCallStack()
+{
+    constexpr int maxBacktraceDepth = 10;
+    void *buffer[maxBacktraceDepth];
+    int size = backtrace(buffer, maxBacktraceDepth);
+    char **symbols = backtrace_symbols(buffer, size);
+    ScopeGuard guard([symbols]() {
+        if (symbols != nullptr) {
+            free(symbols);
+        }
+    });
+    std::string result;
+    for (int i = 0; i < size; ++i) {
+        if (i > 0) {
+            result += ";";
+        }
+        if (symbols != nullptr) {
+            result += symbols[i];
+        } else {
+            result += std::to_string(reinterpret_cast<uintptr_t>(buffer[i]));
+        }
+    }
+    return result;
 }
 
 } // namespace CompanionDeviceAuth
