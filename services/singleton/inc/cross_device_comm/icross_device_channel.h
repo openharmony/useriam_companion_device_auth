@@ -40,7 +40,7 @@ public:
     virtual bool RequiresDisconnectNotification() const = 0;
 
     virtual bool OpenConnection(const std::string &connectionName, const PhysicalDeviceKey &physicalDeviceKey) = 0;
-    virtual void CloseConnection(const std::string &connectionName) = 0;
+    virtual void CloseConnection(const std::string &connectionName, const std::string &reason) = 0;
     virtual void OnRemoteDisconnect(const std::string &connectionName, const std::string &reason) = 0;
     virtual bool SendMessage(const std::string &connectionName, const std::vector<uint8_t> &rawMsg) = 0;
 

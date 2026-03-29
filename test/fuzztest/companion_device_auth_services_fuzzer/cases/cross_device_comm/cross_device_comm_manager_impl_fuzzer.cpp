@@ -75,7 +75,7 @@ static void FuzzOpenConnection(ICrossDeviceCommManager &manager, FuzzedDataProvi
 static void FuzzCloseConnection(ICrossDeviceCommManager &manager, FuzzedDataProvider &fuzzData)
 {
     std::string connectionName = GenerateFuzzString(fuzzData, SIZE_64);
-    manager.CloseConnection(connectionName);
+    manager.CloseConnection(connectionName, "fuzz test");
 }
 
 static void FuzzIsConnectionOpen(ICrossDeviceCommManager &manager, FuzzedDataProvider &fuzzData)

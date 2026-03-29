@@ -37,7 +37,7 @@ public:
     bool RequiresDisconnectNotification() const override;
 
     bool OpenConnection(const std::string &connectionName, const PhysicalDeviceKey &physicalDeviceKey) override;
-    void CloseConnection(const std::string &connectionName) override;
+    void CloseConnection(const std::string &connectionName, const std::string &reason) override;
     void OnRemoteDisconnect(const std::string &connectionName, const std::string &reason) override;
     bool SendMessage(const std::string &connectionName, const std::vector<uint8_t> &rawMsg) override;
 

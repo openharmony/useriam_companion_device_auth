@@ -21,6 +21,7 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
+#include "task_runner_manager.h"
 
 #include "soft_bus_adapter_impl.h"
 
@@ -56,6 +57,7 @@ bool SoftBusChannelAdapterManager::CreateAndRegisterAdapters()
 
 IDeviceManagerAdapter &SoftBusChannelAdapterManager::GetDeviceManagerAdapter()
 {
+    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("DeviceManager");
     if (deviceManagerAdapter_ == nullptr) {
         IAM_LOGE("DeviceManager adapter is not initialized");
         AbortIfAdapterUninitialized("DeviceManager");
@@ -70,6 +72,7 @@ void SoftBusChannelAdapterManager::SetDeviceManagerAdapter(std::shared_ptr<IDevi
 
 ISoftBusAdapter &SoftBusChannelAdapterManager::GetSoftBusAdapter()
 {
+    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SoftBus");
     if (softBusAdapter_ == nullptr) {
         IAM_LOGE("SoftBus adapter is not initialized");
         AbortIfAdapterUninitialized("SoftBus");

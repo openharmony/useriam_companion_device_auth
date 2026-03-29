@@ -66,7 +66,7 @@ public:
     std::optional<SteadyTimeMs> GetManageSubscribeTime() const override;
 
     bool OpenConnection(const DeviceKey &deviceKey, std::string &outConnectionName) override;
-    void CloseConnection(const std::string &connectionName) override;
+    void CloseConnection(const std::string &connectionName, const std::string &reason) override;
     bool IsConnectionOpen(const std::string &connectionName) override;
     ConnectionStatus GetConnectionStatus(const std::string &connectionName) override;
     std::optional<DeviceKey> GetLocalDeviceKeyByConnectionName(const std::string &connectionName) override;
