@@ -153,8 +153,9 @@ public:
         return true;
     }
 
-    void CloseConnection(const std::string &connectionName) override
+    void CloseConnection(const std::string &connectionName, const std::string &reason) override
     {
+        (void)reason;
         closedConnections_.push_back(connectionName);
     }
 

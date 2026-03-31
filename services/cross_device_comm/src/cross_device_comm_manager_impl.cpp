@@ -170,10 +170,10 @@ bool CrossDeviceCommManagerImpl::OpenConnection(const DeviceKey &deviceKey, std:
     return connectionMgr_->OpenConnection(physicalDeviceKey, channelId.value(), outConnectionName);
 }
 
-void CrossDeviceCommManagerImpl::CloseConnection(const std::string &connectionName)
+void CrossDeviceCommManagerImpl::CloseConnection(const std::string &connectionName, const std::string &reason)
 {
     ENSURE_OR_RETURN(connectionMgr_ != nullptr);
-    connectionMgr_->CloseConnection(connectionName);
+    connectionMgr_->CloseConnection(connectionName, reason);
 }
 
 bool CrossDeviceCommManagerImpl::IsConnectionOpen(const std::string &connectionName)

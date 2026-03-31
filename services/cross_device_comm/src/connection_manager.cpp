@@ -197,7 +197,7 @@ void ConnectionManager::CloseConnection(const std::string &connectionName, const
     if (connection.isInbound) {
         channel->OnRemoteDisconnect(connectionName, reason);
     } else {
-        channel->CloseConnection(connectionName);
+        channel->CloseConnection(connectionName, reason);
     }
 
     // Erase the connection before checking idle monitoring status

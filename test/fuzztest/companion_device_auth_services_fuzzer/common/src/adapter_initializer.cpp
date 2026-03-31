@@ -25,7 +25,6 @@
 #include "ipc_object_stub.h"
 #include "system_ability_status_change_stub.h"
 
-#include "access_token_kit_adapter.h"
 #include "adapter_manager.h"
 #include "driver_manager_adapter.h"
 #include "event_manager_adapter.h"
@@ -103,35 +102,6 @@ public:
     void ShutdownSocket(int32_t socketId) override
     {
         (void)socketId;
-    }
-
-private:
-    FuzzedDataProvider &fuzzData_ [[maybe_unused]];
-};
-
-class MockAccessTokenKitAdapter : public IAccessTokenKitAdapter {
-public:
-    explicit MockAccessTokenKitAdapter(FuzzedDataProvider &fuzzData) : fuzzData_(fuzzData)
-    {
-    }
-
-    bool CheckPermission(IPCObjectStub &stub, const std::string &permissionName) override
-    {
-        (void)stub;
-        (void)permissionName;
-        return fuzzData_.ConsumeBool();
-    }
-
-    bool CheckSystemPermission(IPCObjectStub &stub) override
-    {
-        (void)stub;
-        return fuzzData_.ConsumeBool();
-    }
-
-    uint32_t GetAccessTokenId(IPCObjectStub &stub) override
-    {
-        (void)stub;
-        return fuzzData_.ConsumeIntegral<uint32_t>();
     }
 
 private:
@@ -419,9 +389,6 @@ bool InitializeAdapterManager(FuzzedDataProvider &fuzzData)
 
     auto deviceMgrAdapter = std::make_shared<MockDeviceManagerAdapter>(fuzzData);
     SoftBusChannelAdapterManager::GetInstance().SetDeviceManagerAdapter(deviceMgrAdapter);
-
-    auto accessTokenAdapter = std::make_shared<MockAccessTokenKitAdapter>(fuzzData);
-    adapterMgr.SetAccessTokenKitAdapter(accessTokenAdapter);
 
     auto userAuthAdapter = std::make_shared<MockUserAuthAdapter>(fuzzData);
     adapterMgr.SetUserAuthAdapter(userAuthAdapter);

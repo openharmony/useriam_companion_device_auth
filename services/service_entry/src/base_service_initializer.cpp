@@ -21,7 +21,6 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
-#include "access_token_kit_adapter_impl.h"
 #include "adapter_manager.h"
 #include "companion_manager_impl.h"
 #include "cross_device_comm_manager_impl.h"
@@ -146,15 +145,6 @@ bool BaseServiceInitializer::InitializeTimeKeeper()
     auto timeKeeper = TimeKeeperImpl::Create();
     ENSURE_OR_RETURN_VAL(timeKeeper != nullptr, false);
     adapterManager.SetTimeKeeper(timeKeeper);
-    return true;
-}
-
-bool BaseServiceInitializer::InitializeAccessTokenAdapter()
-{
-    auto &adapterManager = AdapterManager::GetInstance();
-    auto accessTokenKitAdapter = std::make_shared<AccessTokenKitAdapterImpl>();
-    ENSURE_OR_RETURN_VAL(accessTokenKitAdapter != nullptr, false);
-    adapterManager.SetAccessTokenKitAdapter(accessTokenKitAdapter);
     return true;
 }
 
@@ -332,7 +322,6 @@ bool BaseServiceInitializer::InitializeFwkComm()
 // Compile-time defined initialization table (zero runtime overhead)
 const BaseServiceInitializer::BasicInitStep BaseServiceInitializer::BASIC_INIT_TABLE[] = {
     { &BaseServiceInitializer::InitializeTimeKeeper, "InitializeTimeKeeper" },
-    { &BaseServiceInitializer::InitializeAccessTokenAdapter, "InitializeAccessTokenAdapter" },
     { &BaseServiceInitializer::InitializeEventManagerAdapter, "InitializeEventManagerAdapter" },
     { &BaseServiceInitializer::InitializeSaManagerAdapter, "InitializeSaManagerAdapter" },
     { &BaseServiceInitializer::InitializeSecurityCommandAdapter, "InitializeSecurityCommandAdapter" },

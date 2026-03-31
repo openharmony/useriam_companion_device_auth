@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "access_token_kit_adapter_impl.h"
+#include "access_token_kit.h"
 
 #include "accesstoken_kit.h"
 #include "ipc_object_stub.h"
@@ -31,13 +31,9 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-using Security::AccessToken::AccessTokenKit;
-using Security::AccessToken::ATokenTypeEnum;
-using Security::AccessToken::RET_SUCCESS;
-using Security::AccessToken::TOKEN_HAP;
-using Security::AccessToken::TokenIdKit;
+using namespace Security::AccessToken;
 
-bool AccessTokenKitAdapterImpl::CheckPermission(IPCObjectStub &stub, const std::string &permissionName)
+bool AccessTokenUtil::CheckPermission(IPCObjectStub &stub, const std::string &permissionName)
 {
     if (permissionName.empty()) {
         IAM_LOGE("Permission name is empty");
@@ -46,19 +42,17 @@ bool AccessTokenKitAdapterImpl::CheckPermission(IPCObjectStub &stub, const std::
 
     uint32_t callingTokenId = stub.GetCallingTokenID();
 
-    using namespace Security::AccessToken;
-    XCollieHelper xcollie("AccessTokenKitAdapterImpl-CheckPermission", API_CALL_TIMEOUT);
+    XCollieHelper xcollie("AccessTokenUtil-CheckPermission", API_CALL_TIMEOUT);
     if (AccessTokenKit::VerifyAccessToken(callingTokenId, permissionName) != RET_SUCCESS) {
         return false;
     }
     return true;
 }
 
-bool AccessTokenKitAdapterImpl::CheckSystemPermission(IPCObjectStub &stub)
+bool AccessTokenUtil::CheckSystemPermission(IPCObjectStub &stub)
 {
     uint32_t callingTokenId = stub.GetCallingTokenID();
-    using namespace Security::AccessToken;
-    XCollieHelper xcollie("AccessTokenKitAdapterImpl-CheckSystemPermission", API_CALL_TIMEOUT);
+    XCollieHelper xcollie("AccessTokenUtil-CheckSystemPermission", API_CALL_TIMEOUT);
     uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
     bool checkRet = TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
     ATokenTypeEnum callingType = AccessTokenKit::GetTokenTypeFlag(callingTokenId);
@@ -69,7 +63,7 @@ bool AccessTokenKitAdapterImpl::CheckSystemPermission(IPCObjectStub &stub)
     return false;
 }
 
-uint32_t AccessTokenKitAdapterImpl::GetAccessTokenId(IPCObjectStub &stub)
+uint32_t AccessTokenUtil::GetAccessTokenId(IPCObjectStub &stub)
 {
     uint32_t tokenId = stub.GetCallingTokenID();
     IAM_LOGD("get caller tokenId: %{public}u", tokenId);

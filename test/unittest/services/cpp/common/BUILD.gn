@@ -30,34 +30,73 @@ config("companion_device_auth_service_unittest_common_config") {
   include_dirs += companion_device_auth_fake_include_dirs
 }
 
-# Static library for test common utilities (mock guard, mock classes)
-ohos_static_library("companion_device_auth_service_unittest_common") {
-  sanitize = companion_device_auth_unit_test_sanitize
+# Common sources shared by both inner and outer libraries
+_companion_device_auth_service_unittest_common_sources =
+    companion_device_auth_service_sources_for_test
+_companion_device_auth_service_unittest_common_sources +=
+    companion_device_auth_fake_sources
+_companion_device_auth_service_unittest_common_sources +=
+    [ "src/mock_guard.cpp" ]
+
+# Common public configs shared by both libraries
+_companion_device_auth_service_unittest_common_public_configs = [
+  ":companion_device_auth_service_unittest_common_config",
+  "${companion_device_auth_path}/services:service_config",
+  "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
+  "${companion_device_auth_path}/common:companion_device_auth_common_config",
+]
+
+# Common deps shared by both libraries
+_companion_device_auth_service_unittest_common_deps =
+    companion_device_auth_service_deps
+_companion_device_auth_service_unittest_common_deps +=
+    [ "${companion_device_auth_path}/common:companion_device_auth_common" ]
+
+# Common external deps shared by both libraries
+_companion_device_auth_service_unittest_common_external_deps =
+    companion_device_auth_service_external_deps
+_companion_device_auth_service_unittest_common_external_deps += [
+  "googletest:gmock",
+  "googletest:gtest",
+]
+
+# Inner library with CFI enabled, for internal services unittest
+ohos_static_library("companion_device_auth_service_unittest_common_inner") {
+  sanitize = companion_device_auth_default_sanitize
   branch_protector_ret = "pac_ret"
   testonly = true
 
-  sources = companion_device_auth_service_sources_for_test
-  sources += companion_device_auth_fake_sources
-  sources += [ "src/mock_guard.cpp" ]
+  sources = _companion_device_auth_service_unittest_common_sources
 
   cflags = [ "-DSTATIC_LIBRARY" ]
 
-  public_configs = [
-    ":companion_device_auth_service_unittest_common_config",
-    "${companion_device_auth_path}/services:service_config",
-    "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
-    "${companion_device_auth_path}/common:companion_device_auth_common_config",
-  ]
+  public_configs = _companion_device_auth_service_unittest_common_public_configs
 
-  deps = companion_device_auth_service_deps
-  deps +=
-      [ "${companion_device_auth_path}/common:companion_device_auth_common" ]
+  deps = _companion_device_auth_service_unittest_common_deps
 
-  external_deps = companion_device_auth_service_external_deps
-  external_deps += [
-    "googletest:gmock",
-    "googletest:gtest",
-  ]
+  external_deps = _companion_device_auth_service_unittest_common_external_deps
+
+  remove_configs = [ "//build/config/compiler:no_exceptions" ]
+
+  subsystem_name = companion_device_auth_subsystem_name
+  part_name = companion_device_auth_part_name
+}
+
+# Outer library without CFI, for external use (e.g. fuzz tests)
+ohos_static_library("companion_device_auth_service_unittest_common") {
+  sanitize = companion_device_auth_no_cfi_sanitize
+  branch_protector_ret = "pac_ret"
+  testonly = true
+
+  sources = _companion_device_auth_service_unittest_common_sources
+
+  cflags = [ "-DSTATIC_LIBRARY" ]
+
+  public_configs = _companion_device_auth_service_unittest_common_public_configs
+
+  deps = _companion_device_auth_service_unittest_common_deps
+
+  external_deps = _companion_device_auth_service_unittest_common_external_deps
 
   remove_configs = [ "//build/config/compiler:no_exceptions" ]
 

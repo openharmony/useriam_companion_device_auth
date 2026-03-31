@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,27 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef COMPANION_DEVICE_AUTH_ACCESS_TOKEN_KIT_ADAPTER_IMPL_H
-#define COMPANION_DEVICE_AUTH_ACCESS_TOKEN_KIT_ADAPTER_IMPL_H
+#ifndef COMPANION_DEVICE_AUTH_ACCESS_TOKEN_UTIL_H
+#define COMPANION_DEVICE_AUTH_ACCESS_TOKEN_UTIL_H
 
-#include "access_token_kit_adapter.h"
+#include <string>
+
+#include "ipc_object_stub.h"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-class AccessTokenKitAdapterImpl : public IAccessTokenKitAdapter {
+class AccessTokenUtil {
 public:
-    AccessTokenKitAdapterImpl() = default;
-    ~AccessTokenKitAdapterImpl() override = default;
-
-    bool CheckPermission(IPCObjectStub &stub, const std::string &permissionName) override;
-    bool CheckSystemPermission(IPCObjectStub &stub) override;
-    uint32_t GetAccessTokenId(IPCObjectStub &stub) override;
+    static bool CheckPermission(IPCObjectStub &stub, const std::string &permissionName);
+    static bool CheckSystemPermission(IPCObjectStub &stub);
+    static uint32_t GetAccessTokenId(IPCObjectStub &stub);
 };
 
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
 
-#endif // COMPANION_DEVICE_AUTH_ACCESS_TOKEN_KIT_ADAPTER_IMPL_H
+#endif // COMPANION_DEVICE_AUTH_ACCESS_TOKEN_UTIL_H

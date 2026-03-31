@@ -140,7 +140,7 @@ void OutboundRequest::CloseConnection()
     }
 
     IAM_LOGI("%{public}s closing connection %{public}s", GetDescription(), connectionName_.c_str());
-    GetCrossDeviceCommManager().CloseConnection(connectionName_);
+    GetCrossDeviceCommManager().CloseConnection(connectionName_, "request_completed");
     connectionName_.clear();
 }
 

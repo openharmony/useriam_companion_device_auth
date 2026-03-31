@@ -21,7 +21,6 @@
 #include "nocopyable.h"
 
 // External adapters
-#include "access_token_kit_adapter.h"
 #include "driver_manager_adapter.h"
 #include "event_manager_adapter.h"
 #include "idm_adapter.h"
@@ -43,9 +42,6 @@ public:
 
     IUserAuthAdapter &GetUserAuthAdapter();
     void SetUserAuthAdapter(std::shared_ptr<IUserAuthAdapter> adapter);
-
-    IAccessTokenKitAdapter &GetAccessTokenKitAdapter();
-    void SetAccessTokenKitAdapter(std::shared_ptr<IAccessTokenKitAdapter> adapter);
 
     IDriverManagerAdapter &GetDriverManagerAdapter();
     void SetDriverManagerAdapter(std::shared_ptr<IDriverManagerAdapter> adapter);
@@ -82,7 +78,6 @@ private:
     void AbortIfAdapterUninitialized(const char *adapterName);
 
     std::shared_ptr<IUserAuthAdapter> userAuthAdapter_;
-    std::shared_ptr<IAccessTokenKitAdapter> accessTokenKitAdapter_;
     std::shared_ptr<IDriverManagerAdapter> driverManagerAdapter_;
     std::shared_ptr<IIdmAdapter> idmAdapter_;
     std::shared_ptr<ISaManagerAdapter> saManagerAdapter_;
@@ -96,11 +91,6 @@ private:
 inline IUserAuthAdapter &GetUserAuthAdapter()
 {
     return AdapterManager::GetInstance().GetUserAuthAdapter();
-}
-
-inline IAccessTokenKitAdapter &GetAccessTokenKitAdapter()
-{
-    return AdapterManager::GetInstance().GetAccessTokenKitAdapter();
 }
 
 inline IDriverManagerAdapter &GetDriverManagerAdapter()

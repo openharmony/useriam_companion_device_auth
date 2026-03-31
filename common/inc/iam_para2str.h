@@ -35,6 +35,7 @@ std::string GetPointerNullStateString(void *p);
 const char *GetBoolStr(bool val);
 std::string GetUint8ArrayStr(const std::vector<uint8_t> &val);
 void PrintUint8ArrayStr(const char *prefix, const std::vector<uint8_t> &val);
+std::string GetCallStack();
 
 #define GET_MASKED_NUM_STRING(val) GetMaskedString(static_cast<uint16_t>(val))
 #define GET_MASKED_NUM_CSTR(val) GET_MASKED_NUM_STRING(val).c_str()
