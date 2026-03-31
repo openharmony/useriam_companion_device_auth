@@ -186,9 +186,6 @@ void HostSyncDeviceStatusRequest::HandleSyncDeviceStatusReply(const Attributes &
         ProtocolIdConverter::ToUnderlyingVec(syncDeviceStatus.protocolIdList));
     eventCollector_.AppendExtraInfo("secureProtocolId", static_cast<uint16_t>(syncDeviceStatus.secureProtocolId));
 
-    if (cancelCompanionCheckGuard_ != nullptr) {
-        cancelCompanionCheckGuard_->Cancel();
-    }
     errorGuard.Cancel();
     CompleteWithSuccess(syncDeviceStatus);
 }
@@ -225,6 +222,9 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
             (void)GetCompanionManager().UpdateCompanionStatus(companionStatus->templateId, companionDeviceName_,
                 reply.deviceUserName);
         }
+    }
+    if (cancelCompanionCheckGuard_ != nullptr) {
+        cancelCompanionCheckGuard_->Cancel();
     }
     return true;
 }
