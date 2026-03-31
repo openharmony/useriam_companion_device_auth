@@ -78,7 +78,7 @@ static void FuzzOp5(std::shared_ptr<SoftBusChannel> &channel, FuzzedDataProvider
     (void)fuzzData;
     // Test CloseConnection
     std::string connectionName = GenerateFuzzString(fuzzData, TEST_VAL64);
-    channel->CloseConnection(connectionName);
+    channel->CloseConnection(connectionName, "fuzz test");
 }
 
 static void FuzzOp6(std::shared_ptr<SoftBusChannel> &channel, FuzzedDataProvider &fuzzData)

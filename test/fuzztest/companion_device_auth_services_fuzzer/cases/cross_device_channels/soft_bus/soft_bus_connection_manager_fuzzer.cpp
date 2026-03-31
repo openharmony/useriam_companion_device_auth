@@ -58,7 +58,7 @@ static void FuzzOp2(std::shared_ptr<SoftBusConnectionManager> &manager, FuzzedDa
     (void)fuzzData;
     // Test CloseConnection
     std::string connectionName = GenerateFuzzString(fuzzData, TEST_VAL64);
-    manager->CloseConnection(connectionName);
+    manager->CloseConnection(connectionName, "fuzz test");
 }
 
 static void FuzzOp3(std::shared_ptr<SoftBusConnectionManager> &manager, FuzzedDataProvider &fuzzData)
@@ -185,7 +185,7 @@ static void FuzzOp14(std::shared_ptr<SoftBusConnectionManager> &manager, FuzzedD
     // CloseAllSockets is private, but can be triggered through destructor
     // by calling CloseConnection on all possible connections first
     std::string connectionName = GenerateFuzzString(fuzzData, TEST_VAL64);
-    manager->CloseConnection(connectionName);
+    manager->CloseConnection(connectionName, reason);
 }
 
 static const SoftBusConnectionManagerFuzzFunction g_fuzzFuncs[] = { FuzzOp0, FuzzOp1, FuzzOp2, FuzzOp3, FuzzOp4,

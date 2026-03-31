@@ -53,7 +53,7 @@ public:
     virtual std::optional<SteadyTimeMs> GetManageSubscribeTime() const = 0;
 
     virtual bool OpenConnection(const DeviceKey &deviceKey, std::string &outConnectionName) = 0;
-    virtual void CloseConnection(const std::string &connectionName) = 0;
+    virtual void CloseConnection(const std::string &connectionName, const std::string &reason) = 0;
     virtual bool IsConnectionOpen(const std::string &connectionName) = 0;
     virtual ConnectionStatus GetConnectionStatus(const std::string &connectionName) = 0;
     virtual std::optional<DeviceKey> GetLocalDeviceKeyByConnectionName(const std::string &connectionName) = 0;

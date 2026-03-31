@@ -72,9 +72,10 @@ public:
         return fuzzData_.ConsumeBool();
     }
 
-    void CloseConnection(const std::string &connectionName) override
+    void CloseConnection(const std::string &connectionName, const std::string &reason) override
     {
         (void)connectionName;
+        (void)reason;
     }
 
     bool SendMessage(const std::string &connectionName, const std::vector<uint8_t> &rawMsg) override

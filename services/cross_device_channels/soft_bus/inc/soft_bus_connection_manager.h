@@ -36,7 +36,7 @@ public:
     bool Start();
     bool OpenConnection(const std::string &connectionName, const PhysicalDeviceKey &physicalDeviceKey,
         const std::string &networkId);
-    void CloseConnection(const std::string &connectionName);
+    void CloseConnection(const std::string &connectionName, const std::string &reason);
     bool SendMessage(const std::string &connectionName, const std::vector<uint8_t> &rawMsg);
     void HandleBind(int32_t socketId, const std::string &peerNetworkId) override;
     void HandleBytes(int32_t socketId, const void *data, uint32_t dataLen) override;

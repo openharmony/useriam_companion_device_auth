@@ -48,7 +48,6 @@ protected:
     // Virtual initialization methods - can be overridden by derived classes
     virtual bool Initialize();
     virtual bool InitializeTimeKeeper();
-    virtual bool InitializeAccessTokenAdapter();
     virtual bool InitializeEventManagerAdapter();
     virtual bool InitializeSaManagerAdapter();
     virtual bool InitializeSecurityCommandAdapter();

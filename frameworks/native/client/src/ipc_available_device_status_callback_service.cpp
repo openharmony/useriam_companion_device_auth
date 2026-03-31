@@ -44,19 +44,18 @@ int32_t IpcAvailableDeviceStatusCallbackService::OnAvailableDeviceStatusChange(
 
     std::vector<ClientDeviceStatus> clientDeviceStatusList;
     for (const auto &deviceStatus : deviceStatusList) {
-        IAM_LOGI("deviceIdType:%{public}d, deviceId:%{public}s, deviceUserId:%{public}d",
+        IAM_LOGI("key(idType:%{public}d, id:%{public}s, userId:%{public}d), "
+                 "userName:%{public}s, modelInfo:%{public}s, name:%{public}s, isOnline:%{public}d, "
+                 "supportedBusinessIds:%{public}s",
             deviceStatus.deviceKey.deviceIdType, GetMaskedString(deviceStatus.deviceKey.deviceId).c_str(),
-            deviceStatus.deviceKey.deviceUserId);
+            deviceStatus.deviceKey.deviceUserId, GET_MASKED_STR_CSTR(deviceStatus.deviceUserName),
+            GET_MASKED_STR_CSTR(deviceStatus.deviceModelInfo), GET_MASKED_STR_CSTR(deviceStatus.deviceName),
+            deviceStatus.isOnline, GetVectorString(deviceStatus.supportedBusinessIds).c_str());
         ClientDeviceKey clientDeviceKey;
         clientDeviceKey.deviceIdType = deviceStatus.deviceKey.deviceIdType;
         clientDeviceKey.deviceId = deviceStatus.deviceKey.deviceId;
         clientDeviceKey.deviceUserId = deviceStatus.deviceKey.deviceUserId;
 
-        IAM_LOGI("deviceUserName:%{public}s, deviceModelInfo:%{public}s, deviceName:%{public}s, isOnline:%{public}d, "
-                 "supportedBusinessIds size:%{public}zu",
-            GET_MASKED_STR_CSTR(deviceStatus.deviceUserName), GET_MASKED_STR_CSTR(deviceStatus.deviceModelInfo),
-            GET_MASKED_STR_CSTR(deviceStatus.deviceName), deviceStatus.isOnline,
-            deviceStatus.supportedBusinessIds.size());
         ClientDeviceStatus clientDeviceStatus;
         clientDeviceStatus.deviceKey = clientDeviceKey;
         clientDeviceStatus.deviceUserName = deviceStatus.deviceUserName;

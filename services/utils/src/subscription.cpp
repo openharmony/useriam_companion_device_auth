@@ -16,6 +16,7 @@
 #include "subscription.h"
 
 #include "iam_logger.h"
+#include "task_runner_manager.h"
 
 #define LOG_TAG "CDA_SA"
 
@@ -34,9 +35,13 @@ Subscription::~Subscription()
 
 void Subscription::Cancel()
 {
-    if (cleanup_) {
-        cleanup_();
-        cleanup_ = nullptr;
+    auto cleanup = std::move(cleanup_);
+    if (cleanup) {
+        if (TaskRunnerManager::GetInstance().RunningOnDefaultTaskRunner()) {
+            cleanup();
+        } else {
+            TaskRunnerManager::GetInstance().PostTaskOnResident([cleanup = std::move(cleanup)]() { cleanup(); });
+        }
     }
 }
 

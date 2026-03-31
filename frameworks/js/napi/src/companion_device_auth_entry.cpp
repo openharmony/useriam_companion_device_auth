@@ -646,8 +646,8 @@ napi_value UnregisterDeviceSelectCallback(napi_env env, napi_callback_info info)
     return UnregisterDeviceSelectCallbackInner(env, info);
 }
 
-napi_value UpdateEnabledBusinessIdsInner(napi_env env, napi_callback_info info,
-    napi_value voidPromise, napi_deferred promiseDeferred)
+napi_value UpdateEnabledBusinessIdsInner(napi_env env, napi_callback_info info, napi_value voidPromise,
+    napi_deferred promiseDeferred)
 {
     int32_t errorCode = ResultCode::GENERAL_ERROR;
     ScopeGuard guard([&]() {

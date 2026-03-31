@@ -42,9 +42,10 @@ public:
     void SetRunningOnDefaultTaskRunner(bool value);
 
     // Assert that the current thread is the resident task runner thread.
-    // If not, logs a fatal error and aborts the process.
+    // If not, logs a fatal error, reports system fault and aborts the process.
     // This is a design verification check - all business logic must run on the resident thread.
-    void AssertRunningOnResidentThread() const;
+    // @param callerInterface The interface name of the caller, used for fault reporting.
+    void AssertRunningOnResidentThread(const char *callerInterface) const;
 
     virtual bool CreateTaskRunner(const std::string &name);
     virtual void DestroyTaskRunner(const std::string &name);

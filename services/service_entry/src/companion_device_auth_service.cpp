@@ -32,7 +32,7 @@
 #include "iam_logger.h"
 #include "iam_para2str.h"
 
-#include "access_token_kit_adapter_impl.h"
+#include "access_token_kit.h"
 #include "adapter_manager.h"
 #include "base_service_core.h"
 #include "base_service_initializer.h"
@@ -103,12 +103,12 @@ void CompanionDeviceAuthService::SetWeakPtr(const wptr<IRemoteObject> &weakSelf)
 
 bool CompanionDeviceAuthService::CheckPermission(int32_t &companionDeviceAuthResult)
 {
-    if (!GetAccessTokenKitAdapter().CheckPermission(*this, USE_USER_IDM_PERMISSION)) {
+    if (!AccessTokenUtil::CheckPermission(*this, USE_USER_IDM_PERMISSION)) {
         IAM_LOGE("check use user idm permission failed");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::CHECK_PERMISSION_FAILED);
         return false;
     }
-    if (!GetAccessTokenKitAdapter().CheckSystemPermission(*this)) {
+    if (!AccessTokenUtil::CheckSystemPermission(*this)) {
         IAM_LOGE("check is system app permission failed");
         companionDeviceAuthResult = static_cast<int32_t>(ResultCode::CHECK_SYSTEM_PERMISSION_FAILED);
         return false;
@@ -402,7 +402,7 @@ ErrCode CompanionDeviceAuthService::RegisterDeviceSelectCallback(
         core = core_;
     }
     ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
-    uint32_t tokenId = GetAccessTokenKitAdapter().GetAccessTokenId(*this);
+    uint32_t tokenId = AccessTokenUtil::GetAccessTokenId(*this);
     ENSURE_OR_RETURN_VAL(tokenId != 0, ResultCode::GENERAL_ERROR);
     auto resultOpt = RunOnResidentSync([core, deviceSelectCallback, tokenId]() {
         return core->RegisterDeviceSelectCallback(tokenId, deviceSelectCallback);
@@ -429,7 +429,7 @@ ErrCode CompanionDeviceAuthService::UnregisterDeviceSelectCallback(int32_t &comp
         core = core_;
     }
     ENSURE_OR_RETURN_VAL(core != nullptr, ERR_INVALID_VALUE);
-    uint32_t tokenId = GetAccessTokenKitAdapter().GetAccessTokenId(*this);
+    uint32_t tokenId = AccessTokenUtil::GetAccessTokenId(*this);
     ENSURE_OR_RETURN_VAL(tokenId != 0, ResultCode::GENERAL_ERROR);
     auto resultOpt = RunOnResidentSync([core, tokenId]() { return core->UnregisterDeviceSelectCallback(tokenId); });
     if (!resultOpt.has_value()) {

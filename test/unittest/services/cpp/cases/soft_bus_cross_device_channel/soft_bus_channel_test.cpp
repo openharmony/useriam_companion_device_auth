@@ -422,7 +422,7 @@ HWTEST_F(SoftBusChannelTest, CloseConnection_001, TestSize.Level0)
     auto channel = SoftBusChannel::Create();
     ASSERT_NE(channel, nullptr);
 
-    channel->CloseConnection("test-connection");
+    channel->CloseConnection("test-connection", "test");
 }
 
 HWTEST_F(SoftBusChannelTest, CloseConnection_002, TestSize.Level0)
@@ -432,7 +432,7 @@ HWTEST_F(SoftBusChannelTest, CloseConnection_002, TestSize.Level0)
 
     channel->connectionManager_ = nullptr;
 
-    channel->CloseConnection("test-connection");
+    channel->CloseConnection("test-connection", "test");
 }
 
 HWTEST_F(SoftBusChannelTest, CheckOperationIntent_001, TestSize.Level0)

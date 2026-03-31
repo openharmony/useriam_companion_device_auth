@@ -96,8 +96,9 @@ void TaskRunnerManager::PostTaskOnTemporary(const std::string &name, std::functi
     (*g_pendingTasks)[taskId] = std::move(task);
 }
 
-void TaskRunnerManager::AssertRunningOnResidentThread() const
+void TaskRunnerManager::AssertRunningOnResidentThread(const char *callerInterface) const
 {
+    (void)callerInterface;
     return;
 }
 

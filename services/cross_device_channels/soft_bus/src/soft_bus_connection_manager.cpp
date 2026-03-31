@@ -144,7 +144,7 @@ bool SoftBusConnectionManager::OpenConnection(const std::string &connectionName,
     return true;
 }
 
-void SoftBusConnectionManager::CloseConnection(const std::string &connectionName)
+void SoftBusConnectionManager::CloseConnection(const std::string &connectionName, const std::string &reason)
 {
     auto entry = FindSocketByConnectionName(connectionName);
     if (entry == nullptr) {
@@ -152,7 +152,7 @@ void SoftBusConnectionManager::CloseConnection(const std::string &connectionName
         return;
     }
 
-    RemoveSocket(entry->GetSocketId(), "active-close");
+    RemoveSocket(entry->GetSocketId(), reason);
 
     IAM_LOGI("Connection closed: %{public}s", connectionName.c_str());
 }
@@ -414,7 +414,7 @@ void SoftBusConnectionManager::HandleSoftBusServiceUnavailable()
 {
     IAM_LOGI("SoftBus service unavailable, closing sockets");
 
-    CloseAllSockets("softbus down");
+    CloseAllSockets("softbus_down");
 }
 
 void SoftBusConnectionManager::ReportConnectionEstablished(const std::string &connectionName)
