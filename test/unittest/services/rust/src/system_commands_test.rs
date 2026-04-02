@@ -2554,7 +2554,7 @@ fn companion_begin_add_host_binding_test_success() {
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
     mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
     mock_host_binding_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
-    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
     mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(1)));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
@@ -2603,12 +2603,96 @@ fn companion_begin_add_host_binding_test_success() {
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
-        binding_id: -1,
+        replaced_binding_id: -1,
         binding_status: PersistedHostBindingStatusFfi::default(),
     };
     let result = companion_begin_add_host_binding(&input, &mut output);
     assert!(result.is_ok());
-    assert_eq!(output.binding_id, 1);
+    assert_eq!(output.replaced_binding_id, 0);
+}
+
+#[test]
+fn companion_begin_add_host_binding_test_replaced_binding() {
+    let _guard = ut_registry_guard!();
+    log_i!("companion_begin_add_host_binding_test_replaced_binding start");
+    let mut mock_crypto_engine = MockCryptoEngine::new();
+    mock_crypto_engine.expect_secure_random().returning(|_buf| Ok(()));
+    mock_crypto_engine.expect_x25519_ecdh().returning(|| Ok([0u8; SHARE_KEY_LEN].to_vec()));
+    mock_crypto_engine.expect_hkdf().returning(|_, _| Ok(Vec::new()));
+    mock_crypto_engine.expect_aes_gcm_decrypt().returning(|_aes_gcm_result| Ok(_aes_gcm_result.ciphertext.clone()));
+    mock_crypto_engine.expect_aes_gcm_encrypt().returning(|data, _| {
+        Ok(AesGcmResult { ciphertext: data.to_vec(), authentication_tag: [0u8; AES_GCM_TAG_SIZE] })
+    });
+    CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
+
+    const OLD_BINDING_ID: i32 = 99;
+    const NEW_BINDING_ID: i32 = 1;
+    let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
+    mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(move || Ok(NEW_BINDING_ID));
+    mock_host_binding_db_manager
+        .expect_get_device_by_device_key()
+        .returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
+    mock_host_binding_db_manager
+        .expect_remove_device()
+        .returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
+    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
+    mock_host_binding_db_manager
+        .expect_get_device_by_binding_id()
+        .returning(|| Ok(create_mock_host_device_info(NEW_BINDING_ID)));
+    HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
+
+    let mut mock_time_keeper = MockTimeKeeper::new();
+    mock_time_keeper.expect_get_rtc_time().returning(|| Ok(1000));
+    TimeKeeperRegistry::set(Box::new(mock_time_keeper));
+
+    let companion_request_manager = DefaultRequestManager::new();
+    RequestManagerRegistry::set(Box::new(companion_request_manager));
+
+    let init_input = CompanionInitKeyNegotiationInputFfi {
+        request_id: 1,
+        secure_protocol_id: 1,
+        protocol_list: Uint16Array64Ffi::default(),
+        capability_list: Uint16Array64Ffi::default(),
+        companion_device_key: DeviceKeyFfi::default(),
+        host_device_key: DeviceKeyFfi::default(),
+        sec_message: DataArray1024Ffi::default(),
+    };
+    let mut enroll_request = CompanionDeviceEnrollRequest::new(&init_input).unwrap();
+    enroll_request.key_nego_param.key_pair = Some(create_mock_key_pair());
+    enroll_request.key_nego_param.host_device_key.device_id = "test-device-id".to_string();
+    enroll_request.key_nego_param.host_device_key.user_id = 100;
+    enroll_request.key_nego_param.companion_challenge = 0;
+    RequestManagerRegistry::get_mut().add_request(Box::new(enroll_request)).unwrap();
+
+    let mut attr = Attribute::new();
+    attr.set_string(AttributeKey::AttrDeviceId, "test-device-id".to_string());
+    attr.set_i32(AttributeKey::AttrUserId, 100);
+    attr.set_u64(AttributeKey::AttrCompanionChallenge, 0);
+
+    let sec_binding_request = SecBindingRequest {
+        pub_key: vec![1, 2, 3],
+        challenge: 0,
+        salt: [0u8; HKDF_SALT_SIZE],
+        tag: [0u8; AES_GCM_TAG_SIZE],
+        iv: [0u8; AES_GCM_IV_SIZE],
+        encrypt_data: attr.to_bytes().unwrap(),
+    };
+    let sec_message = sec_binding_request.encode(ProcessorType::Default).unwrap();
+
+    let input = CompanionBeginAddHostBindingInputFfi {
+        request_id: 1,
+        secure_protocol_id: 1,
+        sec_message: DataArray20000Ffi::try_from(&sec_message).unwrap(),
+    };
+    let mut output = CompanionBeginAddHostBindingOutputFfi {
+        sec_message: DataArray1024Ffi::default(),
+        replaced_binding_id: -1,
+        binding_status: PersistedHostBindingStatusFfi::default(),
+    };
+    let result = companion_begin_add_host_binding(&input, &mut output);
+    assert!(result.is_ok());
+    assert_eq!(output.replaced_binding_id, OLD_BINDING_ID);
+    assert_eq!(output.binding_status.binding_id, NEW_BINDING_ID);
 }
 
 #[test]
@@ -2627,7 +2711,7 @@ fn companion_begin_add_host_binding_test_get_request_fail() {
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
-        binding_id: -1,
+        replaced_binding_id: -1,
         binding_status: PersistedHostBindingStatusFfi::default(),
     };
     let result = companion_begin_add_host_binding(&input, &mut output);
@@ -2665,7 +2749,7 @@ fn companion_begin_add_host_binding_test_request_begin_fail() {
     };
     let mut output = CompanionBeginAddHostBindingOutputFfi {
         sec_message: DataArray1024Ffi::default(),
-        binding_id: -1,
+        replaced_binding_id: -1,
         binding_status: PersistedHostBindingStatusFfi::default(),
     };
     let result = companion_begin_add_host_binding(&input, &mut output);

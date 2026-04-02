@@ -134,21 +134,21 @@ std::vector<HostBindingStatus> HostBindingManagerImpl::GetAllHostBindingStatus()
     return result;
 }
 
-ResultCode HostBindingManagerImpl::BeginAddHostBinding(RequestId requestId, UserId companionUserId,
-    SecureProtocolId secureProtocolId, const std::vector<uint8_t> &addHostBindingRequest,
-    std::vector<uint8_t> &outAddHostBindingReply)
+ResultCode HostBindingManagerImpl::BeginAddHostBinding(const BeginAddHostBindingInput &in,
+    BeginAddHostBindingOutput &out)
 {
-    IAM_LOGI("begin add host binding, request id 0x%{public}08X", requestId);
+    IAM_LOGI("begin add host binding, request id 0x%{public}08X", in.requestId);
 
-    ENSURE_OR_RETURN_VAL(companionUserId == activeUserId_, ResultCode::GENERAL_ERROR);
-    if (activeUserId_ != companionUserId) {
-        IAM_LOGE("companion user id mismatch, expected %{public}d, actual %{public}d", activeUserId_, companionUserId);
+    ENSURE_OR_RETURN_VAL(in.companionUserId == activeUserId_, ResultCode::GENERAL_ERROR);
+    if (activeUserId_ != in.companionUserId) {
+        IAM_LOGE("companion user id mismatch, expected %{public}d, actual %{public}d", activeUserId_,
+            in.companionUserId);
         return ResultCode::GENERAL_ERROR;
     }
 
-    CompanionBeginAddHostBindingInput input { .requestId = requestId,
-        .secureProtocolId = secureProtocolId,
-        .addHostBindingRequest = addHostBindingRequest };
+    CompanionBeginAddHostBindingInput input { .requestId = in.requestId,
+        .secureProtocolId = in.secureProtocolId,
+        .addHostBindingRequest = in.addHostBindingRequest };
 
     CompanionBeginAddHostBindingOutput output {};
     ResultCode ret = GetSecurityAgent().CompanionBeginAddHostBinding(input, output);
@@ -186,9 +186,11 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(RequestId requestId, User
         return ret;
     }
 
-    outAddHostBindingReply.swap(output.addHostBindingReply);
+    out.addHostBindingReply.swap(output.addHostBindingReply);
+    out.bindingId = output.hostBindingStatus.bindingId;
 
-    IAM_LOGI("begin add host binding success, request id 0x%{public}08X", requestId);
+    IAM_LOGI("begin add host binding success, request id 0x%{public}08X, binding id %{public}s", in.requestId,
+        GET_MASKED_NUM_STRING(out.bindingId).c_str());
     return ResultCode::SUCCESS;
 }
 

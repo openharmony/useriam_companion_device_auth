@@ -28,6 +28,18 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+struct BeginAddHostBindingInput {
+    RequestId requestId = 0;
+    UserId companionUserId = INVALID_USER_ID;
+    SecureProtocolId secureProtocolId = SecureProtocolId::INVALID;
+    std::vector<uint8_t> addHostBindingRequest;
+};
+
+struct BeginAddHostBindingOutput {
+    std::vector<uint8_t> addHostBindingReply;
+    BindingId bindingId = 0;
+};
+
 class IHostBindingManager : public NoCopyable {
 public:
     virtual ~IHostBindingManager() = default;
@@ -36,9 +48,8 @@ public:
     virtual std::optional<HostBindingStatus> GetHostBindingStatus(UserId companionUserId,
         const DeviceKey &hostDeviceKey) = 0;
 
-    virtual ResultCode BeginAddHostBinding(RequestId requestId, UserId companionUserId,
-        SecureProtocolId secureProtocolId, const std::vector<uint8_t> &addHostBindingRequest,
-        std::vector<uint8_t> &outAddHostBindingReply) = 0;
+    virtual ResultCode BeginAddHostBinding(const BeginAddHostBindingInput &input,
+        BeginAddHostBindingOutput &output) = 0;
     virtual ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
         const std::vector<uint8_t> &tokenData = {}) = 0;
     virtual ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) = 0;

@@ -22,6 +22,7 @@
 #include "common_message.h"
 #include "companion_add_companion_request.h"
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "singleton_manager.h"
 
 #define LOG_TAG "CDA_SA"
@@ -36,8 +37,9 @@ CompanionInitKeyNegotiationHandler::CompanionInitKeyNegotiationHandler()
 
 void CompanionInitKeyNegotiationHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    IAM_LOGI("start");
-    ENSURE_OR_RETURN(onMessageReply != nullptr);
+    InteractionDesc desc(HANDLER_PREFIX, "CAddC");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
 
     ErrorGuard errorGuard([&onMessageReply](ResultCode result) {
         Attributes reply;
@@ -47,22 +49,22 @@ void CompanionInitKeyNegotiationHandler::HandleRequest(const Attributes &request
 
     std::string connectionName;
     bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), getConnectionNameRet);
+    desc.SetConnectionName(connectionName);
 
     auto hostDeviceKeyOpt = DecodeHostDeviceKey(request);
-    ENSURE_OR_RETURN(hostDeviceKeyOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), hostDeviceKeyOpt.has_value());
 
-    ENSURE_OR_RETURN(hostDeviceKeyOpt.has_value());
     auto addCompanionRequest = GetRequestFactory().CreateCompanionAddCompanionRequest(connectionName, request,
         std::move(onMessageReply), hostDeviceKeyOpt.value());
-    ENSURE_OR_RETURN(addCompanionRequest != nullptr);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), addCompanionRequest != nullptr);
 
     bool startRet = GetRequestManager().Start(addCompanionRequest);
-    ENSURE_OR_RETURN(startRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRet);
 
     errorGuard.Cancel();
 
-    IAM_LOGI("success");
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

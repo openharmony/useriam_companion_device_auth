@@ -25,7 +25,8 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-class AsyncIncomingMessageHandler : public IncomingMessageHandler {
+class AsyncIncomingMessageHandler : public std::enable_shared_from_this<AsyncIncomingMessageHandler>,
+                                    public IncomingMessageHandler {
 public:
     explicit AsyncIncomingMessageHandler(MessageType messageType);
     ~AsyncIncomingMessageHandler() override = default;
@@ -36,6 +37,7 @@ public:
 
 protected:
     virtual void HandleRequest(const Attributes &request, OnMessageReply &onMessageReply) = 0;
+    std::weak_ptr<IncomingMessageHandler> GetWeakPtr() override;
 
 private:
     const MessageType messageType_ { MessageType::INVALID };

@@ -504,8 +504,8 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_001, TestSize.Level0)
     manager->activeUserId_ = 999;
 
     std::vector<uint8_t> request;
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId_, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId_, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
 }
@@ -555,8 +555,8 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_002, TestSize.Level0)
     EXPECT_CALL(securityAgent, CompanionBeginAddHostBinding(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
     std::vector<uint8_t> request;
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId_, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId_, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
 }
@@ -592,8 +592,8 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_003, TestSize.Level0)
                 Return(ResultCode::SUCCESS)));
 
     std::vector<uint8_t> request;
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId_, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId_, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
 }
@@ -619,11 +619,11 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_004, TestSize.Level0)
                 Return(ResultCode::SUCCESS)));
 
     std::vector<uint8_t> request;
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::SUCCESS, ret);
-    EXPECT_EQ(4u, reply.size());
+    EXPECT_EQ(4u, output.addHostBindingReply.size());
 }
 
 HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_005, TestSize.Level0)
@@ -653,8 +653,8 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_005, TestSize.Level0)
                 Return(ResultCode::SUCCESS)));
 
     std::vector<uint8_t> request;
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::SUCCESS, ret);
     EXPECT_FALSE(manager->GetHostBindingStatus(12346).has_value());
@@ -685,8 +685,8 @@ HWTEST_F(HostBindingManagerImplTest, BeginAddHostBinding_006, TestSize.Level0)
     EXPECT_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _)).WillOnce(Return(nullptr));
 
     std::vector<uint8_t> request = { 1, 2, 3 };
-    std::vector<uint8_t> reply;
-    ResultCode ret = manager->BeginAddHostBinding(1, activeUserId, SecureProtocolId::DEFAULT, request, reply);
+    BeginAddHostBindingOutput output;
+    ResultCode ret = manager->BeginAddHostBinding({ 1, activeUserId, SecureProtocolId::DEFAULT, request }, output);
 
     EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
 }

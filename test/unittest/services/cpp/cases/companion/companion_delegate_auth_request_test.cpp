@@ -290,6 +290,53 @@ HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_002, TestSize.Level
     ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
 }
 
+HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_003, TestSize.Level0)
+{
+    // needEndDelegateAuth_ = true, contextId_ = nullopt
+    // Should call SecurityAgentEndDelegateAuth for cleanup
+    MockGuard guard;
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID, HOST_DEVICE_KEY,
+        START_DELEGATE_AUTH_REQUEST);
+    request->needEndDelegateAuth_ = true;
+
+    EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
+
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
+}
+
+HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_004, TestSize.Level0)
+{
+    // needEndDelegateAuth_ = true AND contextId_ set
+    // Should cancel auth context AND call SecurityAgentEndDelegateAuth for cleanup
+    MockGuard guard;
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID, HOST_DEVICE_KEY,
+        START_DELEGATE_AUTH_REQUEST);
+    request->contextId_ = 12345;
+    request->needEndDelegateAuth_ = true;
+
+    EXPECT_CALL(guard.GetUserAuthAdapter(), CancelAuthentication(_)).WillOnce(Return(ResultCode::SUCCESS));
+    EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::SUCCESS));
+
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
+}
+
+HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithError_005, TestSize.Level0)
+{
+    // needEndDelegateAuth_ = true, SecurityAgentEndDelegateAuth returns error
+    // Should still complete without crash
+    MockGuard guard;
+
+    auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID, HOST_DEVICE_KEY,
+        START_DELEGATE_AUTH_REQUEST);
+    request->needEndDelegateAuth_ = true;
+
+    EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndDelegateAuth(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
+
+    ASSERT_NO_THROW(request->CompleteWithError(ResultCode::GENERAL_ERROR));
+}
+
 HWTEST_F(CompanionDelegateAuthRequestTest, CompleteWithSuccess_001, TestSize.Level0)
 {
     MockGuard guard;

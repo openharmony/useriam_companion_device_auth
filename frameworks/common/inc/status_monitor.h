@@ -93,7 +93,7 @@ public:
             int32_t ret =
                 CompanionDeviceAuthClient::GetInstance().UnsubscribeTemplateStatusChange(templateStatusCallbackHolder_);
             if (ret != SUCCESS) {
-                IAM_LOGE("UnsubscribeAvailableDeviceStatus fail, ret:%{public}d", ret);
+                IAM_LOGE("UnsubscribeTemplateStatusChange fail, ret:%{public}d", ret);
             }
             return ret;
         });

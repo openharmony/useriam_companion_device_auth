@@ -39,7 +39,7 @@ class TemplateStatusSubscription
 public:
     static std::shared_ptr<TemplateStatusSubscription> Create(UserId userId,
         std::weak_ptr<SubscriptionManager> subscriptionManager);
-    ~TemplateStatusSubscription() = default;
+    ~TemplateStatusSubscription();
 
     UserId GetUserId() const;
     std::weak_ptr<TemplateStatusSubscription> GetWeakPtr() override;

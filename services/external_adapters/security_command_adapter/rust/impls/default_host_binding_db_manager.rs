@@ -196,25 +196,27 @@ impl DefaultHostBindingDbManager {
         self.host_binding_infos.iter().filter(|device| device.user_info.user_id == user_id).count()
     }
 
-    fn remove_oldest_unused_device(&mut self, user_id: i32) -> Result<(), ErrorCode> {
+    fn remove_oldest_unused_device(&mut self, user_id: i32) -> Result<Option<i32>, ErrorCode> {
         let user_devices: Vec<&HostBindingInfo> =
             self.host_binding_infos.iter().filter(|info| info.user_info.user_id == user_id).collect();
 
         if user_devices.is_empty() {
             log_i!("No devices found for user_id: {}", user_id);
-            return Ok(());
+            return Ok(None);
         }
 
         if let Some(oldest_device) = user_devices.iter().min_by_key(|info| info.last_used_time) {
-            self.remove_device(oldest_device.binding_id)?;
+            let evicted_binding_id = oldest_device.binding_id;
+            self.remove_device(evicted_binding_id)?;
+            return Ok(Some(evicted_binding_id));
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 
 impl HostBindingDbManager for DefaultHostBindingDbManager {
-    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
+    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
         log_i!("add_device start");
         if device_info.device_key.device_id.is_empty() {
             log_e!("invalid device id");
@@ -226,9 +228,10 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
             return Err(ErrorCode::BadParam);
         }
 
+        let mut evicted_binding_id = None;
         let device_num = self.get_device_num_by_user_id(device_info.user_info.user_id);
         if device_num >= MAX_DEVICE_NUM_PER_USER {
-            self.remove_oldest_unused_device(device_info.user_info.user_id)?;
+            evicted_binding_id = self.remove_oldest_unused_device(device_info.user_info.user_id)?;
         }
 
         if self.get_index_by_binding_id(device_info.binding_id).is_some() {
@@ -240,14 +243,14 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         self.host_binding_infos.push(device_info.clone());
         let result = self.write_device_db();
         if result.is_ok() {
-            return result;
+            return Ok(evicted_binding_id);
         }
         log_e!("write_device_db fail");
         let _ = self.delete_device_sk(device_info.binding_id);
         if let Some(index) = self.get_index_by_binding_id(device_info.binding_id) {
             self.host_binding_infos.remove(index);
         }
-        result
+        result.map(|_| evicted_binding_id)
     }
 
     fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode> {

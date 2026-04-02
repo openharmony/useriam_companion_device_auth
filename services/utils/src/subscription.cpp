@@ -26,10 +26,12 @@ namespace CompanionDeviceAuth {
 
 Subscription::Subscription(CleanupFunc &&cleanup) : cleanup_(std::move(cleanup))
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
 }
 
 Subscription::~Subscription()
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     Cancel();
 }
 

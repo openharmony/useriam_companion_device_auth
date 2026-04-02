@@ -20,7 +20,7 @@ use crate::{log_e, singleton_registry, Box, Vec};
 pub type HostDeviceFilter = Box<dyn Fn(&HostBindingInfo) -> bool>;
 
 pub trait HostBindingDbManager {
-    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<(), ErrorCode>;
+    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode>;
     fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode>;
     fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostBindingInfo, ErrorCode>;
     fn remove_device(&mut self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode>;
@@ -45,7 +45,7 @@ pub trait HostBindingDbManager {
 pub struct DummyHostBindingDbManager;
 
 impl HostBindingDbManager for DummyHostBindingDbManager {
-    fn add_device(&mut self, _device_info: &HostBindingInfo, _sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
+    fn add_device(&mut self, _device_info: &HostBindingInfo, _sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }

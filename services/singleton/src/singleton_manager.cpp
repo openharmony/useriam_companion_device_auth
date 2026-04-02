@@ -87,7 +87,7 @@ void SingletonManagerImpl::Reset()
 
 ICompanionManager &SingletonManagerImpl::GetCompanionManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("CompanionManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (companionManager_ == nullptr) {
         IAM_LOGE("companion manager is not initialized");
         AbortIfSingletonUninitialized();
@@ -97,6 +97,7 @@ ICompanionManager &SingletonManagerImpl::GetCompanionManager()
 
 void SingletonManagerImpl::SetCompanionManager(std::shared_ptr<ICompanionManager> companionManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(companionManager != nullptr);
     if (companionManager_ != nullptr) {
         IAM_LOGE("companion manager is already set");
@@ -107,7 +108,7 @@ void SingletonManagerImpl::SetCompanionManager(std::shared_ptr<ICompanionManager
 
 IHostBindingManager &SingletonManagerImpl::GetHostBindingManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("HostBindingManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (hostBindingManager_ == nullptr) {
         IAM_LOGE("host binding manager is not initialized");
         AbortIfSingletonUninitialized();
@@ -117,6 +118,7 @@ IHostBindingManager &SingletonManagerImpl::GetHostBindingManager()
 
 void SingletonManagerImpl::SetHostBindingManager(std::shared_ptr<IHostBindingManager> hostBindingManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(hostBindingManager != nullptr);
     if (hostBindingManager_ != nullptr) {
         IAM_LOGE("host binding manager is already set");
@@ -127,7 +129,7 @@ void SingletonManagerImpl::SetHostBindingManager(std::shared_ptr<IHostBindingMan
 
 IMiscManager &SingletonManagerImpl::GetMiscManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("MiscManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (miscManager_ == nullptr) {
         IAM_LOGE("misc manager is not initialized");
         AbortIfSingletonUninitialized();
@@ -137,6 +139,7 @@ IMiscManager &SingletonManagerImpl::GetMiscManager()
 
 void SingletonManagerImpl::SetMiscManager(std::shared_ptr<IMiscManager> miscManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(miscManager != nullptr);
     if (miscManager_ != nullptr) {
         IAM_LOGE("misc manager is already set");
@@ -147,7 +150,7 @@ void SingletonManagerImpl::SetMiscManager(std::shared_ptr<IMiscManager> miscMana
 
 ISecurityAgent &SingletonManagerImpl::GetSecurityAgent()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SecurityAgent");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (securityAgent_ == nullptr) {
         IAM_LOGE("security agent is not initialized");
         AbortIfSingletonUninitialized();
@@ -157,6 +160,7 @@ ISecurityAgent &SingletonManagerImpl::GetSecurityAgent()
 
 void SingletonManagerImpl::SetSecurityAgent(std::shared_ptr<ISecurityAgent> securityAgent)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(securityAgent != nullptr);
     if (securityAgent_ != nullptr) {
         IAM_LOGE("security agent is already set");
@@ -167,6 +171,7 @@ void SingletonManagerImpl::SetSecurityAgent(std::shared_ptr<ISecurityAgent> secu
 
 void SingletonManagerImpl::SetCrossDeviceCommManager(std::shared_ptr<ICrossDeviceCommManager> crossDeviceCommManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(crossDeviceCommManager != nullptr);
     if (crossDeviceCommManager_ != nullptr) {
         IAM_LOGE("cross device comm manager is already set");
@@ -177,7 +182,7 @@ void SingletonManagerImpl::SetCrossDeviceCommManager(std::shared_ptr<ICrossDevic
 
 ICrossDeviceCommManager &SingletonManagerImpl::GetCrossDeviceCommManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("CrossDeviceCommManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (crossDeviceCommManager_ == nullptr) {
         IAM_LOGE("cross device comm manager is not initialized");
         AbortIfSingletonUninitialized();
@@ -187,7 +192,7 @@ ICrossDeviceCommManager &SingletonManagerImpl::GetCrossDeviceCommManager()
 
 IRequestManager &SingletonManagerImpl::GetRequestManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("RequestManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (requestManager_ == nullptr) {
         IAM_LOGE("request manager is not initialized");
         AbortIfSingletonUninitialized();
@@ -197,6 +202,7 @@ IRequestManager &SingletonManagerImpl::GetRequestManager()
 
 void SingletonManagerImpl::SetRequestManager(std::shared_ptr<IRequestManager> requestManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(requestManager != nullptr);
     if (requestManager_ != nullptr) {
         IAM_LOGE("request manager is already set");
@@ -207,7 +213,7 @@ void SingletonManagerImpl::SetRequestManager(std::shared_ptr<IRequestManager> re
 
 IRequestFactory &SingletonManagerImpl::GetRequestFactory()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("RequestFactory");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (requestFactory_ == nullptr) {
         IAM_LOGE("request factory is not initialized");
         AbortIfSingletonUninitialized();
@@ -217,6 +223,7 @@ IRequestFactory &SingletonManagerImpl::GetRequestFactory()
 
 void SingletonManagerImpl::SetRequestFactory(std::shared_ptr<IRequestFactory> requestFactory)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(requestFactory != nullptr);
     if (requestFactory_ != nullptr) {
         IAM_LOGE("request factory is already set");
@@ -227,7 +234,7 @@ void SingletonManagerImpl::SetRequestFactory(std::shared_ptr<IRequestFactory> re
 
 IncomingMessageHandlerRegistry &SingletonManagerImpl::GetIncomingMessageHandlerRegistry()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("IncomingMessageHandlerRegistry");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (incomingMessageHandlerRegistry_ == nullptr) {
         IAM_LOGE("incoming message handler registry is not initialized");
         AbortIfSingletonUninitialized();
@@ -237,6 +244,7 @@ IncomingMessageHandlerRegistry &SingletonManagerImpl::GetIncomingMessageHandlerR
 
 void SingletonManagerImpl::SetIncomingMessageHandlerRegistry(std::shared_ptr<IncomingMessageHandlerRegistry> registry)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(registry != nullptr);
     if (incomingMessageHandlerRegistry_ != nullptr) {
         IAM_LOGE("incoming message handler registry is already set");
@@ -247,7 +255,7 @@ void SingletonManagerImpl::SetIncomingMessageHandlerRegistry(std::shared_ptr<Inc
 
 IExecutorFactory &SingletonManagerImpl::GetExecutorFactory()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("ExecutorFactory");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (executorFactory_ == nullptr) {
         IAM_LOGE("executor factory is not initialized");
         AbortIfSingletonUninitialized();
@@ -257,6 +265,7 @@ IExecutorFactory &SingletonManagerImpl::GetExecutorFactory()
 
 void SingletonManagerImpl::SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     ENSURE_OR_RETURN(executorFactory != nullptr);
     if (executorFactory_ != nullptr) {
         IAM_LOGE("executor factory is already set");
@@ -267,7 +276,7 @@ void SingletonManagerImpl::SetExecutorFactory(std::shared_ptr<IExecutorFactory> 
 
 void SingletonManagerImpl::AbortIfSingletonUninitialized()
 {
-    IAM_LOGF("singleton is not initialized, abort");
+    IAM_LOGE("singleton is not initialized, abort");
     std::abort();
 }
 } // namespace

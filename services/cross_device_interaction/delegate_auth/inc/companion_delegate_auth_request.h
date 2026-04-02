@@ -19,9 +19,9 @@
 #include <memory>
 #include <optional>
 
-#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
+#include "interaction_event_collector.h"
 #include "request_callback.h"
 #include "security_agent.h"
 
@@ -58,7 +58,9 @@ private:
     int32_t companionUserId_ = 0;
     std::vector<uint8_t> startDelegateAuthRequest_;
     std::optional<uint64_t> contextId_ = std::nullopt;
+    bool needEndDelegateAuth_ = false;
     SecureProtocolId secureProtocolId_ { SecureProtocolId::INVALID };
+    BindingId bindingId_ { 0 };
     InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth

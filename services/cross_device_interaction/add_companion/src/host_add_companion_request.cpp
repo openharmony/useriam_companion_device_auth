@@ -127,9 +127,9 @@ void HostAddCompanionRequest::ValidateAndFilterBusinessIds(const std::vector<Bus
 bool HostAddCompanionRequest::OnStart([[maybe_unused]] ErrorGuard &errorGuard)
 {
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_, SelectPurpose::SELECT_ADD_DEVICE,
-        [weakSelf = weak_from_this(), description = GetDescription()](const std::vector<DeviceKey> &selectedDevices) {
+        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleDeviceSelectResult(selectedDevices);
         });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), selectorSet, false);
@@ -199,9 +199,9 @@ void HostAddCompanionRequest::OnConnected()
     EncodeInitKeyNegotiationRequest(initRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::INIT_KEY_NEGOTIATION,
-        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
+        request, [weakSelf = weak_from_this()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleInitKeyNegotiationReply(reply);
         });
     if (!sendRet) {
@@ -246,9 +246,9 @@ void HostAddCompanionRequest::HandleInitKeyNegotiationReply(const Attributes &re
     EncodeBeginAddHostBindingRequest(beginRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::BEGIN_ADD_HOST_BINDING,
-        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
+        request, [weakSelf = weak_from_this()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleBeginAddHostBindingReply(message);
         });
     if (!sendRet) {
@@ -351,7 +351,7 @@ void HostAddCompanionRequest::ProcessEndAddCompanionOutput(const EndAddCompanion
 {
     needCancelCompanionAdd_ = false;
     templateId_ = output.templateId;
-    UpdateDescription(GenerateDescription(requestType_, requestId_, GetConnectionName(), templateId_));
+    desc_.SetTemplateId(templateId_);
 
     fwkMsg = output.fwkMsg;
     pendingTokenData_ = output.tokenData;
@@ -409,9 +409,9 @@ bool HostAddCompanionRequest::SendEndAddHostBindingMsg(ResultCode result)
     EncodeEndAddHostBindingRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::END_ADD_HOST_BINDING,
-        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
+        request, [weakSelf = weak_from_this()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleEndAddHostBindingReply(message);
         });
     if (!sendRet) {

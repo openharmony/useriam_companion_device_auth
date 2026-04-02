@@ -37,8 +37,10 @@ void SyncIncomingMessageHandler::Register()
         return;
     }
     subscription_ = GetCrossDeviceCommManager().SubscribeIncomingConnection(messageType_,
-        [this](const Attributes &request, OnMessageReply &onMessageReply) {
-            HandleIncomingMessage(request, onMessageReply);
+        [weakSelf = GetWeakPtr()](const Attributes &request, OnMessageReply &onMessageReply) {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN(self != nullptr);
+            self->HandleIncomingMessage(request, onMessageReply);
         });
     ENSURE_OR_RETURN(subscription_ != nullptr);
 }
@@ -62,6 +64,11 @@ void SyncIncomingMessageHandler::HandleIncomingMessage(const Attributes &request
 MessageType SyncIncomingMessageHandler::GetMessageType() const
 {
     return messageType_;
+}
+
+std::weak_ptr<IncomingMessageHandler> SyncIncomingMessageHandler::GetWeakPtr()
+{
+    return weak_from_this();
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
