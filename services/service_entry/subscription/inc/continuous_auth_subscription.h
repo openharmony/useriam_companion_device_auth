@@ -40,7 +40,7 @@ public:
 
     ContinuousAuthSubscription(UserId userId, std::optional<TemplateId> templateId,
         std::weak_ptr<SubscriptionManager> subscriptionManager);
-    ~ContinuousAuthSubscription() = default;
+    ~ContinuousAuthSubscription();
 
     UserId GetUserId() const;
     std::optional<TemplateId> GetTemplateId() const;

@@ -19,6 +19,7 @@
 #include "iam_logger.h"
 
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "remove_host_binding_message.h"
 #include "singleton_manager.h"
 
@@ -34,7 +35,8 @@ CompanionRemoveHostBindingHandler::CompanionRemoveHostBindingHandler()
 
 void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "CRmB");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
@@ -42,14 +44,14 @@ void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request,
 
     auto requestMsgOpt = DecodeRemoveHostBindingRequest(request);
     if (!requestMsgOpt.has_value()) {
-        IAM_LOGE("DecodeRemoveHostBindingRequest failed");
+        IAM_LOGE("%{public}s DecodeRemoveHostBindingRequest failed", desc.GetCStr());
         return;
     }
     const auto &requestMsg = *requestMsgOpt;
 
     ResultCode ret = GetHostBindingManager().RemoveHostBinding(requestMsg.companionUserId, requestMsg.hostDeviceKey);
     if (ret != ResultCode::SUCCESS) {
-        IAM_LOGE("RemoveHostBinding failed ret=%{public}d", ret);
+        IAM_LOGE("%{public}s RemoveHostBinding failed ret=%{public}d", desc.GetCStr(), ret);
         errorGuard.UpdateErrorCode(ret);
         return;
     }

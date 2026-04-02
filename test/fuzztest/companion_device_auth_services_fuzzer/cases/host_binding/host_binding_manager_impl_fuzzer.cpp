@@ -49,14 +49,14 @@ static void FuzzGetHostBindingStatusByUserDevice(std::shared_ptr<HostBindingMana
 
 static void FuzzBeginAddHostBinding(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)
 {
-    RequestId requestId = fuzzData.ConsumeIntegral<RequestId>();
-    UserId companionUserId = fuzzData.ConsumeIntegral<UserId>();
-    SecureProtocolId secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint16_t>());
+    BeginAddHostBindingInput input = {};
+    input.requestId = fuzzData.ConsumeIntegral<RequestId>();
+    input.companionUserId = fuzzData.ConsumeIntegral<UserId>();
+    input.secureProtocolId = static_cast<SecureProtocolId>(fuzzData.ConsumeIntegral<uint16_t>());
     uint32_t requestSize = fuzzData.ConsumeIntegralInRange<uint32_t>(0, FUZZ_MAX_MESSAGE_LENGTH);
-    std::vector<uint8_t> addHostBindingRequest = fuzzData.ConsumeBytes<uint8_t>(requestSize);
-    std::vector<uint8_t> outAddHostBindingReply;
-    ResultCode result = manager->BeginAddHostBinding(requestId, companionUserId, secureProtocolId,
-        addHostBindingRequest, outAddHostBindingReply);
+    input.addHostBindingRequest = fuzzData.ConsumeBytes<uint8_t>(requestSize);
+    BeginAddHostBindingOutput output = {};
+    ResultCode result = manager->BeginAddHostBinding(input, output);
     (void)result;
 }
 

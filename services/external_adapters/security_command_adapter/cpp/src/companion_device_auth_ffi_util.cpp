@@ -653,8 +653,8 @@ bool DecodeCompanionBeginAddHostBindingOutput(const CompanionBeginAddHostBinding
         return false;
     }
 
-    if (ffi.bindingId != 0) {
-        output.replacedBindingId = ffi.bindingId;
+    if (ffi.replacedBindingId != 0) {
+        output.replacedBindingId = ffi.replacedBindingId;
     } else {
         output.replacedBindingId = std::nullopt;
     }

@@ -144,6 +144,30 @@ HWTEST_F(SyncIncomingMessageHandlerTest, GetMessageType_001, TestSize.Level0)
     EXPECT_EQ(MessageType::SYNC_DEVICE_STATUS, type);
 }
 
+HWTEST_F(SyncIncomingMessageHandlerTest, WeakPtrCapture_001, TestSize.Level0)
+{
+    // Verify that the callback captured via weak_ptr is safe after handler is destroyed
+    MockGuard guard;
+
+    OnMessage capturedCallback;
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIncomingConnection(_, _))
+        .WillOnce(Invoke([&capturedCallback](MessageType, OnMessage &&callback) {
+            capturedCallback = std::move(callback);
+            return MakeSubscription();
+        }));
+
+    {
+        auto handler = std::make_shared<NiceMock<MockSyncIncomingMessageHandler>>(MessageType::SYNC_DEVICE_STATUS);
+        handler->Register();
+        // handler goes out of scope here
+    }
+
+    // Invoke the captured callback after handler is destroyed - should not crash
+    Attributes request;
+    OnMessageReply onMessageReply = [](const Attributes &) {};
+    ASSERT_NO_THROW(capturedCallback(request, onMessageReply));
+}
+
 } // namespace
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

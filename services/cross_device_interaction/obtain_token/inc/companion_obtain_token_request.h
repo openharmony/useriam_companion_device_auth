@@ -19,8 +19,8 @@
 #include <memory>
 #include <vector>
 
-#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
+#include "interaction_event_collector.h"
 #include "obtain_token_message.h"
 #include "outbound_request.h"
 #include "security_agent.h"

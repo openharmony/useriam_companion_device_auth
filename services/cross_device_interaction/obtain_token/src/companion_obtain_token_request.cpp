@@ -50,10 +50,10 @@ bool CompanionObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
         IAM_LOGE("%{public}s local auth maintain inactive", GetDescription());
         return false;
     }
-    localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
-        [weakSelf = weak_from_this(), description = GetDescription()](bool isActive) {
+    localDeviceStatusSubscription_ =
+        GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleAuthMaintainActiveChanged(isActive);
         });
     if (localDeviceStatusSubscription_ == nullptr) {
@@ -102,9 +102,9 @@ bool CompanionObtainTokenRequest::SendPreObtainTokenRequest()
     EncodePreObtainTokenRequest(preObtainTokenRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::PRE_OBTAIN_TOKEN, request,
-        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
+        [weakSelf = weak_from_this()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandlePreObtainTokenReply(reply);
         });
     if (!sendRet) {
@@ -148,6 +148,7 @@ bool CompanionObtainTokenRequest::GetBindingIdFromHostBindingStatus()
         return false;
     }
     bindingId_ = hostBindingStatus->bindingId;
+    desc_.SetBindingId(bindingId_);
     return true;
 }
 
@@ -189,9 +190,9 @@ bool CompanionObtainTokenRequest::SendObtainTokenRequest(const std::vector<uint8
     EncodeObtainTokenRequest(obtainRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::OBTAIN_TOKEN, request,
-        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
+        [weakSelf = weak_from_this()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleObtainTokenReply(reply);
         });
     if (!sendRet) {
@@ -288,7 +289,7 @@ bool CompanionObtainTokenRequest::ShouldCancelOnNewRequest(RequestType newReques
 
 std::weak_ptr<OutboundRequest> CompanionObtainTokenRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 void CompanionObtainTokenRequest::HandleAuthMaintainActiveChanged(bool isActive)

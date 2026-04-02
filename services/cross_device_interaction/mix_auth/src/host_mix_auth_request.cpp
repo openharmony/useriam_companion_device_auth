@@ -16,7 +16,6 @@
 #include "host_mix_auth_request.h"
 
 #include <cinttypes>
-#include <sstream>
 
 #include "iam_check.h"
 #include "iam_logger.h"
@@ -44,7 +43,7 @@ HostMixAuthRequest::HostMixAuthRequest(const HostMixAuthParams &params, FwkResul
       requestCallback_(std::move(requestCallback)),
       eventCollector_("host mix auth request")
 {
-    UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateIdList_));
+    desc_.SetTemplateIdList(templateIdList_);
     eventCollector_.UpdateHostUserId(params.hostUserId);
     eventCollector_.UpdateScheduleId(params.scheduleId);
     eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
@@ -130,10 +129,9 @@ void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId>
             .templateId = templateId,
             .authIntent = authIntent_ };
         auto hostSingleMixAuthRequest = GetRequestFactory().CreateHostSingleMixAuthRequest(authParams,
-            [weakSelf = weak_from_this(), templateId, description = GetDescription()](ResultCode result,
-                const std::vector<uint8_t> &extraInfo) {
+            [weakSelf = weak_from_this(), templateId](ResultCode result, const std::vector<uint8_t> &extraInfo) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleAuthResult(templateId, result, extraInfo);
             });
         if (hostSingleMixAuthRequest == nullptr) {
@@ -157,6 +155,8 @@ void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId>
 
 void HostMixAuthRequest::Start()
 {
+    StartTimeout(weak_from_this());
+
     if (!AnyTemplateValid()) {
         IAM_LOGE("%{public}s no valid templateId found", GetDescription());
         CompleteWithError(ResultCode::NO_VALID_CREDENTIAL);
@@ -170,9 +170,9 @@ void HostMixAuthRequest::Start()
     }
 
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_.value(), SelectPurpose::SELECT_AUTH_DEVICE,
-        [weakSelf = weak_from_this(), description = GetDescription()](const std::vector<DeviceKey> &selectedDevices) {
+        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleDeviceSelectResult(selectedDevices);
         });
     if (!selectorSet) {

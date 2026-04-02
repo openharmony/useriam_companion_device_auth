@@ -32,6 +32,7 @@
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "subscription.h"
+#include "task_runner_manager.h"
 
 #define LOG_TAG "CDA_SA"
 
@@ -55,6 +56,7 @@ std::shared_ptr<HostBinding> HostBinding::Create(const PersistedHostBindingStatu
 
 HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     status_.bindingId = persistedStatus.bindingId;
     status_.companionUserId = persistedStatus.companionUserId;
     status_.hostDeviceStatus.deviceKey = persistedStatus.hostDeviceKey;
@@ -67,19 +69,18 @@ HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
 
 HostBinding::~HostBinding()
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     SetTokenValid(false, "host binding destroyed");
 }
 
 bool HostBinding::Initialize()
 {
-    deviceStatusSubscription_ =
-        GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.hostDeviceStatus.deviceKey, false,
-            [weakSelf = weak_from_this(), description = GetDescription()](
-                const std::vector<DeviceStatus> &deviceStatusList) {
-                auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
-                self->HandleDeviceStatusChanged(deviceStatusList);
-            });
+    deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.hostDeviceStatus.deviceKey,
+        false, [weakSelf = weak_from_this()](const std::vector<DeviceStatus> &deviceStatusList) {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN(self != nullptr);
+            self->HandleDeviceStatusChanged(deviceStatusList);
+        });
     if (deviceStatusSubscription_ == nullptr) {
         IAM_LOGE("%{public}s failed to subscribe device status", GetDescription());
         return false;
@@ -88,10 +89,10 @@ bool HostBinding::Initialize()
     auto deviceStatusList = GetCrossDeviceCommManager().GetAllDeviceStatus();
     HandleDeviceStatusChanged(deviceStatusList);
 
-    localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
-        [weakSelf = weak_from_this(), description = GetDescription()](bool isActive) {
+    localDeviceStatusSubscription_ =
+        GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleAuthMaintainActiveChanged(isActive);
         });
     if (localDeviceStatusSubscription_ == nullptr) {

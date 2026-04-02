@@ -152,6 +152,7 @@ fn default_host_binding_db_manager_add_device_test_max_devices_per_user() {
     let new_device = create_test_device_info(999, "new_device", user_id);
     let result = manager.add_device(&new_device, &sk_info);
     assert!(result.is_ok());
+    assert_eq!(result.unwrap(), Some(100)); // evicted the first device with binding_id 100
     assert_eq!(manager.get_device_list(user_id).len(), MAX_DEVICE_NUM_PER_USER);
 }
 

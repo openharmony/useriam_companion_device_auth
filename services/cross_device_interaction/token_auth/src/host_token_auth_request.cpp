@@ -43,7 +43,7 @@ HostTokenAuthRequest::HostTokenAuthRequest(const AuthRequestParams &params, cons
       eventCollector_("host token auth request")
 {
     SetPeerDeviceKey(companionDeviceKey);
-    UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    desc_.SetTemplateId(templateId_);
     eventCollector_.UpdateHostUserId(params.hostUserId);
     eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateScheduleId(params.scheduleId);
@@ -91,7 +91,7 @@ void HostTokenAuthRequest::OnConnected()
 
 std::weak_ptr<OutboundRequest> HostTokenAuthRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 void HostTokenAuthRequest::HostBeginTokenAuth()
@@ -136,9 +136,9 @@ bool HostTokenAuthRequest::SendTokenAuthRequest(const std::vector<uint8_t> &toke
     EncodeTokenAuthRequest(requestMsg, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::TOKEN_AUTH, request,
-        [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &reply) {
+        [weakSelf = weak_from_this()](const Attributes &reply) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleTokenAuthReply(reply);
         });
     if (!sendRet) {

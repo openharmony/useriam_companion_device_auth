@@ -39,6 +39,12 @@ AvailableDeviceSubscription::AvailableDeviceSubscription(UserId userId,
     : userId_(userId),
       subscriptionManager_(subscriptionManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
+}
+
+AvailableDeviceSubscription::~AvailableDeviceSubscription()
+{
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
 }
 
 std::shared_ptr<AvailableDeviceSubscription> AvailableDeviceSubscription::Create(UserId userId,

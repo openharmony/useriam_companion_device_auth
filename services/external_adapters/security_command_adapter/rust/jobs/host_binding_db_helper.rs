@@ -20,16 +20,26 @@ use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::{log_e, p, Vec};
 
-pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
+pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
+    let mut same_device_replaced_binding_id = None;
     if let Ok(info) = HostBindingDbManagerRegistry::get()
         .get_device_by_device_key(device_info.user_info.user_id, &device_info.device_key)
     {
-        if HostBindingDbManagerRegistry::get_mut().remove_device(info.binding_id).is_err() {
+        if HostBindingDbManagerRegistry::get_mut().remove_device(info.binding_id).is_ok() {
+            same_device_replaced_binding_id = Some(info.binding_id);
+        } else {
             log_e!("remove device fail");
         }
     }
 
-    HostBindingDbManagerRegistry::get_mut().add_device(device_info, sk_info)
+    let cross_device_replaced_binding_id = HostBindingDbManagerRegistry::get_mut().add_device(device_info, sk_info)?;
+    if same_device_replaced_binding_id.is_some() && cross_device_replaced_binding_id.is_some() {
+        log_e!(
+            "unexpected: both same-device replacement ({:?}) and cross-device eviction ({:?}) occurred",
+            same_device_replaced_binding_id, cross_device_replaced_binding_id
+        );
+    }
+    Ok(same_device_replaced_binding_id.or(cross_device_replaced_binding_id))
 }
 
 pub fn update_host_device_last_used_time(binding_id: i32) -> Result<(), ErrorCode> {

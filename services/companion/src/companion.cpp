@@ -63,6 +63,7 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
     : addedToIdm_(addedToIdm),
       weakManager_(managerWeakPtr)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     status_.FromPersisted(persistedStatus);
     std::ostringstream oss;
     oss << "CdaCompanion(" << GET_TRUNCATED_STRING(status_.templateId) << ")";
@@ -71,6 +72,7 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
 
 Companion::~Companion()
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     IAM_LOGI("%{public}s destroyed", GetDescription());
     SetCompanionTokenAuthAtl(std::nullopt);
 }
@@ -79,10 +81,9 @@ bool Companion::Initialize()
 {
     deviceStatusSubscription_ =
         GetCrossDeviceCommManager().SubscribeDeviceStatus(status_.companionDeviceStatus.deviceKey, true,
-            [weakSelf = weak_from_this(), description = GetDescription()](
-                const std::vector<DeviceStatus> &deviceStatusList) {
+            [weakSelf = weak_from_this()](const std::vector<DeviceStatus> &deviceStatusList) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleDeviceStatusChanged(deviceStatusList);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), deviceStatusSubscription_ != nullptr, false);
@@ -167,10 +168,10 @@ void Companion::SetCompanionTokenAuthAtl(std::optional<Atl> tokenAuthAtl)
         (void)GetSecurityAgent().HostRevokeToken(input);
     } else if (tokenAuthAtl.has_value()) {
         tokenTimeoutSubscription_ = RelativeTimer::GetInstance().Register(
-            [weakSelf = weak_from_this(), description = GetDescription()]() {
+            [weakSelf = weak_from_this()]() {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
-                IAM_LOGI("%{public}s token timeout, revoking token", description);
+                ENSURE_OR_RETURN(self != nullptr);
+                IAM_LOGI("%{public}s token timeout, revoking token", self->GetDescription());
                 self->SetCompanionTokenAuthAtl(std::nullopt);
             },
             TOKEN_TIMEOUT_MS);
@@ -192,10 +193,10 @@ void Companion::RefreshTokenTimer()
 
     tokenTimeoutSubscription_.reset();
     tokenTimeoutSubscription_ = RelativeTimer::GetInstance().Register(
-        [weakSelf = weak_from_this(), description = GetDescription()]() {
+        [weakSelf = weak_from_this()]() {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
-            IAM_LOGI("%{public}s token timeout, revoking token", description);
+            ENSURE_OR_RETURN(self != nullptr);
+            IAM_LOGI("%{public}s token timeout, revoking token", self->GetDescription());
             self->SetCompanionTokenAuthAtl(std::nullopt);
         },
         TOKEN_TIMEOUT_MS);
@@ -218,9 +219,9 @@ void Companion::SetDeviceNames(const std::string &deviceName, const std::string 
 
 void Companion::NotifySubscribers()
 {
-    TaskRunnerManager::GetInstance().PostTaskOnResident([weakManager = weakManager_, description = GetDescription()]() {
+    TaskRunnerManager::GetInstance().PostTaskOnResident([weakManager = weakManager_]() {
         auto manager = weakManager.lock();
-        ENSURE_OR_RETURN_DESC(description, manager != nullptr);
+        ENSURE_OR_RETURN(manager != nullptr);
         manager->NotifyCompanionStatusChange();
     });
 }
@@ -246,19 +247,19 @@ void Companion::StartTemplateAddToIdmTimer()
         return;
     }
 
-    ScopeGuard guard([weakSelf = weak_from_this(), description = GetDescription()]() {
+    ScopeGuard guard([weakSelf = weak_from_this()]() {
         auto self = weakSelf.lock();
-        ENSURE_OR_RETURN_DESC(description, self != nullptr);
-        IAM_LOGE("%{public}s failed to start timer, triggering timeout handler", description);
+        ENSURE_OR_RETURN(self != nullptr);
+        IAM_LOGE("%{public}s failed to start timer, triggering timeout handler", self->GetDescription());
         self->HandleTemplateAddToIdmTimeout();
     });
 
     IAM_LOGI("%{public}s starting template add timer, timeout: %{public}u ms", GetDescription(),
         IDM_ADD_TEMPLATE_TIMEOUT_MS);
     templateAddToIdmTimer_ = RelativeTimer::GetInstance().Register(
-        [weakSelf = weak_from_this(), description = GetDescription()]() {
+        [weakSelf = weak_from_this()]() {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleTemplateAddToIdmTimeout();
         },
         IDM_ADD_TEMPLATE_TIMEOUT_MS);

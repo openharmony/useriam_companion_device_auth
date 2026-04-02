@@ -1155,7 +1155,7 @@ HWTEST_F(FfiUtilTest, DecodeCompanionBeginAddHostBindingOutput_001, TestSize.Lev
 {
     MockGuard guard;
     CompanionBeginAddHostBindingOutputFfi ffi = {};
-    ffi.bindingId = INT32_123;
+    ffi.replacedBindingId = INT32_123;
     ffi.bindingStatus.bindingId = INT32_123;
     ffi.bindingStatus.companionUserId = INT32_456;
     ffi.bindingStatus.isTokenValid = 1;
@@ -1177,7 +1177,7 @@ HWTEST_F(FfiUtilTest, DecodeCompanionBeginAddHostBindingOutput_002, TestSize.Lev
 {
     MockGuard guard;
     CompanionBeginAddHostBindingOutputFfi ffi = {};
-    ffi.bindingId = 0;
+    ffi.replacedBindingId = 0;
     ffi.bindingStatus.bindingId = INT32_555;
     ffi.bindingStatus.companionUserId = INT32_666;
     ffi.bindingStatus.isTokenValid = 0;

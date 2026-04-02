@@ -37,6 +37,8 @@ void OutboundRequest::Start()
 {
     IAM_LOGI("%{public}s start", GetDescription());
 
+    StartTimeout(GetWeakPtr());
+
     ErrorGuard errorGuard([this](ResultCode result) { CompleteWithError(result); });
 
     bool onStartRet = OnStart(errorGuard);
@@ -102,13 +104,13 @@ bool OutboundRequest::OpenConnection()
 
     IAM_LOGI("%{public}s open connection %{public}s success", GetDescription(), connectionName_.c_str());
 
-    UpdateDescription(GenerateDescription(requestType_, requestId_, connectionName_));
+    desc_.SetConnectionName(connectionName_);
 
     auto connectionStatusSubscription = GetCrossDeviceCommManager().SubscribeConnectionStatus(connectionName_,
-        [weakSelf = GetWeakPtr(), description = GetDescription()](const std::string &connectionName,
-            ConnectionStatus status, const std::string &reason) {
+        [weakSelf = GetWeakPtr()](const std::string &connectionName, ConnectionStatus status,
+            const std::string &reason) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             if (self->connectionName_ != connectionName) {
                 return;
             }
@@ -119,10 +121,9 @@ bool OutboundRequest::OpenConnection()
 
     auto requestAbortedSubscription =
         GetCrossDeviceCommManager().SubscribeMessage(connectionName_, MessageType::REQUEST_ABORTED,
-            [weakSelf = GetWeakPtr(), description = GetDescription()](const Attributes &request,
-                std::function<void(const Attributes &)> onReply) {
+            [weakSelf = GetWeakPtr()](const Attributes &request, std::function<void(const Attributes &)> onReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleRequestAborted(request, onReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), requestAbortedSubscription != nullptr, false);

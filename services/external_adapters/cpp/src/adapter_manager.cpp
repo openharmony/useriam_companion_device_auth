@@ -52,7 +52,7 @@ AdapterManager &AdapterManager::GetInstance()
 
 IUserAuthAdapter &AdapterManager::GetUserAuthAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("UserAuth");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (userAuthAdapter_ == nullptr) {
         IAM_LOGE("UserAuth adapter is not initialized");
         AbortIfAdapterUninitialized("UserAuth");
@@ -62,12 +62,13 @@ IUserAuthAdapter &AdapterManager::GetUserAuthAdapter()
 
 void AdapterManager::SetUserAuthAdapter(std::shared_ptr<IUserAuthAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     userAuthAdapter_ = adapter;
 }
 
 IDriverManagerAdapter &AdapterManager::GetDriverManagerAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("DriverManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (driverManagerAdapter_ == nullptr) {
         IAM_LOGE("DriverManager adapter is not initialized");
         AbortIfAdapterUninitialized("DriverManager");
@@ -77,12 +78,13 @@ IDriverManagerAdapter &AdapterManager::GetDriverManagerAdapter()
 
 void AdapterManager::SetDriverManagerAdapter(std::shared_ptr<IDriverManagerAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     driverManagerAdapter_ = adapter;
 }
 
 IIdmAdapter &AdapterManager::GetIdmAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("IDM");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (idmAdapter_ == nullptr) {
         IAM_LOGE("IDM adapter is not initialized");
         AbortIfAdapterUninitialized("IDM");
@@ -92,12 +94,13 @@ IIdmAdapter &AdapterManager::GetIdmAdapter()
 
 void AdapterManager::SetIdmAdapter(std::shared_ptr<IIdmAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     idmAdapter_ = adapter;
 }
 
 ISaManagerAdapter &AdapterManager::GetSaManagerAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SaManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (saManagerAdapter_ == nullptr) {
         IAM_LOGE("SaManager adapter is not initialized");
         AbortIfAdapterUninitialized("SaManager");
@@ -107,12 +110,13 @@ ISaManagerAdapter &AdapterManager::GetSaManagerAdapter()
 
 void AdapterManager::SetSaManagerAdapter(std::shared_ptr<ISaManagerAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     saManagerAdapter_ = adapter;
 }
 
 ISecurityCommandAdapter &AdapterManager::GetSecurityCommandAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SecurityCommand");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (securityCommandAdapter_ == nullptr) {
         IAM_LOGE("SecurityCommand adapter is not initialized");
         AbortIfAdapterUninitialized("SecurityCommand");
@@ -122,12 +126,13 @@ ISecurityCommandAdapter &AdapterManager::GetSecurityCommandAdapter()
 
 void AdapterManager::SetSecurityCommandAdapter(std::shared_ptr<ISecurityCommandAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     securityCommandAdapter_ = adapter;
 }
 
 IEventManagerAdapter &AdapterManager::GetEventManagerAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("EventManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (eventManagerAdapter_ == nullptr) {
         IAM_LOGE("EventManager adapter is not initialized");
         AbortIfAdapterUninitialized("EventManager");
@@ -137,12 +142,13 @@ IEventManagerAdapter &AdapterManager::GetEventManagerAdapter()
 
 void AdapterManager::SetEventManagerAdapter(std::shared_ptr<IEventManagerAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     eventManagerAdapter_ = adapter;
 }
 
 ITimeKeeper &AdapterManager::GetTimeKeeper()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("TimeKeeper");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (timeKeeperAdapter_ == nullptr) {
         IAM_LOGE("TimeKeeper adapter is not initialized");
         AbortIfAdapterUninitialized("TimeKeeper");
@@ -152,12 +158,13 @@ ITimeKeeper &AdapterManager::GetTimeKeeper()
 
 void AdapterManager::SetTimeKeeper(std::shared_ptr<ITimeKeeper> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     timeKeeperAdapter_ = adapter;
 }
 
 ISystemParamManager &AdapterManager::GetSystemParamManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SystemParamManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (systemParamManager_ == nullptr) {
         IAM_LOGE("SystemParamManager is not initialized");
         AbortIfAdapterUninitialized("SystemParamManager");
@@ -167,12 +174,13 @@ ISystemParamManager &AdapterManager::GetSystemParamManager()
 
 void AdapterManager::SetSystemParamManager(std::shared_ptr<ISystemParamManager> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     systemParamManager_ = adapter;
 }
 
 IUserIdManager &AdapterManager::GetUserIdManager()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("UserIdManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (userIdManager_ == nullptr) {
         IAM_LOGE("UserIdManager is not initialized");
         AbortIfAdapterUninitialized("UserIdManager");
@@ -182,12 +190,13 @@ IUserIdManager &AdapterManager::GetUserIdManager()
 
 void AdapterManager::SetUserIdManager(std::shared_ptr<IUserIdManager> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     userIdManager_ = adapter;
 }
 
 void AdapterManager::AbortIfAdapterUninitialized(const char *adapterName)
 {
-    IAM_LOGF("%{public}s adapter is not initialized, abort", adapterName);
+    IAM_LOGE("%{public}s adapter is not initialized, abort", adapterName);
     std::abort();
 }
 
