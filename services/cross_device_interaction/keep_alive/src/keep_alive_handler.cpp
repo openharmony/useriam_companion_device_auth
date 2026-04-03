@@ -18,6 +18,7 @@
 #include "iam_check.h"
 #include "iam_logger.h"
 
+#include "interaction_desc.h"
 #include "singleton_manager.h"
 
 #define LOG_TAG "CDA_SA"
@@ -27,16 +28,18 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 void KeepAliveHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "KA");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
 
     std::string connectionName;
     bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), getConnectionNameRet);
+    desc.SetConnectionName(connectionName);
 
     bool isOpen = GetCrossDeviceCommManager().IsConnectionOpen(connectionName);
-    ENSURE_OR_RETURN(isOpen);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), isOpen);
 
     reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::SUCCESS));
 }

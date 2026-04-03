@@ -40,7 +40,7 @@ HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &para
       requestCallback_(std::move(requestCallback)),
       eventCollector_("host single mix auth request")
 {
-    UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    desc_.SetTemplateId(templateId_);
     eventCollector_.UpdateHostUserId(params.hostUserId);
     eventCollector_.UpdateScheduleId(params.scheduleId);
     eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
@@ -49,6 +49,8 @@ HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &para
 
 void HostSingleMixAuthRequest::Start()
 {
+    StartTimeout(weak_from_this());
+
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::TOKEN_AUTH)) {
         IAM_LOGE("%{public}s TOKEN_AUTH capability not supported by companion device", GetDescription());
         HandleTokenAuthResult(ResultCode::GENERAL_ERROR, std::vector<uint8_t> {});
@@ -61,10 +63,9 @@ void HostSingleMixAuthRequest::Start()
         .templateId = templateId_,
         .authIntent = authIntent_ };
     tokenAuthRequest_ = GetRequestFactory().CreateHostTokenAuthRequest(tokenAuthParams,
-        [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
-            const std::vector<uint8_t> &extraInfo) {
+        [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleTokenAuthResult(result, extraInfo);
         });
     if (tokenAuthRequest_ == nullptr) {
@@ -119,10 +120,9 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         .templateId = templateId_,
         .authIntent = authIntent_ };
     delegateAuthRequest_ = GetRequestFactory().CreateHostDelegateAuthRequest(delegateAuthParams,
-        [weakSelf = weak_from_this(), description = GetDescription()](ResultCode result,
-            const std::vector<uint8_t> &extraInfo) {
+        [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleDelegateAuthResult(result, extraInfo);
         });
     if (delegateAuthRequest_ == nullptr) {

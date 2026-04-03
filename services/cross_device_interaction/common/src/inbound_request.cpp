@@ -40,15 +40,16 @@ void InboundRequest::Start()
 {
     IAM_LOGI("%{public}s start", GetDescription());
 
+    StartTimeout(GetWeakPtr());
+
     ErrorGuard errorGuard([this](ResultCode result) { CompleteWithError(result); });
 
     ENSURE_OR_RETURN_DESC(GetDescription(), !connectionName_.empty());
     connectionStatusSubscription_ = GetCrossDeviceCommManager().SubscribeConnectionStatus(connectionName_,
-        [weakSelf = GetWeakPtr(), description = GetDescription()](const std::string &connName, ConnectionStatus status,
-            const std::string &reason) {
+        [weakSelf = GetWeakPtr()](const std::string &connName, ConnectionStatus status, const std::string &reason) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
-            ENSURE_OR_RETURN_DESC(description, self->connectionName_ == connName);
+            ENSURE_OR_RETURN(self != nullptr);
+            ENSURE_OR_RETURN(self->connectionName_ == connName);
 
             self->HandleConnectionStatus(connName, status, reason);
         });
@@ -128,8 +129,8 @@ void InboundRequest::SendRequestAborted(ResultCode result, const std::string &re
     EncodeRequestAbortedRequest(abortReq, request);
 
     GetCrossDeviceCommManager().SendMessage(connectionName_, MessageType::REQUEST_ABORTED, request,
-        [description = GetDescription()](const Attributes &reply) {
-            IAM_LOGI("%{public}s RequestAborted reply received", description);
+        [](const Attributes &reply) {
+            IAM_LOGI("RequestAborted reply received");
             (void)reply;
         });
 }

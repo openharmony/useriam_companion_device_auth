@@ -19,8 +19,8 @@
 #include <memory>
 
 #include "companion_manager.h"
-#include "event_manager_adapter.h"
 #include "inbound_request.h"
+#include "interaction_event_collector.h"
 #include "obtain_token_message.h"
 #include "security_agent.h"
 #include "service_common.h"

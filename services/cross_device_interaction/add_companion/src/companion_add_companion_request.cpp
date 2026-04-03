@@ -60,20 +60,18 @@ bool CompanionAddCompanionRequest::OnStart(ErrorGuard &errorGuard)
 
     beginAddHostBindingSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::BEGIN_ADD_HOST_BINDING,
-            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &msg,
-                OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this()](const Attributes &msg, OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleBeginAddCompanion(msg, onMessageReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), beginAddHostBindingSubscription_ != nullptr, false);
 
     endAddHostBindingSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::END_ADD_HOST_BINDING,
-            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &msg,
-                OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this()](const Attributes &msg, OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleEndAddCompanion(msg, onMessageReply);
             });
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), endAddHostBindingSubscription_ != nullptr, false);
@@ -172,16 +170,20 @@ void CompanionAddCompanionRequest::HandleBeginAddCompanion(const Attributes &att
     auto requestOpt = DecodeBeginAddHostBindingRequest(attrInput);
     ENSURE_OR_RETURN_DESC(GetDescription(), requestOpt.has_value());
 
-    std::vector<uint8_t> addHostBindingReply;
-    ResultCode ret = GetHostBindingManager().BeginAddHostBinding(GetRequestId(), requestOpt->companionUserId,
-        secureProtocolId_, requestOpt->extraInfo, addHostBindingReply);
+    BeginAddHostBindingInput beginInput = { .requestId = GetRequestId(),
+        .companionUserId = requestOpt->companionUserId,
+        .secureProtocolId = secureProtocolId_,
+        .addHostBindingRequest = requestOpt->extraInfo };
+    BeginAddHostBindingOutput beginOutput = {};
+    ResultCode ret = GetHostBindingManager().BeginAddHostBinding(beginInput, beginOutput);
     if (ret != ResultCode::SUCCESS) {
-        IAM_LOGE("%{public}s CompanionBeginAddHostBinding failed ret=%{public}d", GetDescription(), ret);
+        IAM_LOGE("%{public}s BeginAddHostBinding failed ret=%{public}d", GetDescription(), ret);
         errorGuard.UpdateErrorCode(ret);
         return;
     }
+    desc_.SetBindingId(beginOutput.bindingId);
 
-    BeginAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = addHostBindingReply };
+    BeginAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = beginOutput.addHostBindingReply };
     Attributes reply;
     EncodeBeginAddHostBindingReply(replyMsg, reply);
 
@@ -238,7 +240,7 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
 
 std::weak_ptr<InboundRequest> CompanionAddCompanionRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 void CompanionAddCompanionRequest::SendErrorReply(ResultCode result)

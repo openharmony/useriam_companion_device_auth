@@ -20,6 +20,7 @@
 
 #include "companion_manager.h"
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "revoke_token_message.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
@@ -36,23 +37,25 @@ HostRevokeTokenHandler::HostRevokeTokenHandler() : SyncIncomingMessageHandler(Me
 
 void HostRevokeTokenHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "HRvT");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
     });
 
     auto requestMsgOpt = DecodeRevokeTokenRequest(request);
-    ENSURE_OR_RETURN(requestMsgOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), requestMsgOpt.has_value());
     const auto &requestMsg = *requestMsgOpt;
 
     auto companionStatus =
         GetCompanionManager().GetCompanionStatus(requestMsg.hostUserId, requestMsg.companionDeviceKey);
     if (!companionStatus) {
-        IAM_LOGE("GetCompanionStatus failed");
+        IAM_LOGE("%{public}s GetCompanionStatus failed", desc.GetCStr());
         return;
     }
 
+    desc.SetTemplateId(companionStatus->templateId);
     GetCompanionManager().SetCompanionTokenAuthAtl(companionStatus->templateId, std::nullopt);
 
     RevokeTokenReply replyMsg = { .result = ResultCode::SUCCESS };

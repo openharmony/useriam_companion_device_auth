@@ -151,9 +151,9 @@ bool HostSyncDeviceStatusRequest::SendSyncDeviceStatusRequest(const std::vector<
     EncodeSyncDeviceStatusRequest(request, attrRequest);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::SYNC_DEVICE_STATUS,
-        attrRequest, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
+        attrRequest, [weakSelf = weak_from_this()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleSyncDeviceStatusReply(message);
         });
     if (!sendRet) {
@@ -202,6 +202,7 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
     }
 
     eventCollector_.UpdateTemplateIdList({ companionStatus->templateId });
+    desc_.SetTemplateId(companionStatus->templateId);
 
     HostEndCompanionCheckInput input = {};
     input.requestId = GetRequestId();

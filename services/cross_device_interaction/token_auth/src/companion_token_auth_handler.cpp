@@ -21,6 +21,7 @@
 #include "cross_device_comm_manager.h"
 #include "error_guard.h"
 #include "host_binding_manager.h"
+#include "interaction_desc.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "token_auth_message.h"
@@ -37,7 +38,8 @@ CompanionTokenAuthHandler::CompanionTokenAuthHandler() : SyncIncomingMessageHand
 
 void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "CTkA");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
@@ -45,19 +47,20 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
 
     auto tokenRequestOpt = DecodeTokenAuthRequest(request);
     if (!tokenRequestOpt.has_value()) {
-        IAM_LOGE("DecodeTokenAuthRequest failed");
+        IAM_LOGE("%{public}s DecodeTokenAuthRequest failed", desc.GetCStr());
         return;
     }
     const auto &tokenRequest = *tokenRequestOpt;
 
     if (!GetCrossDeviceCommManager().IsAuthMaintainActive()) {
-        IAM_LOGE("local auth maintain inactive");
+        IAM_LOGE("%{public}s local auth maintain inactive", desc.GetCStr());
         return;
     }
 
     auto hostBindingStatus =
         GetHostBindingManager().GetHostBindingStatus(tokenRequest.companionUserId, tokenRequest.hostDeviceKey);
-    ENSURE_OR_RETURN(hostBindingStatus.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), hostBindingStatus.has_value());
+    desc.SetBindingId(hostBindingStatus->bindingId);
 
     auto secureProtocolId = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
 
@@ -69,7 +72,7 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
     CompanionProcessTokenAuthOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionProcessTokenAuth(input, output);
     if (ret != ResultCode::SUCCESS) {
-        IAM_LOGE("CompanionProcessTokenAuth failed ret=%{public}d", ret);
+        IAM_LOGE("%{public}s CompanionProcessTokenAuth failed ret=%{public}d", desc.GetCStr(), ret);
         errorGuard.UpdateErrorCode(ret);
         return;
     }

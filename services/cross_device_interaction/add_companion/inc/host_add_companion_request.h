@@ -26,7 +26,7 @@
 #include "add_companion_message.h"
 #include "companion_manager.h"
 #include "error_guard.h"
-#include "event_manager_adapter.h"
+#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "security_agent.h"
 #include "user_id_manager.h"

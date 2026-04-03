@@ -58,15 +58,14 @@ void TaskRunnerManager::SetRunningOnDefaultTaskRunner(bool value)
     g_runningOnDefaultTaskRunner = value;
 }
 
-void TaskRunnerManager::AssertRunningOnResidentThread(const char *callerInterface) const
+void TaskRunnerManager::CheckRunningOnResidentThread(const char *caller) const
 {
-    ENSURE_OR_RETURN(callerInterface != nullptr);
+    ENSURE_OR_RETURN(caller != nullptr);
     if (!RunningOnDefaultTaskRunner()) {
-        IAM_LOGF("FATAL: %{public}s not running on resident thread!", callerInterface);
+        IAM_LOGE("FATAL: %{public}s not running on resident thread!", caller);
 
-        std::string faultInfo =
-            std::string(callerInterface) + ": Not running on resident thread\nCallStack:\n" + GetCallStack();
-        ReportSystemFault("THREAD_ASSERTION_FAILED", "THREAD_ASSERTION", faultInfo);
+        std::string faultInfo = std::string(caller) + ": Not running on resident thread\nCallStack:\n" + GetCallStack();
+        ReportSystemFault("THREAD_CHECK_FAILED", "THREAD_CHECK", faultInfo);
     }
 }
 

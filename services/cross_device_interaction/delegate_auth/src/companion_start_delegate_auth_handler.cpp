@@ -21,6 +21,7 @@
 #include "common_message.h"
 #include "delegate_auth_message.h"
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "request_manager.h"
 #include "singleton_manager.h"
 
@@ -37,7 +38,8 @@ CompanionStartDelegateAuthHandler::CompanionStartDelegateAuthHandler()
 
 void CompanionStartDelegateAuthHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "CDlA");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
@@ -45,18 +47,19 @@ void CompanionStartDelegateAuthHandler::HandleRequest(const Attributes &request,
 
     std::string connectionName;
     bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), getConnectionNameRet);
+    desc.SetConnectionName(connectionName);
 
     auto startRequestOpt = DecodeStartDelegateAuthRequest(request);
-    ENSURE_OR_RETURN(startRequestOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRequestOpt.has_value());
 
     auto delegateAuthRequest = GetRequestFactory().CreateCompanionDelegateAuthRequest(connectionName,
         startRequestOpt->companionUserId, startRequestOpt->hostDeviceKey, startRequestOpt->extraInfo);
-    ENSURE_OR_RETURN(delegateAuthRequest != nullptr);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), delegateAuthRequest != nullptr);
 
     bool startRet = GetRequestManager().Start(delegateAuthRequest);
     if (!startRet) {
-        IAM_LOGE("requestManager Start failed");
+        IAM_LOGE("%{public}s requestManager Start failed", desc.GetCStr());
         return;
     }
 

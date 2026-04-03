@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "companion_manager.h"
-#include "event_manager_adapter.h"
+#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "request_factory.h"
 #include "security_agent.h"

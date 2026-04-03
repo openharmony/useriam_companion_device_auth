@@ -41,11 +41,11 @@ public:
     virtual bool RunningOnDefaultTaskRunner() const;
     void SetRunningOnDefaultTaskRunner(bool value);
 
-    // Assert that the current thread is the resident task runner thread.
-    // If not, logs a fatal error, reports system fault and aborts the process.
+    // Check that the current thread is the resident task runner thread.
+    // If not, logs a fatal error, reports system fault.
     // This is a design verification check - all business logic must run on the resident thread.
-    // @param callerInterface The interface name of the caller, used for fault reporting.
-    void AssertRunningOnResidentThread(const char *callerInterface) const;
+    // @param caller The function signature of the caller, used for fault reporting.
+    void CheckRunningOnResidentThread(const char *caller) const;
 
     virtual bool CreateTaskRunner(const std::string &name);
     virtual void DestroyTaskRunner(const std::string &name);
@@ -68,5 +68,9 @@ private:
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
+
+#define CHECK_RUNNING_ON_RESIDENT_THREAD()                                                               \
+    ::OHOS::UserIam::CompanionDeviceAuth::TaskRunnerManager::GetInstance().CheckRunningOnResidentThread( \
+        __PRETTY_FUNCTION__)
 
 #endif // COMPANION_DEVICE_AUTH_TASK_RUNNER_MANAGER_H

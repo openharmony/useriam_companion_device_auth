@@ -21,6 +21,7 @@
 #include "common_message.h"
 #include "companion_issue_token_request.h"
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "issue_token_message.h"
 #include "singleton_manager.h"
 
@@ -36,8 +37,9 @@ CompanionPreIssueTokenHandler::CompanionPreIssueTokenHandler()
 
 void CompanionPreIssueTokenHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    IAM_LOGI("start");
-    ENSURE_OR_RETURN(onMessageReply != nullptr);
+    InteractionDesc desc(HANDLER_PREFIX, "CIsT");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
 
     ErrorGuard errorGuard([&onMessageReply](ResultCode result) {
         Attributes reply;
@@ -48,17 +50,18 @@ void CompanionPreIssueTokenHandler::HandleRequest(const Attributes &request, OnM
 
     std::string connectionName;
     bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), getConnectionNameRet);
+    desc.SetConnectionName(connectionName);
 
     auto hostDeviceKeyOpt = DecodeHostDeviceKey(request);
-    ENSURE_OR_RETURN(hostDeviceKeyOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), hostDeviceKeyOpt.has_value());
 
     auto issueTokenRequest = GetRequestFactory().CreateCompanionIssueTokenRequest(connectionName, request,
         std::move(onMessageReply), hostDeviceKeyOpt.value());
-    ENSURE_OR_RETURN(issueTokenRequest != nullptr);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), issueTokenRequest != nullptr);
 
     bool startRet = GetRequestManager().Start(issueTokenRequest);
-    ENSURE_OR_RETURN(startRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRet);
     errorGuard.Cancel();
 }
 } // namespace CompanionDeviceAuth

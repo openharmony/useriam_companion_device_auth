@@ -845,7 +845,7 @@ assert_max_size!(CompanionBeginAddHostBindingInputFfi);
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionBeginAddHostBindingOutputFfi {
     pub sec_message: DataArray1024Ffi, /* device_id, user_id, track_ability_level, tag, iv, encrypt_data(device_id, user_id) */
-    pub binding_id: i32,
+    pub replaced_binding_id: i32,
     pub binding_status: PersistedHostBindingStatusFfi,
 }
 assert_max_size!(CompanionBeginAddHostBindingOutputFfi);

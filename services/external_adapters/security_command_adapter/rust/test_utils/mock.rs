@@ -1095,7 +1095,7 @@ impl crate::traits::companion_device_db_manager::CompanionDeviceDbManager for Mo
 /// Mock implementation for HostBindingDbManager trait
 #[cfg(any(test, feature = "test-utils"))]
 pub struct MockHostBindingDbManager {
-    add_device: Expectation0<Result<(), ErrorCode>>,
+    add_device: Expectation0<Result<Option<i32>, ErrorCode>>,
     get_device_by_binding_id: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
     get_device_by_device_key: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
     remove_device: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
@@ -1134,7 +1134,7 @@ impl MockHostBindingDbManager {
         }
     }
 
-    pub fn expect_add_device(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
+    pub fn expect_add_device(&mut self) -> &mut Expectation0<Result<Option<i32>, ErrorCode>> {
         &mut self.add_device
     }
     pub fn expect_get_device_by_binding_id(
@@ -1197,7 +1197,7 @@ impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBi
         &mut self,
         _device_info: &crate::traits::db_manager::HostBindingInfo,
         _sk_info: &crate::traits::db_manager::HostBindingSk,
-    ) -> Result<(), ErrorCode> {
+    ) -> Result<Option<i32>, ErrorCode> {
         self.add_device.call()
     }
     fn get_device_by_binding_id(

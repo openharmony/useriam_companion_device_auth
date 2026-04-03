@@ -40,6 +40,12 @@ TemplateStatusSubscription::TemplateStatusSubscription(UserId userId,
     : userId_(userId),
       subscriptionManager_(subscriptionManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
+}
+
+TemplateStatusSubscription::~TemplateStatusSubscription()
+{
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
 }
 
 std::shared_ptr<TemplateStatusSubscription> TemplateStatusSubscription::Create(UserId userId,

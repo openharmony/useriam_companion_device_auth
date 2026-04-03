@@ -18,8 +18,8 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
+#include "interaction_desc.h"
 #include "irequest.h"
 #include "misc_manager.h"
 #include "relative_timer.h"
@@ -35,15 +35,6 @@ public:
 
     virtual ~BaseRequest();
 
-    static std::string GenerateDescription(RequestType requestType, RequestId requestId);
-    static std::string GenerateDescription(RequestType requestType, RequestId requestId,
-        const std::string &connectionName);
-    static std::string GenerateDescription(RequestType requestType, RequestId requestId,
-        const std::string &connectionName, TemplateId templateId);
-    static std::string GenerateDescription(RequestType requestType, RequestId requestId,
-        const std::string &connectionName, const std::vector<TemplateId> &templateIdList);
-    static std::string FormatTemplateId(TemplateId templateId);
-
     RequestType GetRequestType() const final override;
     const char *GetDescription() const final override;
     RequestId GetRequestId() const final override;
@@ -51,16 +42,16 @@ public:
     std::optional<DeviceKey> GetPeerDeviceKey() const override;
 
 protected:
-    void StartTimeout();
+    void StartTimeout(std::weak_ptr<BaseRequest> weakSelf);
     void StopTimeout();
-    void UpdateDescription(const std::string &newDescription);
     void Destroy();
     virtual void CompleteWithError(ResultCode result) = 0;
+
+    InteractionDesc desc_;
 
     const RequestType requestType_;
     RequestId requestId_ = 0;
     const ScheduleId scheduleId_ = 0;
-    std::string description_ = "";
     const uint32_t timeoutMs_ = 0;
     std::unique_ptr<Subscription> timeoutSubscription_;
     bool cancelled_ = false;

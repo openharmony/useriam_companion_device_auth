@@ -76,6 +76,8 @@ companion_device_auth_service_static_sources = [
   "cross_device_interaction/add_companion/src/host_add_companion_request.cpp",
   "cross_device_interaction/common/src/common_message.cpp",
   "cross_device_interaction/common/src/inbound_request.cpp",
+  "cross_device_interaction/common/src/interaction_desc.cpp",
+  "cross_device_interaction/common/src/interaction_event_collector.cpp",
   "cross_device_interaction/common/src/outbound_request.cpp",
   "cross_device_interaction/delegate_auth/src/companion_delegate_auth_request.cpp",
   "cross_device_interaction/delegate_auth/src/companion_start_delegate_auth_handler.cpp",

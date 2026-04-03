@@ -21,6 +21,7 @@
 #include "adapter_manager.h"
 #include "common_message.h"
 #include "error_guard.h"
+#include "interaction_desc.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 
@@ -62,7 +63,8 @@ std::optional<SyncDeviceStatusReply> CompanionSyncDeviceStatusHandler::BuildSync
 
 void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    IAM_LOGI("start");
+    InteractionDesc desc(HANDLER_PREFIX, "CSync");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
@@ -70,26 +72,27 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
 
     auto syncRequestOpt = DecodeSyncDeviceStatusRequest(request);
     if (!syncRequestOpt.has_value()) {
-        IAM_LOGE("DecodeSyncDeviceStatusRequest failed");
+        IAM_LOGE("%{public}s DecodeSyncDeviceStatusRequest failed", desc.GetCStr());
         return;
     }
     const auto &syncRequest = *syncRequestOpt;
 
     auto companionUserId = GetUserIdManager().GetActiveUserId();
     if (companionUserId == INVALID_USER_ID) {
-        IAM_LOGE("GetActiveUserId failed");
+        IAM_LOGE("%{public}s GetActiveUserId failed", desc.GetCStr());
         return;
     }
 
     auto syncReplyOpt = BuildSyncDeviceStatusReply(companionUserId);
-    ENSURE_OR_RETURN(syncReplyOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), syncReplyOpt.has_value());
     SyncDeviceStatusReply syncReply = std::move(*syncReplyOpt);
 
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId, syncRequest.hostDeviceKey);
     if (hostBindingStatus.has_value()) {
+        desc.SetBindingId(hostBindingStatus->bindingId);
         bool ret = CompanionProcessCheck(*hostBindingStatus, syncRequest, syncReply.companionCheckResponse);
         if (!ret) {
-            IAM_LOGE("CompanionProcessCheck failed");
+            IAM_LOGE("%{public}s CompanionProcessCheck failed", desc.GetCStr());
             return;
         }
     }

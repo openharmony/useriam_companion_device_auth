@@ -35,6 +35,7 @@ public:
     MOCK_METHOD(void, Register, (), (override));
     MOCK_METHOD(void, HandleIncomingMessage, (const Attributes &request, OnMessageReply &onMessageReply), (override));
     MOCK_METHOD(MessageType, GetMessageType, (), (const, override));
+    MOCK_METHOD(std::weak_ptr<IncomingMessageHandler>, GetWeakPtr, (), (override));
 };
 
 class IncomingMessageHandlerRegistryTest : public Test {

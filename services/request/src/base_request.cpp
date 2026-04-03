@@ -15,14 +15,8 @@
 
 #include "base_request.h"
 
-#include <cinttypes>
-#include <iomanip>
-#include <sstream>
-#include <vector>
-
 #include "iam_check.h"
 #include "iam_logger.h"
-#include "iam_para2str.h"
 
 #include "misc_manager.h"
 #include "relative_timer.h"
@@ -74,62 +68,7 @@ static const char *GetRequestTypeAbbr(RequestType requestType)
             return "?";
     }
 }
-
-static std::string FormatRequestId(RequestId requestId)
-{
-    const uint32_t UINT32_8 = 8;
-    std::stringstream ss;
-    ss << "0x" << std::hex << std::setfill('0') << std::setw(UINT32_8) << requestId;
-    return ss.str();
-}
-
 } // namespace
-
-std::string BaseRequest::GenerateDescription(RequestType requestType, RequestId requestId)
-{
-    return std::string("CdaRequest(") + GetRequestTypeAbbr(requestType) + "," + FormatRequestId(requestId) + ")";
-}
-
-std::string BaseRequest::GenerateDescription(RequestType requestType, RequestId requestId,
-    const std::string &connectionName)
-{
-    if (connectionName.empty() || connectionName == "-") {
-        return GenerateDescription(requestType, requestId);
-    }
-    return std::string("CdaRequest(") + GetRequestTypeAbbr(requestType) + "," + FormatRequestId(requestId) + "," +
-        connectionName + ")";
-}
-
-std::string BaseRequest::GenerateDescription(RequestType requestType, RequestId requestId,
-    const std::string &connectionName, TemplateId templateId)
-{
-    auto base = GenerateDescription(requestType, requestId, connectionName);
-    if (templateId != 0) {
-        base += ",T=" + GET_TRUNCATED_NUM_STR(templateId);
-    }
-    return base;
-}
-
-std::string BaseRequest::GenerateDescription(RequestType requestType, RequestId requestId,
-    const std::string &connectionName, const std::vector<TemplateId> &templateIdList)
-{
-    auto base = GenerateDescription(requestType, requestId, connectionName);
-    if (!templateIdList.empty()) {
-        base += ",T=[";
-        for (size_t i = 0; i < templateIdList.size(); ++i) {
-            if (i > 0)
-                base += ",";
-            base += GET_TRUNCATED_NUM_STR(templateIdList[i]);
-        }
-        base += "]";
-    }
-    return base;
-}
-
-std::string BaseRequest::FormatTemplateId(TemplateId templateId)
-{
-    return GET_TRUNCATED_NUM_STR(templateId);
-}
 
 BaseRequest::BaseRequest(RequestType requestType, ScheduleId scheduleId, uint32_t timeoutMs,
     const std::string &connectionName)
@@ -137,14 +76,19 @@ BaseRequest::BaseRequest(RequestType requestType, ScheduleId scheduleId, uint32_
       scheduleId_(scheduleId),
       timeoutMs_(timeoutMs)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     requestId_ = static_cast<RequestId>(GetMiscManager().GetNextGlobalId());
-    description_ = GenerateDescription(requestType_, requestId_, connectionName);
-    IAM_LOGI("created request %{public}s", description_.c_str());
-    StartTimeout();
+    desc_ = InteractionDesc(REQUEST_PREFIX, GetRequestTypeAbbr(requestType_));
+    desc_.SetRequestId(requestId_);
+    if (!connectionName.empty() && connectionName != "-") {
+        desc_.SetConnectionName(connectionName);
+    }
+    IAM_LOGI("created request %{public}s", GetDescription());
 }
 
 BaseRequest::~BaseRequest()
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     StopTimeout();
 }
 
@@ -155,7 +99,7 @@ RequestType BaseRequest::GetRequestType() const
 
 const char *BaseRequest::GetDescription() const
 {
-    return description_.c_str();
+    return desc_.GetCStr();
 }
 
 RequestId BaseRequest::GetRequestId() const
@@ -173,16 +117,18 @@ std::optional<DeviceKey> BaseRequest::GetPeerDeviceKey() const
     return std::nullopt;
 }
 
-void BaseRequest::StartTimeout()
+void BaseRequest::StartTimeout(std::weak_ptr<BaseRequest> weakSelf)
 {
     if (timeoutMs_ == 0) {
         return;
     }
 
     timeoutSubscription_ = RelativeTimer::GetInstance().Register(
-        [this]() {
-            IAM_LOGE("%{public}s timeout", GetDescription());
-            Cancel(ResultCode::TIMEOUT);
+        [weakSelf]() {
+            auto self = weakSelf.lock();
+            ENSURE_OR_RETURN(self != nullptr);
+            IAM_LOGE("%{public}s timeout", self->GetDescription());
+            self->Cancel(ResultCode::TIMEOUT);
         },
         timeoutMs_);
     ENSURE_OR_RETURN_DESC(GetDescription(), timeoutSubscription_ != nullptr);
@@ -193,11 +139,6 @@ void BaseRequest::StopTimeout()
     if (timeoutSubscription_ != nullptr) {
         timeoutSubscription_.reset();
     }
-}
-
-void BaseRequest::UpdateDescription(const std::string &newDescription)
-{
-    description_ = newDescription;
 }
 
 void BaseRequest::Destroy()

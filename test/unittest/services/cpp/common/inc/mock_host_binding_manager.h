@@ -30,9 +30,7 @@ public:
     MOCK_METHOD(std::optional<HostBindingStatus>, GetHostBindingStatus,
         (UserId companionUserId, const DeviceKey &hostDeviceKey), (override));
     MOCK_METHOD(ResultCode, BeginAddHostBinding,
-        (RequestId requestId, UserId companionUserId, SecureProtocolId secureProtocolId,
-            const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply),
-        (override));
+        (const BeginAddHostBindingInput &input, BeginAddHostBindingOutput &output), (override));
     MOCK_METHOD(ResultCode, EndAddHostBinding,
         (RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData),
         (override));

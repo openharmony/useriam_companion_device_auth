@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base_request.h"
-#include "event_manager_adapter.h"
+#include "interaction_event_collector.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "task_runner_manager.h"

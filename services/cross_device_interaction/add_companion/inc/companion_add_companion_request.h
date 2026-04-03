@@ -20,9 +20,9 @@
 #include <optional>
 
 #include "add_companion_message.h"
-#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
+#include "interaction_event_collector.h"
 #include "security_agent.h"
 
 namespace OHOS {
