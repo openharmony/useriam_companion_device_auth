@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "event_manager_adapter.h"
+#include "interaction_event_collector.h"
 #include "outbound_request.h"
 
 namespace OHOS {

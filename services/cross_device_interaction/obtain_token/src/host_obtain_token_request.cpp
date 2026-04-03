@@ -74,7 +74,7 @@ bool HostObtainTokenRequest::ParsePreObtainTokenRequest(ErrorGuard &errorGuard)
         return false;
     }
     templateId_ = companionStatus->templateId;
-    UpdateDescription(GenerateDescription(requestType_, requestId_, GetConnectionName(), templateId_));
+    desc_.SetTemplateId(templateId_);
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(preRequest.companionDeviceKey);
     if (!secureProtocolOpt.has_value()) {
         IAM_LOGE("%{public}s failed to get secure protocol id", GetDescription());
@@ -105,10 +105,9 @@ bool HostObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     obtainTokenSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::OBTAIN_TOKEN,
-            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
-                OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleObtainTokenMessage(request, onMessageReply);
             });
     if (obtainTokenSubscription_ == nullptr) {
@@ -268,7 +267,7 @@ void HostObtainTokenRequest::CompleteWithSuccess()
 
 std::weak_ptr<InboundRequest> HostObtainTokenRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 uint32_t HostObtainTokenRequest::GetMaxConcurrency() const
@@ -306,10 +305,9 @@ bool HostObtainTokenRequest::EnsureCompanionAuthMaintainActive(const DeviceKey &
         return false;
     }
     deviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeDeviceStatus(deviceKey, false,
-        [weakSelf = weak_from_this(), description = GetDescription()](
-            const std::vector<DeviceStatus> &deviceStatusList) {
+        [weakSelf = weak_from_this()](const std::vector<DeviceStatus> &deviceStatusList) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandlePeerDeviceStatusChanged(deviceStatusList);
         });
     if (deviceStatusSubscription_ == nullptr) {

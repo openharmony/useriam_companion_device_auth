@@ -21,6 +21,7 @@
 #include "common_message.h"
 #include "error_guard.h"
 #include "host_obtain_token_request.h"
+#include "interaction_desc.h"
 #include "obtain_token_message.h"
 #include "singleton_manager.h"
 
@@ -35,8 +36,9 @@ HostPreObtainTokenHandler::HostPreObtainTokenHandler() : AsyncIncomingMessageHan
 
 void HostPreObtainTokenHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    IAM_LOGI("start");
-    ENSURE_OR_RETURN(onMessageReply != nullptr);
+    InteractionDesc desc(HANDLER_PREFIX, "HObT");
+    IAM_LOGI("%{public}s start", desc.GetCStr());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
     ErrorGuard errorGuard([&onMessageReply](ResultCode result) {
         Attributes reply;
         reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, result);
@@ -45,17 +47,18 @@ void HostPreObtainTokenHandler::HandleRequest(const Attributes &request, OnMessa
 
     std::string connectionName;
     bool getConnectionNameRet = request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName);
-    ENSURE_OR_RETURN(getConnectionNameRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), getConnectionNameRet);
+    desc.SetConnectionName(connectionName);
 
     auto companionDeviceKeyOpt = DecodeCompanionDeviceKey(request);
-    ENSURE_OR_RETURN(companionDeviceKeyOpt.has_value());
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), companionDeviceKeyOpt.has_value());
 
     auto obtainTokenRequest = GetRequestFactory().CreateHostObtainTokenRequest(connectionName, request,
         std::move(onMessageReply), *companionDeviceKeyOpt);
-    ENSURE_OR_RETURN(obtainTokenRequest != nullptr);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), obtainTokenRequest != nullptr);
 
     bool startRet = GetRequestManager().Start(obtainTokenRequest);
-    ENSURE_OR_RETURN(startRet);
+    ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRet);
     errorGuard.Cancel();
 }
 } // namespace CompanionDeviceAuth

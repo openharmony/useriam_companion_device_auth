@@ -184,7 +184,7 @@ static void FuzzDecodeCompanionBeginAddHostBindingOutput(FuzzedDataProvider &fuz
     for (uint32_t i = 0; i < ffi.secMessage.len && i < TEST_VAL1024; ++i) {
         ffi.secMessage.data[i] = fuzzData.ConsumeIntegral<uint8_t>();
     }
-    ffi.bindingId = fuzzData.ConsumeIntegral<int32_t>();
+    ffi.replacedBindingId = fuzzData.ConsumeIntegral<int32_t>();
     // Skip bindingStatus for simplicity in fuzzer
 
     CompanionBeginAddHostBindingOutput output;

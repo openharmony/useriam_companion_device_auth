@@ -273,10 +273,10 @@ impl CompanionDeviceEnrollRequest {
         Ok(())
     }
 
-    fn store_device_info(&mut self) -> Result<HostBindingInfo, ErrorCode> {
+    fn store_device_info(&mut self) -> Result<(HostBindingInfo, Option<i32>), ErrorCode> {
         let (device_info, sk_info) = self.init_device_info()?;
-        host_binding_db_helper::add_host_device(&device_info, &sk_info)?;
-        Ok(*device_info)
+        let replaced_binding_id = host_binding_db_helper::add_host_device(&device_info, &sk_info)?;
+        Ok((*device_info, replaced_binding_id))
     }
 }
 
@@ -312,10 +312,10 @@ impl Request for CompanionDeviceEnrollRequest {
         self.decode_sec_binding_request(ffi_input.sec_message.as_slice()?)?;
 
         let sec_message = self.encode_sec_binding_reply()?;
-        let device_info = self.store_device_info()?;
+        let (device_info, replaced_binding_id) = self.store_device_info()?;
         self.binding_id = device_info.binding_id;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
-        ffi_output.binding_id = device_info.binding_id;
+        ffi_output.replaced_binding_id = replaced_binding_id.unwrap_or(0);
         ffi_output.binding_status = PersistedHostBindingStatusFfi {
             binding_id: device_info.binding_id,
             companion_user_id: device_info.user_info.user_id,

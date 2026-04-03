@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "event_manager_adapter.h"
+#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "service_common.h"
 

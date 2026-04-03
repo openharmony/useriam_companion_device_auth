@@ -57,7 +57,7 @@ bool SoftBusChannelAdapterManager::CreateAndRegisterAdapters()
 
 IDeviceManagerAdapter &SoftBusChannelAdapterManager::GetDeviceManagerAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("DeviceManager");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (deviceManagerAdapter_ == nullptr) {
         IAM_LOGE("DeviceManager adapter is not initialized");
         AbortIfAdapterUninitialized("DeviceManager");
@@ -67,12 +67,13 @@ IDeviceManagerAdapter &SoftBusChannelAdapterManager::GetDeviceManagerAdapter()
 
 void SoftBusChannelAdapterManager::SetDeviceManagerAdapter(std::shared_ptr<IDeviceManagerAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     deviceManagerAdapter_ = adapter;
 }
 
 ISoftBusAdapter &SoftBusChannelAdapterManager::GetSoftBusAdapter()
 {
-    TaskRunnerManager::GetInstance().AssertRunningOnResidentThread("SoftBus");
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     if (softBusAdapter_ == nullptr) {
         IAM_LOGE("SoftBus adapter is not initialized");
         AbortIfAdapterUninitialized("SoftBus");
@@ -82,12 +83,13 @@ ISoftBusAdapter &SoftBusChannelAdapterManager::GetSoftBusAdapter()
 
 void SoftBusChannelAdapterManager::SetSoftBusAdapter(std::shared_ptr<ISoftBusAdapter> adapter)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     softBusAdapter_ = adapter;
 }
 
 void SoftBusChannelAdapterManager::AbortIfAdapterUninitialized(const char *adapterName)
 {
-    IAM_LOGF("%{public}s adapter is not initialized, abort", adapterName);
+    IAM_LOGE("%{public}s adapter is not initialized, abort", adapterName);
     std::abort();
 }
 

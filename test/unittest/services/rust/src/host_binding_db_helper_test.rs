@@ -39,7 +39,7 @@ fn add_host_device_test() {
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
     mock_host_binding_db_manager.expect_get_device_by_device_key().returning(|| Ok(create_mock_host_device_info(123)));
     mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_device_info(123)));
-    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(()));
+    mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let device_info = create_mock_host_device_info(456);

@@ -41,8 +41,7 @@ public:
     std::optional<HostBindingStatus> GetHostBindingStatus(UserId companionUserId,
         const DeviceKey &hostDeviceKey) override;
 
-    ResultCode BeginAddHostBinding(RequestId requestId, UserId companionUserId, SecureProtocolId secureProtocolId,
-        const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply) override;
+    ResultCode BeginAddHostBinding(const BeginAddHostBindingInput &input, BeginAddHostBindingOutput &output) override;
 
     ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
         const std::vector<uint8_t> &tokenData = {}) override;

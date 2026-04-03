@@ -39,7 +39,7 @@ class AvailableDeviceSubscription
 public:
     static std::shared_ptr<AvailableDeviceSubscription> Create(UserId userId,
         std::weak_ptr<SubscriptionManager> subscriptionManager);
-    ~AvailableDeviceSubscription() = default;
+    ~AvailableDeviceSubscription();
 
     UserId GetUserId() const;
     std::weak_ptr<AvailableDeviceSubscription> GetWeakPtr() override;

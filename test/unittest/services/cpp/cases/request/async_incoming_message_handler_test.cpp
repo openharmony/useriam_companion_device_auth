@@ -118,6 +118,30 @@ HWTEST_F(AsyncIncomingMessageHandlerTest, GetMessageType_001, TestSize.Level0)
     EXPECT_EQ(MessageType::TOKEN_AUTH, type);
 }
 
+HWTEST_F(AsyncIncomingMessageHandlerTest, WeakPtrCapture_001, TestSize.Level0)
+{
+    // Verify that the callback captured via weak_ptr is safe after handler is destroyed
+    MockGuard guard;
+
+    OnMessage capturedCallback;
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeIncomingConnection(_, _))
+        .WillOnce(Invoke([&capturedCallback](MessageType, OnMessage &&callback) {
+            capturedCallback = std::move(callback);
+            return MakeSubscription();
+        }));
+
+    {
+        auto handler = std::make_shared<NiceMock<MockAsyncIncomingMessageHandler>>(MessageType::TOKEN_AUTH);
+        handler->Register();
+        // handler goes out of scope here
+    }
+
+    // Invoke the captured callback after handler is destroyed - should not crash
+    Attributes request;
+    OnMessageReply onMessageReply = [](const Attributes &) {};
+    ASSERT_NO_THROW(capturedCallback(request, onMessageReply));
+}
+
 } // namespace
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

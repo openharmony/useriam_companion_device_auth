@@ -347,7 +347,7 @@ typedef struct CompanionBeginAddHostBindingInputFfi {
 
 typedef struct CompanionBeginAddHostBindingOutputFfi {
     struct DataArray1024Ffi secMessage;
-    int32_t bindingId;
+    int32_t replacedBindingId;
     struct PersistedHostBindingStatusFfi bindingStatus;
 } CompanionBeginAddHostBindingOutputFfi;
 

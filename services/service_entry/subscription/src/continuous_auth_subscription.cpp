@@ -39,6 +39,12 @@ ContinuousAuthSubscription::ContinuousAuthSubscription(UserId userId, std::optio
       templateId_(templateId),
       subscriptionManager_(subscriptionManager)
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
+}
+
+ContinuousAuthSubscription::~ContinuousAuthSubscription()
+{
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
 }
 
 std::shared_ptr<ContinuousAuthSubscription> ContinuousAuthSubscription::Create(UserId userId,

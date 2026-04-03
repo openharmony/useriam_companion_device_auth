@@ -20,9 +20,9 @@
 #include <optional>
 #include <vector>
 
-#include "event_manager_adapter.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
+#include "interaction_event_collector.h"
 #include "issue_token_message.h"
 #include "security_agent.h"
 #include "service_common.h"

@@ -43,7 +43,7 @@ HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params
       eventCollector_("host delegate auth request")
 {
     SetPeerDeviceKey(companionDeviceKey);
-    UpdateDescription(GenerateDescription(requestType_, requestId_, "-", templateId_));
+    desc_.SetTemplateId(templateId_);
     eventCollector_.UpdateHostUserId(params.hostUserId);
     eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
     eventCollector_.UpdateScheduleId(params.scheduleId);
@@ -93,10 +93,9 @@ bool HostDelegateAuthRequest::InitDelegateResultSubscription()
     }
     delegateResultSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::SEND_DELEGATE_AUTH_RESULT,
-            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
-                OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleSendDelegateAuthRequestMsg(request, onMessageReply);
             });
     if (delegateResultSubscription_ == nullptr) {
@@ -143,9 +142,9 @@ void HostDelegateAuthRequest::HostBeginDelegateAuth()
     EncodeStartDelegateAuthRequest(startRequest, request);
 
     bool sendRet = GetCrossDeviceCommManager().SendMessage(GetConnectionName(), MessageType::START_DELEGATE_AUTH,
-        request, [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &message) {
+        request, [weakSelf = weak_from_this()](const Attributes &message) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleStartDelegateAuthReply(message);
         });
     if (!sendRet) {
@@ -232,7 +231,7 @@ void HostDelegateAuthRequest::HandleSendDelegateAuthRequestMsg(const Attributes 
 
 std::weak_ptr<OutboundRequest> HostDelegateAuthRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 void HostDelegateAuthRequest::InvokeCallback(ResultCode result, const std::vector<uint8_t> &fwkMsg)

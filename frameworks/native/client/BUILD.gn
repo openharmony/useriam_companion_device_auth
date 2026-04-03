@@ -30,6 +30,7 @@ ohos_shared_library("companion_device_auth_client") {
   remove_configs = [ "//build/config/compiler:no_exceptions" ]
 
   public_configs = [
+    "${companion_device_auth_path}/common:companion_device_auth_common_config",
     "${companion_device_auth_path}/frameworks/native/ipc:companion_device_auth_native_ipc_config",
     ":client_config",
   ]

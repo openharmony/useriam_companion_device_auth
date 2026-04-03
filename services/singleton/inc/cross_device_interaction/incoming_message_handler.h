@@ -16,6 +16,8 @@
 #ifndef COMPANION_DEVICE_AUTH_INCOMING_MESSAGE_HANDLER_H
 #define COMPANION_DEVICE_AUTH_INCOMING_MESSAGE_HANDLER_H
 
+#include <memory>
+
 #include "cda_attributes.h"
 #include "cross_device_common.h"
 #include "service_common.h"
@@ -30,6 +32,9 @@ public:
     virtual void Register() = 0;
     virtual void HandleIncomingMessage(const Attributes &request, OnMessageReply &onMessageReply) = 0;
     virtual MessageType GetMessageType() const = 0;
+
+protected:
+    virtual std::weak_ptr<IncomingMessageHandler> GetWeakPtr() = 0;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

@@ -221,7 +221,7 @@ void MockGuard::SetupHostBindingManagerDefaults()
 {
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_)).WillByDefault(Return(std::nullopt));
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_, _)).WillByDefault(Return(std::nullopt));
-    ON_CALL(*hostBindingManager_, BeginAddHostBinding(_, _, _, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
+    ON_CALL(*hostBindingManager_, BeginAddHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, EndAddHostBinding(_, _, _, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, RemoveHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, SetHostBindingTokenValid(_, _)).WillByDefault(Return(true));

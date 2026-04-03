@@ -329,12 +329,12 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_001, TestSize
         }
     };
 
-    EXPECT_CALL(guard.GetHostBindingManager(), BeginAddHostBinding(_, _, _, _, _))
-        .WillOnce(
-            Invoke([](int32_t, int32_t, SecureProtocolId, const std::vector<uint8_t> &, std::vector<uint8_t> &output) {
-                output = { 9, 10, 11, 12 };
-                return ResultCode::SUCCESS;
-            }));
+    EXPECT_CALL(guard.GetHostBindingManager(), BeginAddHostBinding(_, _))
+        .WillOnce(Invoke([](const BeginAddHostBindingInput &, BeginAddHostBindingOutput &output) {
+            output.addHostBindingReply = { 9, 10, 11, 12 };
+            output.bindingId = 1;
+            return ResultCode::SUCCESS;
+        }));
 
     request->HandleBeginAddCompanion(attrInput, messageReply);
 
@@ -422,7 +422,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleBeginAddCompanion_004, TestSize
         *receivedResult = static_cast<ResultCode>(result);
     };
 
-    EXPECT_CALL(guard.GetHostBindingManager(), BeginAddHostBinding(_, _, _, _, _)).WillOnce(Return(ResultCode::FAIL));
+    EXPECT_CALL(guard.GetHostBindingManager(), BeginAddHostBinding(_, _)).WillOnce(Return(ResultCode::FAIL));
 
     request->HandleBeginAddCompanion(attrInput, messageReply);
 

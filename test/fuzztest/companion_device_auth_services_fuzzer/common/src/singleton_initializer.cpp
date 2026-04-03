@@ -243,14 +243,11 @@ public:
         return std::optional<HostBindingStatus>();
     }
 
-    ResultCode BeginAddHostBinding(RequestId requestId, UserId companionUserId, SecureProtocolId secureProtocolId,
-        const std::vector<uint8_t> &addHostBindingRequest, std::vector<uint8_t> &outAddHostBindingReply) override
+    ResultCode BeginAddHostBinding(const BeginAddHostBindingInput &input, BeginAddHostBindingOutput &output) override
     {
-        (void)requestId;
-        (void)companionUserId;
-        (void)secureProtocolId;
-        (void)addHostBindingRequest;
-        outAddHostBindingReply = fuzzData_.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
+        (void)input;
+        output.addHostBindingReply = fuzzData_.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
+        output.bindingId = fuzzData_.ConsumeIntegral<BindingId>();
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 

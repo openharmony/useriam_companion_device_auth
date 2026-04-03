@@ -52,10 +52,10 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
         SendPreIssueTokenReply(ResultCode::GENERAL_ERROR, {});
         return false;
     }
-    localDeviceStatusSubscription_ = GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive(
-        [weakSelf = weak_from_this(), description = GetDescription()](bool isActive) {
+    localDeviceStatusSubscription_ =
+        GetCrossDeviceCommManager().SubscribeIsAuthMaintainActive([weakSelf = weak_from_this()](bool isActive) {
             auto self = weakSelf.lock();
-            ENSURE_OR_RETURN_DESC(description, self != nullptr);
+            ENSURE_OR_RETURN(self != nullptr);
             self->HandleAuthMaintainActiveChanged(isActive);
         });
     if (localDeviceStatusSubscription_ == nullptr) {
@@ -74,10 +74,9 @@ bool CompanionIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
 
     issueTokenSubscription_ =
         GetCrossDeviceCommManager().SubscribeMessage(GetConnectionName(), MessageType::ISSUE_TOKEN,
-            [weakSelf = weak_from_this(), description = GetDescription()](const Attributes &request,
-                OnMessageReply &onMessageReply) {
+            [weakSelf = weak_from_this()](const Attributes &request, OnMessageReply &onMessageReply) {
                 auto self = weakSelf.lock();
-                ENSURE_OR_RETURN_DESC(description, self != nullptr);
+                ENSURE_OR_RETURN(self != nullptr);
                 self->HandleIssueTokenMessage(request, onMessageReply);
             });
     if (issueTokenSubscription_ == nullptr) {
@@ -116,6 +115,7 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), hostBindingStatus.has_value(), false);
 
     bindingId_ = hostBindingStatus->bindingId;
+    desc_.SetBindingId(bindingId_);
 
     CompanionPreIssueTokenInput input = {};
     input.requestId = GetRequestId();
@@ -205,7 +205,7 @@ bool CompanionIssueTokenRequest::SecureAgentCompanionIssueToken(const std::vecto
 
 std::weak_ptr<InboundRequest> CompanionIssueTokenRequest::GetWeakPtr()
 {
-    return shared_from_this();
+    return weak_from_this();
 }
 
 void CompanionIssueTokenRequest::CompleteWithError(ResultCode result)

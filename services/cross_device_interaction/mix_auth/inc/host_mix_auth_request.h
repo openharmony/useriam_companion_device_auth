@@ -17,9 +17,9 @@
 #define COMPANION_DEVICE_HOST_MIX_AUTH_REQUEST_H
 
 #include "base_request.h"
-#include "event_manager_adapter.h"
 #include "host_delegate_auth_request.h"
 #include "host_token_auth_request.h"
+#include "interaction_event_collector.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "task_runner_manager.h"
