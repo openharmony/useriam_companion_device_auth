@@ -56,6 +56,8 @@ private:
     void SendErrorReply(ResultCode result);
     void HandleAuthMaintainActiveChanged(bool isActive);
 
+    CompanionPreIssueTokenInput BuildCompanionPreIssueTokenInput() const;
+
     Attributes request_;
     int32_t companionUserId_ = 0;
     std::vector<uint8_t> preIssueTokenRequest_;

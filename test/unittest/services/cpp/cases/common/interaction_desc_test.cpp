@@ -53,7 +53,7 @@ void InteractionDescTest::TearDown()
 HWTEST_F(InteractionDescTest, DefaultConstructor_001, TestSize.Level0)
 {
     InteractionDesc desc;
-    EXPECT_STREQ(desc.GetCStr(), "");
+    EXPECT_STREQ(desc.GetCStr(), "()");
 }
 
 HWTEST_F(InteractionDescTest, ConstructorWithPrefixAndType_001, TestSize.Level0)
@@ -80,28 +80,28 @@ HWTEST_F(InteractionDescTest, SetRequestId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HObT");
     desc.SetRequestId(0x00000001);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0x00000001)");
 }
 
 HWTEST_F(InteractionDescTest, SetRequestId_002, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HObT");
     desc.SetRequestId(0xABCD1234);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,0xABCD1234)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0xABCD1234)");
 }
 
 HWTEST_F(InteractionDescTest, SetBindingId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "CIsT");
     desc.SetBindingId(42);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(CIsT,002a)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(CIsT,B:002a)");
 }
 
 HWTEST_F(InteractionDescTest, SetTemplateId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HTkA");
     desc.SetTemplateId(123);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,007b)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,T:007b)");
 }
 
 HWTEST_F(InteractionDescTest, SetTemplateIdList_001, TestSize.Level0)
@@ -129,13 +129,13 @@ HWTEST_F(InteractionDescTest, TemplateIdAndListMutuallyExclusive_001, TestSize.L
 {
     InteractionDesc desc(REQUEST_PREFIX, "HMixA");
     desc.SetTemplateId(50);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,0032)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T:0032)");
 
     desc.SetTemplateIdList({ 100, 200 });
     EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T=[0064,00c8])");
 
     desc.SetTemplateId(50);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,0032)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T:0032)");
 }
 
 HWTEST_F(InteractionDescTest, FullFields_001, TestSize.Level0)
@@ -144,7 +144,7 @@ HWTEST_F(InteractionDescTest, FullFields_001, TestSize.Level0)
     desc.SetConnectionName("conn1");
     desc.SetRequestId(0x00000042);
     desc.SetTemplateId(99);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,conn1,0x00000042,0063)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,conn1,R:0x00000042,T:0063)");
 }
 
 HWTEST_F(InteractionDescTest, HandlerPrefix_001, TestSize.Level0)
@@ -160,13 +160,13 @@ HWTEST_F(InteractionDescTest, IncrementalUpdate_001, TestSize.Level0)
     EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT)");
 
     desc.SetRequestId(0x00000001);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0x00000001)");
 
     desc.SetConnectionName("conn2");
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:0x00000001)");
 
     desc.SetBindingId(7);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,0x00000001,0007)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:0x00000001,B:0007)");
 }
 
 HWTEST_F(InteractionDescTest, GetCStrReturnsSamePointer_001, TestSize.Level0)
