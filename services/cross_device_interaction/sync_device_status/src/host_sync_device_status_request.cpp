@@ -137,6 +137,19 @@ SyncDeviceStatusRequest HostSyncDeviceStatusRequest::BuildSyncDeviceStatusReques
     return request;
 }
 
+HostEndCompanionCheckInput HostSyncDeviceStatusRequest::BuildHostEndCompanionCheckInput(TemplateId templateId,
+    const SyncDeviceStatusReply &reply) const
+{
+    HostEndCompanionCheckInput input = {};
+    input.requestId = GetRequestId();
+    input.templateId = templateId;
+    input.protocolVersionList = ProtocolIdConverter::ToUnderlyingVec(reply.protocolIdList);
+    input.capabilityList = CapabilityConverter::ToUnderlyingVec(reply.capabilityList);
+    input.secureProtocolId = reply.secureProtocolId;
+    input.companionCheckResponse = reply.companionCheckResponse;
+    return input;
+}
+
 bool HostSyncDeviceStatusRequest::SendSyncDeviceStatusRequest(const std::vector<uint8_t> &salt, uint64_t challenge)
 {
     auto localDeviceKey = GetCrossDeviceCommManager().GetLocalDeviceKeyByConnectionName(GetConnectionName());
@@ -204,13 +217,7 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
     eventCollector_.UpdateTemplateIdList({ companionStatus->templateId });
     desc_.SetTemplateId(companionStatus->templateId);
 
-    HostEndCompanionCheckInput input = {};
-    input.requestId = GetRequestId();
-    input.templateId = companionStatus->templateId;
-    input.protocolVersionList = ProtocolIdConverter::ToUnderlyingVec(reply.protocolIdList);
-    input.capabilityList = CapabilityConverter::ToUnderlyingVec(reply.capabilityList);
-    input.secureProtocolId = reply.secureProtocolId;
-    input.companionCheckResponse = reply.companionCheckResponse;
+    HostEndCompanionCheckInput input = BuildHostEndCompanionCheckInput(companionStatus->templateId, reply);
     ResultCode ret = GetSecurityAgent().HostEndCompanionCheck(input);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s HostEndCompanionCheck failed ret=%{public}d", GetDescription(), ret);

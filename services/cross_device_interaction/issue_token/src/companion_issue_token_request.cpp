@@ -117,11 +117,7 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
     bindingId_ = hostBindingStatus->bindingId;
     desc_.SetBindingId(bindingId_);
 
-    CompanionPreIssueTokenInput input = {};
-    input.requestId = GetRequestId();
-    input.bindingId = bindingId_;
-    input.secureProtocolId = secureProtocolId_;
-    input.preIssueTokenRequest = preIssueTokenRequest_;
+    CompanionPreIssueTokenInput input = BuildCompanionPreIssueTokenInput();
 
     CompanionPreIssueTokenOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionPreIssueToken(input, output);
@@ -133,6 +129,16 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
     needCancelIssueToken_ = true;
     preIssueTokenReply = output.preIssueTokenReply;
     return true;
+}
+
+CompanionPreIssueTokenInput CompanionIssueTokenRequest::BuildCompanionPreIssueTokenInput() const
+{
+    CompanionPreIssueTokenInput input = {};
+    input.requestId = GetRequestId();
+    input.bindingId = bindingId_;
+    input.secureProtocolId = secureProtocolId_;
+    input.preIssueTokenRequest = preIssueTokenRequest_;
+    return input;
 }
 
 void CompanionIssueTokenRequest::SendPreIssueTokenReply(ResultCode result,

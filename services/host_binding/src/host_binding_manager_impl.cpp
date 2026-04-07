@@ -140,11 +140,6 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(const BeginAddHostBinding
     IAM_LOGI("begin add host binding, request id 0x%{public}08X", in.requestId);
 
     ENSURE_OR_RETURN_VAL(in.companionUserId == activeUserId_, ResultCode::GENERAL_ERROR);
-    if (activeUserId_ != in.companionUserId) {
-        IAM_LOGE("companion user id mismatch, expected %{public}d, actual %{public}d", activeUserId_,
-            in.companionUserId);
-        return ResultCode::GENERAL_ERROR;
-    }
 
     CompanionBeginAddHostBindingInput input { .requestId = in.requestId,
         .secureProtocolId = in.secureProtocolId,
