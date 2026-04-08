@@ -29,8 +29,14 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 
 namespace {
-auto g_pendingTasks = std::make_shared<std::map<uint64_t, RelativeTimer::TimerCallback>>();
+struct TimerEntry {
+    RelativeTimer::TimerCallback callback;
+    uint64_t deadlineMs { 0 }; // absolute deadline from time provider
+};
+
+auto g_pendingTasks = std::make_shared<std::map<uint64_t, TimerEntry>>();
 auto g_nextTaskId = std::make_shared<std::atomic<uint64_t>>(0);
+std::function<uint64_t()> g_timeProvider = []() { return 0; };
 } // namespace
 
 RelativeTimer::RelativeTimer()
@@ -41,9 +47,10 @@ RelativeTimer::~RelativeTimer() = default;
 
 std::unique_ptr<Subscription> RelativeTimer::Register(TimerCallback &&callback, uint32_t ms)
 {
-    (void)ms;
     uint64_t taskId = (*g_nextTaskId)++;
-    (*g_pendingTasks)[taskId] = std::move(callback);
+    auto &entry = (*g_pendingTasks)[taskId];
+    entry.callback = std::move(callback);
+    entry.deadlineMs = g_timeProvider() + ms;
     return std::make_unique<Subscription>([taskId]() { g_pendingTasks->erase(taskId); });
 }
 
@@ -54,9 +61,10 @@ std::unique_ptr<Subscription> RelativeTimer::RegisterPeriodic(TimerCallback &&ca
 
 void RelativeTimer::PostTask(TimerCallback &&callback, uint32_t ms)
 {
-    (void)ms;
     uint64_t taskId = (*g_nextTaskId)++;
-    (*g_pendingTasks)[taskId] = std::move(callback);
+    auto &entry = (*g_pendingTasks)[taskId];
+    entry.callback = std::move(callback);
+    entry.deadlineMs = g_timeProvider() + ms;
 }
 
 void RelativeTimer::ExecuteAll()
@@ -64,8 +72,8 @@ void RelativeTimer::ExecuteAll()
     auto tasks = std::move(*g_pendingTasks);
     g_pendingTasks->clear();
     for (auto &entry : tasks) {
-        if (entry.second) {
-            entry.second();
+        if (entry.second.callback) {
+            entry.second.callback();
         }
     }
 }
@@ -79,6 +87,37 @@ void RelativeTimer::EnsureAllTaskExecuted()
             return;
         }
     }
+}
+
+void RelativeTimer::DrainExpiredTasks()
+{
+    const int maxAttempts = 100;
+    for (int i = 0; i < maxAttempts; ++i) {
+        auto tasks = std::move(*g_pendingTasks);
+        g_pendingTasks->clear();
+        uint64_t now = g_timeProvider();
+        bool anyExecuted = false;
+        for (auto &entry : tasks) {
+            if (entry.second.callback && now >= entry.second.deadlineMs) {
+                entry.second.callback();
+                anyExecuted = true;
+            } else if (entry.second.callback) {
+                (*g_pendingTasks)[entry.first] = std::move(entry.second);
+            }
+        }
+        if (g_pendingTasks->empty() || !anyExecuted) {
+            return;
+        }
+    }
+}
+
+void RelativeTimer::SetTimeProvider(std::function<uint64_t()> provider)
+{
+    g_timeProvider = std::move(provider);
+    // Clear stale timer entries from previous tests.
+    // Old deadlines were computed against the previous time source and are invalid.
+    g_pendingTasks->clear();
+    g_nextTaskId->store(0);
 }
 
 } // namespace CompanionDeviceAuth

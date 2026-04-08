@@ -63,6 +63,7 @@ void CompanionPreIssueTokenHandler::HandleRequest(const Attributes &request, OnM
     bool startRet = GetRequestManager().Start(issueTokenRequest);
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRet);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
