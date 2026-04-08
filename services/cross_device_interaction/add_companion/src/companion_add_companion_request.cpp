@@ -115,6 +115,17 @@ CompanionInitKeyNegotiationInput CompanionAddCompanionRequest::BuildCompanionIni
     return input;
 }
 
+BeginAddHostBindingInput CompanionAddCompanionRequest::BuildBeginAddHostBindingInput(int32_t companionUserId,
+    const std::vector<uint8_t> &addHostBindingRequest) const
+{
+    BeginAddHostBindingInput input = {};
+    input.requestId = GetRequestId();
+    input.companionUserId = companionUserId;
+    input.secureProtocolId = secureProtocolId_;
+    input.addHostBindingRequest = addHostBindingRequest;
+    return input;
+}
+
 void CompanionAddCompanionRequest::ProcessCompanionInitKeyNegotiationOutput(
     const CompanionInitKeyNegotiationOutput &output, std::vector<uint8_t> &initKeyNegotiationReply)
 {
@@ -170,10 +181,8 @@ void CompanionAddCompanionRequest::HandleBeginAddCompanion(const Attributes &att
     auto requestOpt = DecodeBeginAddHostBindingRequest(attrInput);
     ENSURE_OR_RETURN_DESC(GetDescription(), requestOpt.has_value());
 
-    BeginAddHostBindingInput beginInput = { .requestId = GetRequestId(),
-        .companionUserId = requestOpt->companionUserId,
-        .secureProtocolId = secureProtocolId_,
-        .addHostBindingRequest = requestOpt->extraInfo };
+    BeginAddHostBindingInput beginInput =
+        BuildBeginAddHostBindingInput(requestOpt->companionUserId, requestOpt->extraInfo);
     BeginAddHostBindingOutput beginOutput = {};
     ResultCode ret = GetHostBindingManager().BeginAddHostBinding(beginInput, beginOutput);
     if (ret != ResultCode::SUCCESS) {

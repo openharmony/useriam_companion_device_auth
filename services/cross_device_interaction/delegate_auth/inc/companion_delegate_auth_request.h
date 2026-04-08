@@ -49,6 +49,7 @@ protected:
 
 private:
     bool SecureAgentBeginDelegateAuth(uint64_t &challenge, Atl &atl);
+    CompanionDelegateAuthBeginInput BuildCompanionDelegateAuthBeginInput() const;
     bool SecurityAgentEndDelegateAuth(ResultCode resultCode, const std::vector<uint8_t> &authToken,
         std::vector<uint8_t> &extraInfo);
     void HandleDelegateAuthResult(ResultCode resultCode, const std::vector<uint8_t> &extraInfo);

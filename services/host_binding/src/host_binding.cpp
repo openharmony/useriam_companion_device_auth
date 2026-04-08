@@ -39,6 +39,17 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+namespace {
+HostBindingStatus BuildHostBindingStatus(const PersistedHostBindingStatus &persistedStatus)
+{
+    HostBindingStatus status = {};
+    status.bindingId = persistedStatus.bindingId;
+    status.companionUserId = persistedStatus.companionUserId;
+    status.hostDeviceStatus.deviceKey = persistedStatus.hostDeviceKey;
+    status.isTokenValid = persistedStatus.isTokenValid;
+    return status;
+}
+} // namespace
 
 std::shared_ptr<HostBinding> HostBinding::Create(const PersistedHostBindingStatus &persistedStatus)
 {
@@ -55,12 +66,9 @@ std::shared_ptr<HostBinding> HostBinding::Create(const PersistedHostBindingStatu
 }
 
 HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
+    : status_(BuildHostBindingStatus(persistedStatus))
 {
     CHECK_RUNNING_ON_RESIDENT_THREAD();
-    status_.bindingId = persistedStatus.bindingId;
-    status_.companionUserId = persistedStatus.companionUserId;
-    status_.hostDeviceStatus.deviceKey = persistedStatus.hostDeviceKey;
-    status_.isTokenValid = persistedStatus.isTokenValid;
 
     std::ostringstream oss;
     oss << "CdaHost(" << GET_TRUNCATED_STRING(persistedStatus.bindingId) << ")";

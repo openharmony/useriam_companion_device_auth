@@ -59,6 +59,8 @@ private:
     bool NeedBeginCompanionCheck() const;
     SyncDeviceStatusRequest BuildSyncDeviceStatusRequest(const LocalDeviceProfile &profile,
         const std::vector<uint8_t> &salt, uint64_t challenge);
+    HostEndCompanionCheckInput BuildHostEndCompanionCheckInput(TemplateId templateId,
+        const SyncDeviceStatusReply &reply) const;
     void CollectSyncDeviceStatusEventInfo(const LocalDeviceProfile &profile);
 
     int32_t hostUserId_ = INVALID_USER_ID;

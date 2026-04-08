@@ -74,14 +74,14 @@ void InteractionDesc::Rebuild()
         oss << "," << connectionName_;
     }
     if (requestId_.has_value()) {
-        oss << ",0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(requestIdHexWidth) << *requestId_
+        oss << ",R:0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(requestIdHexWidth) << *requestId_
             << std::dec;
     }
     if (bindingId_.has_value()) {
-        oss << "," << GET_TRUNCATED_STRING(*bindingId_);
+        oss << ",B:" << GET_TRUNCATED_STRING(*bindingId_);
     }
     if (templateId_.has_value()) {
-        oss << "," << GET_TRUNCATED_STRING(*templateId_);
+        oss << ",T:" << GET_TRUNCATED_STRING(*templateId_);
     }
     if (!templateIdList_.empty()) {
         oss << ",T=[";
