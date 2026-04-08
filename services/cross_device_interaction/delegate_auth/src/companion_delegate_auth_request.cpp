@@ -97,19 +97,25 @@ bool CompanionDelegateAuthRequest::CompanionBeginDelegateAuth()
     return true;
 }
 
+CompanionDelegateAuthBeginInput CompanionDelegateAuthRequest::BuildCompanionDelegateAuthBeginInput() const
+{
+    CompanionDelegateAuthBeginInput input = {};
+    input.requestId = GetRequestId();
+    input.bindingId = bindingId_;
+    input.secureProtocolId = secureProtocolId_;
+    input.startDelegateAuthRequest = startDelegateAuthRequest_;
+    return input;
+}
+
 bool CompanionDelegateAuthRequest::SecureAgentBeginDelegateAuth(uint64_t &challenge, Atl &atl)
 {
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId_, PeerDeviceKey());
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), hostBindingStatus.has_value(), false);
     bindingId_ = hostBindingStatus->bindingId;
     desc_.SetBindingId(bindingId_);
-    CompanionDelegateAuthBeginInput input = {};
-    input.requestId = GetRequestId();
-    input.bindingId = bindingId_;
-    input.secureProtocolId = secureProtocolId_;
-    input.startDelegateAuthRequest = startDelegateAuthRequest_;
+
     CompanionDelegateAuthBeginOutput output = {};
-    ResultCode ret = GetSecurityAgent().CompanionBeginDelegateAuth(input, output);
+    ResultCode ret = GetSecurityAgent().CompanionBeginDelegateAuth(BuildCompanionDelegateAuthBeginInput(), output);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionBeginDelegateAuth failed ret=%{public}d", GetDescription(), ret);
         return false;
