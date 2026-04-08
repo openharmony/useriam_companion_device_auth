@@ -20,11 +20,11 @@
 #include "fuzzer/FuzzedDataProvider.h"
 
 #include "base_service_core.h"
-#include "base_service_initializer.h"
-#include "companion_device_auth_service.h"
 #include "fuzz_constants.h"
 #include "fuzz_data_generator.h"
 #include "fuzz_registry.h"
+#include "subscription_manager.h"
+#include "task_runner_manager.h"
 
 namespace OHOS {
 namespace UserIam {
@@ -32,45 +32,35 @@ namespace CompanionDeviceAuth {
 
 class SubscriptionManager;
 
-using CompanionDeviceAuthServiceFuzzFunction = void (*)(sptr<CompanionDeviceAuthService> &service,
-    FuzzedDataProvider &);
+using BaseServiceCoreFuzzFunction = void (*)(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &);
 
-static void FuzzSubscribeAvailableDeviceStatus(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzSubscribeAvailableDeviceStatus(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     int32_t localUserId = fuzzData.ConsumeIntegral<int32_t>();
     sptr<IIpcAvailableDeviceStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->SubscribeAvailableDeviceStatus(localUserId, callback, result);
-    (void)result;
+    (void)core->SubscribeAvailableDeviceStatus(localUserId, callback);
 }
 
-static void FuzzUnsubscribeAvailableDeviceStatus(sptr<CompanionDeviceAuthService> &service,
-    FuzzedDataProvider &fuzzData)
+static void FuzzUnsubscribeAvailableDeviceStatus(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     sptr<IIpcAvailableDeviceStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->UnsubscribeAvailableDeviceStatus(callback, result);
-    (void)result;
+    (void)core->UnsubscribeAvailableDeviceStatus(callback);
 }
 
-static void FuzzSubscribeTemplateStatusChange(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzSubscribeTemplateStatusChange(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     int32_t localUserId = fuzzData.ConsumeIntegral<int32_t>();
     sptr<IIpcTemplateStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->SubscribeTemplateStatusChange(localUserId, callback, result);
-    (void)result;
+    (void)core->SubscribeTemplateStatusChange(localUserId, callback);
 }
 
-static void FuzzUnsubscribeTemplateStatusChange(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzUnsubscribeTemplateStatusChange(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     sptr<IIpcTemplateStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->UnsubscribeTemplateStatusChange(callback, result);
-    (void)result;
+    (void)core->UnsubscribeTemplateStatusChange(callback);
 }
 
-static void FuzzSubscribeContinuousAuthStatusChange(sptr<CompanionDeviceAuthService> &service,
+static void FuzzSubscribeContinuousAuthStatusChange(std::shared_ptr<BaseServiceCore> &core,
     FuzzedDataProvider &fuzzData)
 {
     IpcSubscribeContinuousAuthStatusParam param;
@@ -81,22 +71,17 @@ static void FuzzSubscribeContinuousAuthStatusChange(sptr<CompanionDeviceAuthServ
     }
 
     sptr<IIpcContinuousAuthStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->SubscribeContinuousAuthStatusChange(param, callback, result);
-    (void)result;
+    (void)core->SubscribeContinuousAuthStatusChange(param, callback);
 }
 
-static void FuzzUnsubscribeContinuousAuthStatusChange(sptr<CompanionDeviceAuthService> &service,
+static void FuzzUnsubscribeContinuousAuthStatusChange(std::shared_ptr<BaseServiceCore> &core,
     FuzzedDataProvider &fuzzData)
 {
     sptr<IIpcContinuousAuthStatusCallback> callback = nullptr;
-    int32_t result = 0;
-    service->UnsubscribeContinuousAuthStatusChange(callback, result);
-    (void)result;
+    (void)core->UnsubscribeContinuousAuthStatusChange(callback);
 }
 
-static void FuzzUpdateTemplateEnabledBusinessIds(sptr<CompanionDeviceAuthService> &service,
-    FuzzedDataProvider &fuzzData)
+static void FuzzUpdateTemplateEnabledBusinessIds(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     uint64_t templateId = fuzzData.ConsumeIntegral<uint64_t>();
 
@@ -110,59 +95,51 @@ static void FuzzUpdateTemplateEnabledBusinessIds(sptr<CompanionDeviceAuthService
         businessIds.push_back(static_cast<int32_t>(id));
     }
 
-    int32_t result = 0;
-    service->UpdateTemplateEnabledBusinessIds(templateId, businessIds, result);
-    (void)result;
+    (void)core->UpdateTemplateEnabledBusinessIds(templateId, businessIds);
 }
 
-static void FuzzGetTemplateStatus(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzGetTemplateStatus(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     int32_t localUserId = fuzzData.ConsumeIntegral<int32_t>();
     std::vector<IpcTemplateStatus> templateStatusArray;
-    int32_t result = 0;
-    service->GetTemplateStatus(localUserId, templateStatusArray, result);
-    (void)result;
+    (void)core->GetTemplateStatus(localUserId, templateStatusArray);
 }
 
-static void FuzzRegisterDeviceSelectCallback(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzRegisterDeviceSelectCallback(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
+    uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
     sptr<IIpcDeviceSelectCallback> callback = nullptr;
-    int32_t result = 0;
-    service->RegisterDeviceSelectCallback(callback, result);
-    (void)result;
+    (void)core->RegisterDeviceSelectCallback(tokenId, callback);
 }
 
-static void FuzzUnregisterDeviceSelectCallback(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzUnregisterDeviceSelectCallback(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
-    int32_t result = 0;
-    service->UnregisterDeviceSelectCallback(result);
-    (void)result;
+    uint32_t tokenId = fuzzData.ConsumeIntegral<uint32_t>();
+    (void)core->UnregisterDeviceSelectCallback(tokenId);
 }
 
-static void FuzzCheckLocalUserIdValid(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzCheckLocalUserIdValid(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
     int32_t localUserId = fuzzData.ConsumeIntegral<int32_t>();
-    bool isUserIdValid = false;
-    int32_t result = 0;
-    service->CheckLocalUserIdValid(localUserId, isUserIdValid, result);
-    (void)isUserIdValid;
-    (void)result;
+    (void)core->CheckLocalUserIdValid(localUserId);
 }
 
-static void FuzzCallbackEnter(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+// CallbackEnter and CallbackExit are CompanionDeviceAuthService-specific logging methods
+// not available on BaseServiceCore. These are no-ops for fuzz testing since they only log.
+static void FuzzCallbackEnter(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
-    uint32_t code = fuzzData.ConsumeIntegral<uint32_t>();
-    service->CallbackEnter(code);
+    (void)core;
+    (void)fuzzData.ConsumeIntegral<uint32_t>();
 }
 
-static void FuzzCallbackExit(sptr<CompanionDeviceAuthService> &service, FuzzedDataProvider &fuzzData)
+static void FuzzCallbackExit(std::shared_ptr<BaseServiceCore> &core, FuzzedDataProvider &fuzzData)
 {
-    uint32_t code = fuzzData.ConsumeIntegral<uint32_t>();
-    int32_t result = fuzzData.ConsumeIntegral<int32_t>();
-    service->CallbackExit(code, result);
+    (void)core;
+    (void)fuzzData.ConsumeIntegral<uint32_t>();
+    (void)fuzzData.ConsumeIntegral<int32_t>();
 }
 
-static const CompanionDeviceAuthServiceFuzzFunction g_fuzzFuncs[] = {
+static const BaseServiceCoreFuzzFunction g_fuzzFuncs[] = {
     FuzzSubscribeAvailableDeviceStatus,
     FuzzUnsubscribeAvailableDeviceStatus,
     FuzzSubscribeTemplateStatusChange,
@@ -178,17 +155,14 @@ static const CompanionDeviceAuthServiceFuzzFunction g_fuzzFuncs[] = {
     FuzzCallbackExit,
 };
 
-constexpr uint8_t NUM_FUZZ_OPERATIONS = sizeof(g_fuzzFuncs) / sizeof(CompanionDeviceAuthServiceFuzzFunction);
+constexpr uint8_t NUM_FUZZ_OPERATIONS = sizeof(g_fuzzFuncs) / sizeof(BaseServiceCoreFuzzFunction);
 
 void FuzzCompanionDeviceAuthService(FuzzedDataProvider &fuzzData)
 {
-    static sptr<CompanionDeviceAuthService> service = sptr<CompanionDeviceAuthService>::MakeSptr(
-        []() -> std::shared_ptr<BaseServiceInitializer> { return BaseServiceInitializer::Create(); },
-        [](const std::shared_ptr<SubscriptionManager> &subscriptionManager,
-            const std::vector<BusinessId> &supportedBusinessIds) -> std::shared_ptr<BaseServiceCore> {
-            return BaseServiceCore::Create(subscriptionManager, supportedBusinessIds);
-        });
-    if (service == nullptr) {
+    static const std::vector<BusinessId> supportedBusinessIds = { BusinessId::DEFAULT };
+    static std::shared_ptr<BaseServiceCore> core =
+        BaseServiceCore::Create(std::make_shared<SubscriptionManager>(), supportedBusinessIds);
+    if (core == nullptr) {
         return;
     }
 
@@ -196,7 +170,7 @@ void FuzzCompanionDeviceAuthService(FuzzedDataProvider &fuzzData)
         if (fuzzData.remaining_bytes() < MINIMUM_REMAINING_BYTES) {
             break;
         }
-        g_fuzzFuncs[i](service, fuzzData);
+        g_fuzzFuncs[i](core, fuzzData);
         EnsureAllTaskExecuted();
     }
 
@@ -207,7 +181,7 @@ void FuzzCompanionDeviceAuthService(FuzzedDataProvider &fuzzData)
         }
 
         uint8_t operation = fuzzData.ConsumeIntegralInRange<uint8_t>(0, NUM_FUZZ_OPERATIONS - 1);
-        g_fuzzFuncs[operation](service, fuzzData);
+        g_fuzzFuncs[operation](core, fuzzData);
     }
 
     EnsureAllTaskExecuted();

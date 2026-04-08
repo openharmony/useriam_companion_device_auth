@@ -31,7 +31,10 @@ inline constexpr const char *REQUEST_PREFIX = "CdaR";
 
 class InteractionDesc {
 public:
-    InteractionDesc() { Rebuild(); }
+    InteractionDesc()
+    {
+        Rebuild();
+    }
     InteractionDesc(const char *prefix, const char *type);
     ~InteractionDesc() = default;
 

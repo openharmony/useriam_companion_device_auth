@@ -43,6 +43,8 @@ public:
 #ifdef ENABLE_TEST
     void ExecuteAll();
     void EnsureAllTaskExecuted();
+    void DrainExpiredTasks();
+    void SetTimeProvider(std::function<uint64_t()> provider);
 #else
 private:
     Utils::Timer timer_;

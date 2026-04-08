@@ -60,6 +60,7 @@ void HostPreObtainTokenHandler::HandleRequest(const Attributes &request, OnMessa
     bool startRet = GetRequestManager().Start(obtainTokenRequest);
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), startRet);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

@@ -80,6 +80,7 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
     TokenAuthReply replyMsg = { .result = ret, .extraInfo = output.tokenAuthReply };
     EncodeTokenAuthReply(replyMsg, reply);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

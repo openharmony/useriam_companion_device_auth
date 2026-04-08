@@ -66,6 +66,7 @@ void CompanionStartDelegateAuthHandler::HandleRequest(const Attributes &request,
     StartDelegateAuthReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeStartDelegateAuthReply(replyMsg, reply);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
