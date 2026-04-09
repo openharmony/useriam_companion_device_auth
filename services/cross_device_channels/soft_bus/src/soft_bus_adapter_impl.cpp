@@ -19,7 +19,7 @@
 #include "iam_logger.h"
 #include "iam_para2str.h"
 
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "singleton_manager.h"
 #include "socket.h"
 #include "soft_bus_channel_common.h"

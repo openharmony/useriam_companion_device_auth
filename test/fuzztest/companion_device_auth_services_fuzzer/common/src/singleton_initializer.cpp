@@ -325,7 +325,7 @@ public:
         if (resultHandler) {
             std::vector<DeviceKey> results;
             FillDeviceKeyVector(fuzzData_, results, SIZE_100);
-            resultHandler(results);
+            resultHandler(results, std::nullopt);
         }
         return GenerateFuzzBool(fuzzData_);
     }

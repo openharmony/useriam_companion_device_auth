@@ -59,6 +59,7 @@ protected:
     virtual bool InitializeMiscManager();
     virtual bool InitializeSecurityAgent();
     virtual bool InitializeIncomingMessageHandlerRegistry();
+    virtual bool InitializeEventBus();
     virtual bool InitializeChannels();
     virtual bool InitializeCrossDeviceCommManager();
     virtual bool InitializeCompanionManager();

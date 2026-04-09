@@ -480,9 +480,9 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_003, TestSize.Level0)
 
     EXPECT_CALL(mockMiscManager_, GetDeviceDeviceSelectResult(_, _, _))
         .WillOnce(
-            Invoke([&deviceKey](uint32_t, SelectPurpose, std::function<void(const std::vector<DeviceKey> &)> callback) {
+            Invoke([&deviceKey](uint32_t, SelectPurpose, DeviceSelectResultHandler &&callback) {
                 std::vector<DeviceKey> selected = { deviceKey };
-                callback(selected);
+                callback(selected, std::nullopt);
                 return true;
             }));
 
@@ -510,9 +510,9 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_004, TestSize.Level0)
     deviceKey.deviceUserId = 100;
 
     EXPECT_CALL(mockMiscManager_, GetDeviceDeviceSelectResult(_, _, _))
-        .WillOnce(Invoke([](uint32_t, SelectPurpose, std::function<void(const std::vector<DeviceKey> &)> callback) {
+        .WillOnce(Invoke([](uint32_t, SelectPurpose, DeviceSelectResultHandler && callback) {
             std::vector<DeviceKey> selected;
-            callback(selected);
+            callback(selected, std::nullopt);
             return true;
         }));
 
@@ -546,9 +546,9 @@ HWTEST_F(SoftBusChannelTest, CheckOperationIntent_005, TestSize.Level0)
 
     EXPECT_CALL(mockMiscManager_, GetDeviceDeviceSelectResult(_, _, _))
         .WillOnce(Invoke(
-            [&otherDevice](uint32_t, SelectPurpose, std::function<void(const std::vector<DeviceKey> &)> callback) {
+            [&otherDevice](uint32_t, SelectPurpose, DeviceSelectResultHandler &&callback) {
                 std::vector<DeviceKey> selected = { otherDevice };
-                callback(selected);
+                callback(selected, std::nullopt);
                 return true;
             }));
 

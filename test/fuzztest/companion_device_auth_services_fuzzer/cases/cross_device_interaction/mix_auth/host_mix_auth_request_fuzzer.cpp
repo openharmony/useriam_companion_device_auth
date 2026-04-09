@@ -63,9 +63,10 @@ static void FuzzCancel(std::shared_ptr<HostMixAuthRequest> &request, FuzzedDataP
 
 static void FuzzCompleteWithSuccess(std::shared_ptr<HostMixAuthRequest> &request, FuzzedDataProvider &fuzzData)
 {
+    TemplateId templateId = fuzzData.ConsumeIntegral<TemplateId>();
     std::vector<uint8_t> extraInfo =
         fuzzData.ConsumeBytes<uint8_t>(fuzzData.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_FWK_MESSAGE_LENGTH));
-    (void)request->CompleteWithSuccess(extraInfo);
+    (void)request->CompleteWithSuccess(templateId, extraInfo);
 }
 
 static void FuzzCompleteWithError(std::shared_ptr<HostMixAuthRequest> &request, FuzzedDataProvider &fuzzData)

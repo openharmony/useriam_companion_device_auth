@@ -18,7 +18,7 @@
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "securec.h"
 #include "tokenid_kit.h"
 

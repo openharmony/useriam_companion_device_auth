@@ -52,6 +52,9 @@ public:
     IExecutorFactory &GetExecutorFactory() override;
     void SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory) override;
 
+    IEventBus &GetEventBus() override;
+    void SetEventBus(std::shared_ptr<IEventBus> eventBus) override;
+
 #ifdef ENABLE_TEST
     virtual void Reset() override;
 #endif // ENABLE_TEST
@@ -68,6 +71,7 @@ private:
     std::shared_ptr<IRequestFactory> requestFactory_;
     std::shared_ptr<IncomingMessageHandlerRegistry> incomingMessageHandlerRegistry_;
     std::shared_ptr<IExecutorFactory> executorFactory_;
+    std::shared_ptr<IEventBus> eventBus_;
 };
 
 #ifdef ENABLE_TEST
@@ -82,6 +86,7 @@ void SingletonManagerImpl::Reset()
     requestFactory_.reset();
     incomingMessageHandlerRegistry_.reset();
     executorFactory_.reset();
+    eventBus_.reset();
 }
 #endif // ENABLE_TEST
 
@@ -272,6 +277,27 @@ void SingletonManagerImpl::SetExecutorFactory(std::shared_ptr<IExecutorFactory> 
         return;
     }
     executorFactory_ = executorFactory;
+}
+
+IEventBus &SingletonManagerImpl::GetEventBus()
+{
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
+    if (eventBus_ == nullptr) {
+        IAM_LOGE("event bus is not initialized");
+        AbortIfSingletonUninitialized();
+    }
+    return *eventBus_;
+}
+
+void SingletonManagerImpl::SetEventBus(std::shared_ptr<IEventBus> eventBus)
+{
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
+    ENSURE_OR_RETURN(eventBus != nullptr);
+    if (eventBus_ != nullptr) {
+        IAM_LOGE("event bus is already set");
+        return;
+    }
+    eventBus_ = eventBus;
 }
 
 void SingletonManagerImpl::AbortIfSingletonUninitialized()

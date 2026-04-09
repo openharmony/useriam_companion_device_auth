@@ -84,6 +84,9 @@ ohos_fuzztest("CompanionDeviceAuthServiceFuzzer") {
     "cases/cross_device_comm/local_device_status_manager_fuzzer.cpp",
     "cases/cross_device_comm/message_router_fuzzer.cpp",
 
+    # event_bus cases
+    "cases/event_bus/event_bus_impl_fuzzer.cpp",
+
     # misc cases
     "cases/misc/cda_attributes_fuzzer.cpp",
     "cases/misc/misc_manager_impl_fuzzer.cpp",

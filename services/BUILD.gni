@@ -57,6 +57,8 @@ companion_device_auth_service_include_dirs = [
   "singleton/inc/misc",
   "singleton/inc/request",
   "singleton/inc/security_agent",
+  "singleton/inc/event_bus",
+  "event_bus/inc",
   "utils/inc",
 ]
 
@@ -132,6 +134,7 @@ companion_device_auth_service_static_sources = [
   "request/src/request_factory_impl.cpp",
   "request/src/request_manager_impl.cpp",
   "security_agent/src/security_agent_impl.cpp",
+  "event_bus/src/event_bus_impl.cpp",
   "service_entry/src/base_service_core.cpp",
   "service_entry/src/base_service_initializer.cpp",
   "service_entry/src/companion_device_auth_service.cpp",

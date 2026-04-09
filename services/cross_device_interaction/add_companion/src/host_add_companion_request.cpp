@@ -127,7 +127,8 @@ void HostAddCompanionRequest::ValidateAndFilterBusinessIds(const std::vector<Bus
 bool HostAddCompanionRequest::OnStart([[maybe_unused]] ErrorGuard &errorGuard)
 {
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_, SelectPurpose::SELECT_ADD_DEVICE,
-        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices) {
+        [weakSelf = weak_from_this()](
+            const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &_) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN(self != nullptr);
             self->HandleDeviceSelectResult(selectedDevices);
