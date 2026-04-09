@@ -42,6 +42,7 @@ void KeepAliveHandler::HandleRequest(const Attributes &request, Attributes &repl
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), isOpen);
 
     reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::SUCCESS));
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

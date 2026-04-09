@@ -61,6 +61,7 @@ void HostRevokeTokenHandler::HandleRequest(const Attributes &request, Attributes
     RevokeTokenReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeRevokeTokenReply(replyMsg, reply);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

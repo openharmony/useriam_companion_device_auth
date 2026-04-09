@@ -6,3 +6,5 @@ build
 tmp
 .DS_Store
 .codemate
+gtest_build
+build
