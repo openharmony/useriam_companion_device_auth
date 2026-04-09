@@ -59,6 +59,7 @@ void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request,
     RemoveHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeRemoveHostBindingReply(replyMsg, reply);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

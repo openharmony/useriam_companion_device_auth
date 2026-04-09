@@ -103,7 +103,8 @@
       ],
       "test":[
         "//base/useriam/companion_device_auth/test/unittest:companion_device_auth_unittest",
-        "//base/useriam/companion_device_auth/test/fuzztest:companion_device_auth_fuzztest"
+        "//base/useriam/companion_device_auth/test/fuzztest:companion_device_auth_fuzztest",
+        "//base/useriam/companion_device_auth/test/moduletest:companion_device_auth_moduletest"
       ]
     }
   }

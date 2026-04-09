@@ -99,6 +99,7 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
 
     EncodeSyncDeviceStatusReply(syncReply, reply);
     errorGuard.Cancel();
+    IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 
 CompanionProcessCheckInput CompanionSyncDeviceStatusHandler::BuildCompanionProcessCheckInput(
