@@ -40,14 +40,15 @@ public:
 
 private:
     void CompleteWithError(ResultCode result) override;
-    void CompleteWithSuccess(const std::vector<uint8_t> &extraInfo);
+    void CompleteWithSuccess(TemplateId templateId, const std::vector<uint8_t> &extraInfo);
     void Destroy();
     void InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo);
 
     void HandleAuthResult(TemplateId templateId, ResultCode result, const std::vector<uint8_t> &extraInfo);
 
     bool AnyTemplateValid() const;
-    void HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices);
+    void HandleDeviceSelectResult(
+        const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext);
     std::vector<TemplateId> GetFilteredTemplateList(const std::vector<DeviceKey> &selectedDevices);
     void StartAuthWithTemplateList(const std::vector<TemplateId> &templateList);
 
@@ -56,6 +57,7 @@ private:
     std::vector<TemplateId> templateIdList_;
     std::optional<uint32_t> tokenId_;
     std::optional<BusinessId> businessId_;
+    std::optional<std::vector<uint8_t>> selectContext_ = std::nullopt;
     int32_t authIntent_ = 0;
     FwkResultCallback requestCallback_;
     std::unordered_map<TemplateId, std::shared_ptr<IRequest>> requestMap_;

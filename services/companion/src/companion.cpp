@@ -26,7 +26,7 @@
 #include "adapter_manager.h"
 #include "companion_manager_impl.h"
 #include "relative_timer.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"

@@ -22,6 +22,7 @@
 
 #include "companion_manager.h"
 #include "cross_device_comm_manager.h"
+#include "event_bus/event_bus.h"
 #include "fwk_comm/executor_factory.h"
 #include "host_binding_manager.h"
 #include "incoming_message_handler_registry.h"
@@ -65,6 +66,9 @@ public:
 
     virtual IExecutorFactory &GetExecutorFactory() = 0;
     virtual void SetExecutorFactory(std::shared_ptr<IExecutorFactory> executorFactory) = 0;
+
+    virtual IEventBus &GetEventBus() = 0;
+    virtual void SetEventBus(std::shared_ptr<IEventBus> eventBus) = 0;
 
 #ifdef ENABLE_TEST
     virtual void Reset() = 0;
@@ -118,6 +122,12 @@ inline IExecutorFactory &GetExecutorFactory()
 {
     return SingletonManager::GetInstance().GetExecutorFactory();
 }
+
+inline IEventBus &GetEventBus()
+{
+    return SingletonManager::GetInstance().GetEventBus();
+}
+
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

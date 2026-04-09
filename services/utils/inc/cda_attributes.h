@@ -43,6 +43,7 @@ public:
         ATTR_SIGNATURE = 100004,
 
         /** Companion device auth SA specific attributes begin from 200000 */
+        /** Attributes cross device */
         ATTR_CDA_SA_BEGIN = 200000,
         ATTR_CDA_SA_PROTOCOL_ID_LIST = 200001,
         ATTR_CDA_SA_CAPABILITY_LIST = 200002,
@@ -64,6 +65,11 @@ public:
         ATTR_CDA_SA_MSG_ACK = 200021,
         ATTR_CDA_SA_MSG_SEQ_NUM = 200022,
         ATTR_CDA_SA_REASON = 200024,
+
+        /** Attributes inside device */
+        ATTR_CDA_SA_SELECT_CONTEXT = 210000,
+        ATTR_CDA_SA_TEMPLATE_ID = 210001,
+        ATTR_CDA_SA_AUTH_INTENT = 210002,
         /** Companion device auth secure specific attributes begin from 300000 */
         ATTR_CDA_SECURE_BEGIN = 300000,
     };

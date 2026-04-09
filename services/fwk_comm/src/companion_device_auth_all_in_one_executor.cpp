@@ -60,6 +60,11 @@ struct FreezeCommand {
     std::vector<uint64_t> templateIdList;
 };
 
+struct CdaAuthenticateParam {
+    std::optional<uint32_t> tokenId;
+    std::optional<BusinessId> businessId;
+};
+
 class CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutorInner : public NoCopyable {
 public:
     CompanionDeviceAuthAllInOneExecutorInner()
@@ -75,8 +80,8 @@ public:
     FwkResultCode SendMessage(uint64_t scheduleId, int32_t srcRole, const std::vector<uint8_t> &msg);
     FwkResultCode Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
         const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
-    FwkResultCode Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param, std::optional<uint32_t> tokenId,
-        std::optional<BusinessId> businessId, const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
+    FwkResultCode Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &fwkParam,
+        const CdaAuthenticateParam &cdaParam, const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
     FwkResultCode Delete(const std::vector<uint64_t> &templateIdList);
     FwkResultCode Cancel(uint64_t scheduleId);
     FwkResultCode SendCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo,
@@ -183,9 +188,8 @@ FwkResultCode Inner::Enroll(uint64_t scheduleId, const FwkEnrollParam &param,
     return FwkResultCode::SUCCESS;
 }
 
-FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &param,
-    std::optional<uint32_t> tokenId, std::optional<BusinessId> businessId,
-    const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
+FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticateParam &fwkParam,
+    const CdaAuthenticateParam &cdaParam, const std::shared_ptr<FwkIExecuteCallback> &callbackObj)
 {
     IAM_LOGI("start");
     if (callbackObj == nullptr) {
@@ -193,7 +197,7 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
         return FwkResultCode::GENERAL_ERROR;
     }
 
-    if (param.templateIdList.empty()) {
+    if (fwkParam.templateIdList.empty()) {
         IAM_LOGE("templateIdList is empty");
         return FwkResultCode::GENERAL_ERROR;
     }
@@ -205,8 +209,8 @@ FwkResultCode Inner::Authenticate(uint64_t scheduleId, const FwkAuthenticatePara
         (*callback)(result, extraInfo);
     };
 
-    HostMixAuthParams params = { scheduleId, param.extraInfo, param.userId, param.templateIdList, tokenId, businessId,
-        param.authIntent };
+    HostMixAuthParams params = { scheduleId, fwkParam.extraInfo, fwkParam.userId, fwkParam.templateIdList,
+        cdaParam.tokenId, cdaParam.businessId, fwkParam.authIntent };
     auto request = GetRequestFactory().CreateHostMixAuthRequest(params, std::move(requestCallback));
     if (request == nullptr) {
         IAM_LOGE("CreateHostMixAuthRequest failed");
@@ -421,15 +425,14 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::Authenticate(uint64_t schedul
     auto inner = inner_;
     ENSURE_OR_RETURN_VAL(inner != nullptr, FwkResultCode::GENERAL_ERROR);
 
-    std::optional<uint32_t> tokenId = std::nullopt;
+    CdaAuthenticateParam cdaParam = {};
     if (SupportDeviceSelect(param.authIntent)) {
-        tokenId = param.tokenId;
+        cdaParam.tokenId = param.tokenId;
     }
+    cdaParam.businessId = GetAuthBusinessId(param.authIntent);
 
-    std::optional<BusinessId> businessId = GetAuthBusinessId(param.authIntent);
-
-    return RunOnResidentSync([inner, scheduleId, paramCopy = param, tokenId, businessId, callbackObj]() {
-        return inner->Authenticate(scheduleId, paramCopy, tokenId, businessId, callbackObj);
+    return RunOnResidentSync([inner, scheduleId, fwkParam = param, cdaParam, callbackObj]() {
+        return inner->Authenticate(scheduleId, fwkParam, cdaParam, callbackObj);
     });
 }
 

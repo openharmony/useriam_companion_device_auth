@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "iam_logger.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 
 namespace OHOS {
 namespace UserIam {

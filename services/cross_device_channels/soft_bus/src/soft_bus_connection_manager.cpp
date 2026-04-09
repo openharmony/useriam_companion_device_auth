@@ -19,7 +19,7 @@
 
 #include "cda_attributes.h"
 #include "sa_status_listener.h"
-#include "scope_guard.h"
+#include "cda_scope_guard.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "soft_bus_adapter_manager.h"
