@@ -177,8 +177,8 @@ bool SoftBusChannel::CheckOperationIntent(const DeviceKey &deviceKey, uint32_t t
     }
 
     bool requestStarted = GetMiscManager().GetDeviceDeviceSelectResult(tokenId, SelectPurpose::CHECK_OPERATION_INTENT,
-        [deviceKey, callback = std::move(resultCallback)](
-            const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &_) mutable {
+        [deviceKey, callback = std::move(resultCallback)](const std::vector<DeviceKey> &selectedDevices,
+            const std::optional<std::vector<uint8_t>> &_) mutable {
             bool confirmed = false;
             if (selectedDevices.empty()) {
                 IAM_LOGE("no device selected by user");

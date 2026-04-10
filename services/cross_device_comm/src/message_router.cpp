@@ -25,9 +25,9 @@
 
 #include "adapter_manager.h"
 #include "cda_attributes.h"
+#include "cda_scope_guard.h"
 #include "common_defines.h"
 #include "relative_timer.h"
-#include "cda_scope_guard.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"

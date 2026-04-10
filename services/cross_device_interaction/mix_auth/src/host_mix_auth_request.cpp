@@ -67,8 +67,8 @@ bool HostMixAuthRequest::AnyTemplateValid() const
     return false;
 }
 
-void HostMixAuthRequest::HandleDeviceSelectResult(
-    const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext)
+void HostMixAuthRequest::HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices,
+    const std::optional<std::vector<uint8_t>> &selectContext)
 {
     IAM_LOGI("%{public}s HandleDeviceSelectResult size:%{public}zu", GetDescription(), selectedDevices.size());
 
@@ -172,8 +172,8 @@ void HostMixAuthRequest::Start()
     }
 
     bool selectorSet = GetMiscManager().GetDeviceDeviceSelectResult(tokenId_.value(), SelectPurpose::SELECT_AUTH_DEVICE,
-        [weakSelf = weak_from_this()](
-            const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext) {
+        [weakSelf = weak_from_this()](const std::vector<DeviceKey> &selectedDevices,
+            const std::optional<std::vector<uint8_t>> &selectContext) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN(self != nullptr);
             self->HandleDeviceSelectResult(selectedDevices, selectContext);

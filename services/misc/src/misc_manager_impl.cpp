@@ -71,11 +71,12 @@ public:
             return ERR_INVALID_VALUE;
         }
         std::vector<DeviceKey> deviceKeys = ConvertIpcDeviceSelectResultToDeviceKeys(ipcDeviceSelectResult);
-        std::optional<std::vector<uint8_t>> selectContext = ipcDeviceSelectResult.hasSelectionContext ?
-            std::optional<std::vector<uint8_t>>(ipcDeviceSelectResult.selectionContext) : std::nullopt;
+        std::optional<std::vector<uint8_t>> selectContext = ipcDeviceSelectResult.hasSelectionContext
+            ? std::optional<std::vector<uint8_t>>(ipcDeviceSelectResult.selectionContext)
+            : std::nullopt;
         TaskRunnerManager::GetInstance().PostTaskOnResident(
-            [handler = std::move(handler_),
-                devices = std::move(deviceKeys), context = std::move(selectContext)]() mutable {
+            [handler = std::move(handler_), devices = std::move(deviceKeys),
+                context = std::move(selectContext)]() mutable {
                 if (handler) {
                     handler(devices, context);
                 }

@@ -37,13 +37,10 @@ Subscription::~Subscription()
 
 void Subscription::Cancel()
 {
+    CHECK_RUNNING_ON_RESIDENT_THREAD();
     auto cleanup = std::move(cleanup_);
     if (cleanup) {
-        if (TaskRunnerManager::GetInstance().RunningOnDefaultTaskRunner()) {
-            cleanup();
-        } else {
-            TaskRunnerManager::GetInstance().PostTaskOnResident([cleanup = std::move(cleanup)]() { cleanup(); });
-        }
+        cleanup();
     }
 }
 

@@ -26,12 +26,12 @@
 #include "iam_safe_arithmetic.h"
 
 #include "adapter_manager.h"
+#include "cda_scope_guard.h"
 #include "common_defines.h"
 #include "device_status_manager.h"
 #include "local_device_status_manager.h"
 #include "message_router.h"
 #include "relative_timer.h"
-#include "cda_scope_guard.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"

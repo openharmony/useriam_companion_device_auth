@@ -19,11 +19,11 @@
 #include "iam_logger.h"
 
 #include "adapter_manager.h"
+#include "cda_scope_guard.h"
 #include "common_message.h"
 #include "companion_manager.h"
 #include "companion_sync_device_status_handler.h"
 #include "error_guard.h"
-#include "cda_scope_guard.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "sync_device_status_message.h"

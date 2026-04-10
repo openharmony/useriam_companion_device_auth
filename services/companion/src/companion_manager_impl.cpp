@@ -25,12 +25,12 @@
 #include "iam_safe_arithmetic.h"
 
 #include "adapter_manager.h"
+#include "cda_scope_guard.h"
 #include "companion.h"
 #include "host_remove_host_binding_request.h"
 #include "relative_timer.h"
 #include "request_factory.h"
 #include "request_manager.h"
-#include "cda_scope_guard.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
