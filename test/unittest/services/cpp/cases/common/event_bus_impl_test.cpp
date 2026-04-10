@@ -32,8 +32,7 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-class EventBusImplTest : public Test {
-};
+class EventBusImplTest : public Test {};
 
 HWTEST_F(EventBusImplTest, Create_001, TestSize.Level0)
 {
@@ -103,10 +102,8 @@ HWTEST_F(EventBusImplTest, Publish_004, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [receivedData](const EventData &data) { *receivedData = data; });
     ASSERT_NE(nullptr, subscription);
 
     std::vector<uint8_t> expectedData = { 0x01, 0x02, 0x03 };
@@ -139,8 +136,8 @@ HWTEST_F(EventBusImplTest, Publish_006, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto callbackCalled = std::make_shared<int>(0);
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [callbackCalled](const EventData &data) { (*callbackCalled)++; });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [callbackCalled](const EventData &data) { (*callbackCalled)++; });
     ASSERT_NE(nullptr, subscription);
 
     std::vector<uint8_t> data1 = { 0x01, 0x02, 0x03 };
@@ -159,8 +156,7 @@ HWTEST_F(EventBusImplTest, Subscribe_001, TestSize.Level0)
     auto eventBus = EventBusImpl::Create();
     ASSERT_NE(nullptr, eventBus);
 
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [](const EventData &data) {});
+    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS, [](const EventData &data) {});
 
     EXPECT_NE(nullptr, subscription);
 }
@@ -179,10 +175,8 @@ HWTEST_F(EventBusImplTest, Subscribe_003, TestSize.Level0)
     auto eventBus = EventBusImpl::Create();
     ASSERT_NE(nullptr, eventBus);
 
-    auto subscription1 = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [](const EventData &data) {});
-    auto subscription2 = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [](const EventData &data) {});
+    auto subscription1 = eventBus->Subscribe(EventType::AUTH_SUCCESS, [](const EventData &data) {});
+    auto subscription2 = eventBus->Subscribe(EventType::AUTH_SUCCESS, [](const EventData &data) {});
 
     EXPECT_NE(nullptr, subscription1);
     EXPECT_NE(nullptr, subscription2);
@@ -195,8 +189,8 @@ HWTEST_F(EventBusImplTest, Unsubscribe_001, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto callbackCalled = std::make_shared<int>(0);
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [callbackCalled](const EventData &data) { (*callbackCalled)++; });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [callbackCalled](const EventData &data) { (*callbackCalled)++; });
     ASSERT_NE(nullptr, subscription);
 
     subscription->Cancel();
@@ -214,8 +208,8 @@ HWTEST_F(EventBusImplTest, Unsubscribe_002, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto callbackCalled = std::make_shared<int>(0);
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [callbackCalled](const EventData &data) { (*callbackCalled)++; });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [callbackCalled](const EventData &data) { (*callbackCalled)++; });
     ASSERT_NE(nullptr, subscription);
 
     std::vector<uint8_t> data = { 0x01, 0x02, 0x03 };
@@ -309,10 +303,8 @@ HWTEST_F(EventBusImplTest, EmptyEventData_001, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [receivedData](const EventData &data) { *receivedData = data; });
     ASSERT_NE(nullptr, subscription);
 
     std::vector<uint8_t> emptyData;
@@ -328,10 +320,8 @@ HWTEST_F(EventBusImplTest, LargeEventData_001, TestSize.Level0)
     ASSERT_NE(nullptr, eventBus);
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
-    auto subscription = eventBus->Subscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+    auto subscription =
+        eventBus->Subscribe(EventType::AUTH_SUCCESS, [receivedData](const EventData &data) { *receivedData = data; });
     ASSERT_NE(nullptr, subscription);
 
     std::vector<uint8_t> largeData(1024, 0xAA);
@@ -409,9 +399,7 @@ HWTEST_F(EventBusImplTest, PersistSubscribe_004, TestSize.Level0)
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
     eventBus->PersistSubscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+        [receivedData](const EventData &data) { *receivedData = data; });
 
     std::vector<uint8_t> expectedData = { 0x01, 0x02, 0x03 };
     eventBus->Publish(EventType::AUTH_SUCCESS, expectedData);
@@ -443,9 +431,7 @@ HWTEST_F(EventBusImplTest, PersistSubscribe_006, TestSize.Level0)
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
     eventBus->PersistSubscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+        [receivedData](const EventData &data) { *receivedData = data; });
 
     std::vector<uint8_t> emptyData;
     eventBus->Publish(EventType::AUTH_SUCCESS, emptyData);
@@ -461,9 +447,7 @@ HWTEST_F(EventBusImplTest, PersistSubscribe_007, TestSize.Level0)
 
     auto receivedData = std::make_shared<std::vector<uint8_t>>();
     eventBus->PersistSubscribe(EventType::AUTH_SUCCESS,
-        [receivedData](const EventData &data) {
-            *receivedData = data;
-        });
+        [receivedData](const EventData &data) { *receivedData = data; });
 
     std::vector<uint8_t> largeData(1024, 0xAA);
     eventBus->Publish(EventType::AUTH_SUCCESS, largeData);

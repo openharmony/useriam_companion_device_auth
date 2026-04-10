@@ -27,8 +27,7 @@ namespace CompanionDeviceAuth {
 class MockEventBus : public IEventBus {
 public:
     MOCK_METHOD(void, Publish, (EventType type, const EventData &data), (override));
-    MOCK_METHOD(std::shared_ptr<Subscription>, Subscribe,
-        (EventType type, EventDataHandler &&handler), (override));
+    MOCK_METHOD(std::shared_ptr<Subscription>, Subscribe, (EventType type, EventDataHandler &&handler), (override));
     MOCK_METHOD(void, PersistSubscribe, (EventType type, EventDataHandler &&handler), (override));
 };
 

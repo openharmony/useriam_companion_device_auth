@@ -16,8 +16,6 @@
 #ifndef COMPANION_DEVICE_AUTH_TEST_UNITTEST_CLIENT_MOCK_MOCK_CALLBACK_H
 #define COMPANION_DEVICE_AUTH_TEST_UNITTEST_CLIENT_MOCK_MOCK_CALLBACK_H
 
-#include <gmock/gmock.h>
-
 #include "iavailable_device_status_callback.h"
 #include "icontinuous_auth_status_callback.h"
 #include "idevice_select_callback.h"
@@ -27,49 +25,42 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-/**
- * @brief Mock implementation of IDeviceSelectCallback for testing.
- */
-class MockDeviceSelectCallback : public IDeviceSelectCallback {
+class FakeDeviceSelectCallback : public IDeviceSelectCallback {
 public:
-    virtual ~MockDeviceSelectCallback() = default;
-    MOCK_METHOD(void, OnDeviceSelect,
-        (int32_t selectPurpose, const std::shared_ptr<SetDeviceSelectResultCallback> &callback), (override));
+    ~FakeDeviceSelectCallback() override = default;
+    void OnDeviceSelect(int32_t selectPurpose, const std::shared_ptr<SetDeviceSelectResultCallback> &callback) override
+    {
+        (void)selectPurpose;
+        (void)callback;
+    }
 };
 
-/**
- * @brief Mock implementation of ITemplateStatusCallback for testing.
- */
-class MockTemplateStatusCallback : public ITemplateStatusCallback {
+class FakeTemplateStatusCallback : public ITemplateStatusCallback {
 public:
-    virtual ~MockTemplateStatusCallback() = default;
-    MockTemplateStatusCallback() = default;
-
-    MOCK_METHOD(void, OnTemplateStatusChange, (const std::vector<ClientTemplateStatus> templateStatusList), (override));
+    ~FakeTemplateStatusCallback() override = default;
+    void OnTemplateStatusChange(const std::vector<ClientTemplateStatus> templateStatusList) override
+    {
+        (void)templateStatusList;
+    }
 };
 
-/**
- * @brief Mock implementation of IAvailableDeviceStatusCallback for testing.
- */
-class MockAvailableDeviceStatusCallback : public IAvailableDeviceStatusCallback {
+class FakeAvailableDeviceStatusCallback : public IAvailableDeviceStatusCallback {
 public:
-    virtual ~MockAvailableDeviceStatusCallback() = default;
-    MockAvailableDeviceStatusCallback() = default;
-
-    MOCK_METHOD(void, OnAvailableDeviceStatusChange, (const std::vector<ClientDeviceStatus> deviceStatusList),
-        (override));
+    ~FakeAvailableDeviceStatusCallback() override = default;
+    void OnAvailableDeviceStatusChange(const std::vector<ClientDeviceStatus> deviceStatusList) override
+    {
+        (void)deviceStatusList;
+    }
 };
 
-/**
- * @brief Mock implementation of IContinuousAuthStatusCallback for testing.
- */
-class MockContinuousAuthStatusCallback : public IContinuousAuthStatusCallback {
+class FakeContinuousAuthStatusCallback : public IContinuousAuthStatusCallback {
 public:
-    virtual ~MockContinuousAuthStatusCallback() = default;
-    MockContinuousAuthStatusCallback() = default;
-
-    MOCK_METHOD(void, OnContinuousAuthStatusChange, (const bool isAuthPassed, std::optional<int32_t> remainingTime),
-        (override));
+    ~FakeContinuousAuthStatusCallback() override = default;
+    void OnContinuousAuthStatusChange(const bool isAuthPassed, std::optional<int32_t> remainingTime) override
+    {
+        (void)isAuthPassed;
+        (void)remainingTime;
+    }
 };
 
 } // namespace CompanionDeviceAuth

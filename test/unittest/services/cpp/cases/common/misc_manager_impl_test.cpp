@@ -182,10 +182,10 @@ HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_001, TestSize.Level0)
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
 
     auto callbackCalled = std::make_shared<bool>(false);
-    DeviceSelectResultHandler resultHandler =
-        [callbackCalled](const std::vector<DeviceKey> &, const std::optional<std::vector<uint8_t>> &) {
-            *callbackCalled = true;
-        };
+    DeviceSelectResultHandler resultHandler = [callbackCalled](const std::vector<DeviceKey> &,
+                                                  const std::optional<std::vector<uint8_t>> &) {
+        *callbackCalled = true;
+    };
 
     bool result = manager->GetDeviceDeviceSelectResult(tokenId, selectPurpose, std::move(resultHandler));
     EXPECT_FALSE(result);
@@ -227,10 +227,10 @@ HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_003, TestSize.Level0)
 
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
     auto callbackCalled = std::make_shared<bool>(false);
-    DeviceSelectResultHandler resultHandler =
-        [callbackCalled](const std::vector<DeviceKey> &, const std::optional<std::vector<uint8_t>> &) {
-            *callbackCalled = true;
-        };
+    DeviceSelectResultHandler resultHandler = [callbackCalled](const std::vector<DeviceKey> &,
+                                                  const std::optional<std::vector<uint8_t>> &) {
+        *callbackCalled = true;
+    };
 
     EXPECT_CALL(*callback, OnDeviceSelect(_, _)).WillOnce(Return(ERR_OK));
 
@@ -258,8 +258,8 @@ HWTEST_F(MiscManagerImplTest, GetDeviceDeviceSelectResult_004, TestSize.Level0)
     EXPECT_TRUE(setResult);
 
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
-    DeviceSelectResultHandler resultHandler =
-        [](const std::vector<DeviceKey> &, const std::optional<std::vector<uint8_t>> &) {};
+    DeviceSelectResultHandler resultHandler = [](const std::vector<DeviceKey> &,
+                                                  const std::optional<std::vector<uint8_t>> &) {};
 
     EXPECT_CALL(*callback, OnDeviceSelect(_, _)).WillOnce(Return(ERR_INVALID_VALUE));
 
@@ -289,8 +289,8 @@ HWTEST_F(MiscManagerImplTest, ClearDeviceSelectCallback_001, TestSize.Level0)
     manager->ClearDeviceSelectCallback(tokenId);
 
     SelectPurpose selectPurpose = SelectPurpose::SELECT_ADD_DEVICE;
-    DeviceSelectResultHandler resultHandler =
-        [](const std::vector<DeviceKey> &, const std::optional<std::vector<uint8_t>> &) {};
+    DeviceSelectResultHandler resultHandler = [](const std::vector<DeviceKey> &,
+                                                  const std::optional<std::vector<uint8_t>> &) {};
 
     bool result = manager->GetDeviceDeviceSelectResult(tokenId, selectPurpose, std::move(resultHandler));
     EXPECT_FALSE(result);

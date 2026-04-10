@@ -17,8 +17,8 @@
 #include "napi/native_common.h"
 
 #include "accesstoken_kit.h"
-#include "ipc_skeleton.h"
 #include "cda_scope_guard.h"
+#include "ipc_skeleton.h"
 #include "securec.h"
 #include "tokenid_kit.h"
 

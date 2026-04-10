@@ -257,10 +257,9 @@ void MockGuard::SetupEventManagerAdapterDefaults()
 void MockGuard::SetupEventBusDefaults()
 {
     ON_CALL(*eventBus_, Publish(_, _)).WillByDefault(Return());
-    ON_CALL(*eventBus_, Subscribe(_, _))
-        .WillByDefault(Invoke([](EventType, EventDataHandler &&) {
-            return std::make_shared<Subscription>([]() {});
-        }));
+    ON_CALL(*eventBus_, Subscribe(_, _)).WillByDefault(Invoke([](EventType, EventDataHandler &&) {
+        return std::make_shared<Subscription>([]() {});
+    }));
 }
 
 MockGuard::~MockGuard()

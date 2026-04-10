@@ -19,10 +19,10 @@
 
 #include "fuzzer/FuzzedDataProvider.h"
 
+#include "event_bus_impl.h"
 #include "fuzz_constants.h"
 #include "fuzz_data_generator.h"
 #include "fuzz_registry.h"
-#include "event_bus_impl.h"
 
 namespace OHOS {
 namespace UserIam {
@@ -41,7 +41,7 @@ static void FuzzPublish(FuzzedDataProvider &fuzzData)
 {
     uint16_t eventTypeValue = fuzzData.ConsumeIntegral<uint16_t>();
     std::vector<uint8_t> eventData = fuzzData.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
-    
+
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
@@ -54,13 +54,11 @@ static void FuzzSubscribe(FuzzedDataProvider &fuzzData)
 {
     uint16_t eventTypeValue = fuzzData.ConsumeIntegral<uint16_t>();
     std::vector<uint8_t> eventData = fuzzData.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
-    
+
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
-        auto subscription = eventBus->Subscribe(type, [&eventData](const EventData &data) {
-            (void)data;
-        });
+        auto subscription = eventBus->Subscribe(type, [&eventData](const EventData &data) { (void)data; });
         (void)subscription;
     }
 }
@@ -73,9 +71,7 @@ static void FuzzSubscribeAndPublish(FuzzedDataProvider &fuzzData)
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
-        auto subscription = eventBus->Subscribe(type, [&eventData](const EventData &data) {
-            (void)data;
-        });
+        auto subscription = eventBus->Subscribe(type, [&eventData](const EventData &data) { (void)data; });
         if (subscription) {
             std::vector<uint8_t> publishData = fuzzData.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
             eventBus->Publish(type, publishData);
@@ -117,9 +113,7 @@ static void FuzzUnsubscribe(FuzzedDataProvider &fuzzData)
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
-        auto subscription = eventBus->Subscribe(type, [](const EventData &data) {
-            (void)data;
-        });
+        auto subscription = eventBus->Subscribe(type, [](const EventData &data) { (void)data; });
         if (subscription) {
             bool shouldCancel = fuzzData.ConsumeBool();
             if (shouldCancel) {
@@ -143,9 +137,7 @@ static void FuzzEventBusImplConstructor(FuzzedDataProvider &fuzzData)
 static void DoSubscribeOperation(const std::shared_ptr<EventBusImpl> &eventBus, EventType type,
     std::vector<std::shared_ptr<Subscription>> &subscriptions)
 {
-    auto subscription = eventBus->Subscribe(type, [](const EventData &data) {
-        (void)data;
-    });
+    auto subscription = eventBus->Subscribe(type, [](const EventData &data) { (void)data; });
     if (subscription) {
         subscriptions.push_back(subscription);
     }
@@ -158,8 +150,7 @@ static void DoPublishOperation(const std::shared_ptr<EventBusImpl> &eventBus, Ev
     eventBus->Publish(type, publishData);
 }
 
-static void DoCancelOperation(std::vector<std::shared_ptr<Subscription>> &subscriptions,
-    FuzzedDataProvider &fuzzData)
+static void DoCancelOperation(std::vector<std::shared_ptr<Subscription>> &subscriptions, FuzzedDataProvider &fuzzData)
 {
     if (!subscriptions.empty()) {
         size_t index = fuzzData.ConsumeIntegralInRange<size_t>(0, subscriptions.size() - 1);
@@ -218,9 +209,7 @@ static void FuzzPersistSubscribe(FuzzedDataProvider &fuzzData)
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
-        eventBus->PersistSubscribe(type, [&eventData](const EventData &data) {
-            (void)data;
-        });
+        eventBus->PersistSubscribe(type, [&eventData](const EventData &data) { (void)data; });
     }
 }
 
@@ -232,9 +221,7 @@ static void FuzzPersistSubscribeAndPublish(FuzzedDataProvider &fuzzData)
     auto eventBus = EventBusImpl::Create();
     if (eventBus) {
         EventType type = static_cast<EventType>(eventTypeValue);
-        eventBus->PersistSubscribe(type, [&eventData](const EventData &data) {
-            (void)data;
-        });
+        eventBus->PersistSubscribe(type, [&eventData](const EventData &data) { (void)data; });
 
         std::vector<uint8_t> publishData = fuzzData.ConsumeBytes<uint8_t>(FUZZ_MAX_MESSAGE_LENGTH);
         eventBus->Publish(type, publishData);
@@ -266,9 +253,7 @@ static void FuzzMultiplePersistSubscribers(FuzzedDataProvider &fuzzData)
 
 static void DoPersistSubscribeOperation(const std::shared_ptr<EventBusImpl> &eventBus, EventType type)
 {
-    eventBus->PersistSubscribe(type, [](const EventData &data) {
-        (void)data;
-    });
+    eventBus->PersistSubscribe(type, [](const EventData &data) { (void)data; });
 }
 
 static void FuzzMixedSubscribeTypes(FuzzedDataProvider &fuzzData)

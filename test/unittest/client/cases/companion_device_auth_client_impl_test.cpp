@@ -150,7 +150,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, RegisterDeviceSelectCallback_Success
 {
     // Arrange
     SetUpFakeProxyDefaults();
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
     EXPECT_CALL(*fakeProxy_, RegisterDeviceSelectCallback(_, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_1>(INT32_0), Return(INT32_0)));
 
@@ -187,7 +187,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, RegisterDeviceSelectCallback_NoProxy
 {
     // Arrange - fetcher returns nullptr to simulate service unavailable
 
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -293,7 +293,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeTemplateStatusChange_Succes
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(SUCCESS), Return(SUCCESS)));
@@ -332,7 +332,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeTemplateStatusChange_Succ
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // First subscribe
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
@@ -361,7 +361,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeAvailableDeviceStatus_Succe
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeAvailableDeviceStatus(userId, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(SUCCESS), Return(SUCCESS)));
@@ -384,7 +384,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
     const uint64_t templateId = UINT64_12345;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(SUCCESS), Return(SUCCESS)));
@@ -406,7 +406,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(SUCCESS), Return(SUCCESS)));
@@ -474,7 +474,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, ServiceErrorPropagatesToClient, Test
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Simulate service returning error
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
@@ -497,7 +497,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, IpcFailureReturnsGeneralError, TestS
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Simulate IPC failure (first return value is IPC result)
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
@@ -519,7 +519,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, IpcFailureReturnsGeneralError, TestS
 HWTEST_F(CompanionDeviceAuthClientImplTest, NullFetcherCausesError, TestSize.Level0)
 {
     // Arrange
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
 
     // Act - client with default fetcher, but we reset it to nullptr
     CompanionDeviceAuthClientImpl client;
@@ -573,7 +573,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeTemplateStatusChange_NoProx
 {
     // Arrange
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -589,7 +589,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeTemplateStatusChange_NoProx
 HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeTemplateStatusChange_NoProxy, TestSize.Level0)
 {
     // Arrange
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -606,7 +606,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeAvailableDeviceStatus_NoPro
 {
     // Arrange
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -622,7 +622,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeAvailableDeviceStatus_NoPro
 HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeAvailableDeviceStatus_NoProxy, TestSize.Level0)
 {
     // Arrange
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -639,7 +639,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
 {
     // Arrange
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -655,7 +655,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
 HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeContinuousAuthStatusChange_NoProxy, TestSize.Level0)
 {
     // Arrange
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     // Act
     CompanionDeviceAuthClientImpl client;
@@ -693,7 +693,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, RegisterDeviceSelectCallback_Service
 {
     // Arrange
     SetUpFakeProxyDefaults();
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
 
     EXPECT_CALL(*fakeProxy_, RegisterDeviceSelectCallback(_, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_1>(GENERAL_ERROR), Return(SUCCESS)));
@@ -714,7 +714,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, RegisterDeviceSelectCallback_Service
 {
     // Arrange
     SetUpFakeProxyDefaults();
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
 
     EXPECT_CALL(*fakeProxy_, RegisterDeviceSelectCallback(_, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_1>(TIMEOUT), Return(SUCCESS)));
@@ -800,7 +800,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeTemplateStatusChange_Call
 {
     // Arrange
     SetUpFakeProxyDefaults();
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Act - Call unsubscribe without calling subscribe first
     CompanionDeviceAuthClientImpl client;
@@ -819,7 +819,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeAvailableDeviceStatus_Servi
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeAvailableDeviceStatus(userId, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(GENERAL_ERROR), Return(SUCCESS)));
@@ -841,7 +841,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeAvailableDeviceStatus_Ser
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // First subscribe the callback
     EXPECT_CALL(*fakeProxy_, SubscribeAvailableDeviceStatus(_, _, _))
@@ -871,7 +871,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
     const uint64_t templateId = UINT64_12345;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
         .WillOnce(DoAll(SetArgReferee<INDEX_2>(GENERAL_ERROR), Return(SUCCESS)));
@@ -893,7 +893,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeContinuousAuthStatusChang
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     // First subscribe the callback
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
@@ -961,7 +961,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, GetProxy_CachesProxy, TestSize.Level
         .WillOnce(DoAll(SetArgReferee<INDEX_1>(false), SetArgReferee<INDEX_2>(INT32_0), Return(INT32_0)));
 
     // Act - Call multiple methods that need proxy
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
     client.RegisterDeviceSelectCallback(callback); // First call - creates proxy
     client.UnregisterDeviceSelectCallback();       // Second call - uses cached proxy
     bool isUserIdValid = false;
@@ -994,8 +994,8 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, MultipleClientsIndependentProxies, T
     client2.SetProxy(sptr<ICompanionDeviceAuth>(fakeProxy2));
 
     // Act - Each client uses its own proxy
-    auto callback1 = std::make_shared<MockDeviceSelectCallback>();
-    auto callback2 = std::make_shared<MockDeviceSelectCallback>();
+    auto callback1 = std::make_shared<FakeDeviceSelectCallback>();
+    auto callback2 = std::make_shared<FakeDeviceSelectCallback>();
 
     int32_t result1 = client1.RegisterDeviceSelectCallback(callback1);
     int32_t result2 = client2.RegisterDeviceSelectCallback(callback2);
@@ -1044,7 +1044,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, RegisterBeforeSubscribeSaStatus, Tes
     CompanionDeviceAuthClientImpl client;
     client.SetProxy(sptr<ICompanionDeviceAuth>(fakeProxy_));
 
-    auto callback = std::make_shared<MockDeviceSelectCallback>();
+    auto callback = std::make_shared<FakeDeviceSelectCallback>();
 
     // Register callback once
     // SubscribeCompanionDeviceAuthSaStatus only registers a listener, it doesn't trigger
@@ -1077,8 +1077,8 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeTemplateStatusChange_Multip
 
     const int32_t userId1 = INT32_100;
     const int32_t userId2 = INT32_200;
-    auto callback1 = std::make_shared<MockTemplateStatusCallback>();
-    auto callback2 = std::make_shared<MockTemplateStatusCallback>();
+    auto callback1 = std::make_shared<FakeTemplateStatusCallback>();
+    auto callback2 = std::make_shared<FakeTemplateStatusCallback>();
 
     // Internal implementation may call SubscribeTemplateStatusChange additional times
     // during setup/initialization
@@ -1155,8 +1155,8 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
     client.SetProxy(sptr<ICompanionDeviceAuth>(fakeProxy_));
 
     const int32_t userId = INT32_100;
-    auto callbackWithId = std::make_shared<MockContinuousAuthStatusCallback>();
-    auto callbackWithoutId = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callbackWithId = std::make_shared<FakeContinuousAuthStatusCallback>();
+    auto callbackWithoutId = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
         .Times(SIZE_2)
@@ -1182,9 +1182,9 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, ConcurrentOperations_ThreadSafety, T
     CompanionDeviceAuthClientImpl client;
     client.SetProxy(sptr<ICompanionDeviceAuth>(fakeProxy_));
 
-    auto callback1 = std::make_shared<MockDeviceSelectCallback>();
-    auto callback2 = std::make_shared<MockTemplateStatusCallback>();
-    auto callback3 = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback1 = std::make_shared<FakeDeviceSelectCallback>();
+    auto callback2 = std::make_shared<FakeTemplateStatusCallback>();
+    auto callback3 = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // Set expectations for multiple concurrent calls
     EXPECT_CALL(*fakeProxy_, RegisterDeviceSelectCallback(_, _))
@@ -1261,7 +1261,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeTemplateStatusChange_IpcFai
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Simulate IPC call failure
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
@@ -1284,7 +1284,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeTemplateStatusChange_IpcF
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockTemplateStatusCallback>();
+    auto callback = std::make_shared<FakeTemplateStatusCallback>();
 
     // Subscribe first
     EXPECT_CALL(*fakeProxy_, SubscribeTemplateStatusChange(userId, _, _))
@@ -1315,7 +1315,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeAvailableDeviceStatus_IpcFa
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // Simulate IPC call failure
     EXPECT_CALL(*fakeProxy_, SubscribeAvailableDeviceStatus(userId, _, _))
@@ -1338,7 +1338,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeAvailableDeviceStatus_Ipc
     // Arrange
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
-    auto callback = std::make_shared<MockAvailableDeviceStatusCallback>();
+    auto callback = std::make_shared<FakeAvailableDeviceStatusCallback>();
 
     // Subscribe first
     EXPECT_CALL(*fakeProxy_, SubscribeAvailableDeviceStatus(userId, _, _))
@@ -1370,7 +1370,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, SubscribeContinuousAuthStatusChange_
     SetUpFakeProxyDefaults();
     const int32_t userId = INT32_100;
     const uint64_t templateId = UINT64_12345;
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     // Simulate IPC call failure
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
@@ -1392,7 +1392,7 @@ HWTEST_F(CompanionDeviceAuthClientImplTest, UnsubscribeContinuousAuthStatusChang
 {
     // Arrange
     SetUpFakeProxyDefaults();
-    auto callback = std::make_shared<MockContinuousAuthStatusCallback>();
+    auto callback = std::make_shared<FakeContinuousAuthStatusCallback>();
 
     // Subscribe first
     EXPECT_CALL(*fakeProxy_, SubscribeContinuousAuthStatusChange(_, _, _))
