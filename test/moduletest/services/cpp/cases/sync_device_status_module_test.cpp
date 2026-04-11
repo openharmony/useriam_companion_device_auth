@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <optional>
@@ -40,33 +39,55 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 namespace {
 
-// Mock IPC callback for available device status
-class MockRemoteObject : public IRemoteObject {
+class FakeAvailableDeviceStatusCallback : public IIpcAvailableDeviceStatusCallback {
 public:
-    MOCK_METHOD(int32_t, GetObjectRefCount, (), (override));
-    MOCK_METHOD(int, SendRequest, (uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option),
-        (override));
-    MOCK_METHOD(bool, AddDeathRecipient, (const sptr<DeathRecipient> &recipient), (override));
-    MOCK_METHOD(bool, RemoveDeathRecipient, (const sptr<DeathRecipient> &recipient), (override));
-    MOCK_METHOD(int, Dump, (int fd, const std::vector<std::u16string> &args), (override));
-};
-
-class MockAvailableDeviceStatusCallback : public IIpcAvailableDeviceStatusCallback {
-public:
-    MockAvailableDeviceStatusCallback()
+    explicit FakeAvailableDeviceStatusCallback(std::function<ErrCode(const std::vector<IpcDeviceStatus> &)> handler)
+        : handler_(std::move(handler))
     {
-        remoteObj_ = sptr<MockRemoteObject>::MakeSptr();
-        ON_CALL(*this, AsObject()).WillByDefault(Return(sptr<IRemoteObject>(remoteObj_.GetRefPtr())));
-        ON_CALL(*remoteObj_, AddDeathRecipient(_)).WillByDefault(Return(true));
-        ON_CALL(*remoteObj_, RemoveDeathRecipient(_)).WillByDefault(Return(true));
+        remoteObj_ = sptr<StubRemoteObject>::MakeSptr();
     }
 
-    MOCK_METHOD(ErrCode, OnAvailableDeviceStatusChange, (const std::vector<IpcDeviceStatus> &deviceStatusList),
-        (override));
-    MOCK_METHOD(sptr<IRemoteObject>, AsObject, (), (override));
+    ErrCode OnAvailableDeviceStatusChange(const std::vector<IpcDeviceStatus> &deviceStatusList) override
+    {
+        if (handler_) {
+            return handler_(deviceStatusList);
+        }
+        return 0;
+    }
+
+    sptr<IRemoteObject> AsObject() override
+    {
+        return remoteObj_;
+    }
 
 private:
-    sptr<MockRemoteObject> remoteObj_;
+    class StubRemoteObject : public IRemoteObject {
+    public:
+        StubRemoteObject() : IRemoteObject(u"StubRemoteObject") {}
+        int32_t GetObjectRefCount() override
+        {
+            return 1;
+        }
+        int SendRequest(uint32_t, MessageParcel &, MessageParcel &, MessageOption &) override
+        {
+            return 0;
+        }
+        bool AddDeathRecipient(const sptr<DeathRecipient> &) override
+        {
+            return true;
+        }
+        bool RemoveDeathRecipient(const sptr<DeathRecipient> &) override
+        {
+            return true;
+        }
+        int Dump(int, const std::vector<std::u16string> &) override
+        {
+            return 0;
+        }
+    };
+
+    std::function<ErrCode(const std::vector<IpcDeviceStatus> &)> handler_;
+    sptr<StubRemoteObject> remoteObj_;
 };
 
 class SyncDeviceStatusModuleTest : public testing::Test {};
@@ -110,17 +131,15 @@ HWTEST_F(SyncDeviceStatusModuleTest, HostSyncNoTemplateE2E_001, TestSize.Level0)
     EXPECT_CALL(guard.GetSecurityAgent(), HostBeginCompanionCheck(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(checkOutput), Return(ResultCode::SUCCESS)));
 
-    sptr<MockAvailableDeviceStatusCallback> callback = sptr<MockAvailableDeviceStatusCallback>::MakeSptr();
-    ASSERT_NE(callback, nullptr);
-
     bool callbackFired = false;
     std::vector<IpcDeviceStatus> capturedDeviceStatusList;
-    EXPECT_CALL(*callback, OnAvailableDeviceStatusChange(_))
-        .WillRepeatedly(Invoke([&](const std::vector<IpcDeviceStatus> &deviceStatusList) {
+    auto callback =
+        sptr<FakeAvailableDeviceStatusCallback>::MakeSptr([&](const std::vector<IpcDeviceStatus> &deviceStatusList) {
             callbackFired = true;
             capturedDeviceStatusList = deviceStatusList;
             return 0;
-        }));
+        });
+    ASSERT_NE(callback, nullptr);
 
     EXPECT_EQ(guard.GetCore().SubscribeAvailableDeviceStatus(HOST_USER, callback), ResultCode::SUCCESS);
     DrainPendingTasks();
