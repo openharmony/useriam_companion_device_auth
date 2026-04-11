@@ -47,8 +47,8 @@ private:
     void HandleAuthResult(TemplateId templateId, ResultCode result, const std::vector<uint8_t> &extraInfo);
 
     bool AnyTemplateValid() const;
-    void HandleDeviceSelectResult(
-        const std::vector<DeviceKey> &selectedDevices, const std::optional<std::vector<uint8_t>> &selectContext);
+    void HandleDeviceSelectResult(const std::vector<DeviceKey> &selectedDevices,
+        const std::optional<std::vector<uint8_t>> &selectContext);
     std::vector<TemplateId> GetFilteredTemplateList(const std::vector<DeviceKey> &selectedDevices);
     void StartAuthWithTemplateList(const std::vector<TemplateId> &templateList);
 

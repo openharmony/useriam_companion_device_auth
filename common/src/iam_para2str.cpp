@@ -23,8 +23,8 @@
 #include <string_view>
 #include <vector>
 
-#include "iam_logger.h"
 #include "cda_scope_guard.h"
+#include "iam_logger.h"
 
 namespace OHOS {
 namespace UserIam {

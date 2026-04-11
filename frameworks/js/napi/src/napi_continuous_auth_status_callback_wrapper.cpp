@@ -17,9 +17,9 @@
 
 #include "iam_logger.h"
 
+#include "cda_scope_guard.h"
 #include "companion_device_auth_napi_helper.h"
 #include "continuous_auth_status_callback_wrapper.h"
-#include "cda_scope_guard.h"
 
 #define LOG_TAG "CDA_NAPI"
 

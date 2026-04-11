@@ -146,7 +146,7 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(const BeginAddHostBinding
         .addHostBindingRequest = in.addHostBindingRequest };
 
     CompanionBeginAddHostBindingOutput output {};
-    ResultCode ret = GetSecurityAgent().CompanionBeginAddHostBinding(input, output);
+    ResultCode ret = BeginAddHostBindingWithSecurityAgent(input, output);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("security agent failed to begin add host binding, ret %{public}d", ret);
         return ret;
@@ -267,6 +267,12 @@ std::shared_ptr<HostBinding> HostBindingManagerImpl::FindBindingByDeviceUser(Use
         });
 
     return (it != bindings_.end()) ? *it : nullptr;
+}
+
+ResultCode HostBindingManagerImpl::BeginAddHostBindingWithSecurityAgent(const CompanionBeginAddHostBindingInput &input,
+    CompanionBeginAddHostBindingOutput &output)
+{
+    return GetSecurityAgent().CompanionBeginAddHostBinding(input, output);
 }
 
 ResultCode HostBindingManagerImpl::AddBindingInternal(const std::shared_ptr<HostBinding> &binding)
