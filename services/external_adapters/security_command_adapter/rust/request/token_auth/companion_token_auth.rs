@@ -114,7 +114,7 @@ impl Request for CompanionTokenAuthRequest {
 
         self.decode_sec_token_auth_request(ffi_input.sec_message.as_slice()?)?;
         let sec_message = self.encode_sec_token_auth_reply()?;
-        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_binding_last_used_time(self.binding_id)?;
         ffi_output.sec_message.copy_from_vec(&sec_message)?;
         Ok(())
     }

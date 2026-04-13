@@ -22,7 +22,7 @@ use crate::traits::db_manager::{
 };
 use crate::ut_registry_guard;
 
-fn create_mock_companion_device_info() -> CompanionDevice {
+fn create_mock_companion_device() -> CompanionDevice {
     CompanionDevice {
         template_id: 0,
         device_key: DeviceKey::default(),
@@ -33,7 +33,7 @@ fn create_mock_companion_device_info() -> CompanionDevice {
     }
 }
 
-fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
+fn create_mock_companion_device_profile() -> CompanionDeviceProfile {
     CompanionDeviceProfile {
         device_model_info: String::default(),
         device_name: String::default(),
@@ -43,7 +43,7 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
     }
 }
 
-fn create_mock_companion_token_info() -> CompanionDeviceToken {
+fn create_mock_companion_device_token() -> CompanionDeviceToken {
     CompanionDeviceToken {
         template_id: 0,
         processor_type: ProcessorType::Default,
@@ -59,9 +59,9 @@ fn dummy_companion_device_db_manager_test() {
     log_i!("dummy_companion_device_db_manager_test start");
 
     let mut dummy_companion_device_db_manager = DummyCompanionDeviceDbManager;
-    let device_info = create_mock_companion_device_info();
-    let base_info = create_mock_companion_device_base_info();
-    let token = create_mock_companion_token_info();
+    let device_info = create_mock_companion_device();
+    let base_info = create_mock_companion_device_profile();
+    let token = create_mock_companion_device_token();
 
     assert_eq!(
         dummy_companion_device_db_manager.add_device(
@@ -82,9 +82,9 @@ fn dummy_companion_device_db_manager_test() {
     assert!(dummy_companion_device_db_manager.remove_token(0, ProcessorType::Default).is_err());
     assert!(dummy_companion_device_db_manager.update_token(&token).is_err());
     assert!(dummy_companion_device_db_manager.read_device_db().is_err());
-    assert!(dummy_companion_device_db_manager.read_device_base_info(0).is_err());
-    assert!(dummy_companion_device_db_manager.write_device_base_info(0, &base_info).is_err());
-    assert!(dummy_companion_device_db_manager.delete_device_base_info(0).is_err());
+    assert!(dummy_companion_device_db_manager.read_device_profile(0).is_err());
+    assert!(dummy_companion_device_db_manager.write_device_profile(0, &base_info).is_err());
+    assert!(dummy_companion_device_db_manager.delete_device_profile(0).is_err());
     assert!(dummy_companion_device_db_manager.read_device_capability_info(0).is_err());
     assert!(dummy_companion_device_db_manager
         .write_device_capability_info(0, &Vec::<CompanionDeviceCapability>::new())

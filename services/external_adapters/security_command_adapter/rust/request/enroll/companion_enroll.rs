@@ -27,7 +27,7 @@ use crate::request::enroll::enroll_message::{
 };
 use crate::request::jobs::common_message::SecIssueToken;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, KeyPair};
-use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBinding, HostBindingSk, HostBindingToken, UserInfo};
 use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::request_manager::{Request, RequestParam};
 use crate::traits::time_keeper::TimeKeeperRegistry;
@@ -159,9 +159,9 @@ impl CompanionDeviceEnrollRequest {
         Ok(output)
     }
 
-    fn init_device_info(&mut self) -> Result<(Box<HostBindingInfo>, Box<HostBindingSk>), ErrorCode> {
+    fn init_device_info(&mut self) -> Result<(Box<HostBinding>, Box<HostBindingSk>), ErrorCode> {
         let binding_id = HostBindingDbManagerRegistry::get().generate_unique_binding_id().map_err(|e| p!(e))?;
-        let device_info = Box::new(HostBindingInfo {
+        let device_info = Box::new(HostBinding {
             binding_id,
             device_key: self.key_nego_param.host_device_key.clone(),
             user_info: UserInfo { user_id: self.key_nego_param.companion_device_key.user_id, user_type: 0 },
@@ -270,9 +270,9 @@ impl CompanionDeviceEnrollRequest {
         Ok(())
     }
 
-    fn store_device_info(&mut self) -> Result<(HostBindingInfo, Option<i32>), ErrorCode> {
+    fn store_device_info(&mut self) -> Result<(HostBinding, Option<i32>), ErrorCode> {
         let (device_info, sk_info) = self.init_device_info()?;
-        let replaced_binding_id = host_binding_db_helper::add_host_device(&device_info, &sk_info)?;
+        let replaced_binding_id = host_binding_db_helper::add_host_binding(&device_info, &sk_info)?;
         Ok((*device_info, replaced_binding_id))
     }
 }
@@ -336,7 +336,7 @@ impl Request for CompanionDeviceEnrollRequest {
 
         self.decode_sec_token_issue(ffi_input.sec_message.as_slice()?)?;
         self.store_token()?;
-        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_binding_last_used_time(self.binding_id)?;
         ffi_output.binding_id = self.binding_id;
         ffi_output.atl = self.token_info.atl as i32;
         ffi_output.esl = ExecutorSecurityLevel::Esl3 as i32;

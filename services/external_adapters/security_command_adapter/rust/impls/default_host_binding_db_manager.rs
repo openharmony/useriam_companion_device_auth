@@ -15,7 +15,7 @@
 
 use crate::common::constants::{AuthTrustLevel, ErrorCode, SECURE_RANDOM_MAX_ATTEMPTS, SHARE_KEY_LEN, TOKEN_KEY_LEN};
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBinding, HostBindingSk, HostBindingToken, UserInfo};
 use crate::traits::host_binding_db_manager::HostBindingDbManager;
 use crate::traits::storage_io::StorageIoRegistry;
 use crate::utils::parcel::Parcel;
@@ -36,20 +36,20 @@ pub const MAX_DEVICE_NUM: usize = 5;
 pub const MAX_DEVICE_NUM_PER_USER: usize = 1;
 
 pub struct DefaultHostBindingDbManager {
-    pub host_binding_infos: Vec<HostBindingInfo>,
+    pub host_bindings: Vec<HostBinding>,
 }
 
 impl DefaultHostBindingDbManager {
     pub fn new() -> Self {
-        DefaultHostBindingDbManager { host_binding_infos: Vec::with_capacity(MAX_DEVICE_NUM) }
+        DefaultHostBindingDbManager { host_bindings: Vec::with_capacity(MAX_DEVICE_NUM) }
     }
 
     fn get_index_by_binding_id(&self, binding_id: i32) -> Option<usize> {
-        self.host_binding_infos.iter().position(|info| info.binding_id == binding_id)
+        self.host_bindings.iter().position(|info| info.binding_id == binding_id)
     }
 
     fn get_index_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Option<usize> {
-        self.host_binding_infos
+        self.host_bindings
             .iter()
             .position(|info| device_key == &info.device_key && user_id == info.user_info.user_id)
     }
@@ -85,17 +85,17 @@ impl DefaultHostBindingDbManager {
 
     fn serialize_device_db(&self, parcel: &mut Parcel) {
         parcel.write_i32(CURRENT_VERSION);
-        parcel.write_u32(self.host_binding_infos.len() as u32);
+        parcel.write_u32(self.host_bindings.len() as u32);
 
-        for host_device_info in &self.host_binding_infos {
-            parcel.write_string(&host_device_info.device_key.device_id);
-            parcel.write_i32(host_device_info.device_key.device_id_type);
-            parcel.write_i32(host_device_info.device_key.user_id);
-            parcel.write_i32(host_device_info.binding_id);
-            parcel.write_i32(host_device_info.user_info.user_id);
-            parcel.write_i32(host_device_info.user_info.user_type);
-            parcel.write_u64(host_device_info.binding_time);
-            parcel.write_u64(host_device_info.last_used_time);
+        for host_binding in &self.host_bindings {
+            parcel.write_string(&host_binding.device_key.device_id);
+            parcel.write_i32(host_binding.device_key.device_id_type);
+            parcel.write_i32(host_binding.device_key.user_id);
+            parcel.write_i32(host_binding.binding_id);
+            parcel.write_i32(host_binding.user_info.user_id);
+            parcel.write_i32(host_binding.user_info.user_type);
+            parcel.write_u64(host_binding.binding_time);
+            parcel.write_u64(host_binding.last_used_time);
         }
     }
 
@@ -106,7 +106,7 @@ impl DefaultHostBindingDbManager {
             return Err(ErrorCode::GeneralError);
         }
 
-        self.host_binding_infos.clear();
+        self.host_bindings.clear();
         let count = parcel.read_u32().map_err(|e| p!(e))? as usize;
         if count > MAX_DEVICE_NUM {
             log_e!("count is error, count:{}", count);
@@ -123,26 +123,26 @@ impl DefaultHostBindingDbManager {
             let binding_time = parcel.read_u64().map_err(|e| p!(e))?;
             let last_used_time = parcel.read_u64().map_err(|e| p!(e))?;
 
-            let host_device_info = HostBindingInfo {
+            let host_binding = HostBinding {
                 device_key: DeviceKey { device_id, device_id_type, user_id },
                 binding_id,
                 user_info: UserInfo { user_id: user_info_user_id, user_type: user_info_user_type },
                 binding_time,
                 last_used_time,
             };
-            self.host_binding_infos.push(host_device_info);
+            self.host_bindings.push(host_binding);
         }
 
         Ok(())
     }
 
-    fn serialize_token_info(host_token_info: &HostBindingToken, parcel: &mut Parcel) {
+    fn serialize_device_token(host_binding_token: &HostBindingToken, parcel: &mut Parcel) {
         parcel.write_i32(CURRENT_VERSION);
-        parcel.write_bytes(&host_token_info.token);
-        parcel.write_i32(host_token_info.atl as i32);
+        parcel.write_bytes(&host_binding_token.token);
+        parcel.write_i32(host_binding_token.atl as i32);
     }
 
-    fn deserialize_token_info(parcel: &mut Parcel) -> Result<HostBindingToken, ErrorCode> {
+    fn deserialize_device_token(parcel: &mut Parcel) -> Result<HostBindingToken, ErrorCode> {
         let version = parcel.read_i32().map_err(|e| p!(e))?;
         if version > CURRENT_VERSION {
             log_e!("db_version is error, db_version:{}, current_version:{}", version, CURRENT_VERSION);
@@ -152,14 +152,14 @@ impl DefaultHostBindingDbManager {
         parcel.read_bytes(&mut token).map_err(|e| p!(e))?;
         let atl_value = parcel.read_i32().map_err(|e| p!(e))?;
         let atl = AuthTrustLevel::try_from(atl_value).map_err(|e| p!(e))?;
-        let host_token_info = HostBindingToken {
+        let host_binding_token = HostBindingToken {
             token: token.try_into().map_err(|e| {
                 log_e!("try_into fail: {:?}", e);
                 ErrorCode::GeneralError
             })?,
             atl,
         };
-        Ok(host_token_info)
+        Ok(host_binding_token)
     }
 
     fn serialize_device_sk(sk_info: &HostBindingSk, parcel: &mut Parcel) {
@@ -193,12 +193,12 @@ impl DefaultHostBindingDbManager {
     }
 
     fn get_device_num_by_user_id(&self, user_id: i32) -> usize {
-        self.host_binding_infos.iter().filter(|device| device.user_info.user_id == user_id).count()
+        self.host_bindings.iter().filter(|device| device.user_info.user_id == user_id).count()
     }
 
     fn remove_oldest_unused_device(&mut self, user_id: i32) -> Result<Option<i32>, ErrorCode> {
-        let user_devices: Vec<&HostBindingInfo> =
-            self.host_binding_infos.iter().filter(|info| info.user_info.user_id == user_id).collect();
+        let user_devices: Vec<&HostBinding> =
+            self.host_bindings.iter().filter(|info| info.user_info.user_id == user_id).collect();
 
         if user_devices.is_empty() {
             log_i!("No devices found for user_id: {}", user_id);
@@ -216,7 +216,7 @@ impl DefaultHostBindingDbManager {
 }
 
 impl HostBindingDbManager for DefaultHostBindingDbManager {
-    fn add_device(&mut self, device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
+    fn add_device(&mut self, device_info: &HostBinding, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
         log_i!("add_device start");
         if device_info.device_key.device_id.is_empty() {
             log_e!("invalid device id");
@@ -240,7 +240,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         }
 
         self.write_device_sk(device_info.binding_id, sk_info)?;
-        self.host_binding_infos.push(device_info.clone());
+        self.host_bindings.push(device_info.clone());
         let result = self.write_device_db();
         if result.is_ok() {
             return Ok(evicted_binding_id);
@@ -248,30 +248,30 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         log_e!("write_device_db fail");
         let _ = self.delete_device_sk(device_info.binding_id);
         if let Some(index) = self.get_index_by_binding_id(device_info.binding_id) {
-            self.host_binding_infos.remove(index);
+            self.host_bindings.remove(index);
         }
         result.map(|_| evicted_binding_id)
     }
 
-    fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode> {
+    fn get_device_by_binding_id(&self, binding_id: i32) -> Result<HostBinding, ErrorCode> {
         log_i!("get_device_by_binding_id start");
-        self.get_index_by_binding_id(binding_id).map(|index| self.host_binding_infos[index].clone()).ok_or_else(|| {
+        self.get_index_by_binding_id(binding_id).map(|index| self.host_bindings[index].clone()).ok_or_else(|| {
             log_e!("No device matching filter found");
             ErrorCode::NotFound
         })
     }
 
-    fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostBindingInfo, ErrorCode> {
+    fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostBinding, ErrorCode> {
         log_i!("get_device_by_device_key start");
         self.get_index_by_device_key(user_id, device_key)
-            .map(|index| self.host_binding_infos[index].clone())
+            .map(|index| self.host_bindings[index].clone())
             .ok_or_else(|| {
                 log_e!("No device matching filter found");
                 ErrorCode::NotFound
             })
     }
 
-    fn remove_device(&mut self, binding_id: i32) -> Result<HostBindingInfo, ErrorCode> {
+    fn remove_device(&mut self, binding_id: i32) -> Result<HostBinding, ErrorCode> {
         log_i!("remove_device start");
         match self.get_index_by_binding_id(binding_id) {
             None => {
@@ -279,10 +279,10 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
                 Err(ErrorCode::NotFound)
             },
             Some(index) => {
-                let device = self.host_binding_infos.remove(index);
+                let device = self.host_bindings.remove(index);
                 if let Err(err) = self.write_device_db() {
                     log_e!("Failed to write device db after remove: {:?}", err);
-                    self.host_binding_infos.push(device);
+                    self.host_bindings.push(device);
                     return Err(err);
                 }
                 log_i!("Device removed successfully, binding_id: {:04x}", device.binding_id as u16);
@@ -293,7 +293,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         }
     }
 
-    fn update_device(&mut self, device_info: &HostBindingInfo) -> Result<(), ErrorCode> {
+    fn update_device(&mut self, device_info: &HostBinding) -> Result<(), ErrorCode> {
         log_i!("update_device start");
         let index1 = self.get_index_by_binding_id(device_info.binding_id).ok_or_else(|| {
             log_i!("No binding id matching");
@@ -308,19 +308,19 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
             log_e!("Binding id and device key do not match the same device");
             return Err(ErrorCode::BadParam);
         }
-        let device_info_old = self.host_binding_infos[index1].clone();
-        self.host_binding_infos[index1] = device_info.clone();
+        let device_info_old = self.host_bindings[index1].clone();
+        self.host_bindings[index1] = device_info.clone();
         let result = self.write_device_db();
         if result.is_err() {
             log_e!("write_device_db fail");
-            self.host_binding_infos[index1] = device_info_old;
+            self.host_bindings[index1] = device_info_old;
         }
         result
     }
 
     fn generate_unique_binding_id(&self) -> Result<i32, ErrorCode> {
         log_i!("generate_unique_binding_id start");
-        self.generate_unique_id(move || self.host_binding_infos.as_slice(), |device| device.binding_id)
+        self.generate_unique_id(move || self.host_bindings.as_slice(), |device| device.binding_id)
     }
 
     fn read_device_db(&mut self) -> Result<(), ErrorCode> {
@@ -334,12 +334,12 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         let mut parcel = Parcel::from(device_infos);
         if let Err(err) = self.deserialize_device_db(&mut parcel) {
             log_e!("deserialize_device_db fail:{:?}", err);
-            self.host_binding_infos.clear();
+            self.host_bindings.clear();
             return Err(err);
         }
 
         let invalid_devices: Vec<i32> = self
-            .host_binding_infos
+            .host_bindings
             .iter()
             .filter_map(|device_info| {
                 if let Err(err) = self.read_device_sk(device_info.binding_id) {
@@ -372,14 +372,14 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
             return Err(ErrorCode::TokenNotFound);
         }
         let mut parcel = Parcel::from(token_info);
-        Self::deserialize_token_info(&mut parcel)
+        Self::deserialize_device_token(&mut parcel)
     }
 
     fn write_device_token(&self, binding_id: i32, token: &HostBindingToken) -> Result<(), ErrorCode> {
         log_i!("write_device_token start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_TOKEN);
         let mut parcel = Parcel::new();
-        Self::serialize_token_info(token, &mut parcel);
+        Self::serialize_device_token(token, &mut parcel);
 
         StorageIoRegistry::get().write(&filename, parcel.as_slice()).map_err(|e| p!(e))
     }
@@ -423,9 +423,9 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
         StorageIoRegistry::get().delete(&filename).map_err(|e| p!(e))
     }
 
-    fn get_device_list(&self, user_id: i32) -> Vec<HostBindingInfo> {
+    fn get_device_list(&self, user_id: i32) -> Vec<HostBinding> {
         log_i!("get_device_list start");
-        self.host_binding_infos.iter().filter(|device_info| device_info.user_info.user_id == user_id).cloned().collect()
+        self.host_bindings.iter().filter(|device_info| device_info.user_info.user_id == user_id).cloned().collect()
     }
 }
 

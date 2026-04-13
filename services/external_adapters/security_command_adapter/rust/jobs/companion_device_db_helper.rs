@@ -67,11 +67,11 @@ pub fn update_companion_device_info(
     device_name: String,
     device_user_name: String,
 ) -> Result<(), ErrorCode> {
-    let mut device_base_info = CompanionDeviceDbManagerRegistry::get_mut().read_device_base_info(template_id)?;
-    device_base_info.device_model_info = device_model_info;
-    device_base_info.device_name = device_name;
-    device_base_info.device_user_name = device_user_name;
-    CompanionDeviceDbManagerRegistry::get_mut().write_device_base_info(template_id, &device_base_info)?;
+    let mut device_profile = CompanionDeviceDbManagerRegistry::get_mut().read_device_profile(template_id)?;
+    device_profile.device_model_info = device_model_info;
+    device_profile.device_name = device_name;
+    device_profile.device_user_name = device_user_name;
+    CompanionDeviceDbManagerRegistry::get_mut().write_device_profile(template_id, &device_profile)?;
     Ok(())
 }
 
@@ -81,9 +81,9 @@ pub fn update_device_business_id(template_id: u64, business_ids: Vec<i32>) -> Re
         e
     })?;
 
-    let mut device_base_info = CompanionDeviceDbManagerRegistry::get_mut().read_device_base_info(template_id)?;
-    device_base_info.business_ids = business_ids;
-    CompanionDeviceDbManagerRegistry::get_mut().write_device_base_info(template_id, &device_base_info)
+    let mut device_profile = CompanionDeviceDbManagerRegistry::get_mut().read_device_profile(template_id)?;
+    device_profile.business_ids = business_ids;
+    CompanionDeviceDbManagerRegistry::get_mut().write_device_profile(template_id, &device_profile)
 }
 
 pub fn get_session_key(template_id: u64, processor_type: ProcessorType, salt: &[u8]) -> Result<Vec<u8>, ErrorCode> {

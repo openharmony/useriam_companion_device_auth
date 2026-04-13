@@ -51,7 +51,7 @@ fn create_valid_auth_reply_message(hmac: &[u8]) -> Vec<u8> {
     reply.encode(ProcessorType::Default).unwrap()
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+fn create_mock_companion_device(template_id: u64) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -62,7 +62,7 @@ fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
     }
 }
 
-fn create_mock_companion_token_info(added_time: u64) -> CompanionDeviceToken {
+fn create_mock_companion_device_token(added_time: u64) -> CompanionDeviceToken {
     CompanionDeviceToken {
         template_id: 123,
         processor_type: ProcessorType::Default,
@@ -209,7 +209,7 @@ fn host_token_auth_request_begin_test_schedule_id_mismatch() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(999, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -238,7 +238,7 @@ fn host_token_auth_request_begin_test_template_id_not_found() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[456u64], AuthTrustLevel::Atl3 as i32);
@@ -267,7 +267,7 @@ fn host_token_auth_request_begin_test_atl_try_from_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], 99999);
@@ -296,7 +296,7 @@ fn host_token_auth_request_begin_test_get_device_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
@@ -329,11 +329,11 @@ fn host_token_auth_request_begin_test_secure_protocol_id_not_support() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -362,11 +362,11 @@ fn host_token_auth_request_begin_test_get_token_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_get_token().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -396,12 +396,12 @@ fn host_token_auth_request_begin_test_get_rtc_time_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
@@ -434,13 +434,13 @@ fn host_token_auth_request_begin_test_token_time_bad() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
     mock_set_time_keeper(1000);
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(10000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(10000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -469,13 +469,13 @@ fn host_token_auth_request_begin_test_token_expired() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
     mock_set_time_keeper(1001 + TOKEN_VALID_PERIOD);
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_auth_request(1, &[123u64], AuthTrustLevel::Atl3 as i32);
@@ -504,13 +504,13 @@ fn host_token_auth_request_begin_test_get_session_key_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
     mock_set_time_keeper(2000);
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -547,8 +547,8 @@ fn host_token_auth_request_begin_test_aes_gcm_encrypt_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
@@ -607,7 +607,7 @@ fn host_token_auth_request_end_test_get_token_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_get_token().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -652,8 +652,8 @@ fn host_token_auth_request_end_test_hmac_sha256_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();
@@ -697,8 +697,8 @@ fn host_token_auth_request_end_test_hmac_verification_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();
@@ -742,7 +742,7 @@ fn host_token_auth_request_end_test_get_local_key_pair_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_token_info(1000)));
+    mock_companion_device_db_manager.expect_get_token().returning(|| Ok(create_mock_companion_device_token(1000)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();

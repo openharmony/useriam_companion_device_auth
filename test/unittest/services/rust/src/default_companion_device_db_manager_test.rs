@@ -29,7 +29,7 @@ use std::boxed::Box;
 
 const MAX_DEVICE_NUM: usize = 1;
 
-fn create_test_device_info(template_id: u64, device_id: &str, user_id: i32) -> CompanionDevice {
+fn create_test_companion_device(template_id: u64, device_id: &str, user_id: i32) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: device_id.to_string(), device_id_type: 1, user_id },
@@ -99,7 +99,7 @@ fn default_companion_device_db_manager_add_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -116,7 +116,7 @@ fn default_companion_device_db_manager_add_device_test_empty_device_id() {
     log_i!("default_companion_device_db_manager_add_device_test_empty_device_id start");
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "", 100);
+    let device_info = create_test_companion_device(123, "", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -138,13 +138,13 @@ fn default_companion_device_db_manager_add_device_test_reach_max() {
     let sk_info = create_test_sk_info();
 
     for i in 0..MAX_DEVICE_NUM {
-        let device_info = create_test_device_info((100 + i) as u64, &format!("device{}", i), 100);
+        let device_info = create_test_companion_device((100 + i) as u64, &format!("device{}", i), 100);
         let _ = manager.add_device(&device_info, &base_info, &capability_info, &sk_info);
     }
 
     assert_eq!(manager.companion_device_infos.len(), MAX_DEVICE_NUM);
 
-    let new_device = create_test_device_info(999, "new_device", 100);
+    let new_device = create_test_companion_device(999, "new_device", 100);
     let result = manager.add_device(&new_device, &base_info, &capability_info, &sk_info);
     assert_eq!(result, Err(ErrorCode::ExceedLimit));
 }
@@ -160,7 +160,7 @@ fn default_companion_device_db_manager_add_device_test_write_extra_file_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -187,7 +187,7 @@ fn default_companion_device_db_manager_add_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -205,7 +205,7 @@ fn default_companion_device_db_manager_get_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -242,8 +242,8 @@ fn default_companion_device_db_manager_get_device_list_test_success() {
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
 
-    let device_info1 = create_test_device_info(123, "device1", 100);
-    let device_info2 = create_test_device_info(456, "device2", 200);
+    let device_info1 = create_test_companion_device(123, "device1", 100);
+    let device_info2 = create_test_companion_device(456, "device2", 200);
 
     let _ = manager.add_device(&device_info1, &base_info, &capability_info, &sk_info);
     let _ = manager.add_device(&device_info2, &base_info, &capability_info, &sk_info);
@@ -273,7 +273,7 @@ fn default_companion_device_db_manager_remove_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -310,7 +310,7 @@ fn default_companion_device_db_manager_remove_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -339,7 +339,7 @@ fn default_companion_device_db_manager_update_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -361,7 +361,7 @@ fn default_companion_device_db_manager_update_device_test_not_found() {
     log_i!("default_companion_device_db_manager_update_device_test_not_found start");
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(999, "device1", 100);
+    let device_info = create_test_companion_device(999, "device1", 100);
 
     let result = manager.update_device(&device_info);
     assert_eq!(result, Err(ErrorCode::NotFound));
@@ -380,7 +380,7 @@ fn default_companion_device_db_manager_update_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -442,7 +442,7 @@ fn default_companion_device_db_manager_generate_unique_template_id_test_collisio
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -507,7 +507,7 @@ fn default_companion_device_db_manager_generate_unique_template_id_test_max_atte
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
     // Add device with template_id=123, so secure_random will always collide
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -525,7 +525,7 @@ fn default_companion_device_db_manager_add_token_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -558,7 +558,7 @@ fn default_companion_device_db_manager_get_token_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -594,7 +594,7 @@ fn default_companion_device_db_manager_remove_token_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -629,7 +629,7 @@ fn default_companion_device_db_manager_update_token_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultCompanionDeviceDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_companion_device(123, "device1", 100);
     let base_info = create_test_base_info();
     let capability_info = create_test_capability_info();
     let sk_info = create_test_sk_info();
@@ -972,9 +972,9 @@ fn default_companion_device_db_manager_read_device_db_test_deserialize_is_valid_
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_success() {
+fn default_companion_device_db_manager_read_device_profile_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_success start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_success start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -994,56 +994,56 @@ fn default_companion_device_db_manager_read_device_base_info_test_success() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_empty() {
+fn default_companion_device_db_manager_read_device_profile_test_empty() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_empty start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_empty start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(Vec::new()));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_storage_error() {
+fn default_companion_device_db_manager_read_device_profile_test_storage_error() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_storage_error start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_storage_error start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Err(ErrorCode::GeneralError));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_version() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_version() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_version start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_version start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_read().returning(|| Ok(vec![1, 2, 3]));
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_model() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_model() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_model start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_model start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1055,14 +1055,14 @@ fn default_companion_device_db_manager_read_device_base_info_test_deserialize_mi
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_name() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_name() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_name start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_name start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1075,14 +1075,14 @@ fn default_companion_device_db_manager_read_device_base_info_test_deserialize_mi
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_user_name() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_user_name() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_user_name start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_user_name start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1096,14 +1096,14 @@ fn default_companion_device_db_manager_read_device_base_info_test_deserialize_mi
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_len() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_len() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_len start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_len start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1118,14 +1118,14 @@ fn default_companion_device_db_manager_read_device_base_info_test_deserialize_mi
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_business_id() {
+fn default_companion_device_db_manager_read_device_profile_test_deserialize_missing_business_id() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_read_device_base_info_test_deserialize_missing_business_id start");
+    log_i!("default_companion_device_db_manager_read_device_profile_test_deserialize_missing_business_id start");
 
     let mut parcel = Parcel::new();
     parcel.write_i32(0);
@@ -1141,28 +1141,28 @@ fn default_companion_device_db_manager_read_device_base_info_test_deserialize_mi
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let manager = DefaultCompanionDeviceDbManager::new();
-    let result = manager.read_device_base_info(123);
+    let result = manager.read_device_profile(123);
     assert_eq!(result, Err(ErrorCode::ReadParcelError));
 }
 
 #[test]
-fn default_companion_device_db_manager_write_device_base_info_test_success() {
+fn default_companion_device_db_manager_write_device_profile_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_write_device_base_info_test_success start");
+    log_i!("default_companion_device_db_manager_write_device_profile_test_success start");
 
     mock_set_storage_io_success();
 
     let manager = DefaultCompanionDeviceDbManager::new();
     let base_info = create_test_base_info();
 
-    let result = manager.write_device_base_info(123, &base_info);
+    let result = manager.write_device_profile(123, &base_info);
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_device_db_manager_write_device_base_info_test_fail() {
+fn default_companion_device_db_manager_write_device_profile_test_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_write_device_base_info_test_fail start");
+    log_i!("default_companion_device_db_manager_write_device_profile_test_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_write().returning(|_, _| Err(ErrorCode::GeneralError));
@@ -1171,27 +1171,27 @@ fn default_companion_device_db_manager_write_device_base_info_test_fail() {
     let manager = DefaultCompanionDeviceDbManager::new();
     let base_info = create_test_base_info();
 
-    let result = manager.write_device_base_info(123, &base_info);
+    let result = manager.write_device_profile(123, &base_info);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
 #[test]
-fn default_companion_device_db_manager_delete_device_base_info_test_success() {
+fn default_companion_device_db_manager_delete_device_profile_test_success() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_delete_device_base_info_test_success start");
+    log_i!("default_companion_device_db_manager_delete_device_profile_test_success start");
 
     mock_set_storage_io_success();
 
     let manager = DefaultCompanionDeviceDbManager::new();
 
-    let result = manager.delete_device_base_info(123);
+    let result = manager.delete_device_profile(123);
     assert!(result.is_ok());
 }
 
 #[test]
-fn default_companion_device_db_manager_delete_device_base_info_test_fail() {
+fn default_companion_device_db_manager_delete_device_profile_test_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("default_companion_device_db_manager_delete_device_base_info_test_fail start");
+    log_i!("default_companion_device_db_manager_delete_device_profile_test_fail start");
 
     let mut mock_storage_io = MockStorageIo::new();
     mock_storage_io.expect_delete().returning(|| Err(ErrorCode::GeneralError));
@@ -1199,7 +1199,7 @@ fn default_companion_device_db_manager_delete_device_base_info_test_fail() {
 
     let manager = DefaultCompanionDeviceDbManager::new();
 
-    let result = manager.delete_device_base_info(123);
+    let result = manager.delete_device_profile(123);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
 
