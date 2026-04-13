@@ -62,16 +62,16 @@ static void FuzzBeginAddHostBinding(std::shared_ptr<HostBindingManagerImpl> &man
 
 static void FuzzEndAddHostBinding(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)
 {
-    RequestId requestId = fuzzData.ConsumeIntegral<RequestId>();
-    ResultCode resultCode = GenerateFuzzResultCode(fuzzData);
+    EndAddHostBindingInput input = {};
+    input.requestId = fuzzData.ConsumeIntegral<RequestId>();
+    input.resultCode = GenerateFuzzResultCode(fuzzData);
+    input.bindingId = fuzzData.ConsumeIntegral<BindingId>();
     uint32_t tokenDataSize = fuzzData.ConsumeIntegralInRange<uint32_t>(0, FUZZ_MAX_TOKEN_LENGTH);
-    std::vector<uint8_t> tokenData = fuzzData.ConsumeBytes<uint8_t>(tokenDataSize);
-    Atl atl = 0;
-    int32_t esl = 0;
-    ResultCode result = manager->EndAddHostBinding(requestId, resultCode, atl, esl, tokenData);
+    input.tokenData = fuzzData.ConsumeBytes<uint8_t>(tokenDataSize);
+    EndAddHostBindingOutput output = {};
+    ResultCode result = manager->EndAddHostBinding(input, output);
     (void)result;
-    (void)atl;
-    (void)esl;
+    (void)output;
 }
 
 static void FuzzRemoveHostBinding(std::shared_ptr<HostBindingManagerImpl> &manager, FuzzedDataProvider &fuzzData)

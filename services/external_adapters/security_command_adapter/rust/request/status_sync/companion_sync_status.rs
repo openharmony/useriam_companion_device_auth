@@ -34,9 +34,9 @@ pub struct CompanionDeviceSyncStatusRequest {
 
 impl CompanionDeviceSyncStatusRequest {
     pub fn new(input: &CompanionProcessCheckInputFfi) -> Result<Self, ErrorCode> {
-        // Validate salt length
-        if input.salt.len as usize != HKDF_SALT_SIZE {
-            log_e!("salt length mismatch: expected {}, got {}", HKDF_SALT_SIZE, input.salt.len);
+        let salt_slice = input.salt.as_slice()?;
+        if salt_slice.len() != HKDF_SALT_SIZE {
+            log_e!("salt length mismatch: expected {}, got {}", HKDF_SALT_SIZE, salt_slice.len());
             return Err(ErrorCode::GeneralError);
         }
 
@@ -61,7 +61,7 @@ impl CompanionDeviceSyncStatusRequest {
             binding_id: input.binding_id,
             secure_protocol_id: input.secure_protocol_id,
             host_challenge: input.challenge,
-            salt: input.salt.data[..input.salt.len as usize].to_vec(),
+            salt: salt_slice.to_vec(),
             expected_protocol_list: protocol_list,
             expected_capability_list: capability_list,
         })

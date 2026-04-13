@@ -395,7 +395,7 @@ assert_max_size!(HostGetInitKeyNegotiationInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct HostGetInitKeyNegotiationOutputFfi {
-    pub sec_message: DataArray1024Ffi, /* algorithm_list */
+    pub sec_message: DataArray1024Ffi,    /* algorithm_list */
     pub algorithm_list: Uint16Array64Ffi, /* algorithm_list for big data reporting */
 }
 assert_max_size!(HostGetInitKeyNegotiationOutputFfi);
@@ -823,7 +823,7 @@ assert_max_size!(CompanionInitKeyNegotiationInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionInitKeyNegotiationOutputFfi {
-    pub sec_message: DataArray20000Ffi, /* challenge, algorithm, algorithm_data */
+    pub sec_message: DataArray20000Ffi,   /* challenge, algorithm, algorithm_data */
     pub algorithm_list: Uint16Array64Ffi, /* algorithm_list for big data reporting */
     pub selected_algorithm: u16,
 }
@@ -1211,8 +1211,10 @@ pub extern "C" fn uninit_rust_env() -> i32 {
 fn invoke_rust_command_inner(param: RustCommandParam) -> Result<(), ErrorCode> {
     ensure_or_return_val!(param.input_data_len != 0, ErrorCode::BadParam);
     ensure_or_return_val!(!param.input_data.is_null(), ErrorCode::BadParam);
+    ensure_or_return_val!(param.input_data_len as usize <= MAX_STRUCT_SIZE_FFI, ErrorCode::BadParam);
     ensure_or_return_val!(param.output_data_len != 0, ErrorCode::BadParam);
     ensure_or_return_val!(!param.output_data.is_null(), ErrorCode::BadParam);
+    ensure_or_return_val!(param.output_data_len as usize <= MAX_STRUCT_SIZE_FFI, ErrorCode::BadParam);
     ensure_or_return_val!(
         param.common_output_data_len as usize == mem::size_of::<CommonOutputFfi>(),
         ErrorCode::BadParam

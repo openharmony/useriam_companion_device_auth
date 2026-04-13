@@ -31,8 +31,7 @@ public:
         (UserId companionUserId, const DeviceKey &hostDeviceKey), (override));
     MOCK_METHOD(ResultCode, BeginAddHostBinding,
         (const BeginAddHostBindingInput &input, BeginAddHostBindingOutput &output), (override));
-    MOCK_METHOD(ResultCode, EndAddHostBinding,
-        (RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl, const std::vector<uint8_t> &tokenData),
+    MOCK_METHOD(ResultCode, EndAddHostBinding, (const EndAddHostBindingInput &input, EndAddHostBindingOutput &output),
         (override));
     MOCK_METHOD(ResultCode, RemoveHostBinding, (UserId companionUserId, const DeviceKey &hostDeviceKey), (override));
     MOCK_METHOD(bool, SetHostBindingTokenValid, (BindingId bindingId, bool isTokenValid), (override));

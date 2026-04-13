@@ -285,7 +285,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
                     self.host_binding_infos.push(device);
                     return Err(err);
                 }
-                log_i!("Device removed successfully, binding_id: {:x}", device.binding_id);
+                log_i!("Device removed successfully, binding_id: {:04x}", device.binding_id as u16);
                 let _ = self.delete_device_sk(device.binding_id);
                 let _ = self.delete_device_token(device.binding_id);
                 Ok(device)
@@ -357,14 +357,14 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
 
         for &binding_id in invalid_devices.iter().rev() {
             if let Err(err) = self.remove_device(binding_id) {
-                log_e!("Failed to remove device with binding_id:{:x}, error:{:?}", binding_id as u16, err);
+                log_e!("Failed to remove device with binding_id:{:04x}, error:{:?}", binding_id as u16, err);
             }
         }
         Ok(())
     }
 
     fn read_device_token(&self, binding_id: i32) -> Result<HostBindingToken, ErrorCode> {
-        log_i!("read_device_token start, binding_id:{:x}", binding_id as u16);
+        log_i!("read_device_token start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_TOKEN);
         let token_info: Vec<u8> = StorageIoRegistry::get().read(&filename).map_err(|e| p!(e))?;
         if token_info.is_empty() {
@@ -376,7 +376,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
     }
 
     fn write_device_token(&self, binding_id: i32, token: &HostBindingToken) -> Result<(), ErrorCode> {
-        log_i!("write_device_token start, binding_id:{:x}", binding_id as u16);
+        log_i!("write_device_token start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_TOKEN);
         let mut parcel = Parcel::new();
         Self::serialize_token_info(token, &mut parcel);
@@ -385,19 +385,19 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
     }
 
     fn delete_device_token(&self, binding_id: i32) -> Result<(), ErrorCode> {
-        log_i!("delete_device_token start, binding_id:{:x}", binding_id as u16);
+        log_i!("delete_device_token start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_TOKEN);
         StorageIoRegistry::get().delete(&filename).map_err(|e| p!(e))
     }
 
     fn is_device_token_valid(&self, binding_id: i32) -> Result<bool, ErrorCode> {
-        log_i!("is_device_token_valid start, binding_id:{:x}", binding_id as u16);
+        log_i!("is_device_token_valid start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_TOKEN);
         StorageIoRegistry::get().exists(&filename)
     }
 
     fn read_device_sk(&self, binding_id: i32) -> Result<HostBindingSk, ErrorCode> {
-        log_i!("read_device_sk start, binding_id:{:x}", binding_id as u16);
+        log_i!("read_device_sk start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_SK);
         let sk_info_data: Vec<u8> = StorageIoRegistry::get().read(&filename).map_err(|e| p!(e))?;
         if sk_info_data.is_empty() {
@@ -410,7 +410,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
     }
 
     fn write_device_sk(&self, binding_id: i32, sk_info: &HostBindingSk) -> Result<(), ErrorCode> {
-        log_i!("write_device_sk start, binding_id:{:x}", binding_id as u16);
+        log_i!("write_device_sk start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_SK);
         let mut parcel = Parcel::new();
         Self::serialize_device_sk(sk_info, &mut parcel);
@@ -418,7 +418,7 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
     }
 
     fn delete_device_sk(&self, binding_id: i32) -> Result<(), ErrorCode> {
-        log_i!("delete_device_sk start, binding_id:{:x}", binding_id as u16);
+        log_i!("delete_device_sk start, binding_id:{:04x}", binding_id as u16);
         let filename = format!("{:x}_{}", binding_id, HOST_BINDING_SK);
         StorageIoRegistry::get().delete(&filename).map_err(|e| p!(e))
     }

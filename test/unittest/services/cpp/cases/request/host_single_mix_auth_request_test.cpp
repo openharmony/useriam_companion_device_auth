@@ -115,7 +115,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_001, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
@@ -138,7 +138,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_002, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -160,7 +160,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_003, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -187,7 +187,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Cancel_001, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -208,7 +208,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Cancel_002, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     request->cancelled_ = true;
 
@@ -221,7 +221,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Cancel_003, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -243,7 +243,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Cancel_004, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -266,7 +266,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_001, TestSize.Level
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
@@ -287,7 +287,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_002, TestSize.Level
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
@@ -309,7 +309,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_003, TestSize.Level
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
@@ -325,7 +325,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_004, TestSize.Level
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -348,7 +348,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_005, TestSize.Level
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -375,7 +375,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_001, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
@@ -397,7 +397,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_002, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
@@ -419,7 +419,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_003, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
@@ -435,7 +435,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, InvokeCallback_001, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
@@ -451,7 +451,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     EXPECT_EQ(request->GetMaxConcurrency(), 10);
 }
@@ -460,7 +460,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, ShouldCancelOnNewRequest_001, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_MIX_AUTH_REQUEST, std::nullopt, 0);
     EXPECT_TRUE(result);
@@ -470,7 +470,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
@@ -480,7 +480,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, ShouldCancelOnNewRequest_003, TestSize.Le
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);

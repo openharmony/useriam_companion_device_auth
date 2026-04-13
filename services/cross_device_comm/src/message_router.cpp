@@ -240,6 +240,7 @@ void MessageRouter::HandleRawMessage(const std::string &connectionName, const st
         return;
     }
 
+    ENSURE_OR_RETURN(header.connectionName == connectionName);
     ENSURE_OR_RETURN(connectionMgr_ != nullptr);
     auto connection = connectionMgr_->GetConnection(header.connectionName);
     if (!connection.has_value()) {

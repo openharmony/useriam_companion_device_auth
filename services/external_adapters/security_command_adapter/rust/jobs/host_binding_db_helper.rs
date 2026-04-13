@@ -36,7 +36,8 @@ pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -
     if same_device_replaced_binding_id.is_some() && cross_device_replaced_binding_id.is_some() {
         log_e!(
             "unexpected: both same-device replacement ({:?}) and cross-device eviction ({:?}) occurred",
-            same_device_replaced_binding_id, cross_device_replaced_binding_id
+            same_device_replaced_binding_id,
+            cross_device_replaced_binding_id
         );
     }
     Ok(same_device_replaced_binding_id.or(cross_device_replaced_binding_id))

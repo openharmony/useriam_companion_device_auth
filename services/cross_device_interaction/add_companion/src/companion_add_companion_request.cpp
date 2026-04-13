@@ -191,6 +191,7 @@ void CompanionAddCompanionRequest::HandleBeginAddCompanion(const Attributes &att
         return;
     }
     desc_.SetBindingId(beginOutput.bindingId);
+    bindingId_ = beginOutput.bindingId;
 
     BeginAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = beginOutput.addHostBindingReply };
     Attributes reply;
@@ -223,9 +224,8 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
         IAM_LOGI("%{public}s receive token data from host, size=%{public}zu", GetDescription(), tokenData.size());
     }
 
-    Atl atl = 0;
-    int32_t esl = 0;
-    ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), requestOpt->result, atl, esl, tokenData);
+    EndAddHostBindingOutput endOutput = {};
+    ResultCode ret = EndAddHostBinding(requestOpt->result, std::move(tokenData), endOutput);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("%{public}s CompanionEndAddHostBinding failed ret=%{public}d", GetDescription(), ret);
         errorGuard.UpdateErrorCode(ret);
@@ -233,8 +233,8 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
     }
     needCancelAddCompanion_ = false;
 
-    eventCollector_.AppendExtraInfo("ATL", atl);
-    eventCollector_.AppendExtraInfo("ESL", esl);
+    eventCollector_.AppendExtraInfo("ATL", endOutput.atl);
+    eventCollector_.AppendExtraInfo("ESL", endOutput.esl);
 
     EndAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
     Attributes reply;
@@ -245,6 +245,17 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
 
     errorGuard.Cancel();
     CompleteWithSuccess();
+}
+
+ResultCode CompanionAddCompanionRequest::EndAddHostBinding(ResultCode resultCode, std::vector<uint8_t> &&tokenData,
+    EndAddHostBindingOutput &output)
+{
+    EndAddHostBindingInput input = {};
+    input.requestId = GetRequestId();
+    input.resultCode = resultCode;
+    input.bindingId = bindingId_.value_or(0);
+    input.tokenData = std::move(tokenData);
+    return GetHostBindingManager().EndAddHostBinding(input, output);
 }
 
 std::weak_ptr<InboundRequest> CompanionAddCompanionRequest::GetWeakPtr()
@@ -271,16 +282,15 @@ void CompanionAddCompanionRequest::CompleteWithError(ResultCode result)
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
     SendErrorReply(result);
     if (needCancelAddCompanion_) {
-        Atl atl = 0;
-        int32_t esl = 0;
-        ResultCode ret = GetHostBindingManager().EndAddHostBinding(GetRequestId(), result, atl, esl);
+        EndAddHostBindingOutput endOutput = {};
+        ResultCode ret = EndAddHostBinding(result, {}, endOutput);
         if (ret != ResultCode::SUCCESS) {
             IAM_LOGE("%{public}s EndAddHostBinding cancel failed ret=%{public}d", GetDescription(), ret);
         }
         needCancelAddCompanion_ = false;
 
-        eventCollector_.AppendExtraInfo("ATL", atl);
-        eventCollector_.AppendExtraInfo("ESL", esl);
+        eventCollector_.AppendExtraInfo("ATL", endOutput.atl);
+        eventCollector_.AppendExtraInfo("ESL", endOutput.esl);
     }
     eventCollector_.Report(result);
     Destroy();

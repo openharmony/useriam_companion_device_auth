@@ -125,17 +125,25 @@ std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::v
 void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId> &templateList)
 {
     for (auto templateId : templateList) {
+        auto companionStatus = GetCompanionManager().GetCompanionStatus(templateId);
+        if (!companionStatus.has_value()) {
+            IAM_LOGE("%{public}s GetCompanionStatus fail, templateId:%{public}s", GetDescription(),
+                GET_MASKED_NUM_CSTR(templateId));
+            continue;
+        }
+        const DeviceKey &companionDeviceKey = companionStatus->companionDeviceStatus.deviceKey;
         AuthRequestParams authParams = { .scheduleId = GetScheduleId(),
             .fwkMsg = fwkMsg_,
             .hostUserId = hostUserId_,
             .templateId = templateId,
             .authIntent = authIntent_ };
-        auto hostSingleMixAuthRequest = GetRequestFactory().CreateHostSingleMixAuthRequest(authParams,
-            [weakSelf = weak_from_this(), templateId](ResultCode result, const std::vector<uint8_t> &extraInfo) {
-                auto self = weakSelf.lock();
-                ENSURE_OR_RETURN(self != nullptr);
-                self->HandleAuthResult(templateId, result, extraInfo);
-            });
+        auto hostSingleMixAuthRequest =
+            GetRequestFactory().CreateHostSingleMixAuthRequest(authParams, companionDeviceKey,
+                [weakSelf = weak_from_this(), templateId](ResultCode result, const std::vector<uint8_t> &extraInfo) {
+                    auto self = weakSelf.lock();
+                    ENSURE_OR_RETURN(self != nullptr);
+                    self->HandleAuthResult(templateId, result, extraInfo);
+                });
         if (hostSingleMixAuthRequest == nullptr) {
             IAM_LOGE("%{public}s factory returned nullptr for templateId:%{public}s", GetDescription(),
                 GET_MASKED_NUM_CSTR(templateId));
@@ -146,6 +154,8 @@ void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId>
                 GET_MASKED_NUM_CSTR(templateId));
             continue;
         }
+        IAM_LOGI("%{public}s start request success for companion device:%{public}s", GetDescription(),
+            companionStatus->GetDesc().c_str());
         requestMap_.emplace(templateId, std::move(hostSingleMixAuthRequest));
     }
     if (requestMap_.empty()) {
@@ -195,6 +205,7 @@ bool HostMixAuthRequest::Cancel(ResultCode resultCode)
     }
     cancelled_ = true;
     std::unordered_map<uint64_t, std::shared_ptr<IRequest>> requestMap = std::move(requestMap_);
+    requestMap_.clear();
     for (auto &entry : requestMap) {
         if (entry.second != nullptr) {
             entry.second->Cancel(resultCode);
@@ -232,6 +243,7 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
         return;
     }
     std::unordered_map<uint64_t, std::shared_ptr<IRequest>> requestMap = std::move(requestMap_);
+    requestMap_.clear();
     for (auto &entry : requestMap) {
         if (entry.second != nullptr) {
             entry.second->Cancel(ResultCode::CANCELED);
@@ -246,16 +258,11 @@ uint32_t HostMixAuthRequest::GetMaxConcurrency() const
     return 1; // Spec: max 1 concurrent HostMixAuthRequest
 }
 
-bool HostMixAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
+bool HostMixAuthRequest::ShouldCancelOnNewRequest([[maybe_unused]] RequestType newRequestType,
     [[maybe_unused]] const std::optional<DeviceKey> &newPeerDevice,
     [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
-    // Spec: new HostMixAuthRequest preempts existing one
-    if (newRequestType == RequestType::HOST_MIX_AUTH_REQUEST) {
-        IAM_LOGI("%{public}s: preempted by new HostMixAuth", GetDescription());
-        return true;
-    }
-
+    // Spec: HostMixAuthRequest does not preempt on new requests
     return false;
 }
 
@@ -271,6 +278,7 @@ void HostMixAuthRequest::InvokeCallback(ResultCode result, const std::vector<uin
                 cb(result, extra);
             }
         });
+    requestCallback_ = nullptr;
 }
 
 void HostMixAuthRequest::CompleteWithError(ResultCode result)

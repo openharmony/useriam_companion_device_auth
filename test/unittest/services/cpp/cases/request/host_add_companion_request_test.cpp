@@ -693,6 +693,26 @@ HWTEST_F(HostAddCompanionRequestTest, InvokeCallback_001, TestSize.Level0)
     ASSERT_NO_THROW(request->InvokeCallback(ResultCode::SUCCESS, {}));
 }
 
+HWTEST_F(HostAddCompanionRequestTest, InvokeCallback_002_DoubleInvokeProtection, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto callbackCalled = std::make_shared<int>(0);
+    auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { ++*callbackCalled; };
+    auto request =
+        std::make_shared<HostAddCompanionRequest>(SCHEDULE_ID, FWK_MSG, TOKEN_ID, ADDITIONAL_INFO, std::move(callback));
+
+    // First call should succeed and null out the callback.
+    request->InvokeCallback(ResultCode::SUCCESS, {});
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    EXPECT_EQ(*callbackCalled, 1);
+
+    // Second call should be silently ignored (callback already moved out).
+    request->InvokeCallback(ResultCode::GENERAL_ERROR, {});
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    EXPECT_EQ(*callbackCalled, 1);
+}
+
 HWTEST_F(HostAddCompanionRequestTest, GetMaxConcurrency_001, TestSize.Level0)
 {
     MockGuard guard;

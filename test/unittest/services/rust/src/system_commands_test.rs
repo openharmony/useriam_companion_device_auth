@@ -2632,9 +2632,7 @@ fn companion_begin_add_host_binding_test_replaced_binding() {
     mock_host_binding_db_manager
         .expect_get_device_by_device_key()
         .returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
-    mock_host_binding_db_manager
-        .expect_remove_device()
-        .returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
+    mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
     mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
     mock_host_binding_db_manager
         .expect_get_device_by_binding_id()

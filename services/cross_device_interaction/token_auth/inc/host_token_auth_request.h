@@ -59,7 +59,6 @@ private:
     FwkResultCallback requestCallback_;
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     bool needEndTokenAuth_ = false;
-    bool callbackInvoked_ = false;
     InteractionEventCollector eventCollector_;
 
     void InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo);

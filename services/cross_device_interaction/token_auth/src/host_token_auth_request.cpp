@@ -203,18 +203,17 @@ bool HostTokenAuthRequest::SecureAgentEndTokenAuth(const std::vector<uint8_t> &t
 
 void HostTokenAuthRequest::InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo)
 {
-    if (callbackInvoked_) {
+    if (requestCallback_ == nullptr) {
         IAM_LOGI("%{public}s callback already sent", GetDescription());
         return;
     }
-    ENSURE_OR_RETURN_DESC(GetDescription(), requestCallback_ != nullptr);
-    callbackInvoked_ = true;
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [cb = std::move(requestCallback_), result, extra = extraInfo]() mutable {
             if (cb) {
                 cb(result, extra);
             }
         });
+    requestCallback_ = nullptr;
 }
 
 void HostTokenAuthRequest::CompleteWithError(ResultCode result)

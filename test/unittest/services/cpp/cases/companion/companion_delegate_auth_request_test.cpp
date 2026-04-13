@@ -375,7 +375,12 @@ HWTEST_F(CompanionDelegateAuthRequestTest, ShouldCancelOnNewRequest_001, TestSiz
     auto request = std::make_shared<CompanionDelegateAuthRequest>(CONNECTION_NAME, COMPANION_USER_ID, HOST_DEVICE_KEY,
         START_DELEGATE_AUTH_REQUEST);
 
+    // Different device (nullopt) should not preempt
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
+    EXPECT_FALSE(result);
+
+    // Same device should preempt
+    result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, HOST_DEVICE_KEY, 0);
     EXPECT_TRUE(result);
 }
 

@@ -71,7 +71,8 @@ HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
     CHECK_RUNNING_ON_RESIDENT_THREAD();
 
     std::ostringstream oss;
-    oss << "CdaHost(" << GET_TRUNCATED_STRING(persistedStatus.bindingId) << ")";
+    oss << "CdaHost(B:" << GET_TRUNCATED_STRING(persistedStatus.bindingId)
+        << ",D:" << GET_MASKED_STR_STRING(persistedStatus.hostDeviceKey.deviceId) << ")";
     description_ = oss.str();
 }
 
@@ -137,7 +138,8 @@ void HostBinding::HandleHostDeviceOffline()
     }
 
     status_.hostDeviceStatus.isOnline = false;
-    IAM_LOGE("host device %{public}s is offline", status_.hostDeviceStatus.deviceKey.GetDesc().c_str());
+    IAM_LOGE("%{public}s host device %{public}s is offline", GetDescription(),
+        status_.hostDeviceStatus.deviceKey.GetDesc().c_str());
     SetTokenValid(false, "host device offline");
 }
 

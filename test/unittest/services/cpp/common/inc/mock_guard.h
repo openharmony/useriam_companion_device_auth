@@ -21,6 +21,7 @@
 // Include all mock headers to provide complete type definitions
 #include "mock_companion_manager.h"
 #include "mock_cross_device_comm_manager.h"
+#include "mock_device_manager_adapter.h"
 #include "mock_driver_manager_adapter.h"
 #include "mock_event_bus.h"
 #include "mock_event_manager_adapter.h"
@@ -32,6 +33,7 @@
 #include "mock_request_manager.h"
 #include "mock_sa_manager_adapter.h"
 #include "mock_security_agent.h"
+#include "mock_soft_bus_adapter.h"
 #include "mock_system_param_manager.h"
 #include "mock_time_keeper.h"
 #include "mock_user_auth_adapter.h"
@@ -74,6 +76,10 @@ public:
     MockExecutorFactory &GetExecutorFactory();
     MockEventBus &GetEventBus();
 
+    // SoftBus adapter mock access methods
+    MockDeviceManagerAdapter &GetSoftBusDeviceManagerAdapter();
+    MockSoftBusAdapter &GetSoftBusAdapter();
+
 private:
     // Helper methods for mock initialization
     void CreateMocks();
@@ -89,6 +95,7 @@ private:
     void SetupSecurityAgentDefaults();
     void SetupEventManagerAdapterDefaults();
     void SetupEventBusDefaults();
+    void SetupSoftBusAdapterDefaults();
 
     // AdapterManager mock instances
     std::shared_ptr<MockTimeKeeper> timeKeeper_;
@@ -110,6 +117,10 @@ private:
     std::shared_ptr<MockRequestFactory> requestFactory_;
     std::shared_ptr<MockExecutorFactory> executorFactory_;
     std::shared_ptr<MockEventBus> eventBus_;
+
+    // SoftBus adapter mock instances
+    std::shared_ptr<MockDeviceManagerAdapter> softBusDeviceManagerAdapter_;
+    std::shared_ptr<MockSoftBusAdapter> softBusAdapter_;
 };
 
 } // namespace CompanionDeviceAuth

@@ -37,6 +37,7 @@ namespace CompanionDeviceAuth {
 
 namespace {
 constexpr const char *SOFTBUS_SA_NAME = "SoftBusServer";
+constexpr size_t MAX_SOFTBUS_CONNECTIONS = 200;
 } // namespace
 
 std::shared_ptr<SoftBusConnectionManager> SoftBusConnectionManager::Create()
@@ -125,6 +126,12 @@ bool SoftBusConnectionManager::OpenConnection(const std::string &connectionName,
         return false;
     }
 
+    if (connections_.size() >= MAX_SOFTBUS_CONNECTIONS) {
+        IAM_LOGE("max connections reached (%{public}zu), reject: %{public}s", connections_.size(),
+            connectionName.c_str());
+        return false;
+    }
+
     auto socketId = GetSoftBusAdapter().CreateClientSocket(connectionName, networkId);
     if (!socketId.has_value()) {
         IAM_LOGE("Create client socket failed");
@@ -181,6 +188,11 @@ void SoftBusConnectionManager::HandleBind(int32_t socketId, const std::string &p
 
     // inbound connection
     ScopeGuard guard([socketId]() { GetSoftBusAdapter().ShutdownSocket(socketId); });
+    if (connections_.size() >= MAX_SOFTBUS_CONNECTIONS) {
+        IAM_LOGE("max connections reached (%{public}zu), reject inbound: socketId=%{public}d", connections_.size(),
+            socketId);
+        return;
+    }
     auto udid = GetDeviceManagerAdapter().GetUdidByNetworkId(peerNetworkId);
     ENSURE_OR_RETURN(udid.has_value() && !udid.value().empty());
 
@@ -235,6 +247,11 @@ void SoftBusConnectionManager::HandleBytes(int32_t socketId, const void *data, u
         return;
     }
 
+    if (dataLen > MAX_MESSAGE_SIZE) {
+        IAM_LOGE("dataLen exceeds limit: %{public}u > %{public}zu", dataLen, MAX_MESSAGE_SIZE);
+        return;
+    }
+
     std::vector<uint8_t> message(static_cast<const uint8_t *>(data), static_cast<const uint8_t *>(data) + dataLen);
 
     auto connection = FindSocketBySocketId(socketId);
@@ -248,6 +265,10 @@ void SoftBusConnectionManager::HandleBytes(int32_t socketId, const void *data, u
         std::string connectionName;
         if (attributes.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName) &&
             !connectionName.empty()) {
+            if (FindSocketByConnectionName(connectionName) != nullptr) {
+                IAM_LOGE("connectionName already exists: %{public}s, reject inbound", connectionName.c_str());
+                return;
+            }
             IAM_LOGI("Updated connectionName from message: %{public}s", connectionName.c_str());
             connection->HandleInboundConnected(connectionName);
         }

@@ -16,11 +16,21 @@
 use crate::common::constants::ErrorCode;
 use crate::log_e;
 use crate::traits::storage_io::StorageIo;
-use crate::{CString, Vec};
+use crate::{CString, String, Vec};
+
 #[cfg(not(any(test, feature = "test-utils")))]
 use alloc::format;
 #[cfg(any(test, feature = "test-utils"))]
 use std::format;
+
+fn masked_file_name(name: &str) -> String {
+    const MAX_LEN: usize = 8;
+    if name.len() <= MAX_LEN {
+        String::from(name)
+    } else {
+        format!("****{}", &name[name.len() - MAX_LEN..])
+    }
+}
 
 #[allow(unused_extern_crates)]
 extern crate std;
@@ -47,7 +57,7 @@ impl StorageIo for DefaultStorageIo {
         match self.exists(file_name) {
             Ok(exists) => {
                 if !exists {
-                    log_e!("file is not exist: {}", file_name);
+                    log_e!("file is not exist: {}", masked_file_name(file_name));
                     return Ok(Vec::new());
                 }
             },
@@ -59,7 +69,7 @@ impl StorageIo for DefaultStorageIo {
 
         let final_path = format!("{}{}", DEFAULT_FILE_HEAD, file_name);
         let context = fs::read(final_path).map_err(|e| {
-            log_e!("failed to read file: {}, result: {:?}", file_name, e);
+            log_e!("failed to read file: {}, result: {:?}", masked_file_name(file_name), e);
             ErrorCode::GeneralError
         })?;
         Ok(context)
@@ -68,7 +78,7 @@ impl StorageIo for DefaultStorageIo {
     fn write(&self, file_name: &str, data: &[u8]) -> Result<(), ErrorCode> {
         let final_path = format!("{}{}", DEFAULT_FILE_HEAD, file_name);
         fs::write(&final_path, data).map_err(|e| {
-            log_e!("failed to write file: {}, result: {:?}", file_name, e);
+            log_e!("failed to write file: {}, result: {:?}", masked_file_name(file_name), e);
             ErrorCode::GeneralError
         })?;
 
@@ -76,7 +86,7 @@ impl StorageIo for DefaultStorageIo {
         {
             use libc::{chmod, S_IRUSR, S_IWUSR};
             let c_path = CString::new(final_path.as_str()).map_err(|e| {
-                log_e!("failed to create CString: {}, result: {:?}", file_name, e);
+                log_e!("failed to create CString: {}, result: {:?}", masked_file_name(file_name), e);
                 ErrorCode::GeneralError
             })?;
 
@@ -85,7 +95,7 @@ impl StorageIo for DefaultStorageIo {
                 let mode = S_IRUSR | S_IWUSR;
                 if chmod(c_path.as_ptr(), mode) != 0 {
                     let err = std::io::Error::last_os_error();
-                    log_e!("failed to set file permissions: {}, result: {:?}", file_name, err);
+                    log_e!("failed to set file permissions: {}, result: {:?}", masked_file_name(file_name), err);
                     return Err(ErrorCode::GeneralError);
                 }
             }
@@ -96,12 +106,12 @@ impl StorageIo for DefaultStorageIo {
 
     fn delete(&self, file_name: &str) -> Result<(), ErrorCode> {
         if !self.exists(file_name)? {
-            log_e!("file is not exist: {}", file_name);
+            log_e!("file is not exist: {}", masked_file_name(file_name));
             return Ok(());
         }
         let final_path = format!("{}{}", DEFAULT_FILE_HEAD, file_name);
         fs::remove_file(final_path).map_err(|e| {
-            log_e!("failed to delete file: {}, result: {:?}", file_name, e);
+            log_e!("failed to delete file: {}, result: {:?}", masked_file_name(file_name), e);
             ErrorCode::GeneralError
         })?;
         Ok(())

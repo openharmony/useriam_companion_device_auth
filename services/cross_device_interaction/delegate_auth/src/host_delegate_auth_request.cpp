@@ -66,12 +66,12 @@ bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
     }
     auto secureProtocolOpt = GetCrossDeviceCommManager().HostGetSecureProtocolId(*peerDeviceKey);
     if (!secureProtocolOpt.has_value()) {
-        IAM_LOGI("%{public}s HostGetSecureProtocolId fail", GetDescription());
+        IAM_LOGE("%{public}s HostGetSecureProtocolId fail", GetDescription());
         return false;
     }
     secureProtocolId_ = secureProtocolOpt.value();
     if (!OpenConnection()) {
-        IAM_LOGI("%{public}s OpenConnection fail", GetDescription());
+        IAM_LOGE("%{public}s OpenConnection fail", GetDescription());
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
@@ -236,18 +236,17 @@ std::weak_ptr<OutboundRequest> HostDelegateAuthRequest::GetWeakPtr()
 
 void HostDelegateAuthRequest::InvokeCallback(ResultCode result, const std::vector<uint8_t> &fwkMsg)
 {
-    if (callbackInvoked_) {
+    if (requestCallback_ == nullptr) {
         IAM_LOGI("%{public}s callback already sent", GetDescription());
         return;
     }
-    ENSURE_OR_RETURN_DESC(GetDescription(), requestCallback_ != nullptr);
-    callbackInvoked_ = true;
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [cb = std::move(requestCallback_), result, msg = fwkMsg]() mutable {
             if (cb) {
                 cb(result, msg);
             }
         });
+    requestCallback_ = nullptr;
 }
 
 void HostDelegateAuthRequest::CompleteWithError(ResultCode result)
@@ -281,8 +280,7 @@ uint32_t HostDelegateAuthRequest::GetMaxConcurrency() const
 }
 
 bool HostDelegateAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
-    [[maybe_unused]] const std::optional<DeviceKey> &newPeerDevice,
-    [[maybe_unused]] uint32_t subsequentSameTypeCount) const
+    const std::optional<DeviceKey> &newPeerDevice, [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
     // Spec: new HostAddCompanionRequest preempts HostDelegateAuthRequest
     if (newRequestType == RequestType::HOST_ADD_COMPANION_REQUEST) {
@@ -290,10 +288,14 @@ bool HostDelegateAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestTyp
         return true;
     }
 
-    // Spec: new HostDelegateAuthRequest preempts existing one
+    // Spec: new HostDelegateAuthRequest to same device preempts existing one
     if (newRequestType == RequestType::HOST_DELEGATE_AUTH_REQUEST) {
-        IAM_LOGI("%{public}s: preempted by new HostDelegateAuth", GetDescription());
-        return true;
+        auto currentPeerDevice = GetPeerDeviceKey();
+        if (currentPeerDevice.has_value() && newPeerDevice.has_value() &&
+            currentPeerDevice.value() == newPeerDevice.value()) {
+            IAM_LOGI("%{public}s: preempted by new HostDelegateAuth to same device", GetDescription());
+            return true;
+        }
     }
 
     return false;

@@ -62,11 +62,11 @@ HWTEST_F(HostMixAuthRequestTest, Start_001, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request to return from the factory
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -94,10 +94,10 @@ HWTEST_F(HostMixAuthRequestTest, Start_002, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Return nullptr to simulate factory failure
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(nullptr));
 
     request->Start();
 
@@ -121,11 +121,11 @@ HWTEST_F(HostMixAuthRequestTest, Start_003, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     // RequestManager::Start returns false
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(false));
 
@@ -179,11 +179,11 @@ HWTEST_F(HostMixAuthRequestTest, Cancel_001, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -254,11 +254,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_001, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -283,11 +283,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_002, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -312,11 +312,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -347,11 +347,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_004, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -377,11 +377,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_005, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -412,11 +412,11 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_007, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Create a mock request
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
@@ -451,8 +451,9 @@ HWTEST_F(HostMixAuthRequestTest, ShouldCancelOnNewRequest_001, TestSize.Level0)
         AUTH_INTENTION };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
+    // HostMixAuthRequest does not preempt on any request type
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_MIX_AUTH_REQUEST, std::nullopt, 0);
-    EXPECT_TRUE(result);
+    EXPECT_FALSE(result);
 }
 
 HWTEST_F(HostMixAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Level0)
@@ -498,7 +499,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
 
     // Set up companion status to be valid so Start() can proceed
     CompanionStatus validStatus = { .isValid = true };
-    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillOnce(Return(validStatus));
+    EXPECT_CALL(guard.GetCompanionManager(), GetCompanionStatus(TEMPLATE_ID)).WillRepeatedly(Return(validStatus));
 
     // Mock device selection to return true and invoke callback with empty devices (use all templates)
     EXPECT_CALL(guard.GetMiscManager(), GetDeviceDeviceSelectResult(_, _, _))
@@ -510,7 +511,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_WithTokenId, TestSize.Level0)
 
     // Create a mock request to return from the factory
     auto mockRequest = std::make_shared<MockIRequest>(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, 1, SCHEDULE_ID);
-    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _)).WillOnce(Return(mockRequest));
+    EXPECT_CALL(guard.GetRequestFactory(), CreateHostSingleMixAuthRequest(_, _, _)).WillOnce(Return(mockRequest));
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();

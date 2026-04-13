@@ -176,8 +176,10 @@ ResultCode SecurityAgentImpl::HostBeginCompanionCheck(const HostBeginCompanionCh
 {
     auto ffiInput = std::make_unique<HostBeginCompanionCheckInputFfi>();
     ENSURE_OR_RETURN_VAL(ffiInput != nullptr, GENERAL_ERROR);
-    ffiInput->requestId = input.requestId;
-    ffiInput->userId = input.userId;
+    if (!EncodeHostBeginCompanionCheckInput(input, *ffiInput)) {
+        IAM_LOGE("failed to encode input");
+        return GENERAL_ERROR;
+    }
 
     auto ffiOutput = std::make_unique<HostBeginCompanionCheckOutputFfi>();
     ENSURE_OR_RETURN_VAL(ffiOutput != nullptr, GENERAL_ERROR);
@@ -187,8 +189,10 @@ ResultCode SecurityAgentImpl::HostBeginCompanionCheck(const HostBeginCompanionCh
         reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(HostBeginCompanionCheckOutputFfi));
     ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
 
-    output.salt.assign(ffiOutput->salt.data, ffiOutput->salt.data + ffiOutput->salt.len);
-    output.challenge = ffiOutput->challenge;
+    if (!DecodeHostBeginCompanionCheckOutput(*ffiOutput, output)) {
+        IAM_LOGE("failed to decode output");
+        return GENERAL_ERROR;
+    }
     IAM_LOGI("success");
     return SUCCESS;
 }

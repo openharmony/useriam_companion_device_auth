@@ -148,7 +148,8 @@ void FuzzHostSingleMixAuthRequest(FuzzedDataProvider &fuzzData)
         .hostUserId = hostUserId,
         .templateId = templateId,
         .authIntent = authIntent };
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(callback));
+    DeviceKey companionDeviceKey = GenerateFuzzDeviceKey(fuzzData);
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, companionDeviceKey, std::move(callback));
     if (!request) {
         return;
     }

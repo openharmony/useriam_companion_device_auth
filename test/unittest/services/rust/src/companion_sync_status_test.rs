@@ -155,3 +155,15 @@ fn companion_sync_status_request_end_test_not_implemented() {
     let result = request.end(param);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }
+
+#[test]
+fn companion_sync_status_request_new_test_salt_len_exceeds_array() {
+    let _guard = ut_registry_guard!();
+    log_i!("companion_sync_status_request_new_test_salt_len_exceeds_array start");
+
+    let mut input = create_valid_input(123, 0);
+    input.salt.len = (HKDF_SALT_SIZE as u32) + 1;
+
+    let result = CompanionDeviceSyncStatusRequest::new(&input);
+    assert_eq!(result, Err(ErrorCode::GeneralError));
+}

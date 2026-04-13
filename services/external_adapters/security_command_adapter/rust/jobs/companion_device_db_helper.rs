@@ -21,14 +21,14 @@ use crate::{log_e, log_i, p, Box, String, Vec};
 
 pub fn check_device_capability(template_id: u64, required_capability: Capability) -> Result<(), ErrorCode> {
     let device_info = CompanionDeviceDbManagerRegistry::get().get_device(template_id).map_err(|e| {
-        log_e!("get_device failed for template_id:{:x}, err:{:?}", template_id as u16, e);
+        log_e!("get_device failed for template_id:{:04x}, err:{:?}", template_id as u16, e);
         e
     })?;
 
     let capability_value = required_capability as u16;
     if !device_info.capability_list.contains(&capability_value) {
         log_e!(
-            "Device does not have required capability, template_id:{:x}, required:{:?}",
+            "Device does not have required capability, template_id:{:04x}, required:{:?}",
             template_id as u16,
             required_capability
         );
@@ -36,7 +36,7 @@ pub fn check_device_capability(template_id: u64, required_capability: Capability
     }
 
     log_i!(
-        "Device capability check passed, template_id:{:x}, capability:{:?}",
+        "Device capability check passed, template_id:{:04x}, capability:{:?}",
         template_id as u16,
         required_capability
     );
@@ -77,7 +77,7 @@ pub fn update_companion_device_info(
 
 pub fn update_device_business_id(template_id: u64, business_ids: Vec<i32>) -> Result<(), ErrorCode> {
     let _device_info = CompanionDeviceDbManagerRegistry::get().get_device(template_id).map_err(|e| {
-        log_e!("get_device failed for template_id:{:x}, err:{:?}", template_id as u16, e);
+        log_e!("get_device failed for template_id:{:04x}, err:{:?}", template_id as u16, e);
         e
     })?;
 

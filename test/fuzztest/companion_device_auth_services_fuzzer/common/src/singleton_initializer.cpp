@@ -251,14 +251,10 @@ public:
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 
-    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
-        const std::vector<uint8_t> &tokenData = {}) override
+    ResultCode EndAddHostBinding(const EndAddHostBindingInput &input, EndAddHostBindingOutput &output) override
     {
-        (void)requestId;
-        (void)resultCode;
-        (void)atl;
-        (void)esl;
-        (void)tokenData;
+        (void)input;
+        (void)output;
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
     }
 
@@ -1269,9 +1265,10 @@ public:
     }
 
     std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
-        FwkResultCallback &&requestCallback) override
+        const DeviceKey &companionDeviceKey, FwkResultCallback &&requestCallback) override
     {
         (void)params;
+        (void)companionDeviceKey;
         (void)requestCallback;
         return fuzzData_.ConsumeIntegral<uint32_t>() > 0
             ? std::make_shared<MockFuzzIRequest>(fuzzData_, requestCounter_++, params.scheduleId)

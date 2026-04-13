@@ -407,12 +407,12 @@ pub fn host_check_template_enrolled(
 ) -> Result<(), ErrorCode> {
     match CompanionDeviceDbManagerRegistry::get().get_device(input.template_id) {
         Ok(_) => {
-            log_i!("template_id {:x} enrolled", input.template_id as u16);
+            log_i!("template_id {:04x} enrolled", input.template_id as u16);
             output.enrolled = 1;
             Ok(())
         },
         Err(ErrorCode::NotFound) => {
-            log_i!("template_id {:x} not enrolled", input.template_id as u16);
+            log_i!("template_id {:04x} not enrolled", input.template_id as u16);
             output.enrolled = 0;
             Ok(())
         },

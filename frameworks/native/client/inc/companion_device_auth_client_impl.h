@@ -16,8 +16,10 @@
 #ifndef COMPANION_DEVICE_AUTH_CLIENT_IMPL_H
 #define COMPANION_DEVICE_AUTH_CLIENT_IMPL_H
 
+#include <memory>
 #include <mutex>
 #include <optional>
+#include <vector>
 
 #include "nocopyable.h"
 #include "system_ability_listener.h"
@@ -65,13 +67,15 @@ private:
     void SetProxy(const sptr<ICompanionDeviceAuth> &proxy);
 #endif // ENABLE_TEST
 
+protected:
+    void ResetProxy(const wptr<IRemoteObject> &remote) override;
+
 private:
     void ReregisterDeviceSelectCallback();
     void ResubscribeTemplateStatusChange();
     void ResubscribeContinuousAuthStatusChange();
     void ResubscribeAvailableDeviceStatus();
 
-    void ResetProxy(const wptr<IRemoteObject> &remote);
     sptr<ICompanionDeviceAuth> GetProxy();
     void PrintIpcTemplateStatus(const IpcTemplateStatus &ipcTemplateStatus);
 
@@ -91,4 +95,4 @@ private:
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS
-#endif // COMPANION_DEVICE_AUTH_CLIENT_H
+#endif // COMPANION_DEVICE_AUTH_CLIENT_IMPL_H

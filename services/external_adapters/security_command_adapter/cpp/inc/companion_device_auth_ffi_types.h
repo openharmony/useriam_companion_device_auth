@@ -52,7 +52,7 @@ extern "C" {
 
 #define MAX_DATA_LEN_20000 20000
 
-#define MAX_STRUCT_SIZE_FFI 409600
+#define MAX_STRUCT_SIZE_FFI 40960
 
 enum CommandId {
     INIT = 1,

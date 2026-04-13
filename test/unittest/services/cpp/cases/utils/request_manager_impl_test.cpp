@@ -795,6 +795,28 @@ HWTEST_F(RequestManagerImplTest, ComplexScenario_PreemptedRequestNotStartedFromW
     ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 
+// ============== maxTotalRequests Limit Tests ==============
+
+HWTEST_F(RequestManagerImplTest, Start_RejectsNewRequest_WhenTotalRequestsReachLimit, TestSize.Level0)
+{
+    // Fill runningRequests_ up to 200 (all different types to avoid concurrency blocking).
+    constexpr size_t maxTotalRequests = 200;
+    constexpr uint32_t unlimited = 200;
+
+    for (size_t i = 0; i < maxTotalRequests; ++i) {
+        auto request =
+            CreateMockRequest(MockRequestConfig {}.WithId(static_cast<RequestId>(i + 1)).WithMaxConcurrency(unlimited));
+        ASSERT_TRUE(manager_->Start(request));
+    }
+
+    ASSERT_EQ(manager_->runningRequests_.size() + manager_->waitingRequests_.size(), maxTotalRequests);
+
+    // The 201st request should be rejected.
+    auto overflowRequest = CreateMockRequest(MockRequestConfig {}.WithId(static_cast<RequestId>(maxTotalRequests + 1)));
+    bool result = manager_->Start(overflowRequest);
+    EXPECT_FALSE(result);
+}
+
 } // namespace
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
