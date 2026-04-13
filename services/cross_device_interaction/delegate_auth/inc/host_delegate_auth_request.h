@@ -65,7 +65,6 @@ private:
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     std::unique_ptr<Subscription> delegateResultSubscription_;
     bool needCancelDelegateAuth_ = false;
-    bool callbackInvoked_ = false;
     InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth

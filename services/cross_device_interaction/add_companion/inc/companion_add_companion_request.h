@@ -60,6 +60,8 @@ private:
 
     void HandleBeginAddCompanion(const Attributes &attrInput, OnMessageReply &onMessageReply);
     void HandleEndAddCompanion(const Attributes &attrInput, OnMessageReply &onMessageReply);
+    ResultCode EndAddHostBinding(ResultCode resultCode, std::vector<uint8_t> &&tokenData,
+        EndAddHostBindingOutput &output);
 
     Attributes initKeyNegoRequest_ {};
     OnMessageReply currentReply_ {};
@@ -68,6 +70,7 @@ private:
     std::unique_ptr<Subscription> beginAddHostBindingSubscription_;
     std::unique_ptr<Subscription> endAddHostBindingSubscription_;
     DeviceKey companionDeviceKey_ {};
+    std::optional<BindingId> bindingId_;
     InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth

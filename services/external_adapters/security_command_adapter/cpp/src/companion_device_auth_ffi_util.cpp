@@ -311,6 +311,28 @@ bool EncodeHostRegisterFinishInput(const RegisterFinishInput &input, HostRegiste
     return true;
 }
 
+bool EncodeHostBeginCompanionCheckInput(const HostBeginCompanionCheckInput &input, HostBeginCompanionCheckInputFfi &ffi)
+{
+    ffi.requestId = input.requestId;
+    ffi.userId = input.userId;
+    return true;
+}
+
+bool DecodeHostBeginCompanionCheckOutput(const HostBeginCompanionCheckOutputFfi &ffi,
+    HostBeginCompanionCheckOutput &output)
+{
+    if (ffi.salt.len == 0) {
+        IAM_LOGE("salt length is zero");
+        return false;
+    }
+    if (!FfiArrayToVector(ffi.salt, output.salt)) {
+        IAM_LOGE("failed to decode salt");
+        return false;
+    }
+    output.challenge = ffi.challenge;
+    return true;
+}
+
 bool EncodeHostEndCompanionCheckInput(const HostEndCompanionCheckInput &input, HostEndCompanionCheckInputFfi &ffi)
 {
     ffi.requestId = input.requestId;

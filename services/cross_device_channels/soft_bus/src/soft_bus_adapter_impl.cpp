@@ -20,6 +20,7 @@
 #include "iam_para2str.h"
 
 #include "cda_scope_guard.h"
+#include "service_common.h"
 #include "singleton_manager.h"
 #include "socket.h"
 #include "soft_bus_channel_common.h"
@@ -66,6 +67,10 @@ void SoftBusAdapterOnBytes(int32_t socket, const void *data, uint32_t dataLen)
 {
     ENSURE_OR_RETURN(data != nullptr);
     IAM_LOGI("SoftBusAdapterOnBytes enter, socket=%{public}d, dataLen=%{public}u", socket, dataLen);
+    if (dataLen > MAX_MESSAGE_SIZE) {
+        IAM_LOGE("dataLen exceeds limit: %{public}u > %{public}zu", dataLen, MAX_MESSAGE_SIZE);
+        return;
+    }
     std::vector<uint8_t> dataCopy(static_cast<const uint8_t *>(data), static_cast<const uint8_t *>(data) + dataLen);
 
     std::shared_ptr<ISoftBusSocketCallback> callback;

@@ -40,6 +40,18 @@ struct BeginAddHostBindingOutput {
     BindingId bindingId = 0;
 };
 
+struct EndAddHostBindingInput {
+    RequestId requestId = 0;
+    ResultCode resultCode = ResultCode::GENERAL_ERROR;
+    BindingId bindingId = 0;
+    std::vector<uint8_t> tokenData;
+};
+
+struct EndAddHostBindingOutput {
+    Atl atl = 0;
+    int32_t esl = 0;
+};
+
 class IHostBindingManager : public NoCopyable {
 public:
     virtual ~IHostBindingManager() = default;
@@ -50,8 +62,7 @@ public:
 
     virtual ResultCode BeginAddHostBinding(const BeginAddHostBindingInput &input,
         BeginAddHostBindingOutput &output) = 0;
-    virtual ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
-        const std::vector<uint8_t> &tokenData = {}) = 0;
+    virtual ResultCode EndAddHostBinding(const EndAddHostBindingInput &input, EndAddHostBindingOutput &output) = 0;
     virtual ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) = 0;
     virtual bool SetHostBindingTokenValid(BindingId bindingId, bool isTokenValid) = 0;
 

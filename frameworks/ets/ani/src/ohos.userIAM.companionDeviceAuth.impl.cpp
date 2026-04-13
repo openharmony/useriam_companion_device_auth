@@ -219,6 +219,13 @@ public:
 
         std::optional<uint64_t> templateId = std::nullopt;
         if (param.templateId.has_value()) {
+            if (param.templateId->size() != sizeof(uint64_t)) {
+                IAM_LOGE("templateId size invalid: %{public}zu != %{public}zu", param.templateId->size(),
+                    sizeof(uint64_t));
+                CompanionDeviceAuth::CompanionDeviceAuthAniHelper::ThrowBusinessError(
+                    CompanionDeviceAuth::ResultCode::INVALID_PARAMETERS);
+                return;
+            }
             templateId = CompanionDeviceAuth::CompanionDeviceAuthAniHelper::ConvertAniTemplateId(*param.templateId);
         }
         int32_t ret = statusMonitor_.OnContinuousAuthChange(templateId,

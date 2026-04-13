@@ -244,7 +244,10 @@ static void FuzzCreateHostSingleMixAuthRequest(std::shared_ptr<RequestFactoryImp
         .hostUserId = hostUserId,
         .templateId = templateId,
         .authIntent = authIntent };
-    auto request = factory->CreateHostSingleMixAuthRequest(params, std::move(callback));
+    DeviceKey companionDeviceKey = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+        .deviceId = "fuzz_device_id",
+        .deviceUserId = fuzzData.ConsumeIntegral<UserId>() };
+    auto request = factory->CreateHostSingleMixAuthRequest(params, companionDeviceKey, std::move(callback));
     (void)request;
 }
 

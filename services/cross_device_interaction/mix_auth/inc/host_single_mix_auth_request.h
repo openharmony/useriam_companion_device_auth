@@ -29,11 +29,13 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 class HostSingleMixAuthRequest : public std::enable_shared_from_this<HostSingleMixAuthRequest>, public BaseRequest {
 public:
-    HostSingleMixAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback);
+    HostSingleMixAuthRequest(const AuthRequestParams &params, const DeviceKey &companionDeviceKey,
+        FwkResultCallback &&requestCallback);
 
     void Start() override final;
     bool Cancel(ResultCode resultCode) override final;
 
+    std::optional<DeviceKey> GetPeerDeviceKey() const override;
     uint32_t GetMaxConcurrency() const override;
     bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,
         uint32_t subsequentSameTypeCount) const override;
@@ -54,6 +56,7 @@ private:
     FwkResultCallback requestCallback_;
     std::shared_ptr<IRequest> tokenAuthRequest_;
     std::shared_ptr<IRequest> delegateAuthRequest_;
+    DeviceKey peerDeviceKey_ {};
     InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth

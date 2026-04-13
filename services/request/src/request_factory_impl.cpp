@@ -184,9 +184,9 @@ std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostMixAuthRequest(const Hos
 }
 
 std::shared_ptr<IRequest> RequestFactoryImpl::CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
-    FwkResultCallback &&requestCallback)
+    const DeviceKey &companionDeviceKey, FwkResultCallback &&requestCallback)
 {
-    auto request = std::make_shared<HostSingleMixAuthRequest>(params, std::move(requestCallback));
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, companionDeviceKey, std::move(requestCallback));
     ENSURE_OR_RETURN_VAL(request != nullptr, nullptr);
     return request;
 }

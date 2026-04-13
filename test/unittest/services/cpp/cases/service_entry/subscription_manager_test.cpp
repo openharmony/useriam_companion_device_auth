@@ -379,6 +379,91 @@ HWTEST_F(SubscriptionManagerTest, UpdateSubscribeMode_003, TestSize.Level0)
     subscriptionManager->AddTemplateStatusCallback(userId, callback);
 }
 
+// ============== MAX_SUBSCRIPTIONS_PER_MAP Limit Tests ==============
+
+namespace {
+constexpr size_t TEST_MAX_SUBSCRIPTIONS = 100;
+constexpr int32_t TEST_USER_ID_BASE = 100;
+constexpr int32_t TEST_OVERFLOW_USER_ID = 300;
+constexpr uint64_t TEST_OVERFLOW_TEMPLATE_ID = 999;
+} // namespace
+
+HWTEST_F(SubscriptionManagerTest, AddAvailableDeviceStatusCallback_RejectsWhenMapReachesLimit, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_unique<SubscriptionManager>();
+
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SubscribeAllDeviceStatus(_))
+        .WillRepeatedly(Invoke([](OnDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SetSubscribeMode(_)).Times(::testing::AnyNumber());
+
+    for (int32_t i = 0; i < static_cast<int32_t>(TEST_MAX_SUBSCRIPTIONS); ++i) {
+        auto callback = sptr<MockIIpcAvailableDeviceStatusCallback>::MakeSptr();
+        ASSERT_NE(callback, nullptr);
+        subscriptionManager->AddAvailableDeviceStatusCallback(i + TEST_USER_ID_BASE, callback);
+    }
+
+    EXPECT_EQ(subscriptionManager->availableDeviceSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+
+    // The next one should fail -- map is full, no new subscription created.
+    auto overflowCallback = sptr<MockIIpcAvailableDeviceStatusCallback>::MakeSptr();
+    ASSERT_NE(overflowCallback, nullptr);
+    subscriptionManager->AddAvailableDeviceStatusCallback(TEST_OVERFLOW_USER_ID, overflowCallback);
+
+    EXPECT_EQ(subscriptionManager->availableDeviceSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+}
+
+HWTEST_F(SubscriptionManagerTest, AddTemplateStatusCallback_RejectsWhenMapReachesLimit, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_unique<SubscriptionManager>();
+
+    EXPECT_CALL(guard.GetCompanionManager(), SubscribeCompanionDeviceStatusChange(_))
+        .WillRepeatedly(
+            Invoke([](OnCompanionDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
+    EXPECT_CALL(guard.GetCrossDeviceCommManager(), SetSubscribeMode(_)).Times(::testing::AnyNumber());
+
+    for (int32_t i = 0; i < static_cast<int32_t>(TEST_MAX_SUBSCRIPTIONS); ++i) {
+        auto callback = sptr<MockIIpcTemplateStatusCallback>::MakeSptr();
+        ASSERT_NE(callback, nullptr);
+        subscriptionManager->AddTemplateStatusCallback(i + TEST_USER_ID_BASE, callback);
+    }
+
+    EXPECT_EQ(subscriptionManager->templateStatusSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+
+    auto overflowCallback = sptr<MockIIpcTemplateStatusCallback>::MakeSptr();
+    ASSERT_NE(overflowCallback, nullptr);
+    subscriptionManager->AddTemplateStatusCallback(TEST_OVERFLOW_USER_ID, overflowCallback);
+
+    EXPECT_EQ(subscriptionManager->templateStatusSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+}
+
+HWTEST_F(SubscriptionManagerTest, AddContinuousAuthStatusCallback_RejectsWhenMapReachesLimit, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_unique<SubscriptionManager>();
+
+    EXPECT_CALL(guard.GetCompanionManager(), SubscribeCompanionDeviceStatusChange(_))
+        .WillRepeatedly(
+            Invoke([](OnCompanionDeviceStatusChange &&) { return std::make_unique<Subscription>([]() {}); }));
+
+    // Each combination of (userId, templateId) creates a unique key.
+    for (int32_t i = 0; i < static_cast<int32_t>(TEST_MAX_SUBSCRIPTIONS); ++i) {
+        auto callback = sptr<MockIIpcContinuousAuthStatusCallback>::MakeSptr();
+        ASSERT_NE(callback, nullptr);
+        subscriptionManager->AddContinuousAuthStatusCallback(i + TEST_USER_ID_BASE, static_cast<uint64_t>(i), callback);
+    }
+
+    EXPECT_EQ(subscriptionManager->continuousAuthSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+
+    auto overflowCallback = sptr<MockIIpcContinuousAuthStatusCallback>::MakeSptr();
+    ASSERT_NE(overflowCallback, nullptr);
+    subscriptionManager->AddContinuousAuthStatusCallback(TEST_OVERFLOW_USER_ID, TEST_OVERFLOW_TEMPLATE_ID,
+        overflowCallback);
+
+    EXPECT_EQ(subscriptionManager->continuousAuthSubscriptions_.size(), TEST_MAX_SUBSCRIPTIONS);
+}
+
 } // namespace
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

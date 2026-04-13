@@ -275,21 +275,18 @@ impl HostDeviceEnrollRequest {
         let reply_info = SecBindingReplyInfo::decode(&decrypt_data)?;
 
         if self.host_challenge != reply_info.challenge {
-            log_e!("challenge check fail, {}, {}", self.host_challenge, reply_info.challenge);
+            log_e!("challenge check fail");
             return Err(ErrorCode::GeneralError);
         }
 
         if self.enroll_param.companion_device_key.device_id != reply_info.device_id {
-            log_e!(
-                "device_id check fail, {}, {}",
-                self.enroll_param.companion_device_key.device_id,
-                reply_info.device_id
-            );
+            log_e!("device_id check fail");
             return Err(ErrorCode::GeneralError);
         }
 
         if self.enroll_param.companion_device_key.user_id != reply_info.user_id {
-            log_e!("user_id check fail, {}, {}", self.enroll_param.companion_device_key.user_id, reply_info.user_id);
+            log_e!("user_id check fail, expected: {}, got: {}",
+                self.enroll_param.companion_device_key.user_id, reply_info.user_id);
             return Err(ErrorCode::GeneralError);
         }
 

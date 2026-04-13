@@ -237,13 +237,16 @@ uint32_t CompanionDelegateAuthRequest::GetMaxConcurrency() const
 }
 
 bool CompanionDelegateAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
-    [[maybe_unused]] const std::optional<DeviceKey> &newPeerDevice,
-    [[maybe_unused]] uint32_t subsequentSameTypeCount) const
+    const std::optional<DeviceKey> &newPeerDevice, [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
-    // Spec: new CompanionDelegateAuthRequest preempts existing one
+    // Spec: new CompanionDelegateAuthRequest to same device preempts existing one
     if (newRequestType == RequestType::COMPANION_DELEGATE_AUTH_REQUEST) {
-        IAM_LOGI("%{public}s: preempted by new CompanionDelegateAuth", GetDescription());
-        return true;
+        auto currentPeerDevice = GetPeerDeviceKey();
+        if (currentPeerDevice.has_value() && newPeerDevice.has_value() &&
+            currentPeerDevice.value() == newPeerDevice.value()) {
+            IAM_LOGI("%{public}s: preempted by new CompanionDelegateAuth from same device", GetDescription());
+            return true;
+        }
     }
 
     return false;

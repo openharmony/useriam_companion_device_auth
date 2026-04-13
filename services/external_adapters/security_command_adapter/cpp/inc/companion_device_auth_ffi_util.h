@@ -41,6 +41,10 @@ bool DecodeExecutorInfo(const GetExecutorInfoOutputFfi &ffi, SecureExecutorInfo 
 
 bool EncodeHostRegisterFinishInput(const RegisterFinishInput &input, HostRegisterFinishInputFfi &ffi);
 
+bool EncodeHostBeginCompanionCheckInput(const HostBeginCompanionCheckInput &input,
+    HostBeginCompanionCheckInputFfi &ffi);
+bool DecodeHostBeginCompanionCheckOutput(const HostBeginCompanionCheckOutputFfi &ffi,
+    HostBeginCompanionCheckOutput &output);
 bool EncodeHostEndCompanionCheckInput(const HostEndCompanionCheckInput &input, HostEndCompanionCheckInputFfi &ffi);
 bool EncodeHostGetInitKeyNegotiationInput(const HostGetInitKeyNegotiationRequestInput &input,
     HostGetInitKeyNegotiationInputFfi &ffi);

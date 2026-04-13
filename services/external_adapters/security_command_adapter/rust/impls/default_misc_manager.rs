@@ -36,6 +36,8 @@ impl DefaultMiscManager {
 
 impl MiscManager for DefaultMiscManager {
     fn get_distribute_key(&self, local_udid: Udid, peer_udid: Udid) -> Result<crate::Vec<u8>, ErrorCode> {
+        // NOTE: This is a sample/default implementation for development only.
+        // Production builds must provide a real key derivation implementation via the ext warehouse.
         const DUMMY_DISTRIBUTE_DEVICE_KEY: &[u8; 32] = b"DEVICE_AUTH_DISTRIBUT_DEVICE_KEY";
 
         let mut salt = Vec::with_capacity(size_of::<Udid>() * 2);

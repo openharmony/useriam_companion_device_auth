@@ -49,7 +49,8 @@ private:
     DeathCallback callback_;
 };
 
-sptr<ICompanionDeviceAuth> IpcClientFetcher::GetProxy(const DeathCallback &deathCallback)
+sptr<ICompanionDeviceAuth> IpcClientFetcher::GetProxy(const DeathCallback &deathCallback,
+    sptr<IRemoteObject::DeathRecipient> &outDeathRecipient)
 {
     sptr<IRemoteObject> obj = GetRemoteObject();
     if (!obj) {
@@ -76,6 +77,8 @@ sptr<ICompanionDeviceAuth> IpcClientFetcher::GetProxy(const DeathCallback &death
         }
         return nullptr;
     }
+
+    outDeathRecipient = dr;
 
     return proxy;
 }

@@ -329,12 +329,16 @@ ResultCode CompanionManagerImpl::RemoveCompanion(TemplateId templateId)
     if (request == nullptr) {
         IAM_LOGE("CreateHostRemoveHostBindingRequest failed for templateId %{public}s",
             GET_MASKED_NUM_CSTR(templateId));
+        // Returns SUCCESS because the local companion removal above already succeeded;
+        // the binding cleanup failure does not affect the framework-level result.
         return ResultCode::SUCCESS;
     }
 
     bool result = GetRequestManager().Start(request);
     if (!result) {
         IAM_LOGE("request Start failed for templateId %{public}s", GET_MASKED_NUM_CSTR(templateId));
+        // Returns SUCCESS because the local companion removal above already succeeded;
+        // the binding cleanup failure does not affect the framework-level result.
         return ResultCode::SUCCESS;
     }
     guard.Cancel();
@@ -438,8 +442,7 @@ ResultCode CompanionManagerImpl::HandleCompanionCheckFail(TemplateId templateId)
 
     companion->SetCompanionValid(false);
 
-    IAM_LOGI("handle companion check fail success, template id %{public}s set to invalid",
-        GET_MASKED_NUM_CSTR(templateId));
+    IAM_LOGI("companion check failed, template id %{public}s set to invalid", GET_MASKED_NUM_CSTR(templateId));
     return ResultCode::SUCCESS;
 }
 

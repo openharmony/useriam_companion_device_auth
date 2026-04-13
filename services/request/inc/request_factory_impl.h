@@ -59,7 +59,7 @@ public:
     std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
         FwkResultCallback &&requestCallback) override;
     std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
-        FwkResultCallback &&requestCallback) override;
+        const DeviceKey &companionDeviceKey, FwkResultCallback &&requestCallback) override;
 
 private:
     RequestFactoryImpl() = default;

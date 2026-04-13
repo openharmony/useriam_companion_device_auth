@@ -96,7 +96,7 @@ std::optional<napi_ref> GetCallbackRef(napi_env env, napi_callback_info info)
         return std::nullopt;
     }
     if (argc == 0) {
-        return nullptr;
+        return std::nullopt;
     }
     if (argc == ARGS_ONE) {
         napi_ref ref = nullptr;
@@ -119,6 +119,12 @@ bool UnwrapStatusMonitor(napi_env env, napi_callback_info info, NapiStatusMonito
     napi_status ret = napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
     if (ret != napi_ok) {
         IAM_LOGE("napi_get_cb_info fail");
+        return false;
+    }
+    napi_valuetype thisType = napi_undefined;
+    ret = napi_typeof(env, thisVar, &thisType);
+    if (ret != napi_ok || thisType != napi_object) {
+        IAM_LOGE("thisVar is not object");
         return false;
     }
     ret = napi_unwrap(env, thisVar, reinterpret_cast<void **>(statusMonitor));
@@ -343,6 +349,35 @@ napi_value OffAvailableDeviceChange(napi_env env, napi_callback_info info)
     return nullptr;
 }
 
+bool ParseTemplateId(napi_env env, napi_value param, std::optional<uint64_t> &templateIdOpt)
+{
+    bool hasTemplateId = false;
+    napi_status status = napi_has_named_property(env, param, "templateId", &hasTemplateId);
+    if (status != napi_ok) {
+        IAM_LOGE("fail to check templateId property");
+        return false;
+    }
+    if (!hasTemplateId) {
+        IAM_LOGI("templateId not provided in ContinuousAuthParam");
+        return true;
+    }
+
+    napi_value templateIdProperty = nullptr;
+    status = napi_get_named_property(env, param, "templateId", &templateIdProperty);
+    if (status != napi_ok) {
+        IAM_LOGE("fail to get templateId property");
+        return false;
+    }
+    uint64_t templateIdVal {};
+    status = CompanionDeviceAuthNapiHelper::ConvertNapiUint8ArrayToUint64(env, templateIdProperty, templateIdVal);
+    if (status != napi_ok) {
+        IAM_LOGE("ConvertNapiUint8ArrayToUint64 fail, ret:%{public}d", status);
+        return false;
+    }
+    templateIdOpt = templateIdVal;
+    return true;
+}
+
 bool GetOnContinuousAuthChangeParam(napi_env env, napi_callback_info info, std::optional<uint64_t> &templateIdOpt,
     std::shared_ptr<NapiContinuousAuthStatusCallback> &callback)
 {
@@ -358,30 +393,15 @@ bool GetOnContinuousAuthChangeParam(napi_env env, napi_callback_info info, std::
         return false;
     }
 
-    bool hasTemplateId = false;
-    status = napi_has_named_property(env, argv[PARAM0], "templateId", &hasTemplateId);
-    if (status != napi_ok) {
-        IAM_LOGE("fail to check templateId property");
+    napi_valuetype param0Type = napi_undefined;
+    status = napi_typeof(env, argv[PARAM0], &param0Type);
+    if (status != napi_ok || param0Type != napi_object) {
+        IAM_LOGE("argv[0] is not object");
         return false;
     }
 
-    if (!hasTemplateId) {
-        IAM_LOGI("templateId not provided in ContinuousAuthParam");
-    } else {
-        napi_value templateIdProperty = nullptr;
-        status = napi_get_named_property(env, argv[PARAM0], "templateId", &templateIdProperty);
-        if (status != napi_ok) {
-            IAM_LOGE("fail to get templateId property");
-            return false;
-        }
-        uint64_t templateIdVal {};
-        napi_status status =
-            CompanionDeviceAuthNapiHelper::ConvertNapiUint8ArrayToUint64(env, templateIdProperty, templateIdVal);
-        if (status != napi_ok) {
-            IAM_LOGE("ConvertNapiUint8ArrayToUint64 fail, ret:%{public}d", status);
-            return false;
-        }
-        templateIdOpt = templateIdVal;
+    if (!ParseTemplateId(env, argv[PARAM0], templateIdOpt)) {
+        return false;
     }
 
     napi_ref ref = nullptr;

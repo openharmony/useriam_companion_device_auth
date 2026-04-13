@@ -77,6 +77,8 @@ public:
         TaskRunnerManager::GetInstance().PostTaskOnResident(
             [handler = std::move(handler_), devices = std::move(deviceKeys),
                 context = std::move(selectContext)]() mutable {
+                IAM_LOGI("devices:%{public}s contextLen:%{public}zu", DeviceKey::GetVectorDesc(devices).c_str(),
+                    context.has_value() ? context->size() : 0);
                 if (handler) {
                     handler(devices, context);
                 }

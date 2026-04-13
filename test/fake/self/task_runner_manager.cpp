@@ -21,6 +21,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "iam_logger.h"
@@ -34,6 +35,8 @@ namespace CompanionDeviceAuth {
 namespace {
 auto g_pendingTasks = std::make_shared<std::map<uint64_t, TaskRunner::Task>>();
 auto g_nextTaskId = std::make_shared<std::atomic<uint64_t>>(0);
+std::set<std::string> g_temporaryRunners;
+constexpr size_t MAX_CONCURRENT_TEMPORARY_RUNNERS = 8;
 } // namespace
 
 TaskRunnerManager &TaskRunnerManager::GetInstance()
@@ -56,7 +59,7 @@ void TaskRunnerManager::SetRunningOnDefaultTaskRunner(bool value)
 
 bool TaskRunnerManager::CreateTaskRunner(const std::string &name)
 {
-    (void)name;
+    g_temporaryRunners.insert(name);
     return true;
 }
 
@@ -67,7 +70,7 @@ void TaskRunnerManager::DestroyTaskRunner(const std::string &name)
 
 void TaskRunnerManager::DeleteTaskRunner(const std::string &name)
 {
-    (void)name;
+    g_temporaryRunners.erase(name);
 }
 
 std::shared_ptr<TaskRunner> TaskRunnerManager::GetTaskRunner(const std::string &name)
@@ -91,7 +94,11 @@ void TaskRunnerManager::PostTaskOnResident(std::function<void()> &&task)
 
 void TaskRunnerManager::PostTaskOnTemporary(const std::string &name, std::function<void()> &&task)
 {
-    (void)name;
+    if (g_temporaryRunners.size() >= MAX_CONCURRENT_TEMPORARY_RUNNERS) {
+        IAM_LOGE("too many concurrent temporary task runners (%{public}zu), reject '%{public}s'",
+            g_temporaryRunners.size(), name.c_str());
+        return;
+    }
     uint64_t taskId = (*g_nextTaskId)++;
     (*g_pendingTasks)[taskId] = std::move(task);
 }

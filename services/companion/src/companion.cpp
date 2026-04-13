@@ -66,7 +66,8 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
     CHECK_RUNNING_ON_RESIDENT_THREAD();
     status_.FromPersisted(persistedStatus);
     std::ostringstream oss;
-    oss << "CdaCompanion(" << GET_TRUNCATED_STRING(status_.templateId) << ")";
+    oss << "CdaCompanion(T:" << GET_TRUNCATED_STRING(status_.templateId)
+        << ",D:" << GET_MASKED_STR_STRING(persistedStatus.companionDeviceKey.deviceId) << ")";
     description_ = oss.str();
 }
 
@@ -281,7 +282,8 @@ void Companion::HandleTemplateAddToIdmTimeout()
     TaskRunnerManager::GetInstance().PostTaskOnResident([weakManager = weakManager_, templateId]() {
         auto manager = weakManager.lock();
         if (manager == nullptr) {
-            IAM_LOGE("manager is null when handling template add timeout");
+            IAM_LOGE("manager is null when handling template add timeout for templateId %{public}s",
+                GET_MASKED_NUM_CSTR(templateId));
             return;
         }
         manager->RemoveCompanion(templateId);

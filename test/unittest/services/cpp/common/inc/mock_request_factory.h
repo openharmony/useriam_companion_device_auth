@@ -53,7 +53,7 @@ public:
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostMixAuthRequest, (const HostMixAuthParams &, FwkResultCallback &&),
         (override));
     MOCK_METHOD(std::shared_ptr<IRequest>, CreateHostSingleMixAuthRequest,
-        (const AuthRequestParams &, FwkResultCallback &&), (override));
+        (const AuthRequestParams &, const DeviceKey &, FwkResultCallback &&), (override));
 };
 
 } // namespace CompanionDeviceAuth

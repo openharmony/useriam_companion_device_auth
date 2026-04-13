@@ -199,21 +199,18 @@ impl CompanionDeviceEnrollRequest {
         let challenge = decrypt_attribute.get_u64(AttributeKey::AttrCompanionChallenge).map_err(|e| p!(e))?;
 
         if self.key_nego_param.host_device_key.device_id != device_id {
-            log_e!(
-                "device_id check fail, expected: {}, got: {}",
-                self.key_nego_param.host_device_key.device_id,
-                device_id
-            );
+            log_e!("device_id check fail");
             return Err(ErrorCode::GeneralError);
         }
 
         if self.key_nego_param.host_device_key.user_id != user_id {
-            log_e!("user_id check fail, expected: {}, got: {}", self.key_nego_param.host_device_key.user_id, user_id);
+            log_e!("user_id check fail, expected: {}, got: {}",
+                self.key_nego_param.host_device_key.user_id, user_id);
             return Err(ErrorCode::GeneralError);
         }
 
         if self.key_nego_param.companion_challenge != challenge {
-            log_e!("challenge check fail, expected: {}, got: {}", self.key_nego_param.companion_challenge, challenge);
+            log_e!("challenge check fail");
             return Err(ErrorCode::GeneralError);
         }
 

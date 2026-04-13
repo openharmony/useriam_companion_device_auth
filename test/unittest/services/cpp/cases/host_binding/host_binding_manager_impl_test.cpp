@@ -733,10 +733,68 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_001, TestSize.Level0)
 
     EXPECT_CALL(securityAgent, CompanionEndAddHostBinding(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
 
-    Atl atl = 0;
-    int32_t esl = 0;
-    ResultCode ret = manager->EndAddHostBinding(1, ResultCode::SUCCESS, atl, esl);
+    EndAddHostBindingInput input = { .requestId = 1, .resultCode = ResultCode::SUCCESS, .bindingId = 0 };
+    EndAddHostBindingOutput output = {};
+    ResultCode ret = manager->EndAddHostBinding(input, output);
     EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
+}
+
+HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_004_CleanupOnFailureWithBindingId, TestSize.Level0)
+{
+    MockGuard guard;
+    auto &userIdMgr = guard.GetUserIdManager();
+    ON_CALL(userIdMgr, SubscribeActiveUserId(_)).WillByDefault(Invoke([](ActiveUserIdCallback &&) {
+        return MakeSubscription();
+    }));
+    auto &crossDeviceMgr = guard.GetCrossDeviceCommManager();
+    ON_CALL(crossDeviceMgr, SubscribeDeviceStatus(_, _, _))
+        .WillByDefault(Invoke([](const DeviceKey &, bool, OnDeviceStatusChange &&) { return MakeSubscription(); }));
+    ON_CALL(crossDeviceMgr, GetDeviceStatus(_)).WillByDefault(Return(std::nullopt));
+    ON_CALL(crossDeviceMgr, GetAllDeviceStatus()).WillByDefault(Return(std::vector<DeviceStatus> {}));
+    ON_CALL(crossDeviceMgr, SubscribeIsAuthMaintainActive(_)).WillByDefault(Invoke([](std::function<void(bool)> &&) {
+        return MakeSubscription();
+    }));
+    ON_CALL(crossDeviceMgr, IsAuthMaintainActive()).WillByDefault(Return(false));
+    auto &securityAgent = guard.GetSecurityAgent();
+    ON_CALL(securityAgent, CompanionBeginAddHostBinding(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
+    ON_CALL(securityAgent, CompanionEndAddHostBinding(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
+    ON_CALL(securityAgent, CompanionRemoveHostBinding(_)).WillByDefault(Return(ResultCode::SUCCESS));
+    ON_CALL(securityAgent, CompanionGetPersistedHostBindingStatus(_, _)).WillByDefault(Return(ResultCode::SUCCESS));
+    ON_CALL(securityAgent, CompanionRevokeToken(_)).WillByDefault(Return(ResultCode::SUCCESS));
+    auto &requestFactory = guard.GetRequestFactory();
+    ON_CALL(requestFactory, CreateCompanionObtainTokenRequest(_, _, _))
+        .WillByDefault(Invoke([](const DeviceKey &hostDeviceKey, uint32_t lockStateAuthTypeValue,
+                                  const std::vector<uint8_t> &fwkUnlockMsg) {
+            return std::make_shared<CompanionObtainTokenRequest>(hostDeviceKey, lockStateAuthTypeValue, fwkUnlockMsg);
+        }));
+    ON_CALL(requestFactory, CreateCompanionRevokeTokenRequest(_, _, _))
+        .WillByDefault(
+            Invoke([](UserId companionUserId, const DeviceKey &hostDeviceKey, const std::string &triggerReason) {
+                return std::make_shared<CompanionRevokeTokenRequest>(companionUserId, hostDeviceKey, triggerReason);
+            }));
+    auto &requestMgr = guard.GetRequestManager();
+    ON_CALL(requestMgr, Start(_)).WillByDefault(Return(true));
+    auto manager = HostBindingManagerImpl::Create();
+    ASSERT_NE(nullptr, manager);
+
+    // Pre-populate bindings_ with a binding that has the same ID passed to EndAddHostBinding.
+    constexpr BindingId testBindingId = 42;
+    auto persistedStatus = MakePersistedStatus(testBindingId, 100, "device-abc", 100);
+    auto binding = HostBinding::Create(persistedStatus);
+    ASSERT_NE(binding, nullptr);
+    manager->bindings_.push_back(binding);
+    ASSERT_FALSE(manager->bindings_.empty());
+
+    // CompanionEndAddHostBinding returns failure.
+    // RemoveBindingInternal should remove the binding from bindings_ using the passed bindingId.
+    EXPECT_CALL(securityAgent, CompanionEndAddHostBinding(_, _)).WillOnce(Return(ResultCode::GENERAL_ERROR));
+
+    EndAddHostBindingInput input = { .requestId = 1, .resultCode = ResultCode::SUCCESS, .bindingId = testBindingId };
+    EndAddHostBindingOutput output = {};
+    ResultCode ret = manager->EndAddHostBinding(input, output);
+    EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
+    // Verify the binding was cleaned up by RemoveBindingInternal.
+    EXPECT_TRUE(manager->bindings_.empty());
 }
 
 HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_002, TestSize.Level0)
@@ -781,9 +839,9 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_002, TestSize.Level0)
 
     EXPECT_CALL(securityAgent, CompanionEndAddHostBinding(_, _)).WillOnce(Return(ResultCode::SUCCESS));
 
-    Atl atl = 0;
-    int32_t esl = 0;
-    ResultCode ret = manager->EndAddHostBinding(1, ResultCode::SUCCESS, atl, esl);
+    EndAddHostBindingInput input = { .requestId = 1, .resultCode = ResultCode::SUCCESS, .bindingId = 0 };
+    EndAddHostBindingOutput output = {};
+    ResultCode ret = manager->EndAddHostBinding(input, output);
     EXPECT_EQ(ResultCode::SUCCESS, ret);
 }
 
@@ -809,22 +867,22 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_003, TestSize.Level0)
     auto manager = CreateManager(guard, activeUserId_);
     ASSERT_NE(nullptr, manager);
 
-    auto persistedStatus = MakePersistedStatus(12345, activeUserId_, "device-1", 200);
+    // Pre-populate bindings_ with a binding that has the same ID passed to EndAddHostBinding.
+    constexpr BindingId testBindingId = 12345;
+    auto persistedStatus = MakePersistedStatus(testBindingId, activeUserId_, "device-1", 200);
     auto binding = HostBinding::Create(persistedStatus);
     ASSERT_NE(nullptr, binding);
     manager->AddBindingInternal(binding);
 
-    EXPECT_CALL(securityAgent, CompanionEndAddHostBinding(_, _))
-        .WillOnce(DoAll(Invoke([](const CompanionEndAddHostBindingInput &, CompanionEndAddHostBindingOutput &output) {
-            output.bindingId = 12345;
-        }),
-            Return(ResultCode::SUCCESS)));
+    EXPECT_CALL(securityAgent, CompanionEndAddHostBinding(_, _)).WillOnce(Return(ResultCode::SUCCESS));
 
-    Atl atl = 0;
-    int32_t esl = 0;
-    ResultCode ret = manager->EndAddHostBinding(1, ResultCode::GENERAL_ERROR, atl, esl);
+    EndAddHostBindingInput input = { .requestId = 1,
+        .resultCode = ResultCode::GENERAL_ERROR,
+        .bindingId = testBindingId };
+    EndAddHostBindingOutput output = {};
+    ResultCode ret = manager->EndAddHostBinding(input, output);
     EXPECT_EQ(ResultCode::SUCCESS, ret);
-    EXPECT_FALSE(manager->GetHostBindingStatus(12345).has_value());
+    EXPECT_FALSE(manager->GetHostBindingStatus(testBindingId).has_value());
 }
 
 HWTEST_F(HostBindingManagerImplTest, RemoveHostBinding_001, TestSize.Level0)

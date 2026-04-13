@@ -16,6 +16,7 @@
 #include "task_runner_manager.h"
 
 #include <atomic>
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <memory>
@@ -170,7 +171,15 @@ void TaskRunnerManager::PostTaskOnResident(std::function<void()> &&task)
 void TaskRunnerManager::PostTaskOnTemporary(const std::string &name, std::function<void()> &&task)
 {
     static std::atomic<uint32_t> runnerSerial = 1;
+    constexpr size_t maxConcurrentRunners = 9;
+
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    size_t mapSize = taskRunnerMap_.size();
+    if (mapSize >= maxConcurrentRunners) {
+        IAM_LOGE("too many concurrent temporary task runners %{public}zu, reject '%{public}s'", mapSize, name.c_str());
+        return;
+    }
+
     uint32_t serial = runnerSerial.fetch_add(1);
     std::string thread_name = name + "_" + std::to_string(serial);
     CreateTaskRunner(thread_name);

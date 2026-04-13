@@ -94,21 +94,21 @@ HWTEST_F(InteractionDescTest, SetBindingId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "CIsT");
     desc.SetBindingId(42);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(CIsT,B:002a)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(CIsT,B:002A)");
 }
 
 HWTEST_F(InteractionDescTest, SetTemplateId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HTkA");
     desc.SetTemplateId(123);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,T:007b)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,T:007B)");
 }
 
 HWTEST_F(InteractionDescTest, SetTemplateIdList_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HMixA");
     desc.SetTemplateIdList({ 100, 200, 300 });
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T=[0064,00c8,012c])");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T=[0064,00C8,012C])");
 }
 
 HWTEST_F(InteractionDescTest, SetTemplateIdList_002, TestSize.Level0)
@@ -132,7 +132,7 @@ HWTEST_F(InteractionDescTest, TemplateIdAndListMutuallyExclusive_001, TestSize.L
     EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T:0032)");
 
     desc.SetTemplateIdList({ 100, 200 });
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T=[0064,00c8])");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T=[0064,00C8])");
 
     desc.SetTemplateId(50);
     EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,T:0032)");
