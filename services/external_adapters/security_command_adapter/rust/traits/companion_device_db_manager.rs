@@ -48,9 +48,9 @@ pub trait CompanionDeviceDbManager {
 
     fn read_device_db(&mut self) -> Result<(), ErrorCode>;
 
-    fn read_device_base_info(&self, template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode>;
-    fn write_device_base_info(&self, template_id: u64, base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode>;
-    fn delete_device_base_info(&self, template_id: u64) -> Result<(), ErrorCode>;
+    fn read_device_profile(&self, template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode>;
+    fn write_device_profile(&self, template_id: u64, base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode>;
+    fn delete_device_profile(&self, template_id: u64) -> Result<(), ErrorCode>;
     fn read_device_capability_info(&self, template_id: u64) -> Result<Vec<CompanionDeviceCapability>, ErrorCode>;
     fn write_device_capability_info(
         &self,
@@ -121,15 +121,15 @@ impl CompanionDeviceDbManager for DummyCompanionDeviceDbManager {
         Err(ErrorCode::GeneralError)
     }
 
-    fn read_device_base_info(&self, _template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode> {
+    fn read_device_profile(&self, _template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn write_device_base_info(&self, _template_id: u64, _base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode> {
+    fn write_device_profile(&self, _template_id: u64, _base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }
-    fn delete_device_base_info(&self, _template_id: u64) -> Result<(), ErrorCode> {
+    fn delete_device_profile(&self, _template_id: u64) -> Result<(), ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }

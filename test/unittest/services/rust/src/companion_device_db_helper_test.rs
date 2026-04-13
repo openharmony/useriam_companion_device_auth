@@ -22,7 +22,7 @@ use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistr
 use crate::traits::db_manager::{CompanionDevice, CompanionDeviceProfile, DeviceKey, UserInfo};
 use crate::ut_registry_guard;
 
-fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
+fn create_mock_companion_device_profile() -> CompanionDeviceProfile {
     CompanionDeviceProfile {
         device_model_info: String::from("TestModelInfo"),
         device_name: String::from("TestDevice"),
@@ -32,7 +32,7 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
     }
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+fn create_mock_companion_device(template_id: u64) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -44,15 +44,15 @@ fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
 }
 
 #[test]
-fn update_companion_device_info_test_write_device_base_info_fail() {
+fn update_companion_device_info_test_write_device_profile_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("update_companion_device_info_test_write_device_base_info_fail start");
+    log_i!("update_companion_device_info_test_write_device_profile_fail start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
-        .expect_read_device_base_info()
-        .returning(|| Ok(create_mock_companion_device_base_info()));
-    mock_companion_device_db_manager.expect_write_device_base_info().returning(|| Err(ErrorCode::GeneralError));
+        .expect_read_device_profile()
+        .returning(|| Ok(create_mock_companion_device_profile()));
+    mock_companion_device_db_manager.expect_write_device_profile().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let result =
@@ -61,13 +61,13 @@ fn update_companion_device_info_test_write_device_base_info_fail() {
 }
 
 #[test]
-fn update_device_business_id_test_read_device_base_info_fail() {
+fn update_device_business_id_test_read_device_profile_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("update_device_business_id_test_read_device_base_info_fail start");
+    log_i!("update_device_business_id_test_read_device_profile_fail start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_read_device_base_info().returning(|| Err(ErrorCode::NotFound));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_read_device_profile().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let result = update_device_business_id(123, vec![1, 2, 3]);

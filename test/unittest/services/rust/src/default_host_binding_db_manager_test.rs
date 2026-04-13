@@ -17,15 +17,15 @@ use crate::common::constants::*;
 use crate::impls::default_host_binding_db_manager::{DefaultHostBindingDbManager, MAX_DEVICE_NUM_PER_USER};
 use crate::log_i;
 use crate::traits::crypto_engine::{CryptoEngineRegistry, MockCryptoEngine};
-use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBinding, HostBindingSk, HostBindingToken, UserInfo};
 use crate::traits::host_binding_db_manager::HostBindingDbManager;
 use crate::traits::storage_io::{MockStorageIo, StorageIoRegistry};
 use crate::ut_registry_guard;
 use crate::utils::parcel::Parcel;
 use std::boxed::Box;
 
-fn create_test_device_info(binding_id: i32, device_id: &str, user_id: i32) -> HostBindingInfo {
-    HostBindingInfo {
+fn create_test_host_binding(binding_id: i32, device_id: &str, user_id: i32) -> HostBinding {
+    HostBinding {
         device_key: DeviceKey { device_id: device_id.to_string(), device_id_type: 1, user_id },
         binding_id,
         user_info: UserInfo { user_id, user_type: 1 },
@@ -68,7 +68,7 @@ fn default_host_binding_db_manager_add_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let result = manager.add_device(&device_info, &sk_info);
@@ -83,7 +83,7 @@ fn default_host_binding_db_manager_add_device_test_empty_device_id() {
     log_i!("default_host_binding_db_manager_add_device_test_empty_device_id start");
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "", 100);
+    let device_info = create_test_host_binding(123, "", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let result = manager.add_device(&device_info, &sk_info);
@@ -99,7 +99,7 @@ fn default_host_binding_db_manager_add_device_test_device_key_exists() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -120,8 +120,8 @@ fn default_host_binding_db_manager_add_device_test_binding_id_exists() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info1 = create_test_device_info(123, "device1", 100);
-    let device_info2 = create_test_device_info(123, "device2", 200);
+    let device_info1 = create_test_host_binding(123, "device1", 100);
+    let device_info2 = create_test_host_binding(123, "device2", 200);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info1, &sk_info);
@@ -143,13 +143,13 @@ fn default_host_binding_db_manager_add_device_test_max_devices_per_user() {
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     for i in 0..MAX_DEVICE_NUM_PER_USER {
-        let device_info = create_test_device_info((100 + i) as i32, &format!("device{}", i), user_id);
+        let device_info = create_test_host_binding((100 + i) as i32, &format!("device{}", i), user_id);
         let _ = manager.add_device(&device_info, &sk_info);
     }
 
     assert_eq!(manager.get_device_list(user_id).len(), MAX_DEVICE_NUM_PER_USER);
 
-    let new_device = create_test_device_info(999, "new_device", user_id);
+    let new_device = create_test_host_binding(999, "new_device", user_id);
     let result = manager.add_device(&new_device, &sk_info);
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), Some(100)); // evicted the first device with binding_id 100
@@ -173,7 +173,7 @@ fn default_host_binding_db_manager_add_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let result = manager.add_device(&device_info, &sk_info);
@@ -189,7 +189,7 @@ fn default_host_binding_db_manager_get_device_by_binding_id_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -220,7 +220,7 @@ fn default_host_binding_db_manager_get_device_by_device_key_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -254,7 +254,7 @@ fn default_host_binding_db_manager_remove_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -289,7 +289,7 @@ fn default_host_binding_db_manager_remove_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -316,7 +316,7 @@ fn default_host_binding_db_manager_update_device_test_success() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -336,7 +336,7 @@ fn default_host_binding_db_manager_update_device_test_binding_id_not_found() {
     log_i!("default_host_binding_db_manager_update_device_test_binding_id_not_found start");
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(999, "device1", 100);
+    let device_info = create_test_host_binding(999, "device1", 100);
 
     let result = manager.update_device(&device_info);
     assert_eq!(result, Err(ErrorCode::NotFound));
@@ -350,7 +350,7 @@ fn default_host_binding_db_manager_update_device_test_device_key_not_found() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -370,8 +370,8 @@ fn default_host_binding_db_manager_update_device_test_mismatch() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info1 = create_test_device_info(123, "device1", 100);
-    let device_info2 = create_test_device_info(456, "device2", 200);
+    let device_info1 = create_test_host_binding(123, "device1", 100);
+    let device_info2 = create_test_host_binding(456, "device2", 200);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info1, &sk_info);
@@ -397,7 +397,7 @@ fn default_host_binding_db_manager_update_device_test_write_db_fail() {
     StorageIoRegistry::set(Box::new(mock_storage_io));
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
 
     let _ = manager.add_device(&device_info, &sk_info);
@@ -456,7 +456,7 @@ fn default_host_binding_db_manager_generate_unique_binding_id_test_collision() {
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
 
@@ -492,7 +492,7 @@ fn default_host_binding_db_manager_generate_unique_binding_id_test_max_attempts(
     mock_set_storage_io_success();
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
 
@@ -509,7 +509,7 @@ fn default_host_binding_db_manager_generate_unique_binding_id_test_max_attempts(
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut manager = DefaultHostBindingDbManager::new();
-    let device_info = create_test_device_info(123, "device1", 100);
+    let device_info = create_test_host_binding(123, "device1", 100);
     let sk_info = create_test_sk_info(vec![1u8, 2, 3]);
     let _ = manager.add_device(&device_info, &sk_info);
 

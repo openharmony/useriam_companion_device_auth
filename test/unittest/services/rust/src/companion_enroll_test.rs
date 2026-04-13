@@ -488,9 +488,9 @@ fn companion_enroll_request_begin_test_get_rtc_time_fail() {
 }
 
 #[test]
-fn companion_enroll_request_begin_test_add_host_device_fail() {
+fn companion_enroll_request_begin_test_add_host_binding_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("companion_enroll_request_begin_test_add_host_device_fail start");
+    log_i!("companion_enroll_request_begin_test_add_host_binding_fail start");
 
     mock_set_crypto_engine();
 

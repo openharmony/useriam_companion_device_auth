@@ -37,7 +37,7 @@ use crate::traits::companion_device_db_manager::{CompanionDeviceDbManagerRegistr
 use crate::traits::crypto_engine::{AesGcmResult, CryptoEngineRegistry, KeyPair, MockCryptoEngine};
 use crate::traits::db_manager::{
     CompanionDevice, CompanionDeviceCapability, CompanionDeviceProfile, CompanionDeviceSk, CompanionDeviceToken,
-    DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo,
+    DeviceKey, HostBinding, HostBindingSk, HostBindingToken, UserInfo,
 };
 use crate::traits::host_binding_db_manager::{HostBindingDbManagerRegistry, MockHostBindingDbManager};
 use crate::traits::misc_manager::{MiscManagerRegistry, MockMiscManager};
@@ -61,7 +61,7 @@ fn create_mock_token_issue_reply() -> Vec<u8> {
     final_attribut.to_bytes().unwrap()
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+fn create_mock_companion_device(template_id: u64) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -72,7 +72,7 @@ fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
     }
 }
 
-fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
+fn create_mock_companion_device_profile() -> CompanionDeviceProfile {
     CompanionDeviceProfile {
         device_model_info: String::from("TestModelInfo"),
         device_name: String::from("TestDevice"),
@@ -82,8 +82,8 @@ fn create_mock_companion_device_base_info() -> CompanionDeviceProfile {
     }
 }
 
-fn create_mock_host_device_info(binding_id: i32) -> HostBindingInfo {
-    HostBindingInfo {
+fn create_mock_host_binding(binding_id: i32) -> HostBinding {
+    HostBinding {
         device_key: DeviceKey { device_id: String::from("host_device"), device_id_type: 1, user_id: 100 },
         binding_id,
         user_info: UserInfo { user_id: 100, user_type: 0 },
@@ -100,7 +100,7 @@ fn create_mock_companion_device_capability() -> CompanionDeviceCapability {
     }
 }
 
-fn create_mock_companion_token_info(atl: AuthTrustLevel) -> CompanionDeviceToken {
+fn create_mock_companion_device_token(atl: AuthTrustLevel) -> CompanionDeviceToken {
     CompanionDeviceToken {
         template_id: 123,
         processor_type: ProcessorType::Default,
@@ -115,13 +115,13 @@ fn mock_set_companion_device_db_manager_for_host_update_token() {
     mock_companion_device_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
         .expect_get_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl3)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl3)));
     mock_companion_device_db_manager
         .expect_get_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl2)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl2)));
     mock_companion_device_db_manager.expect_get_token().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
@@ -282,7 +282,7 @@ fn host_on_register_finish_test_success() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device_info(123)]);
+        .returning(|| vec![create_mock_companion_device(123)]);
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut input = HostRegisterFinishInputFfi {
@@ -330,8 +330,8 @@ fn host_on_register_finish_test_remove_device_success() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device_info(123)]);
-    mock_companion_device_db_manager.expect_remove_device().returning(|| Ok(create_mock_companion_device_info(123)));
+        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_remove_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut input = HostRegisterFinishInputFfi {
@@ -358,7 +358,7 @@ fn host_on_register_finish_test_remove_device_fail() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device_info(123)]);
+        .returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager.expect_remove_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -382,10 +382,10 @@ fn host_get_persisted_status_test_success_with_devices() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device_info(123)]);
+        .returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager
-        .expect_read_device_base_info()
-        .returning(|| Ok(create_mock_companion_device_base_info()));
+        .expect_read_device_profile()
+        .returning(|| Ok(create_mock_companion_device_profile()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetPersistedStatusInputFfi { user_id: 100 };
@@ -412,15 +412,15 @@ fn host_get_persisted_status_test_success_no_devices() {
 }
 
 #[test]
-fn host_get_persisted_status_test_read_device_base_info_fail() {
+fn host_get_persisted_status_test_read_device_profile_fail() {
     let _guard = ut_registry_guard!();
-    log_i!("host_get_persisted_status_test_read_device_base_info_fail start");
+    log_i!("host_get_persisted_status_test_read_device_profile_fail start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device_info(123)]);
-    mock_companion_device_db_manager.expect_read_device_base_info().returning(|| Err(ErrorCode::GeneralError));
+        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_read_device_profile().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostGetPersistedStatusInputFfi { user_id: 100 };
@@ -509,7 +509,7 @@ fn host_end_companion_check_test_success() {
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -932,8 +932,8 @@ fn host_remove_companion_test_success() {
     log_i!("host_remove_companion_test_success start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
-    mock_companion_device_db_manager.expect_remove_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
+    mock_companion_device_db_manager.expect_remove_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostRemoveCompanionInputFfi { template_id: 123 };
@@ -964,7 +964,7 @@ fn host_remove_companion_test_fail_remove_device() {
     log_i!("host_remove_companion_test_fail_remove_device start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_remove_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -1000,7 +1000,7 @@ fn host_pre_issue_token_test_success() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -1052,7 +1052,7 @@ fn host_pre_issue_token_test_request_prepare_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostPreIssueTokenInputFfi { request_id: 1, template_id: 123, fwk_message: DataArray1024Ffi::default() };
@@ -1087,7 +1087,7 @@ fn host_pre_issue_token_test_add_request_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -1210,7 +1210,7 @@ fn host_end_issue_token_test_success() {
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let pre_input =
@@ -1318,10 +1318,10 @@ fn host_begin_token_auth_test_success() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
         .expect_get_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl3)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl3)));
     mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
@@ -1386,7 +1386,7 @@ fn host_begin_token_auth_test_request_begin_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginTokenAuthInputFfi {
@@ -1427,10 +1427,10 @@ fn host_begin_token_auth_test_add_request_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
         .expect_get_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl3)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl3)));
     mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
@@ -1487,7 +1487,7 @@ fn host_end_token_auth_test_success() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_get_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl3)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl3)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut mock_misc_manager = MockMiscManager::new();
@@ -1573,7 +1573,7 @@ fn host_revoke_token_test_success() {
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
         .expect_remove_token()
-        .returning(|| Ok(create_mock_companion_token_info(AuthTrustLevel::Atl3)));
+        .returning(|| Ok(create_mock_companion_device_token(AuthTrustLevel::Atl3)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostRevokeTokenInputFfi { template_id: 123 };
@@ -1604,9 +1604,9 @@ fn host_update_companion_status_test_success() {
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager
-        .expect_read_device_base_info()
-        .returning(|| Ok(create_mock_companion_device_base_info()));
-    mock_companion_device_db_manager.expect_write_device_base_info().returning(|| Ok(()));
+        .expect_read_device_profile()
+        .returning(|| Ok(create_mock_companion_device_profile()));
+    mock_companion_device_db_manager.expect_write_device_profile().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostUpdateCompanionStatusInputFfi {
@@ -1626,7 +1626,7 @@ fn host_update_companion_status_test_fail() {
     log_i!("host_update_companion_status_test_fail start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_read_device_base_info().returning(|| Err(ErrorCode::GeneralError));
+    mock_companion_device_db_manager.expect_read_device_profile().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostUpdateCompanionStatusInputFfi {
@@ -1646,11 +1646,11 @@ fn host_update_companion_enabled_business_ids_test_success() {
     log_i!("host_update_companion_enabled_business_ids_test_success start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
-        .expect_read_device_base_info()
-        .returning(|| Ok(create_mock_companion_device_base_info()));
-    mock_companion_device_db_manager.expect_write_device_base_info().returning(|| Ok(()));
+        .expect_read_device_profile()
+        .returning(|| Ok(create_mock_companion_device_profile()));
+    mock_companion_device_db_manager.expect_write_device_profile().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input =
@@ -1682,7 +1682,7 @@ fn host_check_template_enrolled_test_success() {
     log_i!("host_check_template_enrolled_test_success start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostCheckTemplateEnrolledInputFfi { template_id: 123 };
@@ -1750,7 +1750,7 @@ fn host_begin_delegate_auth_test_success() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -1806,7 +1806,7 @@ fn host_begin_delegate_auth_test_request_begin_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostBeginDelegateAuthInputFfi {
@@ -1846,7 +1846,7 @@ fn host_begin_delegate_auth_test_add_request_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -2017,7 +2017,7 @@ fn host_process_pre_obtain_token_test_success() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| {
         Ok(vec![CompanionDeviceCapability {
             processor_type: ProcessorType::Default,
@@ -2058,7 +2058,7 @@ fn host_process_pre_obtain_token_test_request_begin_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -2082,7 +2082,7 @@ fn host_process_pre_obtain_token_test_add_request_fail() {
     RequestManagerRegistry::set(Box::new(mock_host_request_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Ok(Vec::new()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -2282,7 +2282,7 @@ fn host_update_token_test_get_fwk_pub_key_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostUpdateTokenInputFfi { template_id: 123, fwk_message: DataArray1024Ffi::default() };
@@ -2301,7 +2301,7 @@ fn host_update_token_test_deserialize_attribute_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let input = HostUpdateTokenInputFfi { template_id: 123, fwk_message: DataArray1024Ffi::default() };
@@ -2325,7 +2325,7 @@ fn host_update_token_test_read_device_capability_info_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -2348,7 +2348,7 @@ fn companion_get_persisted_status_test_success() {
     log_i!("companion_get_persisted_status_test_success start");
 
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
-    mock_host_binding_db_manager.expect_get_device_list().returning(|| vec![create_mock_host_device_info(123)]);
+    mock_host_binding_db_manager.expect_get_device_list().returning(|| vec![create_mock_host_binding(123)]);
     mock_host_binding_db_manager.expect_is_device_token_valid().returning(|| Ok(true));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
@@ -2365,7 +2365,7 @@ fn companion_get_persisted_status_test_token_valid_fail() {
     log_i!("companion_get_persisted_status_test_token_valid_fail start");
 
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
-    mock_host_binding_db_manager.expect_get_device_list().returning(|| vec![create_mock_host_device_info(123)]);
+    mock_host_binding_db_manager.expect_get_device_list().returning(|| vec![create_mock_host_binding(123)]);
     mock_host_binding_db_manager.expect_is_device_token_valid().returning(|| Err(ErrorCode::GeneralError));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
@@ -2555,7 +2555,7 @@ fn companion_begin_add_host_binding_test_success() {
     mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(|| Ok(1));
     mock_host_binding_db_manager.expect_get_device_by_device_key().returning(|| Err(ErrorCode::NotFound));
     mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
-    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(1)));
+    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_binding(1)));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
@@ -2631,12 +2631,12 @@ fn companion_begin_add_host_binding_test_replaced_binding() {
     mock_host_binding_db_manager.expect_generate_unique_binding_id().returning(move || Ok(NEW_BINDING_ID));
     mock_host_binding_db_manager
         .expect_get_device_by_device_key()
-        .returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
-    mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_device_info(OLD_BINDING_ID)));
+        .returning(|| Ok(create_mock_host_binding(OLD_BINDING_ID)));
+    mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_binding(OLD_BINDING_ID)));
     mock_host_binding_db_manager.expect_add_device().returning(|| Ok(None));
     mock_host_binding_db_manager
         .expect_get_device_by_binding_id()
-        .returning(|| Ok(create_mock_host_device_info(NEW_BINDING_ID)));
+        .returning(|| Ok(create_mock_host_binding(NEW_BINDING_ID)));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let mut mock_time_keeper = MockTimeKeeper::new();
@@ -2769,7 +2769,7 @@ fn companion_end_add_host_binding_test_success() {
 
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
     mock_host_binding_db_manager.expect_write_device_token().returning(|| Ok(()));
-    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(1)));
+    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_binding(1)));
     mock_host_binding_db_manager.expect_update_device().returning(|| Ok(()));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
@@ -2860,7 +2860,7 @@ fn companion_remove_host_binding_test_success() {
     log_i!("companion_remove_host_binding_test_success start");
 
     let mut mock_host_binding_db_manager = MockHostBindingDbManager::new();
-    mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_device_info(123)));
+    mock_host_binding_db_manager.expect_remove_device().returning(|| Ok(create_mock_host_binding(123)));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
     let input = CompanionRemoveHostBindingInputFfi { binding_id: 123 };
@@ -3140,7 +3140,7 @@ fn companion_process_token_auth_test_success() {
     mock_host_binding_db_manager
         .expect_read_device_token()
         .returning(|| Ok(HostBindingToken { token: [0u8; TOKEN_KEY_LEN], atl: AuthTrustLevel::Atl3 }));
-    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_device_info(1)));
+    mock_host_binding_db_manager.expect_get_device_by_binding_id().returning(|| Ok(create_mock_host_binding(1)));
     mock_host_binding_db_manager.expect_update_device().returning(|| Ok(()));
     HostBindingDbManagerRegistry::set(Box::new(mock_host_binding_db_manager));
 
