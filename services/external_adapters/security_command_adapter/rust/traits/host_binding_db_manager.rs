@@ -45,7 +45,11 @@ pub trait HostBindingDbManager {
 pub struct DummyHostBindingDbManager;
 
 impl HostBindingDbManager for DummyHostBindingDbManager {
-    fn add_device(&mut self, _device_info: &HostBindingInfo, _sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
+    fn add_device(
+        &mut self,
+        _device_info: &HostBindingInfo,
+        _sk_info: &HostBindingSk,
+    ) -> Result<Option<i32>, ErrorCode> {
         log_e!("not implemented");
         Err(ErrorCode::GeneralError)
     }

@@ -83,6 +83,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
     "cases/request/sync_incoming_message_handler_test.cpp",
     "cases/request/token_auth_message_test.cpp",
     "cases/security_agent/cpp/companion_device_auth_ffi_util_test.cpp",
+    "cases/security_agent/cpp/security_agent_impl_test.cpp",
     "cases/service_entry/available_device_subscription_test.cpp",
     "cases/service_entry/companion_device_auth_service_test.cpp",
     "cases/service_entry/continuous_auth_subscription_test.cpp",
@@ -97,6 +98,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
     "cases/utils/call_stack_test.cpp",
     "cases/utils/constant_user_id_manager_test.cpp",
     "cases/utils/system_param_manager_impl_test.cpp",
+    "cases/utils/task_runner_manager_test.cpp",
   ]
 
   include_dirs = [

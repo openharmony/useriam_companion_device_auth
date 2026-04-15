@@ -189,38 +189,43 @@ ResultCode HostBindingManagerImpl::BeginAddHostBinding(const BeginAddHostBinding
     return ResultCode::SUCCESS;
 }
 
-ResultCode HostBindingManagerImpl::EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
-    const std::vector<uint8_t> &tokenData)
+ResultCode HostBindingManagerImpl::EndAddHostBinding(const EndAddHostBindingInput &input,
+    EndAddHostBindingOutput &output)
 {
-    IAM_LOGI("end add host binding, request id 0x%{public}08X, result %{public}d", requestId, resultCode);
+    IAM_LOGI("end add host binding, request id 0x%{public}08X, result %{public}d", input.requestId, input.resultCode);
 
-    CompanionEndAddHostBindingInput input { .requestId = requestId, .resultCode = resultCode, .tokenData = tokenData };
-    CompanionEndAddHostBindingOutput output {};
-    ResultCode ret = GetSecurityAgent().CompanionEndAddHostBinding(input, output);
+    CompanionEndAddHostBindingInput ffiInput { .requestId = input.requestId,
+        .resultCode = input.resultCode,
+        .tokenData = input.tokenData };
+    CompanionEndAddHostBindingOutput ffiOutput {};
+    ResultCode ret = GetSecurityAgent().CompanionEndAddHostBinding(ffiInput, ffiOutput);
     if (ret != ResultCode::SUCCESS) {
         IAM_LOGE("security agent failed to end add host binding, ret %{public}d", ret);
+        if (input.bindingId != 0) {
+            RemoveBindingInternal(input.bindingId);
+        }
         return ret;
     }
 
-    atl = output.atl;
-    esl = output.esl;
+    output.atl = ffiOutput.atl;
+    output.esl = ffiOutput.esl;
 
-    if (resultCode != ResultCode::SUCCESS) {
-        if (output.bindingId != 0) {
-            IAM_LOGI("removing failed binding %{public}s", GET_MASKED_NUM_STRING(output.bindingId).c_str());
-            RemoveBindingInternal(output.bindingId);
+    if (input.resultCode != ResultCode::SUCCESS) {
+        if (input.bindingId != 0) {
+            IAM_LOGI("removing failed binding %{public}s", GET_MASKED_NUM_STRING(input.bindingId).c_str());
+            RemoveBindingInternal(input.bindingId);
         }
         return ResultCode::SUCCESS;
     }
-    SetHostBindingTokenValid(output.bindingId, true);
+    SetHostBindingTokenValid(input.bindingId, true);
 
     // Token data received and stored in the binding by SecurityAgent
-    if (!tokenData.empty()) {
+    if (!input.tokenData.empty()) {
         IAM_LOGI("end add host binding received token data, binding id %{public}s, token size %{public}zu",
-            GET_MASKED_NUM_STRING(output.bindingId).c_str(), tokenData.size());
+            GET_MASKED_NUM_STRING(input.bindingId).c_str(), input.tokenData.size());
     }
 
-    IAM_LOGI("end add host binding success, binding id %{public}s", GET_MASKED_NUM_STRING(output.bindingId).c_str());
+    IAM_LOGI("end add host binding success, binding id %{public}s", GET_MASKED_NUM_STRING(input.bindingId).c_str());
     return ResultCode::SUCCESS;
 }
 

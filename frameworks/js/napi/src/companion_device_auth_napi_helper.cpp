@@ -133,6 +133,7 @@ napi_status CompanionDeviceAuthNapiHelper::GetUint8ArrayValue(napi_env env, napi
         IAM_LOGE("value is not napi_uint8_array");
         return napi_invalid_arg;
     }
+
     array.resize(length);
     if (memcpy_s(array.data(), length, data, length) != EOK) {
         IAM_LOGE("memcpy_s fail");
@@ -144,6 +145,12 @@ napi_status CompanionDeviceAuthNapiHelper::GetUint8ArrayValue(napi_env env, napi
 napi_status CompanionDeviceAuthNapiHelper::GetInt32Array(napi_env env, napi_value obj, std::vector<int32_t> &vec)
 {
     vec.clear();
+    bool isArray = false;
+    napi_status status = napi_is_array(env, obj, &isArray);
+    if (status != napi_ok || !isArray) {
+        IAM_LOGE("value is not array");
+        return napi_array_expected;
+    }
     uint32_t len {};
     napi_get_array_length(env, obj, &len);
     IAM_LOGI("GetInt32Array length: %{public}d", len);
@@ -372,9 +379,16 @@ napi_value CompanionDeviceAuthNapiHelper::ConvertTemplateStatusListToNapiValue(n
 napi_status CompanionDeviceAuthNapiHelper::ConvertNapiValueToClientDeviceSelectResult(napi_env env,
     napi_value napiDeviceSelectResult, ClientDeviceSelectResult &result)
 {
+    napi_valuetype paramType = napi_undefined;
+    napi_status status = napi_typeof(env, napiDeviceSelectResult, &paramType);
+    if (status != napi_ok || paramType != napi_object) {
+        IAM_LOGE("napiDeviceSelectResult is not object");
+        return napi_invalid_arg;
+    }
+
     bool hasSelectionContext = false;
     napi_value selectionContext = nullptr;
-    napi_status status = napi_has_named_property(env, napiDeviceSelectResult, "selectionContext", &hasSelectionContext);
+    status = napi_has_named_property(env, napiDeviceSelectResult, "selectionContext", &hasSelectionContext);
     if (status != napi_ok) {
         IAM_LOGE("napi_has_named_property fail, ret:%{public}d", status);
         return status;
@@ -421,7 +435,7 @@ napi_status CompanionDeviceAuthNapiHelper::ConvertNapiValueToDeviceKeys(napi_env
     napi_status status = napi_is_array(env, deviceKeyArray, &isArray);
     if (status != napi_ok || !isArray) {
         IAM_LOGE("invalid format");
-        return status;
+        return napi_invalid_arg;
     }
 
     uint32_t arrayLength {};

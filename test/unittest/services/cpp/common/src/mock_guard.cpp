@@ -21,6 +21,7 @@
 #include "relative_timer.h"
 #include "service_common.h"
 #include "singleton_manager.h"
+#include "soft_bus_adapter_manager.h"
 #include "task_runner_manager.h"
 
 // Include real executor for default factory behavior
@@ -39,6 +40,7 @@
 #include "mock_request_manager.h"
 #include "mock_sa_manager_adapter.h"
 #include "mock_security_agent.h"
+#include "mock_soft_bus_adapter.h"
 #include "mock_system_param_manager.h"
 #include "mock_time_keeper.h"
 #include "mock_user_auth_adapter.h"
@@ -50,10 +52,14 @@ namespace CompanionDeviceAuth {
 
 using namespace testing;
 
+constexpr int32_t INT32_1 = 1;
+constexpr int32_t INT32_2 = 2;
+
 MockGuard::MockGuard()
 {
     SingletonManager::GetInstance().Reset();
     AdapterManager::GetInstance().Reset();
+    SoftBusChannelAdapterManager::GetInstance().Reset();
     CreateMocks();
     SetupDefaultBehaviors();
 }
@@ -112,6 +118,13 @@ void MockGuard::CreateMocks()
 
     eventBus_ = std::make_shared<MockEventBus>();
     SingletonManager::GetInstance().SetEventBus(eventBus_);
+
+    // SoftBus adapter mocks
+    softBusDeviceManagerAdapter_ = std::make_shared<MockDeviceManagerAdapter>();
+    SoftBusChannelAdapterManager::GetInstance().SetDeviceManagerAdapter(softBusDeviceManagerAdapter_);
+
+    softBusAdapter_ = std::make_shared<MockSoftBusAdapter>();
+    SoftBusChannelAdapterManager::GetInstance().SetSoftBusAdapter(softBusAdapter_);
 }
 
 void MockGuard::SetupDefaultBehaviors()
@@ -127,6 +140,7 @@ void MockGuard::SetupDefaultBehaviors()
     SetupSecurityAgentDefaults();
     SetupEventManagerAdapterDefaults();
     SetupEventBusDefaults();
+    SetupSoftBusAdapterDefaults();
 }
 
 void MockGuard::SetupMiscManagerDefaults()
@@ -226,7 +240,7 @@ void MockGuard::SetupHostBindingManagerDefaults()
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_)).WillByDefault(Return(std::nullopt));
     ON_CALL(*hostBindingManager_, GetHostBindingStatus(_, _)).WillByDefault(Return(std::nullopt));
     ON_CALL(*hostBindingManager_, BeginAddHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
-    ON_CALL(*hostBindingManager_, EndAddHostBinding(_, _, _, _, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
+    ON_CALL(*hostBindingManager_, EndAddHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, RemoveHostBinding(_, _)).WillByDefault(Return(ResultCode::GENERAL_ERROR));
     ON_CALL(*hostBindingManager_, SetHostBindingTokenValid(_, _)).WillByDefault(Return(true));
     ON_CALL(*hostBindingManager_, StartObtainTokenRequests(_, _, _)).WillByDefault(Return());
@@ -262,6 +276,21 @@ void MockGuard::SetupEventBusDefaults()
     }));
 }
 
+void MockGuard::SetupSoftBusAdapterDefaults()
+{
+    ON_CALL(*softBusDeviceManagerAdapter_, InitDeviceManager()).WillByDefault(Return(true));
+    ON_CALL(*softBusDeviceManagerAdapter_, UnInitDeviceManager()).WillByDefault(Return());
+    ON_CALL(*softBusDeviceManagerAdapter_, GetUdidByNetworkId(_)).WillByDefault(Return(std::string("test-udid")));
+    ON_CALL(*softBusDeviceManagerAdapter_, QueryTrustedDevices(_)).WillByDefault(Return(true));
+    ON_CALL(*softBusDeviceManagerAdapter_, RegisterDevStatusCallback(_)).WillByDefault(Return(true));
+    ON_CALL(*softBusDeviceManagerAdapter_, UnRegisterDevStatusCallback(_)).WillByDefault(Return());
+
+    ON_CALL(*softBusAdapter_, ShutdownSocket(_)).WillByDefault(Return());
+    ON_CALL(*softBusAdapter_, CreateServerSocket()).WillByDefault(Return(std::optional<int32_t>(INT32_1)));
+    ON_CALL(*softBusAdapter_, CreateClientSocket(_, _)).WillByDefault(Return(std::optional<int32_t>(INT32_2)));
+    ON_CALL(*softBusAdapter_, SendBytes(_, _)).WillByDefault(Return(true));
+}
+
 MockGuard::~MockGuard()
 {
     // Execute all pending tasks BEFORE clearing mocks
@@ -275,6 +304,7 @@ MockGuard::~MockGuard()
     // This must happen before we try to set them to nullptr
     SingletonManager::GetInstance().Reset();
     AdapterManager::GetInstance().Reset();
+    SoftBusChannelAdapterManager::GetInstance().Reset();
 
     // Clear all GMock expectations before destroying mocks
     // This prevents UBSAN errors during mock destruction when internal state is corrupted
@@ -391,6 +421,16 @@ MockRequestFactory &MockGuard::GetRequestFactory()
 MockExecutorFactory &MockGuard::GetExecutorFactory()
 {
     return *executorFactory_;
+}
+
+MockDeviceManagerAdapter &MockGuard::GetSoftBusDeviceManagerAdapter()
+{
+    return *softBusDeviceManagerAdapter_;
+}
+
+MockSoftBusAdapter &MockGuard::GetSoftBusAdapter()
+{
+    return *softBusAdapter_;
 }
 
 } // namespace CompanionDeviceAuth

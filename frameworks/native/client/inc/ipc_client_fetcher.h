@@ -31,7 +31,8 @@ using DeathCallback = std::function<void(const wptr<IRemoteObject> &remote)>;
 
 class IpcClientFetcher {
 public:
-    static sptr<ICompanionDeviceAuth> GetProxy(const DeathCallback &deathCallback);
+    static sptr<ICompanionDeviceAuth> GetProxy(const DeathCallback &deathCallback,
+        sptr<IRemoteObject::DeathRecipient> &outDeathRecipient);
 
 private:
     static sptr<IRemoteObject> GetRemoteObject();

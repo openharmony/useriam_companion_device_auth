@@ -17,6 +17,7 @@
 #define COMPANION_DEVICE_AUTH_COMPANION_SYNC_DEVICE_STATUS_HANDLER_H
 
 #include "host_binding_manager.h"
+#include "interaction_desc.h"
 #include "security_agent.h"
 #include "sync_device_status_message.h"
 #include "sync_incoming_message_handler.h"
@@ -25,6 +26,7 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+
 class CompanionSyncDeviceStatusHandler : public SyncIncomingMessageHandler {
 public:
     CompanionSyncDeviceStatusHandler();
@@ -35,8 +37,9 @@ protected:
 
 private:
     bool CompanionProcessCheck(const HostBindingStatus &hostBindingStatus, const SyncDeviceStatusRequest &syncRequest,
-        std::vector<uint8_t> &outCompanionCheckResponse);
-    std::optional<SyncDeviceStatusReply> BuildSyncDeviceStatusReply(UserId companionUserId);
+        std::vector<uint8_t> &outCompanionCheckResponse, const InteractionDesc &desc);
+    std::optional<SyncDeviceStatusReply> BuildSyncDeviceStatusReply(UserId companionUserId,
+        const InteractionDesc &desc);
     void SetCompanionDeviceKeyUserId(SyncDeviceStatusReply &syncReply, UserId companionUserId);
     CompanionProcessCheckInput BuildCompanionProcessCheckInput(const HostBindingStatus &hostBindingStatus,
         const SyncDeviceStatusRequest &syncRequest, SecureProtocolId secureProtocolId);

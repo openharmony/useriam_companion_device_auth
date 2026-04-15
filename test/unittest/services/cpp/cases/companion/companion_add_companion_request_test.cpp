@@ -462,7 +462,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_001, TestSize.L
         }
     };
 
-    EXPECT_CALL(guard.GetHostBindingManager(), EndAddHostBinding(_, _, _, _, _)).WillOnce(Return(ResultCode::SUCCESS));
+    EXPECT_CALL(guard.GetHostBindingManager(), EndAddHostBinding(_, _)).WillOnce(Return(ResultCode::SUCCESS));
 
     request->HandleEndAddCompanion(attrInput, messageReply);
 
@@ -557,7 +557,7 @@ HWTEST_F(CompanionAddCompanionRequestTest, HandleEndAddCompanion_004, TestSize.L
         *receivedResult = static_cast<ResultCode>(result);
     };
 
-    EXPECT_CALL(guard.GetHostBindingManager(), EndAddHostBinding(_, _, _, _, _)).WillOnce(Return(ResultCode::FAIL));
+    EXPECT_CALL(guard.GetHostBindingManager(), EndAddHostBinding(_, _)).WillOnce(Return(ResultCode::FAIL));
 
     request->HandleEndAddCompanion(attrInput, messageReply);
 

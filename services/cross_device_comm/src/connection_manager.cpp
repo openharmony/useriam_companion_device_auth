@@ -496,7 +496,7 @@ void ConnectionManager::HandleKeepAliveReply(const std::string &connectionName, 
             ENSURE_OR_RETURN(self != nullptr);
             self->CloseConnection(connectionName, "keep_alive_reply_failed");
         });
-        IAM_LOGI("keep alive reply failed: %{public}s", connectionName.c_str());
+        IAM_LOGE("keep alive reply failed: %{public}s", connectionName.c_str());
         return;
     }
 

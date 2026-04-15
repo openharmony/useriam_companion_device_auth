@@ -243,6 +243,7 @@ int32_t CompanionDeviceAuthClientImpl::SubscribeTemplateStatusChange(int32_t use
 
     sptr<IpcTemplateStatusCallbackService> wrapper(
         new (std::nothrow) IpcTemplateStatusCallbackService(userId, callback));
+    ENSURE_OR_RETURN_VAL(wrapper != nullptr, GENERAL_ERROR);
     int32_t ret = SubscribeTemplateStatusChangeInner(wrapper);
     if (ret != SUCCESS) {
         IAM_LOGE("SubscribeTemplateStatusChange fail, ret:%{public}d", ret);
@@ -540,33 +541,11 @@ sptr<ICompanionDeviceAuth> CompanionDeviceAuthClientImpl::GetProxy()
     IAM_LOGE("proxy is nullptr in test mode, please use SetProxy() first");
     return proxy_;
 #else
-    proxy_ = IpcClientFetcher::GetProxy([](const wptr<IRemoteObject> &remote) {
-        auto &client = static_cast<CompanionDeviceAuthClient &>(CompanionDeviceAuthClient::GetInstance());
-        auto &clientImpl = static_cast<CompanionDeviceAuthClientImpl &>(client);
-        clientImpl.ResetProxy(remote);
-    });
+    proxy_ =
+        IpcClientFetcher::GetProxy([this](const wptr<IRemoteObject> &remote) { ResetProxy(remote); }, deathRecipient_);
 
     return proxy_;
 #endif // ENABLE_TEST
-}
-
-void CompanionDeviceAuthClientImpl::ResetProxy(const wptr<IRemoteObject> &remote)
-{
-    IAM_LOGI("start");
-    std::lock_guard<std::recursive_mutex> guard(mutex_);
-    if (proxy_ == nullptr) {
-        IAM_LOGE("proxy_ is null");
-        return;
-    }
-
-    auto serviceRemote = proxy_->AsObject();
-    if ((serviceRemote != nullptr) && (serviceRemote == remote.promote())) {
-        IAM_LOGI("need reset");
-        serviceRemote->RemoveDeathRecipient(deathRecipient_);
-        proxy_ = nullptr;
-        deathRecipient_ = nullptr;
-    }
-    IAM_LOGI("success");
 }
 
 void CompanionDeviceAuthClientImpl::ReregisterDeviceSelectCallback()
@@ -659,6 +638,25 @@ void CompanionDeviceAuthClientImpl::SubscribeCompanionDeviceAuthSaStatus()
         }
     }
     unsubscribeGuard.Cancel();
+}
+
+void CompanionDeviceAuthClientImpl::ResetProxy(const wptr<IRemoteObject> &remote)
+{
+    IAM_LOGI("start");
+    std::lock_guard<std::recursive_mutex> guard(mutex_);
+    if (proxy_ == nullptr) {
+        IAM_LOGE("proxy_ is null");
+        return;
+    }
+
+    auto serviceRemote = proxy_->AsObject();
+    if ((serviceRemote != nullptr) && (serviceRemote == remote.promote())) {
+        IAM_LOGI("need reset");
+        serviceRemote->RemoveDeathRecipient(deathRecipient_);
+        proxy_ = nullptr;
+        deathRecipient_ = nullptr;
+    }
+    IAM_LOGI("success");
 }
 
 CompanionDeviceAuthClientImpl::~CompanionDeviceAuthClientImpl()

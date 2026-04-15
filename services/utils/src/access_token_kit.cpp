@@ -53,9 +53,13 @@ bool AccessTokenUtil::CheckSystemPermission(IPCObjectStub &stub)
 {
     uint32_t callingTokenId = stub.GetCallingTokenID();
     XCollieHelper xcollie("AccessTokenUtil-CheckSystemPermission", API_CALL_TIMEOUT);
+    ATokenTypeEnum callingType = AccessTokenKit::GetTokenTypeFlag(callingTokenId);
+    if (callingType == TOKEN_NATIVE) {
+        IAM_LOGI("the caller is native system service");
+        return true;
+    }
     uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
     bool checkRet = TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
-    ATokenTypeEnum callingType = AccessTokenKit::GetTokenTypeFlag(callingTokenId);
     if (checkRet && callingType == TOKEN_HAP) {
         IAM_LOGI("the caller is system application");
         return true;

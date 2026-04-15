@@ -43,8 +43,7 @@ public:
 
     ResultCode BeginAddHostBinding(const BeginAddHostBindingInput &input, BeginAddHostBindingOutput &output) override;
 
-    ResultCode EndAddHostBinding(RequestId requestId, ResultCode resultCode, Atl &atl, int32_t &esl,
-        const std::vector<uint8_t> &tokenData = {}) override;
+    ResultCode EndAddHostBinding(const EndAddHostBindingInput &input, EndAddHostBindingOutput &output) override;
 
     ResultCode RemoveHostBinding(UserId companionUserId, const DeviceKey &hostDeviceKey) override;
 

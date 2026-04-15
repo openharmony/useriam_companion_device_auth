@@ -22,10 +22,11 @@
 #ifndef COMPANION_DEVICE_AUTH_CLIENT_H
 #define COMPANION_DEVICE_AUTH_CLIENT_H
 
-#include <cstddef>
-#include <cstdint>
+#include <memory>
 #include <optional>
 #include <vector>
+
+#include "iremote_object.h"
 
 #include "common_defines.h"
 #include "companion_device_auth_common_defines.h"
@@ -37,6 +38,7 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
+
 class CompanionDeviceAuthClient {
 public:
     /**
@@ -153,6 +155,14 @@ public:
      * @return Return CheckLocalUserIdValid result(0:success; other:failed).
      */
     virtual int32_t CheckLocalUserIdValid(int32_t userId, bool &isUserIdValid) = 0;
+
+protected:
+    /**
+     * @brief Reset proxy when service dies.
+     *
+     * @param remote The remote object that died.
+     */
+    virtual void ResetProxy(const wptr<IRemoteObject> &remote) = 0;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

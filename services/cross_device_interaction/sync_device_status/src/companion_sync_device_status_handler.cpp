@@ -42,12 +42,12 @@ void CompanionSyncDeviceStatusHandler::SetCompanionDeviceKeyUserId(SyncDeviceSta
 }
 
 std::optional<SyncDeviceStatusReply> CompanionSyncDeviceStatusHandler::BuildSyncDeviceStatusReply(
-    UserId companionUserId)
+    UserId companionUserId, const InteractionDesc &desc)
 {
     auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
     auto userNameOpt = GetUserIdManager().GetActiveUserName();
     if (!userNameOpt.has_value()) {
-        IAM_LOGE("GetActiveUserName failed");
+        IAM_LOGE("%{public}s GetActiveUserName failed", desc.GetCStr());
         return std::nullopt;
     }
 
@@ -83,14 +83,14 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
         return;
     }
 
-    auto syncReplyOpt = BuildSyncDeviceStatusReply(companionUserId);
+    auto syncReplyOpt = BuildSyncDeviceStatusReply(companionUserId, desc);
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), syncReplyOpt.has_value());
     SyncDeviceStatusReply syncReply = std::move(*syncReplyOpt);
 
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId, syncRequest.hostDeviceKey);
     if (hostBindingStatus.has_value()) {
         desc.SetBindingId(hostBindingStatus->bindingId);
-        bool ret = CompanionProcessCheck(*hostBindingStatus, syncRequest, syncReply.companionCheckResponse);
+        bool ret = CompanionProcessCheck(*hostBindingStatus, syncRequest, syncReply.companionCheckResponse, desc);
         if (!ret) {
             IAM_LOGE("%{public}s CompanionProcessCheck failed", desc.GetCStr());
             return;
@@ -117,7 +117,8 @@ CompanionProcessCheckInput CompanionSyncDeviceStatusHandler::BuildCompanionProce
 }
 
 bool CompanionSyncDeviceStatusHandler::CompanionProcessCheck(const HostBindingStatus &hostBindingStatus,
-    const SyncDeviceStatusRequest &syncRequest, std::vector<uint8_t> &outCompanionCheckResponse)
+    const SyncDeviceStatusRequest &syncRequest, std::vector<uint8_t> &outCompanionCheckResponse,
+    const InteractionDesc &desc)
 {
     auto profile = GetCrossDeviceCommManager().GetLocalDeviceProfile();
     CompanionProcessCheckInput input =
@@ -126,7 +127,7 @@ bool CompanionSyncDeviceStatusHandler::CompanionProcessCheck(const HostBindingSt
     CompanionProcessCheckOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionProcessCheck(input, output);
     if (ret != ResultCode::SUCCESS) {
-        IAM_LOGE("CompanionProcessCheck failed ret=%{public}d", ret);
+        IAM_LOGE("%{public}s CompanionProcessCheck failed ret=%{public}d", desc.GetCStr(), ret);
         return false;
     }
     outCompanionCheckResponse.swap(output.companionCheckResponse);

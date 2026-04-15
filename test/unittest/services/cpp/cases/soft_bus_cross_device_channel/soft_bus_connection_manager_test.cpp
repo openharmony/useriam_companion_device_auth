@@ -16,6 +16,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "mock_device_manager_adapter.h"
 #include "mock_guard.h"
 #include "mock_soft_bus_adapter.h"
 
@@ -38,11 +39,13 @@ constexpr uint64_t UINT64_1 = 1;
 constexpr int32_t DEFAULT_TEST_SOCKET_ID = 100;
 constexpr const char *DEFAULT_TEST_CONNECTION_NAME = "test-connection";
 constexpr const char *NON_EXISTENT_CONNECTION_NAME = "non-existent-connection";
+constexpr size_t MAX_SOFTBUS_CONNECTIONS = 200;
 
 class SoftBusConnectionManagerTest : public Test {
 protected:
     uint64_t nextGlobalId_ = UINT64_1;
     NiceMock<MockSoftBusAdapter> mockSoftBusAdapter_;
+    NiceMock<MockDeviceManagerAdapter> mockDeviceManagerAdapter_;
 };
 
 HWTEST_F(SoftBusConnectionManagerTest, Create_001, TestSize.Level0)
@@ -707,6 +710,64 @@ HWTEST_F(SoftBusConnectionManagerTest, HandleSoftBusServiceUnavailable_001, Test
     ASSERT_NE(manager, nullptr);
 
     manager->HandleSoftBusServiceUnavailable();
+}
+
+HWTEST_F(SoftBusConnectionManagerTest, OpenConnection_RejectsWhenMaxConnectionsReached, TestSize.Level0)
+{
+    MockGuard guard;
+
+    ON_CALL(guard.GetMiscManager(), GetNextGlobalId()).WillByDefault([this]() { return nextGlobalId_++; });
+    ON_CALL(mockSoftBusAdapter_, CreateClientSocket(_, _)).WillByDefault(Return(std::optional<int32_t>(INT32_2)));
+
+    auto softBusAdapter = std::shared_ptr<ISoftBusAdapter>(&mockSoftBusAdapter_, [](ISoftBusAdapter *) {});
+    SoftBusChannelAdapterManager::GetInstance().SetSoftBusAdapter(softBusAdapter);
+
+    auto manager = SoftBusConnectionManager::Create();
+    ASSERT_NE(manager, nullptr);
+
+    PhysicalDeviceKey key;
+    key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    key.deviceId = "test-device";
+
+    // Fill connections_ up to the limit.
+    for (size_t i = 0; i < MAX_SOFTBUS_CONNECTIONS; ++i) {
+        int32_t socketId = static_cast<int32_t>(i + 100);
+        auto connection = std::make_shared<SoftbusConnection>(socketId, "conn_" + std::to_string(i), key, manager);
+        manager->connections_.push_back(connection);
+    }
+    ASSERT_EQ(manager->connections_.size(), MAX_SOFTBUS_CONNECTIONS);
+
+    // The next OpenConnection should be rejected.
+    bool result = manager->OpenConnection("overflow-connection", key, "network-id");
+    EXPECT_FALSE(result);
+    EXPECT_EQ(manager->connections_.size(), MAX_SOFTBUS_CONNECTIONS);
+}
+
+HWTEST_F(SoftBusConnectionManagerTest, HandleBind_RejectsWhenMaxConnectionsReached, TestSize.Level0)
+{
+    MockGuard guard;
+
+    auto manager = SoftBusConnectionManager::Create();
+    ASSERT_NE(manager, nullptr);
+
+    PhysicalDeviceKey key;
+    key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
+    key.deviceId = "test-device";
+
+    // Fill connections_ up to the limit.
+    for (size_t i = 0; i < MAX_SOFTBUS_CONNECTIONS; ++i) {
+        int32_t socketId = static_cast<int32_t>(i + 100);
+        auto connection = std::make_shared<SoftbusConnection>(socketId, "conn_" + std::to_string(i), key, manager);
+        manager->connections_.push_back(connection);
+    }
+    ASSERT_EQ(manager->connections_.size(), MAX_SOFTBUS_CONNECTIONS);
+
+    // The inbound HandleBind should be rejected.
+    int32_t inboundSocketId = 999;
+    manager->HandleBind(inboundSocketId, "peer-network-id");
+
+    // No new connection should be added.
+    EXPECT_EQ(manager->connections_.size(), MAX_SOFTBUS_CONNECTIONS);
 }
 
 } // namespace

@@ -18,10 +18,10 @@ extern crate alloc;
 use crate::common::constants::ErrorCode;
 use crate::entry::companion_device_auth_ffi::{
     CommonOutputFfi, CompanionStatusArrayFfi, DataArray1024Ffi, DataArray128Ffi, DataArray20000Ffi, DataArray256Ffi,
-    DataArray64Ffi, DeviceKeyFfi, EventArrayFfi, EventFfi, HostBindingStatusArrayFfi, Int32Array64Ffi,
+    DataArray32Ffi, DataArray64Ffi, DeviceKeyFfi, EventArrayFfi, EventFfi, HostBindingStatusArrayFfi, Int32Array64Ffi,
     PersistedCompanionStatusFfi, PersistedHostBindingStatusFfi, TemplateIdArrayFfi, Uint16Array64Ffi,
-    MAX_DATA_LEN_1024, MAX_DATA_LEN_128, MAX_DATA_LEN_20000, MAX_DATA_LEN_256, MAX_DATA_LEN_64, MAX_EVENT_NUM_FFI,
-    MAX_TEMPLATE_ID_NUM_PER_USER_FFI,
+    MAX_DATA_LEN_1024, MAX_DATA_LEN_128, MAX_DATA_LEN_20000, MAX_DATA_LEN_256, MAX_DATA_LEN_32, MAX_DATA_LEN_64,
+    MAX_EVENT_NUM_FFI, MAX_TEMPLATE_ID_NUM_PER_USER_FFI,
 };
 use crate::traits::db_manager::DeviceKey;
 use crate::traits::event_manager::Event;
@@ -124,6 +124,7 @@ macro_rules! impl_data_array {
     };
 }
 
+impl_data_array!(DataArray32Ffi, MAX_DATA_LEN_32);
 impl_data_array!(DataArray64Ffi, MAX_DATA_LEN_64);
 impl_data_array!(DataArray128Ffi, MAX_DATA_LEN_128);
 impl_data_array!(DataArray256Ffi, MAX_DATA_LEN_256);
