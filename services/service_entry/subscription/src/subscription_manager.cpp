@@ -35,6 +35,10 @@ namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
+namespace {
+constexpr size_t MAX_SUBSCRIPTIONS_PER_MAP = 100;
+} // namespace
+
 SubscriptionManager::SubscriptionManager() = default;
 
 std::shared_ptr<AvailableDeviceSubscription> SubscriptionManager::GetOrCreateAvailableDeviceSubscription(UserId userId)
@@ -42,6 +46,11 @@ std::shared_ptr<AvailableDeviceSubscription> SubscriptionManager::GetOrCreateAva
     auto it = availableDeviceSubscriptions_.find(userId);
     if (it != availableDeviceSubscriptions_.end()) {
         return it->second;
+    }
+
+    if (availableDeviceSubscriptions_.size() >= MAX_SUBSCRIPTIONS_PER_MAP) {
+        IAM_LOGE("availableDeviceSubscriptions limit reached (%{public}zu)", availableDeviceSubscriptions_.size());
+        return nullptr;
     }
 
     auto subscription = AvailableDeviceSubscription::Create(userId, weak_from_this());
@@ -63,6 +72,11 @@ std::shared_ptr<TemplateStatusSubscription> SubscriptionManager::GetOrCreateTemp
         return it->second;
     }
 
+    if (templateStatusSubscriptions_.size() >= MAX_SUBSCRIPTIONS_PER_MAP) {
+        IAM_LOGE("templateStatusSubscriptions limit reached (%{public}zu)", templateStatusSubscriptions_.size());
+        return nullptr;
+    }
+
     auto subscription = TemplateStatusSubscription::Create(userId, weak_from_this());
     ENSURE_OR_RETURN_VAL(subscription != nullptr, nullptr);
     templateStatusSubscriptions_[userId] = subscription;
@@ -81,6 +95,11 @@ std::shared_ptr<ContinuousAuthSubscription> SubscriptionManager::GetOrCreateCont
     auto it = continuousAuthSubscriptions_.find(key);
     if (it != continuousAuthSubscriptions_.end()) {
         return it->second;
+    }
+
+    if (continuousAuthSubscriptions_.size() >= MAX_SUBSCRIPTIONS_PER_MAP) {
+        IAM_LOGE("continuousAuthSubscriptions limit reached (%{public}zu)", continuousAuthSubscriptions_.size());
+        return nullptr;
     }
 
     auto subscription = ContinuousAuthSubscription::Create(userId, templateId, weak_from_this());

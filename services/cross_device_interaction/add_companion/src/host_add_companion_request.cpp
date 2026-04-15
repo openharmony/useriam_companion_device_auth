@@ -63,7 +63,7 @@ void HostAddCompanionRequest::ParseAdditionalInfo()
     IAM_LOGI("%{public}s parsing additionalInfo", GetDescription());
     try {
         auto json = nlohmann::json::parse(additionalInfo_);
-        ENSURE_OR_RETURN(json.is_object());
+        ENSURE_OR_RETURN_DESC(GetDescription(), json.is_object());
 
         auto it = json.find("enabled_business_ids");
         if (it == json.end() || !it->is_array()) {
@@ -82,7 +82,7 @@ std::vector<BusinessId> HostAddCompanionRequest::ParseBusinessIdsFromJson(const 
 {
     std::vector<BusinessId> parsedIds;
     for (const auto &item : businessIdsArray) {
-        ENSURE_OR_CONTINUE(item.is_number());
+        ENSURE_OR_CONTINUE_DESC(GetDescription(), item.is_number());
         BusinessId id = static_cast<BusinessId>(item.get<int32_t>());
         parsedIds.push_back(id);
     }
@@ -305,8 +305,8 @@ void HostAddCompanionRequest::HandleBeginAddHostBindingReply(const Attributes &r
 
     bool sendRet = SendEndAddHostBindingMsg(ResultCode::SUCCESS);
     if (!sendRet) {
-        // send end add host binding msg fail does not affect the result of the request
         IAM_LOGE("%{public}s SendEndAddHostBindingMsg failed", GetDescription());
+        return;
     }
 
     errorGuard.Cancel();
@@ -392,6 +392,7 @@ bool HostAddCompanionRequest::EndAddCompanion(const BeginAddHostBindingReply &re
         IAM_LOGE("%{public}s EndAddCompanion failed ret=%{public}d", GetDescription(), ret);
         return false;
     }
+    enrollmentSucceeded_ = true;
 
     ProcessEndAddCompanionOutput(output, fwkMsg);
     return true;
@@ -406,6 +407,7 @@ bool HostAddCompanionRequest::SendEndAddHostBindingMsg(ResultCode result)
         .companionUserId = companionDeviceKey->deviceUserId,
         .result = result,
         .extraInfo = std::move(pendingTokenData_) }; // Contains encrypted token data (non-empty only when successful)
+    pendingTokenData_.clear();
     Attributes request = {};
     EncodeEndAddHostBindingRequest(requestMsg, request);
 
@@ -450,18 +452,30 @@ void HostAddCompanionRequest::HandleEndAddHostBindingReply(const Attributes &rep
 
 void HostAddCompanionRequest::InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo)
 {
-    ENSURE_OR_RETURN_DESC(GetDescription(), requestCallback_ != nullptr);
+    if (requestCallback_ == nullptr) {
+        IAM_LOGI("%{public}s callback already sent", GetDescription());
+        return;
+    }
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [cb = std::move(requestCallback_), result, extra = extraInfo]() mutable {
             if (cb) {
                 cb(result, extra);
             }
         });
+    requestCallback_ = nullptr;
 }
 
 void HostAddCompanionRequest::CompleteWithError(ResultCode result)
 {
     IAM_LOGI("%{public}s complete with error: %{public}d", GetDescription(), result);
+
+    // After enrollment succeeded, token distribution failure is non-critical per spec
+    if (enrollmentSucceeded_) {
+        IAM_LOGI("%{public}s enrollment succeeded, complete with success", GetDescription());
+        CompleteWithSuccess();
+        return;
+    }
+
     if (needCancelCompanionAdd_) {
         HostCancelAddCompanionInput input { GetRequestId() };
         ResultCode ret = GetSecurityAgent().HostCancelAddCompanion(input);

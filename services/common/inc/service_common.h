@@ -151,6 +151,20 @@ public:
         return oss.str();
     }
 
+    static std::string GetVectorDesc(const std::vector<DeviceKey> &devices)
+    {
+        std::ostringstream oss;
+        oss << "[";
+        for (size_t i = 0; i < devices.size(); ++i) {
+            if (i > 0) {
+                oss << ", ";
+            }
+            oss << "[" << i << "]" << devices[i].GetDesc();
+        }
+        oss << "]";
+        return oss.str();
+    }
+
     DeviceIdType idType { DeviceIdType::UNKNOWN };
     std::string deviceId {};
     UserId deviceUserId { INVALID_USER_ID };
@@ -243,6 +257,13 @@ struct CompanionStatus {
         return persistedStatus;
     }
 
+    std::string GetDesc() const
+    {
+        std::ostringstream oss;
+        oss << "(T:" << templateId << ", D:" << companionDeviceStatus.deviceKey.GetDesc() << ")";
+        return oss.str();
+    }
+
     TemplateId templateId { 0 };
     UserId hostUserId { INVALID_USER_ID };
     DeviceStatus companionDeviceStatus {};
@@ -292,6 +313,7 @@ constexpr uint32_t MAX_ON_START_WAIT_TIME_SEC = UINT32_MAX;
 constexpr uint32_t SET_PARAM_DELAY_MS = 100;     // 100ms
 constexpr uint32_t ADAPTER_CALL_TIMEOUT_SEC = 3; // 3 seconds
 constexpr size_t MAX_MESSAGE_SIZE = 20000;
+constexpr size_t MAX_ENABLED_BUSINESS_IDS = 64;
 constexpr int32_t MS_PER_SEC = 1000;
 constexpr int32_t NS_PER_MS = 1000 * 1000;
 constexpr int32_t BYTE_NUM_4 = 4;

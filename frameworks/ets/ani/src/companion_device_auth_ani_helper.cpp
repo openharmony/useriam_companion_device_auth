@@ -63,7 +63,8 @@ taihe::array<uint8_t> CompanionDeviceAuthAniHelper::ConvertTemplateId(uint64_t t
 uint64_t CompanionDeviceAuthAniHelper::ConvertAniTemplateId(taihe::array<uint8_t> templateId)
 {
     uint64_t result = 0;
-    if (templateId.size() < UINT64_BYTE_SIZE) {
+    if (templateId.size() != UINT64_BYTE_SIZE) {
+        IAM_LOGE("templateId size is invalid: %{public}zu != %{public}zu", templateId.size(), UINT64_BYTE_SIZE);
         return 0;
     }
 

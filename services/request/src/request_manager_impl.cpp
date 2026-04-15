@@ -21,6 +21,7 @@
 
 #include "iam_check.h"
 #include "iam_logger.h"
+#include "iam_safe_arithmetic.h"
 
 #include "singleton_manager.h"
 #include "task_runner_manager.h"
@@ -44,6 +45,15 @@ std::shared_ptr<RequestManagerImpl> RequestManagerImpl::Create()
 bool RequestManagerImpl::Start(const std::shared_ptr<IRequest> &request)
 {
     ENSURE_OR_RETURN_VAL(request != nullptr, false);
+
+    constexpr size_t maxTotalRequests = 200;
+    auto totalRequests = SafeAdd(waitingRequests_.size(), runningRequests_.size());
+    ENSURE_OR_RETURN_VAL(totalRequests.has_value(), false);
+    if (totalRequests.value() >= maxTotalRequests) {
+        IAM_LOGE("total requests limit reached (%{public}zu), reject requestId:0x%{public}08X", totalRequests.value(),
+            request->GetRequestId());
+        return false;
+    }
 
     RequestId requestId = request->GetRequestId();
     if (Get(requestId) != nullptr) {

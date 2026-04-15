@@ -18,11 +18,13 @@
 
 #include <algorithm>
 #include <functional>
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "iremote_object.h"
 #include "nocopyable.h"
+#include "refbase.h"
 
 #include "iam_check.h"
 #include "iam_logger.h"
@@ -53,7 +55,15 @@ public:
         return callback1->AsObject() == callback2->AsObject();
     }
 
-    virtual ~CallbackSubscriptionBase() = default;
+    virtual ~CallbackSubscriptionBase()
+    {
+        for (auto &[obj, recipient] : deathRecipients_) {
+            if (obj != nullptr && recipient != nullptr) {
+                obj->RemoveDeathRecipient(recipient);
+            }
+        }
+        deathRecipients_.clear();
+    }
 
     void SetDeathHandler(DeathHandler &&handler)
     {
@@ -75,15 +85,19 @@ public:
         auto obj = callback->AsObject();
         ENSURE_OR_RETURN(obj != nullptr);
 
+        wptr<CallbackType> weakCallback(callback);
         sptr<IRemoteObject::DeathRecipient> deathRecipient =
-            CallbackDeathRecipient::Register(obj, [callback, deathHandler = deathHandler_]() {
+            CallbackDeathRecipient::Register(obj, [weakCallback, deathHandler = deathHandler_]() {
                 IAM_LOGI("callback died, schedule remove callback");
-                TaskRunnerManager::GetInstance().PostTaskOnResident([callback, deathHandler]() {
+                TaskRunnerManager::GetInstance().PostTaskOnResident([weakCallback, deathHandler]() {
                     ENSURE_OR_RETURN(deathHandler != nullptr);
-                    deathHandler(callback);
+                    sptr<CallbackType> cb = weakCallback.promote();
+                    ENSURE_OR_RETURN(cb != nullptr);
+                    deathHandler(cb);
                 });
             });
         ENSURE_OR_RETURN(deathRecipient != nullptr);
+        deathRecipients_[obj] = deathRecipient;
         callbacks_.push_back(callback);
 
         OnCallbackAdded(callback);
@@ -93,6 +107,15 @@ public:
     {
         IAM_LOGI("start");
         ENSURE_OR_RETURN(callback != nullptr);
+
+        auto obj = callback->AsObject();
+        if (obj != nullptr) {
+            auto recipientIt = deathRecipients_.find(obj);
+            if (recipientIt != deathRecipients_.end()) {
+                obj->RemoveDeathRecipient(recipientIt->second);
+                deathRecipients_.erase(recipientIt);
+            }
+        }
 
         auto it = std::find_if(callbacks_.begin(), callbacks_.end(),
             [&callback](const sptr<CallbackType> &item) { return IsCallbackSame(item, callback); });
@@ -116,6 +139,7 @@ public:
 
 protected:
     std::vector<sptr<CallbackType>> callbacks_;
+    std::map<sptr<IRemoteObject>, sptr<IRemoteObject::DeathRecipient>> deathRecipients_;
     DeathHandler deathHandler_;
 };
 

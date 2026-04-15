@@ -16,6 +16,7 @@
 #include "companion_device_auth_service.h"
 
 #include <cstdint>
+#include <exception>
 #include <memory>
 #include <mutex>
 #include <new>
@@ -498,12 +499,18 @@ std::optional<typename std::invoke_result<Func>::type> CompanionDeviceAuthServic
         try {
             promise->set_value(task());
         } catch (...) {
-            IAM_LOGE("RunOnResidentSync task exception");
+            try {
+                promise->set_exception(std::current_exception());
+            } catch (...) {
+                IAM_LOGE("RunOnResidentSync set_exception failed");
+            }
         }
     });
 
-    if (future.wait_for(std::chrono::seconds(timeoutSec)) != std::future_status::ready) {
-        IAM_LOGE("RunOnResidentSync timeout - task not completed in %{public}u second", timeoutSec);
+    auto status = future.wait_for(std::chrono::seconds(timeoutSec));
+    if (status != std::future_status::ready) {
+        IAM_LOGE("RunOnResidentSync timeout - task not completed in %{public}u second, status: %{public}d", timeoutSec,
+            static_cast<int32_t>(status));
         return std::nullopt;
     }
 

@@ -19,10 +19,12 @@
 #include <gtest/gtest.h>
 
 #include "mock_guard.h"
+#include "mock_remote_object.h"
 
 #include "available_device_subscription.h"
 #include "subscription.h"
 #include "subscription_manager.h"
+#include "task_runner_manager.h"
 
 using namespace testing;
 using namespace testing::ext;
@@ -126,6 +128,83 @@ HWTEST_F(AvailableDeviceSubscriptionTest, OnCallbackAdded_002, TestSize.Level0)
     sptr<MockIIpcAvailableDeviceStatusCallback> callback = nullptr;
 
     subscription->OnCallbackAdded(callback);
+}
+
+HWTEST_F(AvailableDeviceSubscriptionTest, AddCallback_RegistersDeathRecipient, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_shared<SubscriptionManager>();
+    UserId userId = 100;
+    auto subscription = AvailableDeviceSubscription::Create(userId, subscriptionManager);
+    ASSERT_NE(subscription, nullptr);
+
+    auto mockRemoteObj = sptr<MockRemoteObject>::MakeSptr();
+    ASSERT_NE(mockRemoteObj, nullptr);
+
+    sptr<MockIIpcAvailableDeviceStatusCallback> callback = sptr<MockIIpcAvailableDeviceStatusCallback>::MakeSptr();
+    ASSERT_NE(callback, nullptr);
+    EXPECT_CALL(*callback, AsObject()).WillRepeatedly(Return(mockRemoteObj));
+
+    subscription->AddCallback(callback);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // deathRecipients_ should have an entry for the remote object.
+    EXPECT_EQ(subscription->deathRecipients_.size(), 1u);
+}
+
+HWTEST_F(AvailableDeviceSubscriptionTest, RemoveCallback_CleansUpDeathRecipient, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_shared<SubscriptionManager>();
+    UserId userId = 100;
+    auto subscription = AvailableDeviceSubscription::Create(userId, subscriptionManager);
+    ASSERT_NE(subscription, nullptr);
+
+    auto mockRemoteObj = sptr<MockRemoteObject>::MakeSptr();
+    ASSERT_NE(mockRemoteObj, nullptr);
+
+    sptr<MockIIpcAvailableDeviceStatusCallback> callback = sptr<MockIIpcAvailableDeviceStatusCallback>::MakeSptr();
+    ASSERT_NE(callback, nullptr);
+    EXPECT_CALL(*callback, AsObject()).WillRepeatedly(Return(mockRemoteObj));
+
+    subscription->AddCallback(callback);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    ASSERT_EQ(subscription->deathRecipients_.size(), 1u);
+
+    EXPECT_CALL(*mockRemoteObj, RemoveDeathRecipient(_)).WillOnce(Return(true));
+    subscription->RemoveCallback(callback);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // deathRecipients_ should be empty after RemoveCallback.
+    EXPECT_EQ(subscription->deathRecipients_.size(), 0u);
+}
+
+HWTEST_F(AvailableDeviceSubscriptionTest, Destructor_CleansUpAllDeathRecipients, TestSize.Level0)
+{
+    MockGuard guard;
+    auto subscriptionManager = std::make_shared<SubscriptionManager>();
+
+    auto mockRemoteObj = sptr<MockRemoteObject>::MakeSptr();
+    ASSERT_NE(mockRemoteObj, nullptr);
+
+    {
+        UserId userId = 100;
+        auto subscription = AvailableDeviceSubscription::Create(userId, subscriptionManager);
+        ASSERT_NE(subscription, nullptr);
+
+        sptr<MockIIpcAvailableDeviceStatusCallback> callback = sptr<MockIIpcAvailableDeviceStatusCallback>::MakeSptr();
+        ASSERT_NE(callback, nullptr);
+        EXPECT_CALL(*callback, AsObject()).WillRepeatedly(Return(mockRemoteObj));
+
+        subscription->AddCallback(callback);
+        TaskRunnerManager::GetInstance().ExecuteAll();
+        ASSERT_EQ(subscription->deathRecipients_.size(), 1u);
+
+        // Destroy the subscription — destructor should clean up death recipients.
+        EXPECT_CALL(*mockRemoteObj, RemoveDeathRecipient(_)).WillOnce(Return(true));
+    }
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
 }
 
 } // namespace

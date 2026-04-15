@@ -176,6 +176,12 @@ ResultCode BaseServiceCore::UpdateTemplateEnabledBusinessIds(uint64_t templateId
 {
     IAM_LOGI("Start");
 
+    if (enabledBusinessIds.size() > MAX_ENABLED_BUSINESS_IDS) {
+        IAM_LOGE("enabledBusinessIds size exceeds limit: %{public}zu > %{public}zu", enabledBusinessIds.size(),
+            MAX_ENABLED_BUSINESS_IDS);
+        return ResultCode::INVALID_BUSINESS_ID;
+    }
+
     // Convert int32_t to BusinessId for internal APIs
     std::vector<BusinessId> businessIdEnums;
     businessIdEnums.reserve(enabledBusinessIds.size());

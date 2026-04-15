@@ -31,13 +31,15 @@
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
-HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &params, FwkResultCallback &&requestCallback)
+HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &params, const DeviceKey &companionDeviceKey,
+    FwkResultCallback &&requestCallback)
     : BaseRequest(RequestType::HOST_SINGLE_MIX_AUTH_REQUEST, params.scheduleId, DEFAULT_REQUEST_TIMEOUT_MS, "-"),
       fwkMsg_(params.fwkMsg),
       hostUserId_(params.hostUserId),
       templateId_(params.templateId),
       authIntent_(params.authIntent),
       requestCallback_(std::move(requestCallback)),
+      peerDeviceKey_(companionDeviceKey),
       eventCollector_("host single mix auth request")
 {
     desc_.SetTemplateId(templateId_);
@@ -49,6 +51,7 @@ HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &para
 
 void HostSingleMixAuthRequest::Start()
 {
+    IAM_LOGI("%{public}s start", GetDescription());
     StartTimeout(weak_from_this());
 
     if (!GetCompanionManager().IsCapabilitySupported(templateId_, Capability::TOKEN_AUTH)) {
@@ -74,14 +77,17 @@ void HostSingleMixAuthRequest::Start()
         return;
     }
     if (!GetRequestManager().Start(tokenAuthRequest_)) {
-        IAM_LOGE("tokenAuthRequest_ Start failed for templateId %{public}s", GET_MASKED_NUM_CSTR(templateId_));
+        IAM_LOGE("%{public}s tokenAuthRequest_ Start failed for templateId %{public}s", GetDescription(),
+            GET_MASKED_NUM_CSTR(templateId_));
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
+    IAM_LOGI("%{public}s Start token auth", GetDescription());
 }
 
 bool HostSingleMixAuthRequest::Cancel(ResultCode resultCode)
 {
+    IAM_LOGI("%{public}s start", GetDescription());
     if (cancelled_) {
         IAM_LOGI("%{public}s already cancelled, skip", GetDescription());
         return true;
@@ -95,6 +101,11 @@ bool HostSingleMixAuthRequest::Cancel(ResultCode resultCode)
     }
     CompleteWithError(resultCode);
     return true;
+}
+
+std::optional<DeviceKey> HostSingleMixAuthRequest::GetPeerDeviceKey() const
+{
+    return peerDeviceKey_;
 }
 
 void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const std::vector<uint8_t> &extraInfo)
@@ -131,7 +142,8 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         return;
     }
     if (!GetRequestManager().Start(delegateAuthRequest_)) {
-        IAM_LOGE("delegateAuthRequest_ Start failed for templateId %{public}s", GET_MASKED_NUM_CSTR(templateId_));
+        IAM_LOGE("%{public}s delegateAuthRequest_ Start failed for templateId %{public}s", GetDescription(),
+            GET_MASKED_NUM_CSTR(templateId_));
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
@@ -158,8 +170,7 @@ uint32_t HostSingleMixAuthRequest::GetMaxConcurrency() const
 }
 
 bool HostSingleMixAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
-    [[maybe_unused]] const std::optional<DeviceKey> &newPeerDevice,
-    [[maybe_unused]] uint32_t subsequentSameTypeCount) const
+    const std::optional<DeviceKey> &newPeerDevice, [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
     // Spec: new HostMixAuthRequest preempts HostSingleMixAuthRequest
     if (newRequestType == RequestType::HOST_MIX_AUTH_REQUEST) {
@@ -167,13 +178,12 @@ bool HostSingleMixAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestTy
         return true;
     }
 
-    // Spec: new HostSingleMixAuthRequest with same templateId preempts existing one
-    // Note: In practice, this would need access to the new request's templateId for comparison
-    // For now, returning false to allow the manager to make the decision
+    // Spec: new HostSingleMixAuthRequest to same device preempts existing one
     if (newRequestType == RequestType::HOST_SINGLE_MIX_AUTH_REQUEST) {
-        IAM_LOGI("%{public}s: checking HostSingleMixAuth preemption", GetDescription());
-        // Comparison logic for templateId should be handled at request manager level
-        return false;
+        if (newPeerDevice.has_value() && peerDeviceKey_ == newPeerDevice.value()) {
+            IAM_LOGI("%{public}s: preempted by new HostSingleMixAuth to same device", GetDescription());
+            return true;
+        }
     }
 
     return false;
@@ -191,6 +201,7 @@ void HostSingleMixAuthRequest::InvokeCallback(ResultCode result, const std::vect
                 cb(result, extra);
             }
         });
+    requestCallback_ = nullptr;
 }
 
 void HostSingleMixAuthRequest::CompleteWithError(ResultCode result)

@@ -576,7 +576,7 @@ HWTEST_F(HostTokenAuthRequestTest, InvokeCallback_001, TestSize.Level0)
     auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
     auto request = std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
-    request->callbackInvoked_ = true;
+    request->requestCallback_ = nullptr;
 
     request->InvokeCallback(ResultCode::SUCCESS, {});
 

@@ -62,13 +62,17 @@ std::weak_ptr<OutboundRequest> HostSyncDeviceStatusRequest::GetWeakPtr()
 
 void HostSyncDeviceStatusRequest::InvokeCallback(ResultCode result, const SyncDeviceStatus &syncDeviceStatus)
 {
-    ENSURE_OR_RETURN_DESC(GetDescription(), callback_ != nullptr);
+    if (callback_ == nullptr) {
+        IAM_LOGI("%{public}s callback already sent", GetDescription());
+        return;
+    }
     TaskRunnerManager::GetInstance().PostTaskOnResident(
         [cb = std::move(callback_), result, status = syncDeviceStatus]() mutable {
             if (cb) {
                 cb(result, status);
             }
         });
+    callback_ = nullptr;
 }
 
 void HostSyncDeviceStatusRequest::CompleteWithError(ResultCode result)

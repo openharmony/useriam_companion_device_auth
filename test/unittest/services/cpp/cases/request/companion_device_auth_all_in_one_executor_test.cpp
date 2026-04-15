@@ -674,7 +674,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, SendCommand_003, TestSize.Leve
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
-    EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, SendCommand_004, TestSize.Level0)
@@ -740,7 +740,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_001
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
-    EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_002, TestSize.Level0)
@@ -762,7 +762,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_002
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
-    EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_003, TestSize.Level0)
@@ -792,7 +792,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_003
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
-    EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_004, TestSize.Level0)
@@ -827,7 +827,7 @@ HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_004
 
     FwkResultCode ret = executor->SendCommand(commandId, extraInfo, callback);
 
-    EXPECT_EQ(FwkResultCode::GENERAL_ERROR, ret);
+    EXPECT_EQ(FwkResultCode::SUCCESS, ret);
 }
 
 HWTEST_F(CompanionDeviceAuthAllInOneExecutorTest, HandleFreezeRelatedCommand_005, TestSize.Level0)

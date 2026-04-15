@@ -731,7 +731,7 @@ HWTEST_F(HostDelegateAuthRequestTest, InvokeCallback_001, TestSize.Level0)
     auto callbackCalled = std::make_shared<bool>(false);
     auto callback = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
-    request->callbackInvoked_ = true;
+    request->requestCallback_ = nullptr;
 
     request->InvokeCallback(ResultCode::SUCCESS, {});
 
@@ -771,7 +771,12 @@ HWTEST_F(HostDelegateAuthRequestTest, ShouldCancelOnNewRequest_002, TestSize.Lev
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
+    // Different device (nullopt) should not preempt
     bool result = request->ShouldCancelOnNewRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, std::nullopt, 0);
+    EXPECT_FALSE(result);
+
+    // Same device should preempt
+    result = request->ShouldCancelOnNewRequest(RequestType::HOST_DELEGATE_AUTH_REQUEST, COMPANION_DEVICE_KEY, 0);
     EXPECT_TRUE(result);
 }
 

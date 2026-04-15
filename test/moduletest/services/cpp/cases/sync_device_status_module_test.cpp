@@ -63,7 +63,9 @@ public:
 private:
     class StubRemoteObject : public IRemoteObject {
     public:
-        StubRemoteObject() : IRemoteObject(u"StubRemoteObject") {}
+        StubRemoteObject() : IRemoteObject(u"StubRemoteObject")
+        {
+        }
         int32_t GetObjectRefCount() override
         {
             return 1;

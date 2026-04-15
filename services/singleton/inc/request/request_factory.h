@@ -87,7 +87,7 @@ public:
     virtual std::shared_ptr<IRequest> CreateHostMixAuthRequest(const HostMixAuthParams &params,
         FwkResultCallback &&requestCallback) = 0;
     virtual std::shared_ptr<IRequest> CreateHostSingleMixAuthRequest(const AuthRequestParams &params,
-        FwkResultCallback &&requestCallback) = 0;
+        const DeviceKey &companionDeviceKey, FwkResultCallback &&requestCallback) = 0;
 
 protected:
     IRequestFactory() = default;

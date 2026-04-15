@@ -126,16 +126,17 @@ impl Request for CompanionDelegateAuthRequest {
             return Ok(());
         }
 
-        if ffi_input.auth_token.len as usize != core::mem::size_of::<UserAuthToken>() {
+        let auth_token_slice = ffi_input.auth_token.as_slice()?;
+        if auth_token_slice.len() != core::mem::size_of::<UserAuthToken>() {
             log_e!(
                 "auth_token length mismatch: expected {}, got {}",
                 core::mem::size_of::<UserAuthToken>(),
-                ffi_input.auth_token.len
+                auth_token_slice.len()
             );
             return Err(ErrorCode::GeneralError);
         }
 
-        let auth_token = UserAuthToken::deserialize(&ffi_input.auth_token.data[..ffi_input.auth_token.len as usize])
+        let auth_token = UserAuthToken::deserialize(auth_token_slice)
             .map_err(|e| p!(e))?;
         self.atl = auth_token.token_data_plain.auth_trust_level;
 

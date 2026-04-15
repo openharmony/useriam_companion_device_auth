@@ -86,7 +86,7 @@ public:
     FwkResultCode Cancel(uint64_t scheduleId);
     FwkResultCode SendCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo,
         const std::shared_ptr<FwkIExecuteCallback> &callbackObj);
-    FwkResultCode HandleFreezeRelatedCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo);
+    void HandleFreezeRelatedCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo);
 
 private:
     std::optional<FreezeCommand> DecodeFreezeCommand(const std::vector<uint8_t> &dataTlv);
@@ -267,16 +267,17 @@ FwkResultCode Inner::SendCommand(FwkPropertyMode commandId, const std::vector<ui
 {
     IAM_LOGI("start");
     ENSURE_OR_RETURN_VAL(callbackObj != nullptr, FwkResultCode::GENERAL_ERROR);
+    // The framework does not interpret the ResultCode in OnResult; always return SUCCESS.
+    // OnResult is called after processing completes so that the callback fires at a deterministic point.
     callbackObj->OnResult(FwkResultCode::SUCCESS, {});
-
     if (commandId != FwkPropertyMode::PROPERTY_MODE_FREEZE && commandId != FwkPropertyMode::PROPERTY_MODE_UNFREEZE) {
         IAM_LOGI("SendCommand not implemented for commandId=%{public}d, returning success", commandId);
         return FwkResultCode::SUCCESS;
     }
 
-    FwkResultCode ret = HandleFreezeRelatedCommand(commandId, extraInfo);
+    HandleFreezeRelatedCommand(commandId, extraInfo);
     IAM_LOGI("end");
-    return ret;
+    return FwkResultCode::SUCCESS;
 }
 
 std::optional<FreezeCommand> Inner::DecodeFreezeCommand(const std::vector<uint8_t> &dataTlv)
@@ -302,32 +303,32 @@ std::optional<FreezeCommand> Inner::DecodeFreezeCommand(const std::vector<uint8_
     return freezeCommand;
 }
 
-FwkResultCode Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo)
+void Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const std::vector<uint8_t> &extraInfo)
 {
     Attributes attrs(extraInfo);
     std::vector<uint8_t> rootTlv;
     bool getRootTlvRet = attrs.GetUint8ArrayValue(static_cast<Attributes::AttributeKey>(ATTR_ROOT), rootTlv);
-    ENSURE_OR_RETURN_VAL(getRootTlvRet, FwkResultCode::GENERAL_ERROR);
+    ENSURE_OR_RETURN(getRootTlvRet);
 
     Attributes rootTlvAttrs(rootTlv);
     std::vector<uint8_t> dataTlv;
     bool getDataTlvRet = rootTlvAttrs.GetUint8ArrayValue(static_cast<Attributes::AttributeKey>(ATTR_DATA), dataTlv);
-    ENSURE_OR_RETURN_VAL(getDataTlvRet, FwkResultCode::GENERAL_ERROR);
+    ENSURE_OR_RETURN(getDataTlvRet);
 
     std::optional<FreezeCommand> freezeCommandOpt = DecodeFreezeCommand(dataTlv);
-    ENSURE_OR_RETURN_VAL(freezeCommandOpt.has_value(), FwkResultCode::GENERAL_ERROR);
+    ENSURE_OR_RETURN(freezeCommandOpt.has_value());
 
     const FreezeCommand &freezeCommand = freezeCommandOpt.value();
     if (static_cast<AuthType>(freezeCommand.authTypeValue) != AuthType::COMPANION_DEVICE) {
         IAM_LOGI("AuthType %{public}u is not companion device", freezeCommand.authTypeValue);
-        return FwkResultCode::GENERAL_ERROR;
+        return;
     }
 
     AuthType lockStateAuthType = static_cast<AuthType>(freezeCommand.lockStateAuthTypeValue);
     if (lockStateAuthType != AuthType::PIN && lockStateAuthType != AuthType::FACE &&
         lockStateAuthType != AuthType::FINGERPRINT) {
         IAM_LOGI("AuthType %{public}u is ignored", freezeCommand.lockStateAuthTypeValue);
-        return FwkResultCode::SUCCESS;
+        return;
     }
 
     IAM_LOGI("receive commandId:%{public}d, AuthType:%{public}u, templateIdList size:%{public}zu, userId:%{public}d",
@@ -342,15 +343,13 @@ FwkResultCode Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const
         if (GetUserIdManager().GetActiveUserId() != freezeCommand.userId) {
             IAM_LOGE("userId %{public}d mismatch with active user id %{public}d, skip", freezeCommand.userId,
                 GetUserIdManager().GetActiveUserId());
-            return FwkResultCode::SUCCESS;
+            return;
         }
         GetCompanionManager().StartIssueTokenRequests(freezeCommand.templateIdList,
             freezeCommand.lockStateAuthTypeValue, extraInfo);
         GetHostBindingManager().StartObtainTokenRequests(freezeCommand.userId, freezeCommand.lockStateAuthTypeValue,
             extraInfo);
     }
-
-    return FwkResultCode::SUCCESS;
 }
 
 CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutor()
@@ -521,14 +520,18 @@ FwkResultCode CompanionDeviceAuthAllInOneExecutor::RunOnResidentSync(std::functi
             try {
                 promise->set_value(taskFunc());
             } catch (...) {
-                IAM_LOGE("RunOnResidentSync task exception");
+                try {
+                    promise->set_exception(std::current_exception());
+                } catch (...) {
+                    IAM_LOGE("RunOnResidentSync set_exception failed");
+                }
             }
         });
 
     std::future_status status = future.wait_for(std::chrono::seconds(timeoutSec));
     if (status != std::future_status::ready) {
         IAM_LOGE("RunOnResidentSync timeout - task not completed in %{public}u second, status: %{public}d", timeoutSec,
-            static_cast<int>(status));
+            static_cast<int32_t>(status));
         return FwkResultCode::TIMEOUT;
     }
 

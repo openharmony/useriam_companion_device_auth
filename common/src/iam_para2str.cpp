@@ -35,7 +35,7 @@ namespace CompanionDeviceAuth {
 std::string GetMaskedString(uint16_t val)
 {
     std::ostringstream ss;
-    ss << "0xXXXX" << std::setfill('0') << std::setw(TRUNCATED_WIDTH) << std::hex << val;
+    ss << "0xXXXX" << std::setfill('0') << std::setw(TRUNCATED_WIDTH) << std::uppercase << std::hex << val;
     return ss.str();
 }
 
@@ -75,7 +75,7 @@ std::string GetMaskedString(const std::string &val)
 std::string GetTruncatedString(uint16_t val)
 {
     std::ostringstream ss;
-    ss << std::setfill('0') << std::setw(TRUNCATED_WIDTH) << std::hex << val;
+    ss << std::setfill('0') << std::setw(TRUNCATED_WIDTH) << std::uppercase << std::hex << val;
     return ss.str();
 }
 
@@ -97,7 +97,8 @@ std::string GetUint8ArrayStr(const std::vector<uint8_t> &val)
         if (i > 0) {
             ss << ", ";
         }
-        ss << "0x" << std::setfill('0') << std::setw(SETW_VAL) << std::hex << static_cast<uint32_t>(val[i]);
+        ss << "0x" << std::setfill('0') << std::setw(SETW_VAL) << std::uppercase << std::hex
+           << static_cast<uint32_t>(val[i]);
     }
     ss << "]";
     return ss.str();
