@@ -187,7 +187,6 @@ struct CompanionEndAddHostBindingInput {
 };
 
 struct CompanionEndAddHostBindingOutput {
-    BindingId bindingId;
     Atl atl;
     int32_t esl;
 };
@@ -424,6 +423,10 @@ struct HostUpdateCompanionEnabledBusinessIdsInput {
     std::vector<BusinessId> enabledBusinessIds;
 };
 
+struct HostSetCompanionInvalidInput {
+    TemplateId templateId;
+};
+
 struct HostCheckTemplateEnrolledInput {
     TemplateId templateId;
 };
@@ -532,6 +535,7 @@ private:
     virtual ResultCode HostUpdateCompanionStatus(const HostUpdateCompanionStatusInput &input) = 0;
     virtual ResultCode HostUpdateCompanionEnabledBusinessIds(
         const HostUpdateCompanionEnabledBusinessIdsInput &input) = 0;
+    virtual ResultCode HostSetCompanionInvalid(const HostSetCompanionInvalidInput &input) = 0;
     virtual ResultCode HostUpdateToken(const HostUpdateTokenInput &input, HostUpdateTokenOutput &output) = 0;
     virtual ResultCode HostRevokeToken(const HostRevokeTokenInput &input) = 0;
 

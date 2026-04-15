@@ -19,7 +19,6 @@
 #include <memory>
 #include <string>
 
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 
 namespace OHOS {
@@ -49,7 +48,6 @@ private:
     void CompleteWithSuccess();
 
     int32_t companionUserId_ = INVALID_USER_ID;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

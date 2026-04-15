@@ -227,6 +227,12 @@ typedef struct HostUpdateCompanionEnabledBusinessIdsInputFfi {
 
 typedef struct PlaceHolderFfi HostUpdateCompanionEnabledBusinessIdsOutputFfi;
 
+typedef struct HostSetCompanionInvalidInputFfi {
+    uint64_t templateId;
+} HostSetCompanionInvalidInputFfi;
+
+typedef struct PlaceHolderFfi HostSetCompanionInvalidOutputFfi;
+
 typedef struct HostCheckTemplateEnrolledInputFfi {
     uint64_t templateId;
 } HostCheckTemplateEnrolledInputFfi;
@@ -358,7 +364,6 @@ typedef struct CompanionEndAddHostBindingInputFfi {
 } CompanionEndAddHostBindingInputFfi;
 
 typedef struct CompanionEndAddHostBindingOutputFfi {
-    int32_t bindingId;
     int32_t atl;
     int32_t esl;
 } CompanionEndAddHostBindingOutputFfi;

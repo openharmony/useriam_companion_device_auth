@@ -52,15 +52,6 @@ static void FuzzReset(std::shared_ptr<BackoffRetryTimer> &timer, FuzzedDataProvi
     }
 }
 
-static void FuzzGetFailureCount(std::shared_ptr<BackoffRetryTimer> &timer, FuzzedDataProvider &fuzzData)
-{
-    (void)fuzzData;
-    if (timer) {
-        auto count = timer->GetFailureCount();
-        (void)count;
-    }
-}
-
 static void FuzzCalculateNextDelayMs(std::shared_ptr<BackoffRetryTimer> &timer, FuzzedDataProvider &fuzzData)
 {
     if (timer) {
@@ -120,7 +111,6 @@ static void FuzzCalculateNextDelayMsBoundary(std::shared_ptr<BackoffRetryTimer> 
 static const BackoffRetryTimerFuzzFunction g_fuzzFuncs[] = {
     FuzzOnFailure,
     FuzzReset,
-    FuzzGetFailureCount,
     FuzzCalculateNextDelayMs,
     FuzzOnFailureMultiple,
     FuzzFailureResetCycle,

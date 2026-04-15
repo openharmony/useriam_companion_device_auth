@@ -22,6 +22,7 @@
 #include "error_guard.h"
 #include "host_binding_manager.h"
 #include "interaction_desc.h"
+#include "interaction_event_collector.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
 #include "token_auth_message.h"
@@ -38,12 +39,20 @@ CompanionTokenAuthHandler::CompanionTokenAuthHandler() : SyncIncomingMessageHand
 
 void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CTkA");
+    InteractionDesc desc(HANDLER_PREFIX, "HCTkA");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
-    ErrorGuard errorGuard([&reply](ResultCode result) {
+    InteractionEventCollector eventCollector("HCTkA");
+    ErrorGuard errorGuard([&reply, &eventCollector](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
+        eventCollector.Report(result);
     });
+
+    std::string connectionName;
+    if (request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName)) {
+        desc.SetConnectionName(connectionName);
+        eventCollector.SetConnectionName(connectionName);
+    }
 
     auto tokenRequestOpt = DecodeTokenAuthRequest(request);
     if (!tokenRequestOpt.has_value()) {
@@ -61,6 +70,7 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
         GetHostBindingManager().GetHostBindingStatus(tokenRequest.companionUserId, tokenRequest.hostDeviceKey);
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), hostBindingStatus.has_value());
     desc.SetBindingId(hostBindingStatus->bindingId);
+    eventCollector.SetBindingId(hostBindingStatus->bindingId);
 
     auto secureProtocolId = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
 
@@ -80,6 +90,7 @@ void CompanionTokenAuthHandler::HandleRequest(const Attributes &request, Attribu
     TokenAuthReply replyMsg = { .result = ret, .extraInfo = output.tokenAuthReply };
     EncodeTokenAuthReply(replyMsg, reply);
     errorGuard.Cancel();
+    eventCollector.Report(ResultCode::SUCCESS);
     IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth

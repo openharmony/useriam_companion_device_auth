@@ -39,12 +39,11 @@ CompanionDelegateAuthRequest::CompanionDelegateAuthRequest(const std::string &co
     const DeviceKey &hostDeviceKey, const std::vector<uint8_t> &startDelegateAuthRequest)
     : InboundRequest(RequestType::COMPANION_DELEGATE_AUTH_REQUEST, connectionName, hostDeviceKey),
       companionUserId_(companionUserId),
-      startDelegateAuthRequest_(startDelegateAuthRequest),
-      eventCollector_("companion delegate auth request")
+      startDelegateAuthRequest_(startDelegateAuthRequest)
 {
-    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
-    eventCollector_.UpdateCompanionUserId(companionUserId_);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetHostDeviceKey(PeerDeviceKey());
+    eventCollector_.SetCompanionUserId(companionUserId_);
+    eventCollector_.SetConnectionName(GetConnectionName());
 }
 
 CompanionDelegateAuthRequest::~CompanionDelegateAuthRequest()
@@ -92,8 +91,9 @@ bool CompanionDelegateAuthRequest::CompanionBeginDelegateAuth()
         ConvertUint64ToUint8Vec(challenge), static_cast<uint32_t>(atl), callback);
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), contextId != 0, false);
     contextId_ = contextId;
+    desc_.SetContextId(contextId);
 
-    eventCollector_.AppendExtraInfo("context id", contextId);
+    eventCollector_.SetContextId(contextId);
     return true;
 }
 
@@ -113,6 +113,7 @@ bool CompanionDelegateAuthRequest::SecureAgentBeginDelegateAuth(uint64_t &challe
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), hostBindingStatus.has_value(), false);
     bindingId_ = hostBindingStatus->bindingId;
     desc_.SetBindingId(bindingId_);
+    eventCollector_.SetBindingId(bindingId_);
 
     CompanionDelegateAuthBeginOutput output = {};
     ResultCode ret = GetSecurityAgent().CompanionBeginDelegateAuth(BuildCompanionDelegateAuthBeginInput(), output);
@@ -183,8 +184,8 @@ bool CompanionDelegateAuthRequest::SecurityAgentEndDelegateAuth(ResultCode resul
         IAM_LOGE("%{public}s CompanionEndDelegateAuth failed ret=%{public}d", GetDescription(), ret);
     }
     needEndDelegateAuth_ = false;
-    eventCollector_.AppendExtraInfo("success auth type", output.authType);
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetSuccessAuthType(output.authType);
+    eventCollector_.SetAtl(output.atl);
     delegateAuthResult.swap(output.delegateAuthResult);
     return ret == ResultCode::SUCCESS;
 }

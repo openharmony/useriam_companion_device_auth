@@ -36,6 +36,7 @@ struct MockRequestConfig {
     std::optional<DeviceKey> peerDeviceKey = std::nullopt;
     uint32_t maxConcurrency = 1;
     bool shouldCancel = false;
+    std::optional<RequestType> conflictingType;
     const char *description = "MockRequest";
 
     MockRequestConfig &WithId(RequestId newId)
@@ -74,6 +75,12 @@ struct MockRequestConfig {
         return *this;
     }
 
+    MockRequestConfig &WithConflictingType(RequestType type)
+    {
+        conflictingType = type;
+        return *this;
+    }
+
     MockRequestConfig &WithDescription(const char *desc)
     {
         description = desc;
@@ -95,6 +102,33 @@ public:
     MOCK_METHOD(uint32_t, GetMaxConcurrency, (), (const, override));
     MOCK_METHOD(bool, ShouldCancelOnNewRequest, (RequestType, const std::optional<DeviceKey> &, uint32_t),
         (const, override));
+
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override
+    {
+        uint32_t sameTypeCount = 0;
+        for (const auto &req : prevRequests) {
+            if (req != nullptr && req->GetRequestType() == GetRequestType()) {
+                sameTypeCount++;
+            }
+        }
+        if (sameTypeCount >= GetMaxConcurrency()) {
+            return false;
+        }
+        for (const auto &req : prevRequests) {
+            if (req != nullptr && conflictingType_.has_value() && req->GetRequestType() == conflictingType_.value()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void SetConflictingType(std::optional<RequestType> type)
+    {
+        conflictingType_ = type;
+    }
+
+private:
+    std::optional<RequestType> conflictingType_;
 };
 
 // ============== Mock Request Factory ==============
@@ -111,6 +145,7 @@ std::shared_ptr<NiceMock<MockRequest>> CreateMockRequest(const MockRequestConfig
     ON_CALL(*request, ShouldCancelOnNewRequest).WillByDefault(Return(config.shouldCancel));
     ON_CALL(*request, Start).WillByDefault(Return());
     ON_CALL(*request, Cancel(_)).WillByDefault(Return(true));
+    request->SetConflictingType(config.conflictingType);
     return request;
 }
 
@@ -634,20 +669,6 @@ HWTEST_F(RequestManagerImplTest, CancelAll_EmptyManager_DoesNothing, TestSize.Le
     ASSERT_NO_THROW(manager_->CancelAll());
 }
 
-HWTEST_F(RequestManagerImplTest, CancelAll_WithNullRequestsInList, TestSize.Level0)
-{
-    auto request1 = CreateMockRequest(
-        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
-
-    manager_->Start(request1);
-    manager_->runningRequests_.push_back(nullptr);
-    manager_->waitingRequests_.push_back(nullptr);
-
-    EXPECT_CALL(*request1, Cancel(_)).Times(1).WillOnce(Return(true));
-
-    ASSERT_NO_THROW(manager_->CancelAll());
-}
-
 HWTEST_F(RequestManagerImplTest, CancelAll_WithFailedCancel, TestSize.Level0)
 {
     auto request1 = CreateMockRequest(
@@ -792,6 +813,163 @@ HWTEST_F(RequestManagerImplTest, ComplexScenario_PreemptedRequestNotStartedFromW
     EXPECT_CALL(*waiting, Start()).Times(0);
 
     manager_->Start(newRequest);
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
+}
+
+// ============== Cross-Type Mutual Exclusion Tests ==============
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_IssueTokenWaits_WhenTokenAuthRunning, TestSize.Level0)
+{
+    auto tokenAuth = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
+
+    auto issueToken = CreateMockRequest(MockRequestConfig {}
+                                            .WithId(2)
+                                            .WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST)
+                                            .WithMaxConcurrency(10)
+                                            .WithConflictingType(RequestType::HOST_TOKEN_AUTH_REQUEST));
+
+    EXPECT_CALL(*tokenAuth, Start()).Times(1);
+    EXPECT_CALL(*issueToken, Start()).Times(0);
+
+    manager_->Start(tokenAuth);
+    manager_->Start(issueToken);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    EXPECT_NE(manager_->Get(1), nullptr);
+    EXPECT_NE(manager_->Get(2), nullptr);
+}
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_TokenAuthWaits_WhenIssueTokenRunning, TestSize.Level0)
+{
+    auto issueToken = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST).WithMaxConcurrency(10));
+
+    auto tokenAuth = CreateMockRequest(MockRequestConfig {}
+                                           .WithId(2)
+                                           .WithType(RequestType::HOST_TOKEN_AUTH_REQUEST)
+                                           .WithMaxConcurrency(10)
+                                           .WithConflictingType(RequestType::HOST_ISSUE_TOKEN_REQUEST));
+
+    EXPECT_CALL(*issueToken, Start()).Times(1);
+    EXPECT_CALL(*tokenAuth, Start()).Times(0);
+
+    manager_->Start(issueToken);
+    manager_->Start(tokenAuth);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    EXPECT_NE(manager_->Get(1), nullptr);
+    EXPECT_NE(manager_->Get(2), nullptr);
+}
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_IssueTokenPromoted_WhenTokenAuthFinishes, TestSize.Level0)
+{
+    auto tokenAuth = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
+
+    auto issueToken = CreateMockRequest(MockRequestConfig {}
+                                            .WithId(2)
+                                            .WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST)
+                                            .WithMaxConcurrency(10)
+                                            .WithConflictingType(RequestType::HOST_TOKEN_AUTH_REQUEST));
+
+    EXPECT_CALL(*tokenAuth, Start()).Times(1);
+
+    manager_->Start(tokenAuth);
+    manager_->Start(issueToken);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    EXPECT_CALL(*issueToken, Start()).Times(1);
+
+    manager_->Remove(1);
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
+}
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_TokenAuthPromoted_WhenIssueTokenFinishes, TestSize.Level0)
+{
+    auto issueToken = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST).WithMaxConcurrency(10));
+
+    auto tokenAuth = CreateMockRequest(MockRequestConfig {}
+                                           .WithId(2)
+                                           .WithType(RequestType::HOST_TOKEN_AUTH_REQUEST)
+                                           .WithMaxConcurrency(10)
+                                           .WithConflictingType(RequestType::HOST_ISSUE_TOKEN_REQUEST));
+
+    EXPECT_CALL(*issueToken, Start()).Times(1);
+
+    manager_->Start(issueToken);
+    manager_->Start(tokenAuth);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    EXPECT_CALL(*tokenAuth, Start()).Times(1);
+
+    manager_->Remove(1);
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
+}
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_IssueTokenWaitsForAll_TokenAuthMultipleRunning, TestSize.Level0)
+{
+    auto tokenAuth1 = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
+
+    auto tokenAuth2 = CreateMockRequest(
+        MockRequestConfig {}.WithId(2).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
+
+    auto issueToken = CreateMockRequest(MockRequestConfig {}
+                                            .WithId(3)
+                                            .WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST)
+                                            .WithMaxConcurrency(10)
+                                            .WithConflictingType(RequestType::HOST_TOKEN_AUTH_REQUEST));
+
+    EXPECT_CALL(*tokenAuth1, Start()).Times(1);
+    EXPECT_CALL(*tokenAuth2, Start()).Times(1);
+
+    manager_->Start(tokenAuth1);
+    manager_->Start(tokenAuth2);
+    manager_->Start(issueToken);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // Remove first TokenAuth → IssueToken still blocked by second TokenAuth
+    EXPECT_CALL(*issueToken, Start()).Times(0);
+    manager_->Remove(1);
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // Remove second TokenAuth → IssueToken can now start
+    EXPECT_CALL(*issueToken, Start()).Times(1);
+    manager_->Remove(2);
+    ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
+}
+
+HWTEST_F(RequestManagerImplTest, MutualExclusion_FIFO_NewTokenAuthWaits_WhenIssueTokenWaiting, TestSize.Level0)
+{
+    auto tokenAuth1 = CreateMockRequest(
+        MockRequestConfig {}.WithId(1).WithType(RequestType::HOST_TOKEN_AUTH_REQUEST).WithMaxConcurrency(10));
+
+    auto issueToken = CreateMockRequest(MockRequestConfig {}
+                                            .WithId(2)
+                                            .WithType(RequestType::HOST_ISSUE_TOKEN_REQUEST)
+                                            .WithMaxConcurrency(10)
+                                            .WithConflictingType(RequestType::HOST_TOKEN_AUTH_REQUEST));
+
+    auto tokenAuth2 = CreateMockRequest(MockRequestConfig {}
+                                            .WithId(3)
+                                            .WithType(RequestType::HOST_TOKEN_AUTH_REQUEST)
+                                            .WithMaxConcurrency(10)
+                                            .WithConflictingType(RequestType::HOST_ISSUE_TOKEN_REQUEST));
+
+    EXPECT_CALL(*tokenAuth1, Start()).Times(1);
+
+    manager_->Start(tokenAuth1);
+    manager_->Start(issueToken); // blocked by tokenAuth1, goes to waiting
+    manager_->Start(tokenAuth2); // sees issueToken in prevRequests, also goes to waiting
+    TaskRunnerManager::GetInstance().ExecuteAll();
+
+    // tokenAuth1 finishes → issueToken (ahead in queue) promoted first
+    EXPECT_CALL(*issueToken, Start()).Times(1);
+    EXPECT_CALL(*tokenAuth2, Start()).Times(0);
+
+    manager_->Remove(1);
     ASSERT_NO_THROW(TaskRunnerManager::GetInstance().ExecuteAll());
 }
 

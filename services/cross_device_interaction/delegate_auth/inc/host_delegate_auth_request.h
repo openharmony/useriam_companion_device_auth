@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "companion_manager.h"
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "request_factory.h"
 #include "security_agent.h"
@@ -65,7 +64,6 @@ private:
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     std::unique_ptr<Subscription> delegateResultSubscription_;
     bool needCancelDelegateAuth_ = false;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

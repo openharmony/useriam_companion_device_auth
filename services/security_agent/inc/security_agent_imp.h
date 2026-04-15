@@ -125,6 +125,7 @@ public:
     // Update companion device status
     ResultCode HostUpdateCompanionStatus(const HostUpdateCompanionStatusInput &input) override;
     ResultCode HostUpdateCompanionEnabledBusinessIds(const HostUpdateCompanionEnabledBusinessIdsInput &input) override;
+    ResultCode HostSetCompanionInvalid(const HostSetCompanionInvalidInput &input) override;
     ResultCode HostCheckTemplateEnrolled(const HostCheckTemplateEnrolledInput &input,
         HostCheckTemplateEnrolledOutput &output) override;
 

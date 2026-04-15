@@ -82,6 +82,17 @@ public:
         return maxConcurrency_;
     }
 
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override
+    {
+        uint32_t sameTypeCount = 0;
+        for (const auto &req : prevRequests) {
+            if (req != nullptr && req->GetRequestType() == GetRequestType()) {
+                sameTypeCount++;
+            }
+        }
+        return sameTypeCount < GetMaxConcurrency();
+    }
+
     bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,
         uint32_t subsequentSameTypeCount) const override
     {

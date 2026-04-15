@@ -280,9 +280,7 @@ fn host_on_register_finish_test_success() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager
-        .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_get_device_list().returning(|| vec![create_mock_companion_device(123)]);
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let mut input = HostRegisterFinishInputFfi {
@@ -328,9 +326,7 @@ fn host_on_register_finish_test_remove_device_success() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager
-        .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_get_device_list().returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager.expect_remove_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -356,9 +352,7 @@ fn host_on_register_finish_test_remove_device_fail() {
     MiscManagerRegistry::set(Box::new(mock_misc_manager));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager
-        .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_get_device_list().returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager.expect_remove_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -380,9 +374,7 @@ fn host_get_persisted_status_test_success_with_devices() {
     log_i!("host_get_persisted_status_test_success_with_devices start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager
-        .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_get_device_list().returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager
         .expect_read_device_profile()
         .returning(|| Ok(create_mock_companion_device_profile()));
@@ -417,9 +409,7 @@ fn host_get_persisted_status_test_read_device_profile_fail() {
     log_i!("host_get_persisted_status_test_read_device_profile_fail start");
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager
-        .expect_get_device_list()
-        .returning(|| vec![create_mock_companion_device(123)]);
+    mock_companion_device_db_manager.expect_get_device_list().returning(|| vec![create_mock_companion_device(123)]);
     mock_companion_device_db_manager.expect_read_device_profile().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -2801,10 +2791,9 @@ fn companion_end_add_host_binding_test_success() {
         result: 0,
         sec_message: DataArray1024Ffi::try_from(&sec_message).unwrap(),
     };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert!(result.is_ok());
-    assert_eq!(output.binding_id, 0);
 }
 
 #[test]
@@ -2818,7 +2807,7 @@ fn companion_end_add_host_binding_test_remove_request_fail() {
 
     let input =
         CompanionEndAddHostBindingInputFfi { request_id: 1, result: 0, sec_message: DataArray1024Ffi::default() };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::NotFound));
 }
@@ -2849,7 +2838,7 @@ fn companion_end_add_host_binding_test_request_end_fail() {
 
     let input =
         CompanionEndAddHostBindingInputFfi { request_id: 1, result: 1, sec_message: DataArray1024Ffi::default() };
-    let mut output = CompanionEndAddHostBindingOutputFfi { binding_id: -1, atl: 0, esl: 0 };
+    let mut output = CompanionEndAddHostBindingOutputFfi { atl: 0, esl: 0 };
     let result = companion_end_add_host_binding(&input, &mut output);
     assert_eq!(result, Err(ErrorCode::GeneralError));
 }

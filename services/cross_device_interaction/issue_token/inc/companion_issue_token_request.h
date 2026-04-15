@@ -22,7 +22,6 @@
 
 #include "host_binding_manager.h"
 #include "inbound_request.h"
-#include "interaction_event_collector.h"
 #include "issue_token_message.h"
 #include "security_agent.h"
 #include "service_common.h"
@@ -68,7 +67,6 @@ private:
     std::unique_ptr<Subscription> issueTokenSubscription_;
     std::unique_ptr<Subscription> localDeviceStatusSubscription_;
     std::optional<MessageType> activeMsgType_;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

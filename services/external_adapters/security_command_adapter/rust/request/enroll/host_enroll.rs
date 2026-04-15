@@ -285,8 +285,11 @@ impl HostDeviceEnrollRequest {
         }
 
         if self.enroll_param.companion_device_key.user_id != reply_info.user_id {
-            log_e!("user_id check fail, expected: {}, got: {}",
-                self.enroll_param.companion_device_key.user_id, reply_info.user_id);
+            log_e!(
+                "user_id check fail, expected: {}, got: {}",
+                self.enroll_param.companion_device_key.user_id,
+                reply_info.user_id
+            );
             return Err(ErrorCode::GeneralError);
         }
 

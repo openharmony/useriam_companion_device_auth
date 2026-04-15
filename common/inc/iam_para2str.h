@@ -64,6 +64,20 @@ std::string GetVectorString(const std::vector<T> &vec)
     result += "]";
     return result;
 }
+
+template <typename T>
+std::string GetMaskedVectorString(const std::vector<T> &vec)
+{
+    std::string result = "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        result += GetMaskedString(static_cast<uint16_t>(vec[i]));
+        if (i + 1 < vec.size()) {
+            result += ", ";
+        }
+    }
+    result += "]";
+    return result;
+}
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

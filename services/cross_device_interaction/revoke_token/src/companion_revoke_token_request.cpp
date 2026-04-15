@@ -32,14 +32,13 @@ namespace CompanionDeviceAuth {
 CompanionRevokeTokenRequest::CompanionRevokeTokenRequest(int32_t companionUserId, const DeviceKey &hostDeviceKey,
     const std::string &triggerReason)
     : OutboundRequest(RequestType::COMPANION_REVOKE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
-      companionUserId_(companionUserId),
-      eventCollector_("companion revoke token request")
+      companionUserId_(companionUserId)
 {
     SetPeerDeviceKey(hostDeviceKey);
-    eventCollector_.UpdateHostDeviceKey(hostDeviceKey);
-    eventCollector_.UpdateCompanionUserId(companionUserId);
-    eventCollector_.UpdateTriggerReason(triggerReason);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetHostDeviceKey(hostDeviceKey);
+    eventCollector_.SetCompanionUserId(companionUserId);
+    eventCollector_.SetTriggerReason(triggerReason);
+    eventCollector_.SetConnectionName(GetConnectionName());
 }
 
 void CompanionRevokeTokenRequest::OnConnected()

@@ -16,71 +16,197 @@
 #include "interaction_event_collector.h"
 
 #include "event_manager_adapter.h"
+#include "iam_para2str.h"
 
 namespace OHOS {
 namespace UserIam {
 namespace CompanionDeviceAuth {
 
-void InteractionEventCollector::UpdateHostUserId(UserId hostUserId)
+void InteractionEventCollector::SetHostUserId(UserId hostUserId)
 {
     hostUserId_ = hostUserId;
 }
 
-void InteractionEventCollector::UpdateHostDeviceKey(const DeviceKey &hostDeviceKey)
+void InteractionEventCollector::SetHostDeviceKey(const DeviceKey &hostDeviceKey)
 {
     hostDeviceKey_ = hostDeviceKey;
 }
 
-void InteractionEventCollector::UpdateCompanionUserId(UserId companionUserId)
+void InteractionEventCollector::SetCompanionUserId(UserId companionUserId)
 {
     companionUserId_ = companionUserId;
 }
 
-void InteractionEventCollector::UpdateCompanionDeviceKey(const DeviceKey &companionDeviceKey)
+void InteractionEventCollector::SetCompanionDeviceKey(const DeviceKey &companionDeviceKey)
 {
     companionDeviceKey_ = companionDeviceKey;
 }
 
-void InteractionEventCollector::UpdateConnectionName(const std::string &connectionName)
+void InteractionEventCollector::SetConnectionName(const std::string &connectionName)
 {
     connectionName_ = connectionName;
 }
 
-void InteractionEventCollector::UpdateScheduleId(ScheduleId scheduleId)
+void InteractionEventCollector::SetScheduleId(ScheduleId scheduleId)
 {
     scheduleId_ = scheduleId;
 }
 
-void InteractionEventCollector::UpdateTriggerReason(const std::string &triggerReason)
+void InteractionEventCollector::SetTriggerReason(const std::string &triggerReason)
 {
     triggerReason_ = triggerReason;
 }
 
-void InteractionEventCollector::UpdateTemplateIdList(const std::vector<TemplateId> &templateIdList)
+void InteractionEventCollector::SetTemplateIdList(const std::vector<TemplateId> &templateIdList)
 {
     templateIdList_ = templateIdList;
 }
 
-template <typename T>
-void InteractionEventCollector::AppendExtraInfo(const std::string &key, const T &value)
+namespace {
+constexpr const char *KEY_ATL = "ATL";
+constexpr const char *KEY_BINDING_ID = "bindingId";
+constexpr const char *KEY_CONTEXT_ID = "contextId";
+constexpr const char *KEY_SUCCESS_AUTH_TYPE = "successAuthType";
+constexpr const char *KEY_ALGORITHM_LIST = "algorithmList";
+constexpr const char *KEY_SELECTED_ALGORITHM = "selectedAlgorithm";
+constexpr const char *KEY_ESL = "ESL";
+constexpr const char *KEY_PROTOCOL_ID_LIST = "protocolIdList";
+constexpr const char *KEY_CAPABILITY_LIST = "capabilityList";
+constexpr const char *KEY_SELECTED_PROTOCOL_ID_LIST = "selectedProtocolIdList";
+constexpr const char *KEY_SECURE_PROTOCOL_ID = "secureProtocolId";
+constexpr const char *KEY_TEMPLATE_AUTH_RESULT = "templateAuthResult";
+constexpr const char *KEY_SUCCESS_TEMPLATE_ID = "successTemplateId";
+
+} // namespace
+
+void InteractionEventCollector::SetAtl(Atl atl)
 {
-    std::ostringstream oss;
-    oss << key << ":" << value;
-    if (!extraInfo_.empty()) {
-        extraInfo_ += ", ";
-    }
-    extraInfo_ += oss.str();
+    atl_ = atl;
 }
 
-template <typename T>
-void InteractionEventCollector::AppendExtraInfo(const std::string &key, const std::vector<T> &value)
+void InteractionEventCollector::SetBindingId(BindingId bindingId)
+{
+    bindingId_ = bindingId;
+}
+
+void InteractionEventCollector::SetContextId(uint64_t contextId)
+{
+    contextId_ = contextId;
+}
+
+void InteractionEventCollector::SetSuccessAuthType(int32_t authType)
+{
+    successAuthType_ = authType;
+}
+
+void InteractionEventCollector::SetAlgorithmList(const std::vector<uint16_t> &algorithmList)
+{
+    algorithmList_ = algorithmList;
+}
+
+void InteractionEventCollector::SetSelectedAlgorithm(uint16_t algorithm)
+{
+    selectedAlgorithm_ = algorithm;
+}
+
+void InteractionEventCollector::SetEsl(int32_t esl)
+{
+    esl_ = esl;
+}
+
+void InteractionEventCollector::SetProtocolIdList(const std::vector<uint16_t> &protocolIdList)
+{
+    protocolIdList_ = protocolIdList;
+}
+
+void InteractionEventCollector::SetCapabilityList(const std::vector<uint16_t> &capabilityList)
+{
+    capabilityList_ = capabilityList;
+}
+
+void InteractionEventCollector::SetSelectedProtocolIdList(const std::vector<uint16_t> &selectedProtocolIdList)
+{
+    selectedProtocolIdList_ = selectedProtocolIdList;
+}
+
+void InteractionEventCollector::SetSecureProtocolId(uint16_t secureProtocolId)
+{
+    secureProtocolId_ = secureProtocolId;
+}
+
+void InteractionEventCollector::AddTemplateAuthResult(TemplateId templateId, ResultCode result)
+{
+    if (!templateAuthResult_.empty()) {
+        templateAuthResult_.append(",");
+    }
+    templateAuthResult_.append(std::to_string(templateId))
+        .append(" ")
+        .append(std::to_string(static_cast<int32_t>(result)));
+}
+
+void InteractionEventCollector::SetSuccessTemplateId(TemplateId templateId)
+{
+    successTemplateId_ = templateId;
+}
+
+void InteractionEventCollector::BuildExtraInfoStep1(std::ostringstream &oss) const
+{
+    if (atl_.has_value()) {
+        oss << "; " << KEY_ATL << ":" << *atl_;
+    }
+    if (bindingId_.has_value()) {
+        oss << "; " << KEY_BINDING_ID << ":" << *bindingId_;
+    }
+    if (contextId_.has_value()) {
+        oss << "; " << KEY_CONTEXT_ID << ":" << *contextId_;
+    }
+    if (successAuthType_.has_value()) {
+        oss << "; " << KEY_SUCCESS_AUTH_TYPE << ":" << *successAuthType_;
+    }
+    if (algorithmList_.has_value()) {
+        oss << "; " << KEY_ALGORITHM_LIST << ":" << GetVectorString<uint16_t>(*algorithmList_);
+    }
+    if (selectedAlgorithm_.has_value()) {
+        oss << "; " << KEY_SELECTED_ALGORITHM << ":" << *selectedAlgorithm_;
+    }
+}
+
+void InteractionEventCollector::BuildExtraInfoStep2(std::ostringstream &oss) const
+{
+    if (esl_.has_value()) {
+        oss << "; " << KEY_ESL << ":" << *esl_;
+    }
+    if (protocolIdList_.has_value()) {
+        oss << "; " << KEY_PROTOCOL_ID_LIST << ":" << GetVectorString<uint16_t>(*protocolIdList_);
+    }
+    if (capabilityList_.has_value()) {
+        oss << "; " << KEY_CAPABILITY_LIST << ":" << GetVectorString<uint16_t>(*capabilityList_);
+    }
+    if (selectedProtocolIdList_.has_value()) {
+        oss << "; " << KEY_SELECTED_PROTOCOL_ID_LIST << ":" << GetVectorString<uint16_t>(*selectedProtocolIdList_);
+    }
+    if (secureProtocolId_.has_value()) {
+        oss << "; " << KEY_SECURE_PROTOCOL_ID << ":" << *secureProtocolId_;
+    }
+    if (!templateAuthResult_.empty()) {
+        oss << "; " << KEY_TEMPLATE_AUTH_RESULT << ":" << templateAuthResult_;
+    }
+    if (successTemplateId_.has_value()) {
+        oss << "; " << KEY_SUCCESS_TEMPLATE_ID << ":" << *successTemplateId_;
+    }
+}
+
+std::string InteractionEventCollector::GetExtraInfo() const
 {
     std::ostringstream oss;
-    oss << key << ":" << ConvertVectorToString(value);
-    if (!extraInfo_.empty()) {
-        extraInfo_ += ", ";
+    BuildExtraInfoStep1(oss);
+    BuildExtraInfoStep2(oss);
+    std::string result = oss.str();
+    static constexpr size_t PREFIX_LEN = 2; // "; " prefix length
+    if (result.size() >= PREFIX_LEN && result[0] == ';' && result[1] == ' ') {
+        result.erase(0, PREFIX_LEN);
     }
-    extraInfo_ += oss.str();
+    return result;
 }
 
 void InteractionEventCollector::Report(ResultCode result)
@@ -88,35 +214,6 @@ void InteractionEventCollector::Report(ResultCode result)
     result_ = result;
     ReportInteractionEvent(*this);
 }
-
-template <typename T>
-std::string ConvertVectorToString(const std::vector<T> &vec)
-{
-    if (vec.empty()) {
-        return "[]";
-    }
-
-    std::string result = "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if (i > 0) {
-            result += ", ";
-        }
-        result += std::to_string(vec[i]);
-    }
-
-    result += "]";
-    return result;
-}
-
-template void InteractionEventCollector::AppendExtraInfo<uint16_t>(const std::string &key, const uint16_t &value);
-template void InteractionEventCollector::AppendExtraInfo<uint32_t>(const std::string &key, const uint32_t &value);
-template void InteractionEventCollector::AppendExtraInfo<uint64_t>(const std::string &key, const uint64_t &value);
-template void InteractionEventCollector::AppendExtraInfo<int32_t>(const std::string &key, const int32_t &value);
-template void InteractionEventCollector::AppendExtraInfo<std::string>(const std::string &key, const std::string &value);
-template void InteractionEventCollector::AppendExtraInfo<uint16_t>(const std::string &key,
-    const std::vector<uint16_t> &value);
-
-template std::string ConvertVectorToString<uint64_t>(const std::vector<uint64_t> &vec);
 
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

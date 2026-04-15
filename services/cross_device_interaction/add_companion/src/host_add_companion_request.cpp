@@ -47,8 +47,7 @@ HostAddCompanionRequest::HostAddCompanionRequest(ScheduleId scheduleId, const st
       fwkMsg_(fwkMsg),
       tokenId_(tokenId),
       additionalInfo_(additionalInfo),
-      requestCallback_(std::move(requestCallback)),
-      eventCollector_("host add companion request")
+      requestCallback_(std::move(requestCallback))
 {
     ParseAdditionalInfo();
 }
@@ -173,10 +172,10 @@ void HostAddCompanionRequest::OnConnected()
     ENSURE_OR_RETURN_DESC(GetDescription(), secureProtocolIdOpt.has_value());
     secureProtocolId_ = *secureProtocolIdOpt;
 
-    eventCollector_.UpdateHostUserId(hostDeviceKey_.deviceUserId);
-    eventCollector_.UpdateCompanionDeviceKey(*peerDeviceKeyOpt);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
-    eventCollector_.UpdateScheduleId(GetScheduleId());
+    eventCollector_.SetHostUserId(hostDeviceKey_.deviceUserId);
+    eventCollector_.SetCompanionDeviceKey(*peerDeviceKeyOpt);
+    eventCollector_.SetConnectionName(GetConnectionName());
+    eventCollector_.SetScheduleId(GetScheduleId());
 
     HostGetInitKeyNegotiationRequestInput input = {
         .requestId = GetRequestId(),
@@ -192,7 +191,7 @@ void HostAddCompanionRequest::OnConnected()
 
     needCancelCompanionAdd_ = true;
 
-    eventCollector_.AppendExtraInfo("algorithmList", output.algorithmList);
+    eventCollector_.SetAlgorithmList(output.algorithmList);
 
     InitKeyNegotiationRequest initRequest { .hostDeviceKey = hostDeviceKey_,
         .extraInfo = std::move(output.initKeyNegotiationRequest) };
@@ -281,7 +280,7 @@ bool HostAddCompanionRequest::BeginAddCompanion(const InitKeyNegotiationReply &r
         errorGuard.UpdateErrorCode(ret);
         return false;
     }
-    eventCollector_.AppendExtraInfo("selectedAlgorithm", selectedAlgorithm);
+    eventCollector_.SetSelectedAlgorithm(selectedAlgorithm);
     return true;
 }
 
@@ -358,9 +357,9 @@ void HostAddCompanionRequest::ProcessEndAddCompanionOutput(const EndAddCompanion
     pendingTokenData_ = output.tokenData;
     tokenAuthAtl_ = output.atl;
 
-    eventCollector_.UpdateTemplateIdList({ templateId_ });
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
-    eventCollector_.AppendExtraInfo("ESL", output.esl);
+    eventCollector_.SetTemplateIdList({ templateId_ });
+    eventCollector_.SetAtl(output.atl);
+    eventCollector_.SetEsl(output.esl);
 
     // Update enabled business IDs if parsed from additionalInfo
     if (!enabledBusinessIdsFromAdditionalInfo_.empty() && templateId_ != 0) {

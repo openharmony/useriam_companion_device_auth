@@ -21,6 +21,7 @@
 #include "companion_manager.h"
 #include "error_guard.h"
 #include "interaction_desc.h"
+#include "interaction_event_collector.h"
 #include "revoke_token_message.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
@@ -37,12 +38,20 @@ HostRevokeTokenHandler::HostRevokeTokenHandler() : SyncIncomingMessageHandler(Me
 
 void HostRevokeTokenHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "HRvT");
+    InteractionDesc desc(HANDLER_PREFIX, "HHRvT");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
-    ErrorGuard errorGuard([&reply](ResultCode result) {
+    InteractionEventCollector eventCollector("HHRvT");
+    ErrorGuard errorGuard([&reply, &eventCollector](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
+        eventCollector.Report(result);
     });
+
+    std::string connectionName;
+    if (request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName)) {
+        desc.SetConnectionName(connectionName);
+        eventCollector.SetConnectionName(connectionName);
+    }
 
     auto requestMsgOpt = DecodeRevokeTokenRequest(request);
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), requestMsgOpt.has_value());
@@ -56,11 +65,13 @@ void HostRevokeTokenHandler::HandleRequest(const Attributes &request, Attributes
     }
 
     desc.SetTemplateId(companionStatus->templateId);
+    eventCollector.SetTemplateIdList({ companionStatus->templateId });
     GetCompanionManager().SetCompanionTokenAuthAtl(companionStatus->templateId, std::nullopt);
 
     RevokeTokenReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeRevokeTokenReply(replyMsg, reply);
     errorGuard.Cancel();
+    eventCollector.Report(ResultCode::SUCCESS);
     IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth

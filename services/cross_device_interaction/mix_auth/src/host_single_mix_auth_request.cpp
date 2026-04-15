@@ -39,14 +39,13 @@ HostSingleMixAuthRequest::HostSingleMixAuthRequest(const AuthRequestParams &para
       templateId_(params.templateId),
       authIntent_(params.authIntent),
       requestCallback_(std::move(requestCallback)),
-      peerDeviceKey_(companionDeviceKey),
-      eventCollector_("host single mix auth request")
+      peerDeviceKey_(companionDeviceKey)
 {
     desc_.SetTemplateId(templateId_);
-    eventCollector_.UpdateHostUserId(params.hostUserId);
-    eventCollector_.UpdateScheduleId(params.scheduleId);
-    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
-    eventCollector_.UpdateTemplateIdList({ params.templateId });
+    eventCollector_.SetHostUserId(params.hostUserId);
+    eventCollector_.SetScheduleId(params.scheduleId);
+    eventCollector_.SetTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.SetTemplateIdList({ params.templateId });
 }
 
 void HostSingleMixAuthRequest::Start()
@@ -65,19 +64,22 @@ void HostSingleMixAuthRequest::Start()
         .hostUserId = hostUserId_,
         .templateId = templateId_,
         .authIntent = authIntent_ };
-    tokenAuthRequest_ = GetRequestFactory().CreateHostTokenAuthRequest(tokenAuthParams,
+    auto tokenAuthRequest = GetRequestFactory().CreateHostTokenAuthRequest(tokenAuthParams,
         [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN(self != nullptr);
             self->HandleTokenAuthResult(result, extraInfo);
         });
-    if (tokenAuthRequest_ == nullptr) {
+    if (tokenAuthRequest == nullptr) {
         IAM_LOGE("%{public}s CreateHostTokenAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
-    if (!GetRequestManager().Start(tokenAuthRequest_)) {
-        IAM_LOGE("%{public}s tokenAuthRequest_ Start failed for templateId %{public}s", GetDescription(),
+    tokenAuthRequestId_ = tokenAuthRequest->GetRequestId();
+    subRequestIds_.push_back(*tokenAuthRequestId_);
+    desc_.SetSubRequestIdList(subRequestIds_);
+    if (!GetRequestManager().Start(tokenAuthRequest)) {
+        IAM_LOGE("%{public}s tokenAuthRequest Start failed for templateId %{public}s", GetDescription(),
             GET_MASKED_NUM_CSTR(templateId_));
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
@@ -93,11 +95,11 @@ bool HostSingleMixAuthRequest::Cancel(ResultCode resultCode)
         return true;
     }
     cancelled_ = true;
-    if (tokenAuthRequest_ != nullptr) {
-        tokenAuthRequest_->Cancel(resultCode);
+    if (tokenAuthRequestId_.has_value()) {
+        GetRequestManager().Cancel(*tokenAuthRequestId_);
     }
-    if (delegateAuthRequest_ != nullptr) {
-        delegateAuthRequest_->Cancel(resultCode);
+    if (delegateAuthRequestId_.has_value()) {
+        GetRequestManager().Cancel(*delegateAuthRequestId_);
     }
     CompleteWithError(resultCode);
     return true;
@@ -111,11 +113,11 @@ std::optional<DeviceKey> HostSingleMixAuthRequest::GetPeerDeviceKey() const
 void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const std::vector<uint8_t> &extraInfo)
 {
     IAM_LOGI("%{public}s result:%{public}d", GetDescription(), result);
-    if (tokenAuthRequest_ == nullptr) {
-        IAM_LOGE("%{public}s tokenAuthRequest_ already released", GetDescription());
+    if (cancelled_) {
+        IAM_LOGI("%{public}s already cancelled, skip", GetDescription());
         return;
     }
-    tokenAuthRequest_.reset();
+    tokenAuthRequestId_.reset();
     if (result == ResultCode::SUCCESS) {
         CompleteWithSuccess(extraInfo);
         return;
@@ -130,19 +132,22 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
         .hostUserId = hostUserId_,
         .templateId = templateId_,
         .authIntent = authIntent_ };
-    delegateAuthRequest_ = GetRequestFactory().CreateHostDelegateAuthRequest(delegateAuthParams,
+    auto delegateAuthRequest = GetRequestFactory().CreateHostDelegateAuthRequest(delegateAuthParams,
         [weakSelf = weak_from_this()](ResultCode result, const std::vector<uint8_t> &extraInfo) {
             auto self = weakSelf.lock();
             ENSURE_OR_RETURN(self != nullptr);
             self->HandleDelegateAuthResult(result, extraInfo);
         });
-    if (delegateAuthRequest_ == nullptr) {
+    if (delegateAuthRequest == nullptr) {
         IAM_LOGE("%{public}s CreateHostDelegateAuthRequest fail", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
     }
-    if (!GetRequestManager().Start(delegateAuthRequest_)) {
-        IAM_LOGE("%{public}s delegateAuthRequest_ Start failed for templateId %{public}s", GetDescription(),
+    delegateAuthRequestId_ = delegateAuthRequest->GetRequestId();
+    subRequestIds_.push_back(*delegateAuthRequestId_);
+    desc_.SetSubRequestIdList(subRequestIds_);
+    if (!GetRequestManager().Start(delegateAuthRequest)) {
+        IAM_LOGE("%{public}s delegateAuthRequest Start failed for templateId %{public}s", GetDescription(),
             GET_MASKED_NUM_CSTR(templateId_));
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;
@@ -152,11 +157,11 @@ void HostSingleMixAuthRequest::HandleTokenAuthResult(ResultCode result, const st
 void HostSingleMixAuthRequest::HandleDelegateAuthResult(ResultCode result, const std::vector<uint8_t> &extraInfo)
 {
     IAM_LOGI("%{public}s result:%{public}d", GetDescription(), result);
-    if (delegateAuthRequest_ == nullptr) {
-        IAM_LOGE("%{public}s delegateAuthRequest_ already released", GetDescription());
+    if (cancelled_) {
+        IAM_LOGI("%{public}s already cancelled, skip", GetDescription());
         return;
     }
-    delegateAuthRequest_.reset();
+    delegateAuthRequestId_.reset();
     if (result != ResultCode::SUCCESS) {
         CompleteWithError(ResultCode::GENERAL_ERROR);
         return;

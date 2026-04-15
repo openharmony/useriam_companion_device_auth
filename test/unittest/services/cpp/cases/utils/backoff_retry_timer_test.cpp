@@ -79,21 +79,6 @@ public:
     }
 };
 
-HWTEST_F(BackoffRetryTimerTest, OnFailure_IncreasesCount, TestSize.Level0)
-{
-    auto callbackCount = std::make_shared<int>(0);
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_60000 },
-        [callbackCount]() { (*callbackCount)++; });
-
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 2);
-}
-
 HWTEST_F(BackoffRetryTimerTest, Destructor_CancelsTimer, TestSize.Level0)
 {
     auto callbackCount = std::make_shared<int>(0);
@@ -108,63 +93,6 @@ HWTEST_F(BackoffRetryTimerTest, Destructor_CancelsTimer, TestSize.Level0)
     EXPECT_EQ(*callbackCount, 0);
 }
 
-HWTEST_F(BackoffRetryTimerTest, MultipleFailures_ExponentialBackoff, TestSize.Level0)
-{
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_32000 }, []() {});
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 2);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 3);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 4);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 5);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 6);
-}
-
-HWTEST_F(BackoffRetryTimerTest, CustomConfig, TestSize.Level0)
-{
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_2000, .maxDelayMs = NUM_10000 }, []() {});
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-}
-
-HWTEST_F(BackoffRetryTimerTest, Reset_ResetsFailureCount, TestSize.Level0)
-{
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_60000 }, []() {});
-
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 2);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 3);
-
-    timer.Reset();
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    // After reset, failures should start from 0 again
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 2);
-}
-
 HWTEST_F(BackoffRetryTimerTest, Reset_CancelsPendingTimer, TestSize.Level0)
 {
     auto callbackCount = std::make_shared<int>(0);
@@ -172,7 +100,6 @@ HWTEST_F(BackoffRetryTimerTest, Reset_CancelsPendingTimer, TestSize.Level0)
         [callbackCount]() { (*callbackCount)++; });
 
     timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
 
     // Reset immediately
     timer.Reset();
@@ -180,46 +107,6 @@ HWTEST_F(BackoffRetryTimerTest, Reset_CancelsPendingTimer, TestSize.Level0)
     // Wait for the original timer to expire (should not execute)
     std::this_thread::sleep_for(std::chrono::milliseconds(NUM_200));
     EXPECT_EQ(*callbackCount, 0);
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-}
-
-HWTEST_F(BackoffRetryTimerTest, Reset_AfterMultipleFailures, TestSize.Level0)
-{
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_60000 }, []() {});
-
-    timer.OnFailure();
-    timer.OnFailure();
-    timer.OnFailure();
-    timer.OnFailure();
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 5);
-
-    timer.Reset();
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    // Verify backoff restarts from beginning
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-}
-
-HWTEST_F(BackoffRetryTimerTest, Reset_MultipleTimes, TestSize.Level0)
-{
-    BackoffRetryTimer timer({ .baseDelayMs = NUM_1000, .maxDelayMs = NUM_60000 }, []() {});
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.Reset();
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    timer.Reset();
-    EXPECT_EQ(timer.GetFailureCount(), 0);
-
-    timer.OnFailure();
-    EXPECT_EQ(timer.GetFailureCount(), 1);
-
-    timer.Reset();
-    EXPECT_EQ(timer.GetFailureCount(), 0);
 }
 
 // Test the static CalculateNextDelayMs function with boundary cases

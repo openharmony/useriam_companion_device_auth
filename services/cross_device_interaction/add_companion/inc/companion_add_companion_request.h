@@ -22,7 +22,6 @@
 #include "add_companion_message.h"
 #include "host_binding_manager.h"
 #include "inbound_request.h"
-#include "interaction_event_collector.h"
 #include "security_agent.h"
 
 namespace OHOS {
@@ -71,7 +70,6 @@ private:
     std::unique_ptr<Subscription> endAddHostBindingSubscription_;
     DeviceKey companionDeviceKey_ {};
     std::optional<BindingId> bindingId_;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

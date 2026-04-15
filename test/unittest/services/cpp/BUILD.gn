@@ -30,6 +30,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
     "cases/common/error_guard_test.cpp",
     "cases/common/event_bus_impl_test.cpp",
     "cases/common/interaction_desc_test.cpp",
+    "cases/common/interaction_event_collector_test.cpp",
     "cases/common/misc_manager_impl_test.cpp",
     "cases/common/scope_guard_test.cpp",
     "cases/companion/companion_add_companion_request_test.cpp",
@@ -54,6 +55,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
     "cases/cross_device_comm/message_router_test.cpp",
     "cases/external_adapters/soft_bus_adapter_test.cpp",
     "cases/fwk_comm/fwk_comm_manager_test.cpp",
+    "cases/fwk_comm/pending_issue_token_manager_test.cpp",
     "cases/host_binding/host_binding_manager_impl_test.cpp",
     "cases/host_binding/host_binding_test.cpp",
     "cases/request/add_companion_message_test.cpp",
@@ -97,6 +99,7 @@ ohos_unittest("companion_device_auth_services_cpp_test") {
     "cases/utils/backoff_retry_timer_test.cpp",
     "cases/utils/call_stack_test.cpp",
     "cases/utils/constant_user_id_manager_test.cpp",
+    "cases/utils/request_manager_impl_test.cpp",
     "cases/utils/system_param_manager_impl_test.cpp",
     "cases/utils/task_runner_manager_test.cpp",
   ]

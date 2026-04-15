@@ -821,14 +821,14 @@ HWTEST_F(DeviceStatusManagerTest, SetSubscribeMode_SameMode, TestSize.Level0)
     auto ctx = SetupTestContext();
     ctx.manager->currentMode_ = SUBSCRIBE_MODE_AUTH;
     ctx.manager->SetSubscribeMode(SUBSCRIBE_MODE_AUTH);
-    EXPECT_EQ(SUBSCRIBE_MODE_AUTH, ctx.manager->GetCurrentMode());
+    EXPECT_EQ(SUBSCRIBE_MODE_AUTH, ctx.manager->currentMode_);
 }
 
 HWTEST_F(DeviceStatusManagerTest, SetSubscribeMode_ToManage, TestSize.Level0)
 {
     auto ctx = SetupTestContext();
     ctx.manager->SetSubscribeMode(SUBSCRIBE_MODE_MANAGE);
-    EXPECT_EQ(SUBSCRIBE_MODE_MANAGE, ctx.manager->GetCurrentMode());
+    EXPECT_EQ(SUBSCRIBE_MODE_MANAGE, ctx.manager->currentMode_);
     EXPECT_TRUE(ctx.manager->GetManageSubscribeTime().has_value());
 }
 
@@ -841,7 +841,7 @@ HWTEST_F(DeviceStatusManagerTest, SetSubscribeMode_FromManageToAuth, TestSize.Le
     EXPECT_CALL(*ctx.mockChannel, GetAllPhysicalDevices()).WillOnce(Return(std::vector<PhysicalDeviceStatus> {}));
 
     ctx.manager->SetSubscribeMode(SUBSCRIBE_MODE_AUTH);
-    EXPECT_EQ(SUBSCRIBE_MODE_AUTH, ctx.manager->GetCurrentMode());
+    EXPECT_EQ(SUBSCRIBE_MODE_AUTH, ctx.manager->currentMode_);
     EXPECT_FALSE(ctx.manager->GetManageSubscribeTime().has_value());
 }
 

@@ -40,13 +40,12 @@ HostSyncDeviceStatusRequest::HostSyncDeviceStatusRequest(int32_t hostUserId, con
       hostUserId_(hostUserId),
       companionDeviceKey_(companionDeviceKey),
       companionDeviceName_(companionDeviceName),
-      callback_(std::move(callback)),
-      eventCollector_("host sync device status request")
+      callback_(std::move(callback))
 {
     SetPeerDeviceKey(companionDeviceKey_);
-    eventCollector_.UpdateHostUserId(hostUserId);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetHostUserId(hostUserId);
+    eventCollector_.SetCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.SetConnectionName(GetConnectionName());
 }
 
 void HostSyncDeviceStatusRequest::OnConnected()
@@ -125,8 +124,8 @@ void HostSyncDeviceStatusRequest::BeginCompanionCheck()
 
 void HostSyncDeviceStatusRequest::CollectSyncDeviceStatusEventInfo(const LocalDeviceProfile &profile)
 {
-    eventCollector_.AppendExtraInfo("protocolIdList", ProtocolIdConverter::ToUnderlyingVec(profile.protocols));
-    eventCollector_.AppendExtraInfo("capabilityList", CapabilityConverter::ToUnderlyingVec(profile.capabilities));
+    eventCollector_.SetProtocolIdList(ProtocolIdConverter::ToUnderlyingVec(profile.protocols));
+    eventCollector_.SetCapabilityList(CapabilityConverter::ToUnderlyingVec(profile.capabilities));
 }
 
 SyncDeviceStatusRequest HostSyncDeviceStatusRequest::BuildSyncDeviceStatusRequest(const LocalDeviceProfile &profile,
@@ -199,9 +198,8 @@ void HostSyncDeviceStatusRequest::HandleSyncDeviceStatusReply(const Attributes &
     syncDeviceStatus.secureProtocolId = replyData.secureProtocolId;
     syncDeviceStatus.deviceUserName = replyData.deviceUserName;
 
-    eventCollector_.AppendExtraInfo("selectedProtocolIdList",
-        ProtocolIdConverter::ToUnderlyingVec(syncDeviceStatus.protocolIdList));
-    eventCollector_.AppendExtraInfo("secureProtocolId", static_cast<uint16_t>(syncDeviceStatus.secureProtocolId));
+    eventCollector_.SetSelectedProtocolIdList(ProtocolIdConverter::ToUnderlyingVec(syncDeviceStatus.protocolIdList));
+    eventCollector_.SetSecureProtocolId(static_cast<uint16_t>(syncDeviceStatus.secureProtocolId));
 
     errorGuard.Cancel();
     CompleteWithSuccess(syncDeviceStatus);
@@ -218,7 +216,7 @@ bool HostSyncDeviceStatusRequest::EndCompanionCheck(const SyncDeviceStatusReply 
         return true;
     }
 
-    eventCollector_.UpdateTemplateIdList({ companionStatus->templateId });
+    eventCollector_.SetTemplateIdList({ companionStatus->templateId });
     desc_.SetTemplateId(companionStatus->templateId);
 
     HostEndCompanionCheckInput input = BuildHostEndCompanionCheckInput(companionStatus->templateId, reply);

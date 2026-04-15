@@ -214,6 +214,7 @@ void MockGuard::SetupCompanionManagerDefaults()
     ON_CALL(*companionManager_, StartIssueTokenRequests(_, _, _)).WillByDefault(Return());
     ON_CALL(*companionManager_, NotifyCompanionStatusChange()).WillByDefault(Return());
     ON_CALL(*companionManager_, HandleRemoveHostBindingComplete(_)).WillByDefault(Return());
+    ON_CALL(*companionManager_, IsCapabilitySupported(_, _)).WillByDefault(Return(true));
 }
 
 void MockGuard::SetupRequestManagerDefaults()
@@ -299,6 +300,8 @@ MockGuard::~MockGuard()
     // Use EnsureAllTaskExecuted to handle nested async tasks
     TaskRunnerManager::GetInstance().EnsureAllTaskExecuted();
     RelativeTimer::GetInstance().EnsureAllTaskExecuted();
+    // Reset time provider to default to prevent dangling references across tests
+    RelativeTimer::GetInstance().SetTimeProvider([]() { return 0; });
 
     // Reset infrastructure FIRST to clear all manager pointers
     // This must happen before we try to set them to nullptr

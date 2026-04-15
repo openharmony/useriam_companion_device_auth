@@ -117,23 +117,6 @@ std::unique_ptr<Subscription> LocalDeviceStatusManager::SubscribeIsAuthMaintainA
     });
 }
 
-std::map<ChannelId, DeviceKey> LocalDeviceStatusManager::GetLocalDeviceKeys()
-{
-    ENSURE_OR_RETURN_VAL(channelMgr_ != nullptr, (std::map<ChannelId, DeviceKey> {}));
-    std::map<ChannelId, DeviceKey> result;
-    auto channels = channelMgr_->GetAllChannels();
-
-    for (const auto &channel : channels) {
-        ENSURE_OR_CONTINUE(channel != nullptr);
-        auto deviceKeyOpt = GetLocalDeviceKey(channel->GetChannelId());
-        if (deviceKeyOpt.has_value()) {
-            result[channel->GetChannelId()] = deviceKeyOpt.value();
-        }
-    }
-
-    return result;
-}
-
 std::optional<DeviceKey> LocalDeviceStatusManager::GetLocalDeviceKey(ChannelId channelId)
 {
     ENSURE_OR_RETURN_VAL(channelMgr_ != nullptr, std::nullopt);

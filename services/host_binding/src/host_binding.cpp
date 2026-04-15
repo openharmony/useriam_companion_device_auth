@@ -72,7 +72,7 @@ HostBinding::HostBinding(const PersistedHostBindingStatus &persistedStatus)
 
     std::ostringstream oss;
     oss << "CdaHost(B:" << GET_TRUNCATED_STRING(persistedStatus.bindingId)
-        << ",D:" << GET_MASKED_STR_STRING(persistedStatus.hostDeviceKey.deviceId) << ")";
+        << ",D:" << GetTruncatedString(persistedStatus.hostDeviceKey.deviceId) << ")";
     description_ = oss.str();
 }
 

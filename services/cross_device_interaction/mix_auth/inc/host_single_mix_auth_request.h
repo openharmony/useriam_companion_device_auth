@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "base_request.h"
-#include "interaction_event_collector.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "task_runner_manager.h"
@@ -54,10 +53,10 @@ private:
     TemplateId templateId_ = 0;
     int32_t authIntent_ = 0;
     FwkResultCallback requestCallback_;
-    std::shared_ptr<IRequest> tokenAuthRequest_;
-    std::shared_ptr<IRequest> delegateAuthRequest_;
+    std::optional<RequestId> tokenAuthRequestId_;
+    std::optional<RequestId> delegateAuthRequestId_;
     DeviceKey peerDeviceKey_ {};
-    InteractionEventCollector eventCollector_;
+    std::vector<RequestId> subRequestIds_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

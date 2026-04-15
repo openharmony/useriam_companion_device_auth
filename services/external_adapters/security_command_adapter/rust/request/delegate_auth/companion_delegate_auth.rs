@@ -136,8 +136,7 @@ impl Request for CompanionDelegateAuthRequest {
             return Err(ErrorCode::GeneralError);
         }
 
-        let auth_token = UserAuthToken::deserialize(auth_token_slice)
-            .map_err(|e| p!(e))?;
+        let auth_token = UserAuthToken::deserialize(auth_token_slice).map_err(|e| p!(e))?;
         self.atl = auth_token.token_data_plain.auth_trust_level;
 
         let sec_message = self.encode_sec_delegate_auth_reply()?;

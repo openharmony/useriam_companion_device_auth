@@ -25,8 +25,8 @@ use crate::commands::system_commands::{
     host_end_companion_check, host_end_delegate_auth, host_end_issue_token, host_end_token_auth,
     host_get_init_key_negotiation, host_get_persisted_status, host_on_register_finish, host_pre_issue_token,
     host_process_obtain_token, host_process_pre_obtain_token, host_remove_companion, host_revoke_token,
-    host_update_companion_enabled_business_ids, host_update_companion_status, host_update_token, init,
-    set_active_user_id,
+    host_set_companion_invalid, host_update_companion_enabled_business_ids, host_update_companion_status,
+    host_update_token, init, set_active_user_id,
 };
 use crate::common::constants::ErrorCode;
 use crate::ensure_or_return_val;
@@ -40,7 +40,8 @@ use crate::entry::companion_device_auth_ffi::CommandId::{
     HostCancelObtainToken, HostCheckTemplateEnrolled, HostEndAddCompanion, HostEndCompanionCheck, HostEndDelegateAuth,
     HostEndIssueToken, HostEndTokenAuth, HostGetInitKeyNegotiation, HostGetPersistedStatus, HostPreIssueToken,
     HostProcessObtainToken, HostProcessPreObtainToken, HostRegisterFinish, HostRemoveCompanion, HostRevokeToken,
-    HostUpdateCompanionEnabledBusinessIds, HostUpdateCompanionStatus, HostUpdateToken, Init, SetActiveUserId,
+    HostSetCompanionInvalid, HostUpdateCompanionEnabledBusinessIds, HostUpdateCompanionStatus, HostUpdateToken, Init,
+    SetActiveUserId,
 };
 use crate::entry::companion_device_auth_ffi::{CommandId, CommonOutputFfi};
 use crate::traits::companion_device_db_manager::CompanionDeviceDbManagerRegistry;
@@ -155,6 +156,7 @@ fn handle_rust_command_inner(command_id: i32, input: &[u8], output: &mut [u8]) -
         [HostRevokeToken, host_revoke_token],
         [HostUpdateCompanionStatus, host_update_companion_status],
         [HostUpdateCompanionEnabledBusinessIds, host_update_companion_enabled_business_ids],
+        [HostSetCompanionInvalid, host_set_companion_invalid],
         [HostBeginDelegateAuth, host_begin_delegate_auth],
         [HostEndDelegateAuth, host_end_delegate_auth],
         [HostCancelDelegateAuth, host_cancel_delegate_auth],

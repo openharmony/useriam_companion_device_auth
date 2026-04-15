@@ -44,7 +44,8 @@ use crate::entry::companion_device_auth_ffi::{
     HostPreIssueTokenInputFfi, HostPreIssueTokenOutputFfi, HostProcessObtainTokenInputFfi,
     HostProcessObtainTokenOutputFfi, HostProcessPreObtainTokenInputFfi, HostProcessPreObtainTokenOutputFfi,
     HostRegisterFinishInputFfi, HostRegisterFinishOutputFfi, HostRemoveCompanionInputFfi, HostRemoveCompanionOutputFfi,
-    HostRevokeTokenInputFfi, HostRevokeTokenOutputFfi, HostUpdateCompanionEnabledBusinessIdsInputFfi,
+    HostRevokeTokenInputFfi, HostRevokeTokenOutputFfi, HostSetCompanionInvalidInputFfi,
+    HostSetCompanionInvalidOutputFfi, HostUpdateCompanionEnabledBusinessIdsInputFfi,
     HostUpdateCompanionEnabledBusinessIdsOutputFfi, HostUpdateCompanionStatusInputFfi,
     HostUpdateCompanionStatusOutputFfi, HostUpdateTokenInputFfi, HostUpdateTokenOutputFfi, InitInputFfi, InitOutputFfi,
     Int32Array64Ffi, PersistedCompanionStatusFfi, PersistedHostBindingStatusFfi, SetActiveUserInputFfi,
@@ -337,6 +338,15 @@ pub fn host_update_companion_enabled_business_ids(
         input.template_id,
         Vec::<i32>::try_from(input.business_ids).map_err(|e| p!(e))?,
     )?;
+    Ok(())
+}
+
+// HostSetCompanionInvalid
+pub fn host_set_companion_invalid(
+    input: &HostSetCompanionInvalidInputFfi,
+    _output: &mut HostSetCompanionInvalidOutputFfi,
+) -> Result<(), ErrorCode> {
+    companion_device_db_helper::update_companion_device_valid_flag(input.template_id, false)?;
     Ok(())
 }
 

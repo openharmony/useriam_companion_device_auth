@@ -38,8 +38,7 @@ CompanionAddCompanionRequest::CompanionAddCompanionRequest(const std::string &co
     OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey)
     : InboundRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, connectionName, hostDeviceKey),
       initKeyNegoRequest_(request),
-      currentReply_(std::move(replyCallback)),
-      eventCollector_("companion add companion request")
+      currentReply_(std::move(replyCallback))
 {
 }
 
@@ -51,9 +50,9 @@ bool CompanionAddCompanionRequest::OnStart(ErrorGuard &errorGuard)
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), companionKeyOpt.has_value(), false);
     companionDeviceKey_ = *companionKeyOpt;
 
-    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
-    eventCollector_.UpdateCompanionUserId(companionDeviceKey_.deviceUserId);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetHostDeviceKey(PeerDeviceKey());
+    eventCollector_.SetCompanionUserId(companionDeviceKey_.deviceUserId);
+    eventCollector_.SetConnectionName(GetConnectionName());
 
     secureProtocolId_ = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), secureProtocolId_ != SecureProtocolId::INVALID, false);
@@ -131,8 +130,8 @@ void CompanionAddCompanionRequest::ProcessCompanionInitKeyNegotiationOutput(
 {
     needCancelAddCompanion_ = true;
 
-    eventCollector_.AppendExtraInfo("algorithmList", output.algorithmList);
-    eventCollector_.AppendExtraInfo("selectedAlgorithm", output.selectedAlgorithm);
+    eventCollector_.SetAlgorithmList(output.algorithmList);
+    eventCollector_.SetSelectedAlgorithm(output.selectedAlgorithm);
 
     initKeyNegotiationReply = output.initKeyNegotiationReply;
 }
@@ -192,6 +191,7 @@ void CompanionAddCompanionRequest::HandleBeginAddCompanion(const Attributes &att
     }
     desc_.SetBindingId(beginOutput.bindingId);
     bindingId_ = beginOutput.bindingId;
+    eventCollector_.SetBindingId(beginOutput.bindingId);
 
     BeginAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS, .extraInfo = beginOutput.addHostBindingReply };
     Attributes reply;
@@ -233,8 +233,8 @@ void CompanionAddCompanionRequest::HandleEndAddCompanion(const Attributes &attrI
     }
     needCancelAddCompanion_ = false;
 
-    eventCollector_.AppendExtraInfo("ATL", endOutput.atl);
-    eventCollector_.AppendExtraInfo("ESL", endOutput.esl);
+    eventCollector_.SetAtl(endOutput.atl);
+    eventCollector_.SetEsl(endOutput.esl);
 
     EndAddHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
     Attributes reply;
@@ -289,8 +289,8 @@ void CompanionAddCompanionRequest::CompleteWithError(ResultCode result)
         }
         needCancelAddCompanion_ = false;
 
-        eventCollector_.AppendExtraInfo("ATL", endOutput.atl);
-        eventCollector_.AppendExtraInfo("ESL", endOutput.esl);
+        eventCollector_.SetAtl(endOutput.atl);
+        eventCollector_.SetEsl(endOutput.esl);
     }
     eventCollector_.Report(result);
     Destroy();

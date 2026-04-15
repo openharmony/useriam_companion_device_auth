@@ -36,11 +36,10 @@ HostObtainTokenRequest::HostObtainTokenRequest(const std::string &connectionName
     OnMessageReply &&replyCallback, const DeviceKey &companionDeviceKey)
     : InboundRequest(RequestType::HOST_OBTAIN_TOKEN_REQUEST, connectionName, companionDeviceKey),
       request_(request),
-      preObtainTokenReplyCallback_(std::move(replyCallback)),
-      eventCollector_("host obtain token request")
+      preObtainTokenReplyCallback_(std::move(replyCallback))
 {
-    eventCollector_.UpdateConnectionName(connectionName);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.SetConnectionName(connectionName);
+    eventCollector_.SetCompanionDeviceKey(companionDeviceKey);
 }
 
 bool HostObtainTokenRequest::ParsePreObtainTokenRequest(ErrorGuard &errorGuard)
@@ -81,8 +80,8 @@ bool HostObtainTokenRequest::ParsePreObtainTokenRequest(ErrorGuard &errorGuard)
         return false;
     }
     secureProtocolId_ = secureProtocolOpt.value();
-    eventCollector_.UpdateHostUserId(hostUserId_);
-    eventCollector_.UpdateTemplateIdList({ templateId_ });
+    eventCollector_.SetHostUserId(hostUserId_);
+    eventCollector_.SetTemplateIdList({ templateId_ });
     return true;
 }
 
@@ -215,7 +214,7 @@ HostProcessObtainTokenInput HostObtainTokenRequest::BuildHostProcessObtainTokenI
 bool HostObtainTokenRequest::ProcessHostProcessObtainTokenOutput(const HostProcessObtainTokenOutput &output,
     std::vector<uint8_t> &obtainTokenReply)
 {
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetAtl(output.atl);
     obtainTokenReply = output.obtainTokenReply;
     IAM_LOGI("%{public}s HostProcessObtainToken success atl=%{public}d", GetDescription(), output.atl);
 
