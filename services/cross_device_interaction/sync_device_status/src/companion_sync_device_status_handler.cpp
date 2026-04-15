@@ -22,6 +22,7 @@
 #include "common_message.h"
 #include "error_guard.h"
 #include "interaction_desc.h"
+#include "interaction_event_collector.h"
 #include "service_common.h"
 #include "singleton_manager.h"
 
@@ -63,12 +64,20 @@ std::optional<SyncDeviceStatusReply> CompanionSyncDeviceStatusHandler::BuildSync
 
 void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CSync");
+    InteractionDesc desc(HANDLER_PREFIX, "HCSync");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
-    ErrorGuard errorGuard([&reply](ResultCode result) {
+    InteractionEventCollector eventCollector("HCSync");
+    ErrorGuard errorGuard([&reply, &eventCollector](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
+        eventCollector.Report(result);
     });
+
+    std::string connectionName;
+    if (request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName)) {
+        desc.SetConnectionName(connectionName);
+        eventCollector.SetConnectionName(connectionName);
+    }
 
     auto syncRequestOpt = DecodeSyncDeviceStatusRequest(request);
     if (!syncRequestOpt.has_value()) {
@@ -90,6 +99,7 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
     auto hostBindingStatus = GetHostBindingManager().GetHostBindingStatus(companionUserId, syncRequest.hostDeviceKey);
     if (hostBindingStatus.has_value()) {
         desc.SetBindingId(hostBindingStatus->bindingId);
+        eventCollector.SetBindingId(hostBindingStatus->bindingId);
         bool ret = CompanionProcessCheck(*hostBindingStatus, syncRequest, syncReply.companionCheckResponse, desc);
         if (!ret) {
             IAM_LOGE("%{public}s CompanionProcessCheck failed", desc.GetCStr());
@@ -99,6 +109,7 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
 
     EncodeSyncDeviceStatusReply(syncReply, reply);
     errorGuard.Cancel();
+    eventCollector.Report(ResultCode::SUCCESS);
     IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 

@@ -37,7 +37,7 @@ CompanionPreIssueTokenHandler::CompanionPreIssueTokenHandler()
 
 void CompanionPreIssueTokenHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CIsT");
+    InteractionDesc desc(HANDLER_PREFIX, "HCIsT");
     IAM_LOGI("%{public}s start", desc.GetCStr());
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
 

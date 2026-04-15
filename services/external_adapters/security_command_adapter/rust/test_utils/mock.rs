@@ -1200,10 +1200,7 @@ impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBi
     ) -> Result<Option<i32>, ErrorCode> {
         self.add_device.call()
     }
-    fn get_device_by_binding_id(
-        &self,
-        _binding_id: i32,
-    ) -> Result<crate::traits::db_manager::HostBinding, ErrorCode> {
+    fn get_device_by_binding_id(&self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBinding, ErrorCode> {
         self.get_device_by_binding_id.call()
     }
     fn get_device_by_device_key(

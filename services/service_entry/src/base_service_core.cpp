@@ -179,7 +179,7 @@ ResultCode BaseServiceCore::UpdateTemplateEnabledBusinessIds(uint64_t templateId
     if (enabledBusinessIds.size() > MAX_ENABLED_BUSINESS_IDS) {
         IAM_LOGE("enabledBusinessIds size exceeds limit: %{public}zu > %{public}zu", enabledBusinessIds.size(),
             MAX_ENABLED_BUSINESS_IDS);
-        return ResultCode::INVALID_BUSINESS_ID;
+        return ResultCode::INVALID_PARAMETERS;
     }
 
     // Convert int32_t to BusinessId for internal APIs

@@ -512,6 +512,12 @@ bool EncodeHostUpdateCompanionEnabledBusinessIdsInput(const HostUpdateCompanionE
     return VectorToFfiArray(input.enabledBusinessIds, ffi.businessIds, "enabled business IDs");
 }
 
+bool EncodeHostSetCompanionInvalidInput(const HostSetCompanionInvalidInput &input, HostSetCompanionInvalidInputFfi &ffi)
+{
+    ffi.templateId = input.templateId;
+    return true;
+}
+
 bool EncodeHostCheckTemplateEnrolledInput(const HostCheckTemplateEnrolledInput &input,
     HostCheckTemplateEnrolledInputFfi &ffi)
 {
@@ -695,7 +701,6 @@ bool EncodeCompanionEndAddHostBindingInput(const CompanionEndAddHostBindingInput
 bool DecodeCompanionEndAddHostBindingOutput(const CompanionEndAddHostBindingOutputFfi &ffi,
     CompanionEndAddHostBindingOutput &output)
 {
-    output.bindingId = ffi.bindingId;
     output.atl = ffi.atl;
     output.esl = ffi.esl;
     return true;

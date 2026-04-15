@@ -49,9 +49,7 @@ impl DefaultHostBindingDbManager {
     }
 
     fn get_index_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Option<usize> {
-        self.host_bindings
-            .iter()
-            .position(|info| device_key == &info.device_key && user_id == info.user_info.user_id)
+        self.host_bindings.iter().position(|info| device_key == &info.device_key && user_id == info.user_info.user_id)
     }
 
     fn generate_unique_id<'a, T, F, G>(&'a self, collection: F, id_extractor: G) -> Result<i32, ErrorCode>
@@ -263,12 +261,12 @@ impl HostBindingDbManager for DefaultHostBindingDbManager {
 
     fn get_device_by_device_key(&self, user_id: i32, device_key: &DeviceKey) -> Result<HostBinding, ErrorCode> {
         log_i!("get_device_by_device_key start");
-        self.get_index_by_device_key(user_id, device_key)
-            .map(|index| self.host_bindings[index].clone())
-            .ok_or_else(|| {
+        self.get_index_by_device_key(user_id, device_key).map(|index| self.host_bindings[index].clone()).ok_or_else(
+            || {
                 log_e!("No device matching filter found");
                 ErrorCode::NotFound
-            })
+            },
+        )
     }
 
     fn remove_device(&mut self, binding_id: i32) -> Result<HostBinding, ErrorCode> {

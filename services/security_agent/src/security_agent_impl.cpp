@@ -983,6 +983,25 @@ ResultCode SecurityAgentImpl::HostUpdateCompanionEnabledBusinessIds(
     return SUCCESS;
 }
 
+ResultCode SecurityAgentImpl::HostSetCompanionInvalid(const HostSetCompanionInvalidInput &input)
+{
+    auto ffiInput = std::make_unique<HostSetCompanionInvalidInputFfi>();
+    ENSURE_OR_RETURN_VAL(ffiInput != nullptr, GENERAL_ERROR);
+    bool encodeRet = EncodeHostSetCompanionInvalidInput(input, *ffiInput);
+    ENSURE_OR_RETURN_VAL(encodeRet, INVALID_PARAMETERS);
+
+    auto ffiOutput = std::make_unique<HostSetCompanionInvalidOutputFfi>();
+    ENSURE_OR_RETURN_VAL(ffiOutput != nullptr, GENERAL_ERROR);
+
+    int32_t invokeResult = GetSecurityCommandAdapter().InvokeCommand(CommandId::HOST_SET_COMPANION_INVALID,
+        reinterpret_cast<uint8_t *>(ffiInput.get()), sizeof(HostSetCompanionInvalidInputFfi),
+        reinterpret_cast<uint8_t *>(ffiOutput.get()), sizeof(HostSetCompanionInvalidOutputFfi));
+    ENSURE_OR_RETURN_VAL(invokeResult == SUCCESS, GENERAL_ERROR);
+
+    IAM_LOGI("success");
+    return SUCCESS;
+}
+
 ResultCode SecurityAgentImpl::HostCheckTemplateEnrolled(const HostCheckTemplateEnrolledInput &input,
     HostCheckTemplateEnrolledOutput &output)
 {

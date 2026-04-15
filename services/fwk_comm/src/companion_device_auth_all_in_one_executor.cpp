@@ -32,6 +32,7 @@
 #include "host_binding_manager.h"
 #include "host_remove_host_binding_request.h"
 #include "host_token_auth_request.h"
+#include "pending_issue_token_manager.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "security_agent.h"
@@ -53,13 +54,6 @@ const uint32_t ATTR_USER_ID = 100041;
 const uint32_t ATTR_LOCK_STATE_AUTH_TYPE = 100075;
 } // namespace
 
-struct FreezeCommand {
-    uint32_t authTypeValue = 0;
-    uint32_t lockStateAuthTypeValue = 0;
-    int32_t userId = 0;
-    std::vector<uint64_t> templateIdList;
-};
-
 struct CdaAuthenticateParam {
     std::optional<uint32_t> tokenId;
     std::optional<BusinessId> businessId;
@@ -70,6 +64,8 @@ public:
     CompanionDeviceAuthAllInOneExecutorInner()
     {
         IAM_LOGI("start");
+        pendingIssueTokenManager_ = std::make_shared<PendingIssueTokenManager>();
+        ENSURE_OR_RETURN(pendingIssueTokenManager_ != nullptr);
     }
 
     ~CompanionDeviceAuthAllInOneExecutorInner() = default;
@@ -90,6 +86,8 @@ public:
 
 private:
     std::optional<FreezeCommand> DecodeFreezeCommand(const std::vector<uint8_t> &dataTlv);
+
+    std::shared_ptr<PendingIssueTokenManager> pendingIssueTokenManager_;
 };
 
 using Inner = CompanionDeviceAuthAllInOneExecutor::CompanionDeviceAuthAllInOneExecutorInner;
@@ -334,21 +332,25 @@ void Inner::HandleFreezeRelatedCommand(FwkPropertyMode commandId, const std::vec
     IAM_LOGI("receive commandId:%{public}d, AuthType:%{public}u, templateIdList size:%{public}zu, userId:%{public}d",
         commandId, freezeCommand.lockStateAuthTypeValue, freezeCommand.templateIdList.size(), freezeCommand.userId);
 
+    ENSURE_OR_RETURN(pendingIssueTokenManager_ != nullptr);
     if (commandId == FwkPropertyMode::PROPERTY_MODE_FREEZE && lockStateAuthType == AuthType::PIN) {
+        pendingIssueTokenManager_->CancelByUserId(freezeCommand.userId);
         for (const auto &templateId : freezeCommand.templateIdList) {
             GetCompanionManager().SetCompanionTokenAuthAtl(templateId, std::nullopt);
         }
         GetHostBindingManager().RevokeTokens(freezeCommand.userId);
     } else if (commandId == FwkPropertyMode::PROPERTY_MODE_UNFREEZE) {
-        if (GetUserIdManager().GetActiveUserId() != freezeCommand.userId) {
-            IAM_LOGE("userId %{public}d mismatch with active user id %{public}d, skip", freezeCommand.userId,
+        if (GetUserIdManager().GetActiveUserId() == freezeCommand.userId) {
+            pendingIssueTokenManager_->CancelByUserId(freezeCommand.userId);
+            GetCompanionManager().StartIssueTokenRequests(freezeCommand.templateIdList,
+                freezeCommand.lockStateAuthTypeValue, extraInfo);
+            GetHostBindingManager().StartObtainTokenRequests(freezeCommand.userId, freezeCommand.lockStateAuthTypeValue,
+                extraInfo);
+        } else {
+            IAM_LOGI("userId %{public}d mismatch active=%{public}d, deferring", freezeCommand.userId,
                 GetUserIdManager().GetActiveUserId());
-            return;
+            pendingIssueTokenManager_->Defer(freezeCommand, extraInfo);
         }
-        GetCompanionManager().StartIssueTokenRequests(freezeCommand.templateIdList,
-            freezeCommand.lockStateAuthTypeValue, extraInfo);
-        GetHostBindingManager().StartObtainTokenRequests(freezeCommand.userId, freezeCommand.lockStateAuthTypeValue,
-            extraInfo);
     }
 }
 

@@ -37,7 +37,7 @@ CompanionInitKeyNegotiationHandler::CompanionInitKeyNegotiationHandler()
 
 void CompanionInitKeyNegotiationHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CAddC");
+    InteractionDesc desc(HANDLER_PREFIX, "HCAddC");
     IAM_LOGI("%{public}s start", desc.GetCStr());
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
 

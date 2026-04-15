@@ -16,10 +16,11 @@
 #ifndef COMPANION_DEVICE_HOST_MIX_AUTH_REQUEST_H
 #define COMPANION_DEVICE_HOST_MIX_AUTH_REQUEST_H
 
+#include <unordered_map>
+
 #include "base_request.h"
 #include "host_delegate_auth_request.h"
 #include "host_token_auth_request.h"
-#include "interaction_event_collector.h"
 #include "request_factory.h"
 #include "request_manager.h"
 #include "task_runner_manager.h"
@@ -60,8 +61,7 @@ private:
     std::optional<std::vector<uint8_t>> selectContext_ = std::nullopt;
     int32_t authIntent_ = 0;
     FwkResultCallback requestCallback_;
-    std::unordered_map<TemplateId, std::shared_ptr<IRequest>> requestMap_;
-    InteractionEventCollector eventCollector_;
+    std::unordered_map<TemplateId, RequestId> requestMap_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

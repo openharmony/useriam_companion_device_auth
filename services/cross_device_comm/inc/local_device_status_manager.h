@@ -43,7 +43,6 @@ public:
 
     virtual bool IsAuthMaintainActive();
 
-    virtual std::map<ChannelId, DeviceKey> GetLocalDeviceKeys();
     virtual std::optional<DeviceKey> GetLocalDeviceKey(ChannelId channelId);
     virtual LocalDeviceProfile GetLocalDeviceProfile();
 

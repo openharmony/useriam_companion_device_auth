@@ -55,10 +55,6 @@ public:
     std::optional<DeviceStatus> GetDeviceStatus(const DeviceKey &deviceKey);
     std::optional<ChannelId> GetChannelIdByDeviceKey(const DeviceKey &deviceKey);
     std::vector<DeviceStatus> GetAllDeviceStatus();
-    SubscribeMode GetCurrentMode() const
-    {
-        return currentMode_;
-    }
     std::optional<SteadyTimeMs> GetManageSubscribeTime() const;
 
     std::unique_ptr<Subscription> SubscribeDeviceStatus(OnDeviceStatusChange &&callback);

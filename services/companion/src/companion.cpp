@@ -67,7 +67,7 @@ Companion::Companion(const PersistedCompanionStatus &persistedStatus, bool added
     status_.FromPersisted(persistedStatus);
     std::ostringstream oss;
     oss << "CdaCompanion(T:" << GET_TRUNCATED_STRING(status_.templateId)
-        << ",D:" << GET_MASKED_STR_STRING(persistedStatus.companionDeviceKey.deviceId) << ")";
+        << ",D:" << GetTruncatedString(persistedStatus.companionDeviceKey.deviceId) << ")";
     description_ = oss.str();
 }
 

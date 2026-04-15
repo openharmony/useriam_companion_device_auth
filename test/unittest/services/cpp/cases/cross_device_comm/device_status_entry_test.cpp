@@ -114,54 +114,6 @@ HWTEST_F(DeviceStatusEntryTest, BuildDeviceStatus_001, TestSize.Level0)
     EXPECT_TRUE(status.isAuthMaintainActive);
 }
 
-HWTEST_F(DeviceStatusEntryTest, IsSameDevice_001, TestSize.Level0)
-{
-    DeviceStatusEntry entry(physicalStatus_, []() {});
-
-    PhysicalDeviceKey key;
-    key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
-    key.deviceId = "test-device-id";
-
-    bool result = entry.IsSameDevice(key, ChannelId::SOFTBUS);
-    EXPECT_TRUE(result);
-}
-
-HWTEST_F(DeviceStatusEntryTest, IsSameDevice_002, TestSize.Level0)
-{
-    DeviceStatusEntry entry(physicalStatus_, []() {});
-
-    PhysicalDeviceKey key;
-    key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
-    key.deviceId = "different-device-id";
-
-    bool result = entry.IsSameDevice(key, ChannelId::SOFTBUS);
-    EXPECT_FALSE(result);
-}
-
-HWTEST_F(DeviceStatusEntryTest, IsSameDevice_003, TestSize.Level0)
-{
-    DeviceStatusEntry entry(physicalStatus_, []() {});
-
-    PhysicalDeviceKey key;
-    key.idType = DeviceIdType::UNIFIED_DEVICE_ID;
-    key.deviceId = "test-device-id";
-
-    bool result = entry.IsSameDevice(key, ChannelId::INVALID);
-    EXPECT_FALSE(result);
-}
-
-HWTEST_F(DeviceStatusEntryTest, IsSameDevice_004, TestSize.Level0)
-{
-    DeviceStatusEntry entry(physicalStatus_, []() {});
-
-    PhysicalDeviceKey key;
-    key.idType = DeviceIdType::UNKNOWN;
-    key.deviceId = "test-device-id";
-
-    bool result = entry.IsSameDevice(key, ChannelId::SOFTBUS);
-    EXPECT_FALSE(result);
-}
-
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

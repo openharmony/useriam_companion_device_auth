@@ -40,9 +40,12 @@ public:
 
     void SetConnectionName(const std::string &connName);
     void SetRequestId(RequestId requestId);
+    void SetContextId(uint64_t contextId);
+    void SetScheduleId(ScheduleId scheduleId);
     void SetBindingId(BindingId bindingId);
     void SetTemplateId(TemplateId templateId);
     void SetTemplateIdList(const std::vector<TemplateId> &templateIdList);
+    void SetSubRequestIdList(const std::vector<RequestId> &subRequestIdList);
 
     const char *GetCStr() const;
 
@@ -53,9 +56,12 @@ private:
     std::string type_;
     std::string connectionName_;
     std::optional<RequestId> requestId_;
+    std::optional<uint64_t> contextId_;
+    std::optional<ScheduleId> scheduleId_;
     std::optional<BindingId> bindingId_;
     std::optional<TemplateId> templateId_;
     std::vector<TemplateId> templateIdList_;
+    std::vector<RequestId> subRequestIdList_;
     std::string description_;
 };
 } // namespace CompanionDeviceAuth

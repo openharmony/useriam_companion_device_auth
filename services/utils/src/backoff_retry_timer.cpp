@@ -41,7 +41,7 @@ void BackoffRetryTimer::OnFailure()
         timerSubscription_.reset();
     }
 
-    failureCount_++;
+    failureCount_ = (failureCount_ < UINT32_MAX) ? (failureCount_ + 1) : UINT32_MAX;
 
     uint32_t delayMs = CalculateNextDelayMs(failureCount_, config_);
     IAM_LOGI("failure recorded %{public}u times, scheduling retry in %{public}u ms", failureCount_, delayMs);

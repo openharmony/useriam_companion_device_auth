@@ -37,15 +37,14 @@ HostIssueTokenRequest::HostIssueTokenRequest(UserId hostUserId, TemplateId templ
     : OutboundRequest(RequestType::HOST_ISSUE_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       templateId_(templateId),
-      fwkUnlockMsg_(fwkUnlockMsg),
-      eventCollector_("host issue token request")
+      fwkUnlockMsg_(fwkUnlockMsg)
 {
     SetPeerDeviceKey(companionDeviceKey);
     desc_.SetTemplateId(templateId_);
-    eventCollector_.UpdateHostUserId(hostUserId);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateTriggerReason("host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
-    eventCollector_.UpdateTemplateIdList({ templateId });
+    eventCollector_.SetHostUserId(hostUserId);
+    eventCollector_.SetCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.SetTriggerReason("host device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
+    eventCollector_.SetTemplateIdList({ templateId });
 }
 
 bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
@@ -76,7 +75,7 @@ bool HostIssueTokenRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetConnectionName(GetConnectionName());
     return true;
 }
 
@@ -219,7 +218,7 @@ void HostIssueTokenRequest::HandleIssueTokenReply(const Attributes &message)
     HostEndIssueTokenOutput output = {};
     ResultCode ret = GetSecurityAgent().HostEndIssueToken(input, output);
 
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetAtl(output.atl);
 
     needCancelIssueToken_ = false;
     if (ret != ResultCode::SUCCESS) {
@@ -306,6 +305,21 @@ void HostIssueTokenRequest::CompleteWithSuccess()
 uint32_t HostIssueTokenRequest::GetMaxConcurrency() const
 {
     return 10; // Spec: max 10 concurrent HostIssueTokenRequest
+}
+
+bool HostIssueTokenRequest::CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const
+{
+    if (CountSameType(prevRequests) >= GetMaxConcurrency()) {
+        return false;
+    }
+    // Spec: HostIssueTokenRequest cannot run while HostTokenAuthRequest is active
+    for (const auto &req : prevRequests) {
+        if (req != nullptr && req->GetRequestType() == RequestType::HOST_TOKEN_AUTH_REQUEST) {
+            IAM_LOGI("%{public}s: blocked by HostTokenAuth", GetDescription());
+            return false;
+        }
+    }
+    return true;
 }
 
 bool HostIssueTokenRequest::ShouldCancelOnNewRequest(RequestType newRequestType,

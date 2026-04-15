@@ -28,7 +28,7 @@ namespace UserIam {
 namespace CompanionDeviceAuth {
 void KeepAliveHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "KA");
+    InteractionDesc desc(HANDLER_PREFIX, "HKA");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
     reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(ResultCode::GENERAL_ERROR));

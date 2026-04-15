@@ -35,12 +35,11 @@ namespace CompanionDeviceAuth {
 CompanionObtainTokenRequest::CompanionObtainTokenRequest(const DeviceKey &hostDeviceKey,
     uint32_t lockStateAuthTypeValue, const std::vector<uint8_t> &fwkUnlockMsg)
     : OutboundRequest(RequestType::COMPANION_OBTAIN_TOKEN_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
-      fwkUnlockMsg_(fwkUnlockMsg),
-      eventCollector_("companion obtain token request")
+      fwkUnlockMsg_(fwkUnlockMsg)
 {
     SetPeerDeviceKey(hostDeviceKey);
-    eventCollector_.UpdateHostDeviceKey(hostDeviceKey);
-    eventCollector_.UpdateTriggerReason(
+    eventCollector_.SetHostDeviceKey(hostDeviceKey);
+    eventCollector_.SetTriggerReason(
         "companion device auth type " + std::to_string(lockStateAuthTypeValue) + " success");
 }
 
@@ -65,7 +64,7 @@ bool CompanionObtainTokenRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetConnectionName(GetConnectionName());
 
     return true;
 }
@@ -79,7 +78,7 @@ void CompanionObtainTokenRequest::OnConnected()
     ENSURE_OR_RETURN_DESC(GetDescription(), localDeviceKeyOpt.has_value());
     companionDeviceKey_ = localDeviceKeyOpt.value();
     secureProtocolId_ = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
-    eventCollector_.UpdateCompanionUserId(companionDeviceKey_.deviceUserId);
+    eventCollector_.SetCompanionUserId(companionDeviceKey_.deviceUserId);
 
     bool ret = SendPreObtainTokenRequest();
     if (!ret) {
@@ -149,6 +148,7 @@ bool CompanionObtainTokenRequest::GetBindingIdFromHostBindingStatus()
     }
     bindingId_ = hostBindingStatus->bindingId;
     desc_.SetBindingId(bindingId_);
+    eventCollector_.SetBindingId(bindingId_);
     return true;
 }
 
@@ -172,7 +172,7 @@ bool CompanionObtainTokenRequest::CompanionBeginObtainToken(const std::vector<ui
         return false;
     }
 
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetAtl(output.atl);
 
     needCancelObtainToken_ = true;
     return SendObtainTokenRequest(output.obtainTokenRequest);

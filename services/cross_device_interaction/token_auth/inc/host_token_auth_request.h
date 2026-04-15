@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "companion_manager.h"
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "request_factory.h"
 #include "security_agent.h"
@@ -35,6 +34,7 @@ public:
     ~HostTokenAuthRequest() override;
 
     uint32_t GetMaxConcurrency() const override;
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override;
     bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,
         uint32_t subsequentSameTypeCount) const override;
 
@@ -59,7 +59,6 @@ private:
     FwkResultCallback requestCallback_;
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     bool needEndTokenAuth_ = false;
-    InteractionEventCollector eventCollector_;
 
     void InvokeCallback(ResultCode result, const std::vector<uint8_t> &extraInfo);
 };

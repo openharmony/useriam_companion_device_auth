@@ -204,8 +204,7 @@ impl CompanionDeviceEnrollRequest {
         }
 
         if self.key_nego_param.host_device_key.user_id != user_id {
-            log_e!("user_id check fail, expected: {}, got: {}",
-                self.key_nego_param.host_device_key.user_id, user_id);
+            log_e!("user_id check fail, expected: {}, got: {}", self.key_nego_param.host_device_key.user_id, user_id);
             return Err(ErrorCode::GeneralError);
         }
 
@@ -337,7 +336,6 @@ impl Request for CompanionDeviceEnrollRequest {
         self.decode_sec_token_issue(ffi_input.sec_message.as_slice()?)?;
         self.store_token()?;
         host_binding_db_helper::update_host_binding_last_used_time(self.binding_id)?;
-        ffi_output.binding_id = self.binding_id;
         ffi_output.atl = self.token_info.atl as i32;
         ffi_output.esl = ExecutorSecurityLevel::Esl3 as i32;
         Ok(())

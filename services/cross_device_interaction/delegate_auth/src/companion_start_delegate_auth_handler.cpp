@@ -38,7 +38,7 @@ CompanionStartDelegateAuthHandler::CompanionStartDelegateAuthHandler()
 
 void CompanionStartDelegateAuthHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CDlA");
+    InteractionDesc desc(HANDLER_PREFIX, "HCDlA");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
     ErrorGuard errorGuard([&reply](ResultCode result) {

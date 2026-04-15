@@ -70,6 +70,8 @@ public:
     virtual std::optional<DeviceKey> GetPeerDeviceKey() const = 0;
     virtual uint32_t GetMaxConcurrency() const = 0;
 
+    virtual bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const = 0;
+
     virtual bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,
         uint32_t subsequentSameTypeCount) const = 0;
 };

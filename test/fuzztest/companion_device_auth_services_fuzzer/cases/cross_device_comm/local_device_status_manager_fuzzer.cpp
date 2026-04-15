@@ -47,13 +47,6 @@ static void FuzzGetLocalDeviceKey(std::shared_ptr<LocalDeviceStatusManager> &mgr
     (void)key;
 }
 
-static void FuzzGetLocalDeviceKeys(std::shared_ptr<LocalDeviceStatusManager> &mgr, FuzzedDataProvider &fuzzData)
-{
-    (void)fuzzData;
-    auto keys = mgr->GetLocalDeviceKeys();
-    (void)keys;
-}
-
 static void FuzzIsAuthMaintainActive(std::shared_ptr<LocalDeviceStatusManager> &mgr, FuzzedDataProvider &fuzzData)
 {
     (void)fuzzData;
@@ -103,7 +96,6 @@ static void FuzzOnActiveUserIdChanged(std::shared_ptr<LocalDeviceStatusManager> 
 static const LocalDeviceStatusManagerFuzzFunction g_fuzzFuncs[] = {
     FuzzGetLocalDeviceProfile,
     FuzzGetLocalDeviceKey,
-    FuzzGetLocalDeviceKeys,
     FuzzIsAuthMaintainActive,
     FuzzSetAuthMaintainActive,
     FuzzSubscribeIsAuthMaintainActive,

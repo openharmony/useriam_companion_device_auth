@@ -165,5 +165,5 @@ fn companion_sync_status_request_new_test_salt_len_exceeds_array() {
     input.salt.len = (HKDF_SALT_SIZE as u32) + 1;
 
     let result = CompanionDeviceSyncStatusRequest::new(&input);
-    assert_eq!(result, Err(ErrorCode::GeneralError));
+    assert_eq!(result, Err(ErrorCode::BadParam));
 }

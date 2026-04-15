@@ -625,6 +625,17 @@ assert_max_size!(HostUpdateCompanionEnabledBusinessIdsInputFfi);
 
 pub type HostUpdateCompanionEnabledBusinessIdsOutputFfi = PlaceHolderFfi;
 
+// HostSetCompanionInvalid
+#[repr(C)]
+#[derive(Copy, Clone, Default)]
+#[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
+pub struct HostSetCompanionInvalidInputFfi {
+    pub template_id: u64,
+}
+assert_max_size!(HostSetCompanionInvalidInputFfi);
+
+pub type HostSetCompanionInvalidOutputFfi = PlaceHolderFfi;
+
 // HostCheckTemplateEnrolled
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
@@ -865,7 +876,6 @@ assert_max_size!(CompanionEndAddHostBindingInputFfi);
 #[derive(Copy, Clone, Default)]
 #[cfg_attr(feature = "test-utils", derive(Debug, PartialEq))]
 pub struct CompanionEndAddHostBindingOutputFfi {
-    pub binding_id: i32,
     pub atl: i32,
     pub esl: i32,
 }
@@ -1085,6 +1095,7 @@ pub enum CommandId {
     HostCancelObtainToken = 1025,
     HostCheckTemplateEnrolled = 1027,
     HostUpdateToken = 1028,
+    HostSetCompanionInvalid = 1029,
 
     // companion
     CompanionGetPersistedStatus = 2000,
@@ -1139,6 +1150,7 @@ impl TryFrom<i32> for CommandId {
             1025 => Ok(CommandId::HostCancelObtainToken),
             1027 => Ok(CommandId::HostCheckTemplateEnrolled),
             1028 => Ok(CommandId::HostUpdateToken),
+            1029 => Ok(CommandId::HostSetCompanionInvalid),
             2000 => Ok(CommandId::CompanionGetPersistedStatus),
             2001 => Ok(CommandId::CompanionProcessCheck),
             2002 => Ok(CommandId::CompanionInitKeyNegotiation),

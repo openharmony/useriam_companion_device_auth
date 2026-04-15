@@ -1207,13 +1207,11 @@ HWTEST_F(FfiUtilTest, DecodeCompanionEndAddHostBindingOutput_001, TestSize.Level
 {
     MockGuard guard;
     CompanionEndAddHostBindingOutputFfi ffi = {};
-    ffi.bindingId = 888;
     ffi.atl = 0;
     ffi.esl = 0;
 
     CompanionEndAddHostBindingOutput output;
     EXPECT_TRUE(DecodeCompanionEndAddHostBindingOutput(ffi, output));
-    EXPECT_EQ(output.bindingId, 888U);
 }
 
 HWTEST_F(FfiUtilTest, EncodeCompanionPreIssueTokenInput_001, TestSize.Level0)
