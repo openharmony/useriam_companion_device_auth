@@ -146,7 +146,7 @@ HWTEST_F(HostMixAuthRequestTest, Start_004, TestSize.Level0)
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
     request->templateIdList_ = {};
-    request->requestMap_[1] = nullptr;
+    request->requestMap_[1] = 0;
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
     request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
@@ -220,7 +220,7 @@ HWTEST_F(HostMixAuthRequestTest, Cancel_003, TestSize.Level0)
         AUTH_INTENTION };
     auto request = std::make_shared<HostMixAuthRequest>(params, std::move(callback));
 
-    request->requestMap_[1] = nullptr;
+    request->requestMap_[1] = 0;
     auto callbackCalled = std::make_shared<bool>(false);
     auto callbackResult = std::make_shared<ResultCode>(ResultCode::SUCCESS);
     request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
@@ -298,7 +298,7 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_002, TestSize.Level0)
     EXPECT_FALSE(*callbackCalled);
 }
 
-HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
+HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_ZeroRequestIdStillCallbacksSuccess, TestSize.Level0)
 {
     MockGuard guard;
 
@@ -320,13 +320,13 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_003, TestSize.Level0)
     EXPECT_CALL(guard.GetRequestManager(), Start(_)).WillOnce(Return(true));
 
     request->Start();
-    // Set request to nullptr, callback should not be called because HandleAuthResult returns early
-    request->requestMap_[TEMPLATE_ID] = nullptr;
+    // Set requestId to 0 in the map; HandleAuthResult still finds the key and processes SUCCESS
+    request->requestMap_[TEMPLATE_ID] = 0;
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    // Callback should not be called when request is nullptr (defensive early return)
-    EXPECT_FALSE(*callbackCalled);
+    // Callback IS called because the key exists in requestMap_ regardless of its value
+    EXPECT_TRUE(*callbackCalled);
 }
 
 HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_004, TestSize.Level0)
@@ -387,7 +387,7 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_005, TestSize.Level0)
     request->Start();
     // Add a nullptr entry with templateId 0, then handle error for TEMPLATE_ID
     // Since requestMap_ won't be empty after erasing TEMPLATE_ID, callback should not be called
-    request->requestMap_.emplace(0, nullptr);
+    request->requestMap_.emplace(0, 0);
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::GENERAL_ERROR, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
@@ -422,7 +422,7 @@ HWTEST_F(HostMixAuthRequestTest, HandleAuthResult_007, TestSize.Level0)
     request->Start();
     // Add a nullptr entry, then handle SUCCESS for TEMPLATE_ID
     // Should still succeed because the SUCCESS callback should complete the request
-    request->requestMap_[1] = nullptr;
+    request->requestMap_[1] = 0;
     request->HandleAuthResult(TEMPLATE_ID, ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();

@@ -113,6 +113,7 @@ public:
     MOCK_METHOD(ResultCode, HostUpdateCompanionStatus, (const HostUpdateCompanionStatusInput &input), (override));
     MOCK_METHOD(ResultCode, HostUpdateCompanionEnabledBusinessIds,
         (const HostUpdateCompanionEnabledBusinessIdsInput &input), (override));
+    MOCK_METHOD(ResultCode, HostSetCompanionInvalid, (const HostSetCompanionInvalidInput &input), (override));
     MOCK_METHOD(ResultCode, HostCheckTemplateEnrolled,
         (const HostCheckTemplateEnrolledInput &input, HostCheckTemplateEnrolledOutput &output), (override));
 

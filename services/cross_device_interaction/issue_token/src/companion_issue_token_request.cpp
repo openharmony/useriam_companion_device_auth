@@ -38,8 +38,7 @@ CompanionIssueTokenRequest::CompanionIssueTokenRequest(const std::string &connec
     OnMessageReply &&replyCallback, const DeviceKey &hostDeviceKey)
     : InboundRequest(RequestType::COMPANION_ISSUE_TOKEN_REQUEST, connectionName, hostDeviceKey),
       request_(request),
-      preIssueTokenReplyCallback_(std::move(replyCallback)),
-      eventCollector_("companion issue token request")
+      preIssueTokenReplyCallback_(std::move(replyCallback))
 {
 }
 
@@ -103,9 +102,9 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
     companionUserId_ = preIssueRequest.companionUserId;
     preIssueTokenRequest_ = preIssueRequest.extraInfo;
 
-    eventCollector_.UpdateHostDeviceKey(PeerDeviceKey());
-    eventCollector_.UpdateCompanionUserId(companionUserId_);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetHostDeviceKey(PeerDeviceKey());
+    eventCollector_.SetCompanionUserId(companionUserId_);
+    eventCollector_.SetConnectionName(GetConnectionName());
 
     SecureProtocolId secureProtocolId = GetCrossDeviceCommManager().CompanionGetSecureProtocolId();
     ENSURE_OR_RETURN_DESC_VAL(GetDescription(), secureProtocolId != SecureProtocolId::INVALID, false);
@@ -116,6 +115,7 @@ bool CompanionIssueTokenRequest::CompanionPreIssueToken(std::vector<uint8_t> &pr
 
     bindingId_ = hostBindingStatus->bindingId;
     desc_.SetBindingId(bindingId_);
+    eventCollector_.SetBindingId(bindingId_);
 
     CompanionPreIssueTokenInput input = BuildCompanionPreIssueTokenInput();
 
@@ -199,7 +199,7 @@ bool CompanionIssueTokenRequest::SecureAgentCompanionIssueToken(const std::vecto
         return false;
     }
 
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetAtl(output.atl);
     issueTokenReply.swap(output.issueTokenReply);
     bool setTokenValidRet = GetHostBindingManager().SetHostBindingTokenValid(bindingId_, true);
     if (!setTokenValidRet) {

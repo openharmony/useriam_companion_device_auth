@@ -881,7 +881,7 @@ HWTEST_F(HostBindingManagerImplTest, EndAddHostBinding_003, TestSize.Level0)
         .bindingId = testBindingId };
     EndAddHostBindingOutput output = {};
     ResultCode ret = manager->EndAddHostBinding(input, output);
-    EXPECT_EQ(ResultCode::SUCCESS, ret);
+    EXPECT_EQ(ResultCode::GENERAL_ERROR, ret);
     EXPECT_FALSE(manager->GetHostBindingStatus(testBindingId).has_value());
 }
 

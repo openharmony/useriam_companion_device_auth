@@ -35,13 +35,12 @@ HostRemoveHostBindingRequest::HostRemoveHostBindingRequest(UserId hostUserId, Te
     : OutboundRequest(RequestType::HOST_REMOVE_HOST_BINDING_REQUEST, 0, DEFAULT_REQUEST_TIMEOUT_MS),
       hostUserId_(hostUserId),
       companionDeviceKey_(companionDeviceKey),
-      templateId_(templateId),
-      eventCollector_("host remove host binding request")
+      templateId_(templateId)
 {
     SetPeerDeviceKey(companionDeviceKey_);
-    eventCollector_.UpdateHostUserId(hostUserId);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateTemplateIdList({ templateId });
+    eventCollector_.SetHostUserId(hostUserId);
+    eventCollector_.SetCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.SetTemplateIdList({ templateId });
 }
 
 bool HostRemoveHostBindingRequest::OnStart(ErrorGuard &errorGuard)
@@ -52,7 +51,7 @@ bool HostRemoveHostBindingRequest::OnStart(ErrorGuard &errorGuard)
         return false;
     }
     desc_.SetTemplateId(templateId_);
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetConnectionName(GetConnectionName());
     return true;
 }
 

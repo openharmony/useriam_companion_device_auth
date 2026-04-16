@@ -41,10 +41,6 @@ public:
 
     void OnFailure();
     void Reset();
-    int32_t GetFailureCount() const
-    {
-        return failureCount_;
-    }
 
     static uint32_t CalculateNextDelayMs(uint32_t failureCount, const Config &config);
 

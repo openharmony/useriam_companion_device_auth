@@ -41,8 +41,6 @@ public:
     void OnSyncFailure();
     DeviceKey BuildDeviceKey(UserId userId) const;
     DeviceStatus BuildDeviceStatus(UserId userId) const;
-    bool IsSameDevice(const PhysicalDeviceKey &key, ChannelId id) const;
-
     PhysicalDeviceKey physicalDeviceKey;
     ChannelId channelId { ChannelId::INVALID };
     std::string deviceModelInfo {};

@@ -40,14 +40,14 @@ HostMixAuthRequest::HostMixAuthRequest(const HostMixAuthParams &params, FwkResul
       tokenId_(params.tokenId),
       businessId_(params.businessId),
       authIntent_(params.authIntent),
-      requestCallback_(std::move(requestCallback)),
-      eventCollector_("host mix auth request")
+      requestCallback_(std::move(requestCallback))
 {
     desc_.SetTemplateIdList(templateIdList_);
-    eventCollector_.UpdateHostUserId(params.hostUserId);
-    eventCollector_.UpdateScheduleId(params.scheduleId);
-    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
-    eventCollector_.UpdateTemplateIdList(params.templateIdList);
+    desc_.SetScheduleId(params.scheduleId);
+    eventCollector_.SetHostUserId(params.hostUserId);
+    eventCollector_.SetScheduleId(params.scheduleId);
+    eventCollector_.SetTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.SetTemplateIdList(params.templateIdList);
 }
 
 bool HostMixAuthRequest::AnyTemplateValid() const
@@ -85,6 +85,8 @@ void HostMixAuthRequest::HandleDeviceSelectResult(const std::vector<DeviceKey> &
         return;
     }
 
+    desc_.SetTemplateIdList(filteredList);
+    eventCollector_.SetTemplateIdList(filteredList);
     selectContext_ = selectContext;
     StartAuthWithTemplateList(filteredList);
 }
@@ -124,6 +126,7 @@ std::vector<TemplateId> HostMixAuthRequest::GetFilteredTemplateList(const std::v
 
 void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId> &templateList)
 {
+    std::vector<RequestId> subRequestIds;
     for (auto templateId : templateList) {
         auto companionStatus = GetCompanionManager().GetCompanionStatus(templateId);
         if (!companionStatus.has_value()) {
@@ -154,10 +157,12 @@ void HostMixAuthRequest::StartAuthWithTemplateList(const std::vector<TemplateId>
                 GET_MASKED_NUM_CSTR(templateId));
             continue;
         }
+        subRequestIds.push_back(hostSingleMixAuthRequest->GetRequestId());
         IAM_LOGI("%{public}s start request success for companion device:%{public}s", GetDescription(),
             companionStatus->GetDesc().c_str());
-        requestMap_.emplace(templateId, std::move(hostSingleMixAuthRequest));
+        requestMap_.emplace(templateId, hostSingleMixAuthRequest->GetRequestId());
     }
+    desc_.SetSubRequestIdList(subRequestIds);
     if (requestMap_.empty()) {
         IAM_LOGE("%{public}s no request exist", GetDescription());
         CompleteWithError(ResultCode::GENERAL_ERROR);
@@ -204,11 +209,11 @@ bool HostMixAuthRequest::Cancel(ResultCode resultCode)
         return true;
     }
     cancelled_ = true;
-    std::unordered_map<uint64_t, std::shared_ptr<IRequest>> requestMap = std::move(requestMap_);
+    auto requestMap = std::move(requestMap_);
     requestMap_.clear();
     for (auto &entry : requestMap) {
-        if (entry.second != nullptr) {
-            entry.second->Cancel(resultCode);
+        if (entry.second != 0) {
+            GetRequestManager().Cancel(entry.second);
         }
     }
     CompleteWithError(resultCode);
@@ -220,16 +225,11 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
 {
     IAM_LOGI("%{public}s templateId:%{public}s result:%{public}d", GetDescription(), GET_MASKED_NUM_CSTR(templateId),
         result);
-    std::string templateAuthResult = std::to_string(templateId) + " " + std::to_string(static_cast<int32_t>(result));
-    eventCollector_.AppendExtraInfo("template auth result", templateAuthResult);
+    eventCollector_.AddTemplateAuthResult(templateId, result);
 
     auto it = requestMap_.find(templateId);
     if (it == requestMap_.end()) {
         IAM_LOGE("%{public}s request already released", GetDescription());
-        return;
-    }
-    if (it->second == nullptr) {
-        IAM_LOGE("%{public}s request is nullptr", GetDescription());
         return;
     }
     requestMap_.erase(it);
@@ -242,14 +242,14 @@ void HostMixAuthRequest::HandleAuthResult(TemplateId templateId, ResultCode resu
             requestMap_.size());
         return;
     }
-    std::unordered_map<uint64_t, std::shared_ptr<IRequest>> requestMap = std::move(requestMap_);
+    auto requestMap = std::move(requestMap_);
     requestMap_.clear();
     for (auto &entry : requestMap) {
-        if (entry.second != nullptr) {
-            entry.second->Cancel(ResultCode::CANCELED);
+        if (entry.second != 0) {
+            GetRequestManager().Cancel(entry.second);
         }
     }
-    eventCollector_.AppendExtraInfo("success template id", templateId);
+    eventCollector_.SetSuccessTemplateId(templateId);
     CompleteWithSuccess(templateId, extraInfo);
 }
 

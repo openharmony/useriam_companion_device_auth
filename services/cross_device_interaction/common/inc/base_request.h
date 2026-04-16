@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "interaction_desc.h"
+#include "interaction_event_collector.h"
 #include "irequest.h"
 #include "misc_manager.h"
 #include "relative_timer.h"
@@ -40,14 +41,17 @@ public:
     RequestId GetRequestId() const final override;
     ScheduleId GetScheduleId() const final override;
     std::optional<DeviceKey> GetPeerDeviceKey() const override;
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override;
 
 protected:
+    uint32_t CountSameType(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const;
     void StartTimeout(std::weak_ptr<BaseRequest> weakSelf);
     void StopTimeout();
     void Destroy();
     virtual void CompleteWithError(ResultCode result) = 0;
 
     InteractionDesc desc_;
+    InteractionEventCollector eventCollector_;
 
     const RequestType requestType_;
     RequestId requestId_ = 0;

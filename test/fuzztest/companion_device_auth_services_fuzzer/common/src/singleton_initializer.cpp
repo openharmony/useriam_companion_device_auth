@@ -200,6 +200,11 @@ public:
         (void)templateId;
     }
 
+    void SetTemplateInvalid(TemplateId templateId) override
+    {
+        (void)templateId;
+    }
+
 private:
     bool Initialize()
     {
@@ -514,7 +519,6 @@ public:
         CompanionEndAddHostBindingOutput &output) override
     {
         (void)input;
-        output.bindingId = fuzzData_.ConsumeIntegral<BindingId>();
         output.atl = fuzzData_.ConsumeIntegral<Atl>();
         output.esl = fuzzData_.ConsumeIntegral<int32_t>();
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
@@ -758,6 +762,12 @@ public:
     }
 
     ResultCode HostUpdateCompanionEnabledBusinessIds(const HostUpdateCompanionEnabledBusinessIdsInput &input) override
+    {
+        (void)input;
+        return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
+    }
+
+    ResultCode HostSetCompanionInvalid(const HostSetCompanionInvalidInput &input) override
     {
         (void)input;
         return static_cast<ResultCode>(fuzzData_.ConsumeIntegral<uint32_t>());
@@ -1035,6 +1045,12 @@ public:
         uint32_t leftRange = 1;
         uint32_t rightRange = 10;
         return fuzzData_.ConsumeIntegralInRange<uint32_t>(leftRange, rightRange);
+    }
+
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override
+    {
+        (void)prevRequests;
+        return fuzzData_.ConsumeBool();
     }
 
     bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,

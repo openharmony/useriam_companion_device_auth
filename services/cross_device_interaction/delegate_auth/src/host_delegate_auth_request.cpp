@@ -39,16 +39,15 @@ HostDelegateAuthRequest::HostDelegateAuthRequest(const AuthRequestParams &params
       fwkMsg_(params.fwkMsg),
       hostUserId_(params.hostUserId),
       templateId_(params.templateId),
-      requestCallback_(std::move(requestCallback)),
-      eventCollector_("host delegate auth request")
+      requestCallback_(std::move(requestCallback))
 {
     SetPeerDeviceKey(companionDeviceKey);
     desc_.SetTemplateId(templateId_);
-    eventCollector_.UpdateHostUserId(params.hostUserId);
-    eventCollector_.UpdateCompanionDeviceKey(companionDeviceKey);
-    eventCollector_.UpdateScheduleId(params.scheduleId);
-    eventCollector_.UpdateTriggerReason("authIntent " + std::to_string(params.authIntent));
-    eventCollector_.UpdateTemplateIdList({ params.templateId });
+    eventCollector_.SetHostUserId(params.hostUserId);
+    eventCollector_.SetCompanionDeviceKey(companionDeviceKey);
+    eventCollector_.SetScheduleId(params.scheduleId);
+    eventCollector_.SetTriggerReason("authIntent " + std::to_string(params.authIntent));
+    eventCollector_.SetTemplateIdList({ params.templateId });
 }
 
 bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
@@ -75,7 +74,7 @@ bool HostDelegateAuthRequest::OnStart(ErrorGuard &errorGuard)
         errorGuard.UpdateErrorCode(ResultCode::COMMUNICATION_ERROR);
         return false;
     }
-    eventCollector_.UpdateConnectionName(GetConnectionName());
+    eventCollector_.SetConnectionName(GetConnectionName());
     errorGuard.Cancel();
     return true;
 }
@@ -196,8 +195,8 @@ bool HostDelegateAuthRequest::HandleSendDelegateAuthRequest(const Attributes &re
     }
     IAM_LOGI("%{public}s delegate auth success authType=%{public}d atl=%{public}d", GetDescription(), output.authType,
         output.atl);
-    eventCollector_.AppendExtraInfo("success auth type", static_cast<int32_t>(output.authType));
-    eventCollector_.AppendExtraInfo("ATL", output.atl);
+    eventCollector_.SetSuccessAuthType(static_cast<int32_t>(output.authType));
+    eventCollector_.SetAtl(output.atl);
     outFwkMsg = output.fwkMsg;
     needCancelDelegateAuth_ = false;
     return true;

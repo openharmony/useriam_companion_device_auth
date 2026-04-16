@@ -40,6 +40,18 @@ void InteractionDesc::SetRequestId(RequestId requestId)
     Rebuild();
 }
 
+void InteractionDesc::SetContextId(uint64_t contextId)
+{
+    contextId_ = contextId;
+    Rebuild();
+}
+
+void InteractionDesc::SetScheduleId(ScheduleId scheduleId)
+{
+    scheduleId_ = scheduleId;
+    Rebuild();
+}
+
 void InteractionDesc::SetBindingId(BindingId bindingId)
 {
     bindingId_ = bindingId;
@@ -60,6 +72,12 @@ void InteractionDesc::SetTemplateIdList(const std::vector<TemplateId> &templateI
     Rebuild();
 }
 
+void InteractionDesc::SetSubRequestIdList(const std::vector<RequestId> &subRequestIdList)
+{
+    subRequestIdList_ = subRequestIdList;
+    Rebuild();
+}
+
 const char *InteractionDesc::GetCStr() const
 {
     return description_.c_str();
@@ -74,8 +92,25 @@ void InteractionDesc::Rebuild()
         oss << "," << connectionName_;
     }
     if (requestId_.has_value()) {
-        oss << ",R:0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(requestIdHexWidth) << *requestId_
+        oss << ",R:" << std::hex << std::uppercase << std::setfill('0') << std::setw(requestIdHexWidth) << *requestId_
             << std::dec;
+    }
+    if (contextId_.has_value()) {
+        oss << ",C:" << GET_TRUNCATED_STRING(*contextId_);
+    }
+    if (scheduleId_.has_value()) {
+        oss << ",S:" << GET_TRUNCATED_STRING(*scheduleId_);
+    }
+    if (!subRequestIdList_.empty()) {
+        oss << ",SR=[";
+        for (size_t i = 0; i < subRequestIdList_.size(); ++i) {
+            if (i > 0) {
+                oss << ",";
+            }
+            oss << std::hex << std::uppercase << std::setfill('0') << std::setw(TRUNCATED_WIDTH)
+                << static_cast<uint16_t>(subRequestIdList_[i]) << std::dec;
+        }
+        oss << "]";
     }
     if (bindingId_.has_value()) {
         oss << ",B:" << GET_TRUNCATED_STRING(*bindingId_);

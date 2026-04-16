@@ -37,33 +37,33 @@ static const char *GetRequestTypeAbbr(RequestType requestType)
         case RequestType::NONE:
             return "-";
         case RequestType::HOST_SYNC_DEVICE_STATUS_REQUEST:
-            return "HSync";
+            return "RHSync";
         case RequestType::HOST_ADD_COMPANION_REQUEST:
-            return "HAddC";
+            return "RHAddC";
         case RequestType::COMPANION_ADD_COMPANION_REQUEST:
-            return "CAddC";
+            return "RCAddC";
         case RequestType::HOST_REMOVE_HOST_BINDING_REQUEST:
-            return "HRmB";
+            return "RHRmB";
         case RequestType::HOST_ISSUE_TOKEN_REQUEST:
-            return "HIsT";
+            return "RHIsT";
         case RequestType::COMPANION_ISSUE_TOKEN_REQUEST:
-            return "CIsT";
+            return "RCIsT";
         case RequestType::COMPANION_OBTAIN_TOKEN_REQUEST:
-            return "CObT";
+            return "RCObT";
         case RequestType::HOST_OBTAIN_TOKEN_REQUEST:
-            return "HObT";
+            return "RHObT";
         case RequestType::COMPANION_REVOKE_TOKEN_REQUEST:
-            return "CRvT";
+            return "RCRvT";
         case RequestType::HOST_TOKEN_AUTH_REQUEST:
-            return "HTkA";
+            return "RHTkA";
         case RequestType::HOST_DELEGATE_AUTH_REQUEST:
-            return "HDlA";
+            return "RHDlA";
         case RequestType::COMPANION_DELEGATE_AUTH_REQUEST:
-            return "CDlA";
+            return "RCDlA";
         case RequestType::HOST_SINGLE_MIX_AUTH_REQUEST:
-            return "HMixS";
+            return "RHMixS";
         case RequestType::HOST_MIX_AUTH_REQUEST:
-            return "HMixA";
+            return "RHMixA";
         default:
             return "?";
     }
@@ -72,7 +72,8 @@ static const char *GetRequestTypeAbbr(RequestType requestType)
 
 BaseRequest::BaseRequest(RequestType requestType, ScheduleId scheduleId, uint32_t timeoutMs,
     const std::string &connectionName)
-    : requestType_(requestType),
+    : eventCollector_(GetRequestTypeAbbr(requestType)),
+      requestType_(requestType),
       scheduleId_(scheduleId),
       timeoutMs_(timeoutMs)
 {
@@ -115,6 +116,22 @@ ScheduleId BaseRequest::GetScheduleId() const
 std::optional<DeviceKey> BaseRequest::GetPeerDeviceKey() const
 {
     return std::nullopt;
+}
+
+uint32_t BaseRequest::CountSameType(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const
+{
+    uint32_t sameTypeCount = 0;
+    for (const auto &req : prevRequests) {
+        if (req != nullptr && req->GetRequestType() == GetRequestType()) {
+            sameTypeCount++;
+        }
+    }
+    return sameTypeCount;
+}
+
+bool BaseRequest::CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const
+{
+    return CountSameType(prevRequests) < GetMaxConcurrency();
 }
 
 void BaseRequest::StartTimeout(std::weak_ptr<BaseRequest> weakSelf)

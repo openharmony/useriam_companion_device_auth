@@ -676,6 +676,26 @@ void CompanionManagerImpl::HandleRemoveHostBindingComplete(TemplateId templateId
     NotifyCompanionStatusChange();
 }
 
+void CompanionManagerImpl::SetTemplateInvalid(TemplateId templateId)
+{
+    auto companion = FindCompanionByTemplateId(templateId);
+    if (companion == nullptr) {
+        IAM_LOGE("companion template id %{public}s not found", GET_MASKED_NUM_CSTR(templateId));
+        return;
+    }
+
+    HostSetCompanionInvalidInput input { .templateId = templateId };
+    ResultCode ret = GetSecurityAgent().HostSetCompanionInvalid(input);
+    if (ret != ResultCode::SUCCESS) {
+        IAM_LOGE("HostSetCompanionInvalid failed ret %{public}d", ret);
+        return;
+    }
+
+    companion->SetCompanionValid(false);
+    NotifyCompanionStatusChange();
+    IAM_LOGI("template %{public}s set to invalid", GET_MASKED_NUM_CSTR(templateId));
+}
+
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

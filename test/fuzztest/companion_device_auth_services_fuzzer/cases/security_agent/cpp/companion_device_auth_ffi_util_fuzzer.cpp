@@ -194,7 +194,6 @@ static void FuzzDecodeCompanionBeginAddHostBindingOutput(FuzzedDataProvider &fuz
 static void FuzzDecodeCompanionEndAddHostBindingOutput(FuzzedDataProvider &fuzzData)
 {
     CompanionEndAddHostBindingOutputFfi ffi;
-    ffi.bindingId = fuzzData.ConsumeIntegral<int32_t>();
     ffi.atl = fuzzData.ConsumeIntegral<int32_t>();
     ffi.esl = fuzzData.ConsumeIntegral<int32_t>();
 

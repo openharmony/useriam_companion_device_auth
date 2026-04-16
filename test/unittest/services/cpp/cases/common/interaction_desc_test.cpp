@@ -80,14 +80,14 @@ HWTEST_F(InteractionDescTest, SetRequestId_001, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HObT");
     desc.SetRequestId(0x00000001);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:00000001)");
 }
 
 HWTEST_F(InteractionDescTest, SetRequestId_002, TestSize.Level0)
 {
     InteractionDesc desc(REQUEST_PREFIX, "HObT");
     desc.SetRequestId(0xABCD1234);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0xABCD1234)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:ABCD1234)");
 }
 
 HWTEST_F(InteractionDescTest, SetBindingId_001, TestSize.Level0)
@@ -144,7 +144,7 @@ HWTEST_F(InteractionDescTest, FullFields_001, TestSize.Level0)
     desc.SetConnectionName("conn1");
     desc.SetRequestId(0x00000042);
     desc.SetTemplateId(99);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,conn1,R:0x00000042,T:0063)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HTkA,conn1,R:00000042,T:0063)");
 }
 
 HWTEST_F(InteractionDescTest, HandlerPrefix_001, TestSize.Level0)
@@ -160,13 +160,13 @@ HWTEST_F(InteractionDescTest, IncrementalUpdate_001, TestSize.Level0)
     EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT)");
 
     desc.SetRequestId(0x00000001);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:00000001)");
 
     desc.SetConnectionName("conn2");
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:0x00000001)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:00000001)");
 
     desc.SetBindingId(7);
-    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:0x00000001,B:0007)");
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,conn2,R:00000001,B:0007)");
 }
 
 HWTEST_F(InteractionDescTest, GetCStrReturnsSamePointer_001, TestSize.Level0)
@@ -175,6 +175,53 @@ HWTEST_F(InteractionDescTest, GetCStrReturnsSamePointer_001, TestSize.Level0)
     const char *ptr1 = desc.GetCStr();
     const char *ptr2 = desc.GetCStr();
     EXPECT_EQ(ptr1, ptr2);
+}
+
+HWTEST_F(InteractionDescTest, SetScheduleId_001, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HMixA");
+    desc.SetScheduleId(0x123456789ABCDEF0);
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,S:DEF0)");
+}
+
+HWTEST_F(InteractionDescTest, SetScheduleId_002, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HObT");
+    desc.SetRequestId(0x00000001);
+    desc.SetScheduleId(42);
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HObT,R:00000001,S:002A)");
+}
+
+HWTEST_F(InteractionDescTest, SetSubRequestIdList_001, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HMixA");
+    desc.SetSubRequestIdList({ 0x00000001, 0x00000002 });
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,SR=[0001,0002])");
+}
+
+HWTEST_F(InteractionDescTest, SetSubRequestIdList_002, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HMixA");
+    desc.SetSubRequestIdList({ 0xABCD1234 });
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,SR=[1234])");
+}
+
+HWTEST_F(InteractionDescTest, SetSubRequestIdList_003, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HMixA");
+    desc.SetSubRequestIdList({});
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA)");
+}
+
+HWTEST_F(InteractionDescTest, FullFieldsWithScheduleAndSR_001, TestSize.Level0)
+{
+    InteractionDesc desc(REQUEST_PREFIX, "HMixA");
+    desc.SetConnectionName("conn1");
+    desc.SetRequestId(0x00000042);
+    desc.SetScheduleId(0xFF);
+    desc.SetSubRequestIdList({ 0x00000001, 0x00000002 });
+    desc.SetTemplateIdList({ 100, 200 });
+    EXPECT_STREQ(desc.GetCStr(), "CdaR(HMixA,conn1,R:00000042,S:00FF,SR=[0001,0002],T=[0064,00C8])");
 }
 
 } // namespace
