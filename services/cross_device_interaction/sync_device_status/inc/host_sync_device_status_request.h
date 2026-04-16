@@ -21,7 +21,6 @@
 
 #include "cda_scope_guard.h"
 #include "companion_manager.h"
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "security_agent.h"
 #include "sync_device_status_message.h"
@@ -68,7 +67,6 @@ private:
     DeviceKey companionDeviceKey_;
     std::string companionDeviceName_;
     SyncDeviceStatusCallback callback_;
-    InteractionEventCollector eventCollector_;
 
     void InvokeCallback(ResultCode result, const SyncDeviceStatus &syncDeviceStatus);
 };

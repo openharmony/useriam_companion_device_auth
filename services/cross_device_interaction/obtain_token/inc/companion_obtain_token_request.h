@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "host_binding_manager.h"
-#include "interaction_event_collector.h"
 #include "obtain_token_message.h"
 #include "outbound_request.h"
 #include "security_agent.h"
@@ -63,7 +62,6 @@ private:
     BindingId bindingId_ = 0;
     bool needCancelObtainToken_ = false;
     std::unique_ptr<Subscription> localDeviceStatusSubscription_;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

@@ -61,19 +61,15 @@ bool RequestManagerImpl::Start(const std::shared_ptr<IRequest> &request)
         return false;
     }
 
-    uint32_t subsequentSameTypeCount = 1;
     std::vector<std::shared_ptr<IRequest>> requestToCancel;
 
-    auto processRequests = [&subsequentSameTypeCount, &request, &requestToCancel](const auto &container) {
+    auto processRequests = [&request, &requestToCancel](const auto &container) {
         for (auto it = container.rbegin(); it != container.rend(); ++it) {
             const auto &existingRequest = *it;
             ENSURE_OR_CONTINUE(existingRequest != nullptr);
             if (existingRequest->ShouldCancelOnNewRequest(request->GetRequestType(), request->GetPeerDeviceKey(), 0)) {
                 requestToCancel.push_back(existingRequest);
                 continue;
-            }
-            if (existingRequest->GetRequestType() == request->GetRequestType()) {
-                subsequentSameTypeCount++;
             }
         }
     };
@@ -88,8 +84,12 @@ bool RequestManagerImpl::Start(const std::shared_ptr<IRequest> &request)
         }
     });
 
-    if (subsequentSameTypeCount > request->GetMaxConcurrency()) {
-        IAM_LOGE("request max concurrency reached, requestId:0x%{public}08X", requestId);
+    std::vector<std::shared_ptr<IRequest>> prevRequests;
+    prevRequests.insert(prevRequests.end(), runningRequests_.begin(), runningRequests_.end());
+    prevRequests.insert(prevRequests.end(), waitingRequests_.begin(), waitingRequests_.end());
+
+    if (!request->CanStart(prevRequests)) {
+        IAM_LOGI("request cannot start, enqueued requestId:0x%{public}08X", requestId);
         waitingRequests_.push_back(request);
         return true;
     }
@@ -155,12 +155,10 @@ void RequestManagerImpl::CancelAll()
 
 void RequestManagerImpl::Remove(RequestId requestId)
 {
-    RequestType removedRunningType = RequestType::NONE;
-
     auto runningIt = std::find_if(runningRequests_.begin(), runningRequests_.end(),
         [requestId](const auto &request) { return request != nullptr && request->GetRequestId() == requestId; });
-    if (runningIt != runningRequests_.end()) {
-        removedRunningType = (*runningIt)->GetRequestType();
+    bool wasRunning = (runningIt != runningRequests_.end());
+    if (wasRunning) {
         runningRequests_.erase(runningIt);
     }
 
@@ -170,47 +168,36 @@ void RequestManagerImpl::Remove(RequestId requestId)
         waitingRequests_.erase(waitingIt);
     }
 
-    if (removedRunningType == RequestType::NONE) {
+    if (!wasRunning) {
         return;
     }
 
-    uint32_t currentRunningCount = 0;
-    for (const auto &request : runningRequests_) {
-        ENSURE_OR_CONTINUE(request != nullptr);
-        if (request->GetRequestType() == removedRunningType) {
-            currentRunningCount++;
-        }
-    }
+    std::vector<std::shared_ptr<IRequest>> prevRequests(runningRequests_.begin(), runningRequests_.end());
+    std::vector<std::shared_ptr<IRequest>> toStart;
 
-    auto itToStart = waitingRequests_.end();
-    for (auto it = waitingRequests_.begin(); it != waitingRequests_.end(); ++it) {
+    for (auto it = waitingRequests_.begin(); it != waitingRequests_.end();) {
         const auto &waitingRequest = *it;
-        ENSURE_OR_CONTINUE(waitingRequest != nullptr);
-
-        if (waitingRequest->GetRequestType() != removedRunningType) {
+        if (waitingRequest == nullptr) {
+            it = waitingRequests_.erase(it);
             continue;
         }
-
-        if (currentRunningCount <= waitingRequest->GetMaxConcurrency()) {
-            itToStart = it;
-            break;
+        bool canStart = waitingRequest->CanStart(prevRequests);
+        prevRequests.push_back(waitingRequest);
+        if (canStart) {
+            toStart.push_back(waitingRequest);
+            runningRequests_.push_back(waitingRequest);
+            it = waitingRequests_.erase(it);
+        } else {
+            ++it;
         }
     }
 
-    std::shared_ptr<IRequest> requestToStart;
-    if (itToStart != waitingRequests_.end()) {
-        requestToStart = *itToStart;
-        waitingRequests_.erase(itToStart);
-        runningRequests_.push_back(requestToStart);
+    for (const auto &req : toStart) {
+        TaskRunnerManager::GetInstance().PostTaskOnResident([req]() {
+            ENSURE_OR_RETURN(req != nullptr);
+            req->Start();
+        });
     }
-    if (requestToStart == nullptr) {
-        return;
-    }
-
-    TaskRunnerManager::GetInstance().PostTaskOnResident([requestToStart]() {
-        ENSURE_OR_RETURN(requestToStart != nullptr);
-        requestToStart->Start();
-    });
 }
 
 std::shared_ptr<IRequest> RequestManagerImpl::Get(RequestId requestId) const

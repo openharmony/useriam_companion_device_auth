@@ -16,18 +16,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "mock_companion_manager.h"
-#include "mock_event_manager_adapter.h"
-#include "mock_misc_manager.h"
-#include "mock_request_factory.h"
-#include "mock_request_manager.h"
-#include "mock_time_keeper.h"
-#include "mock_user_id_manager.h"
+#include "mock_guard.h"
+#include "mock_request.h"
 
-#include "adapter_manager.h"
 #include "host_mix_auth_request.h"
 #include "host_single_mix_auth_request.h"
-#include "singleton_manager.h"
 #include "task_runner_manager.h"
 
 using namespace testing;
@@ -49,66 +42,30 @@ const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_
     .deviceId = "companion_device_id",
     .deviceUserId = 200 };
 
+constexpr uint64_t TOKEN_AUTH_REQ_ID = 1;
+constexpr uint64_t DELEGATE_AUTH_REQ_ID = 2;
+
 class HostSingleMixAuthRequestTest : public Test {
 public:
     void SetUp() override
     {
-        SingletonManager::GetInstance().Reset();
+        guard_ = std::make_unique<MockGuard>();
 
-        auto companionMgr = std::shared_ptr<ICompanionManager>(&mockCompanionManager_, [](ICompanionManager *) {});
-        SingletonManager::GetInstance().SetCompanionManager(companionMgr);
-
-        auto requestFactory = std::shared_ptr<IRequestFactory>(&mockRequestFactory_, [](IRequestFactory *) {});
-        SingletonManager::GetInstance().SetRequestFactory(requestFactory);
-
-        auto requestMgr = std::shared_ptr<IRequestManager>(&mockRequestManager_, [](IRequestManager *) {});
-        SingletonManager::GetInstance().SetRequestManager(requestMgr);
-
-        auto miscMgr = std::shared_ptr<IMiscManager>(&mockMiscManager_, [](IMiscManager *) {});
-        SingletonManager::GetInstance().SetMiscManager(miscMgr);
-
-        auto userIdMgr = std::shared_ptr<IUserIdManager>(&mockUserIdManager_, [](IUserIdManager *) {});
-        AdapterManager::GetInstance().SetUserIdManager(userIdMgr);
-
-        auto timeKeeper = std::make_shared<MockTimeKeeper>();
-        AdapterManager::GetInstance().SetTimeKeeper(timeKeeper);
-
-        auto eventManagerAdapter =
-            std::shared_ptr<IEventManagerAdapter>(&mockEventManagerAdapter_, [](IEventManagerAdapter *) {});
-        AdapterManager::GetInstance().SetEventManagerAdapter(eventManagerAdapter);
-
-        ON_CALL(mockCompanionManager_, IsCapabilitySupported(_, Capability::TOKEN_AUTH)).WillByDefault(Return(true));
-        ON_CALL(mockCompanionManager_, IsCapabilitySupported(_, Capability::DELEGATE_AUTH)).WillByDefault(Return(true));
-        ON_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
-            .WillByDefault(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-                return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
-            }));
-        ON_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
-            .WillByDefault(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-                return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY,
-                    std::move(requestCallback));
-            }));
-        ON_CALL(mockRequestManager_, Start(_)).WillByDefault(Return(true));
-        ON_CALL(mockEventManagerAdapter_, ReportInteractionEvent(_)).WillByDefault(Return());
+        ON_CALL(guard_->GetRequestFactory(), CreateHostTokenAuthRequest(_, _))
+            .WillByDefault(Return(
+                std::make_shared<MockIRequest>(RequestType::HOST_TOKEN_AUTH_REQUEST, TOKEN_AUTH_REQ_ID, SCHEDULE_ID)));
+        ON_CALL(guard_->GetRequestFactory(), CreateHostDelegateAuthRequest(_, _))
+            .WillByDefault(Return(std::make_shared<MockIRequest>(RequestType::HOST_DELEGATE_AUTH_REQUEST,
+                DELEGATE_AUTH_REQ_ID, SCHEDULE_ID)));
     }
 
     void TearDown() override
     {
-        RelativeTimer::GetInstance().ExecuteAll();
-        TaskRunnerManager::GetInstance().ExecuteAll();
-        RelativeTimer::GetInstance().ExecuteAll();
-        TaskRunnerManager::GetInstance().ExecuteAll();
-        SingletonManager::GetInstance().Reset();
-        AdapterManager::GetInstance().Reset();
+        guard_.reset();
     }
 
 protected:
-    NiceMock<MockCompanionManager> mockCompanionManager_;
-    NiceMock<MockRequestFactory> mockRequestFactory_;
-    NiceMock<MockRequestManager> mockRequestManager_;
-    NiceMock<MockMiscManager> mockMiscManager_;
-    NiceMock<MockUserIdManager> mockUserIdManager_;
-    NiceMock<MockEventManagerAdapter> mockEventManagerAdapter_;
+    std::unique_ptr<MockGuard> guard_;
 };
 
 HWTEST_F(HostSingleMixAuthRequestTest, Start_001, TestSize.Level0)
@@ -120,13 +77,11 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_001, TestSize.Level0)
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
-        .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
-        }));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostTokenAuthRequest(_, _))
+        .WillOnce(Return(std::make_shared<MockIRequest>(RequestType::HOST_TOKEN_AUTH_REQUEST, 1, SCHEDULE_ID)));
     // HostTokenAuthRequest Start will be called first
     // If it fails, HostDelegateAuthRequest Start may be called, so allow up to 2 Start calls
-    EXPECT_CALL(mockRequestManager_, Start(_)).Times(AtMost(2)).WillRepeatedly(Return(true));
+    EXPECT_CALL(guard_->GetRequestManager(), Start(_)).Times(AtMost(2)).WillRepeatedly(Return(true));
 
     request->Start();
 
@@ -147,7 +102,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_002, TestSize.Level0)
         *callbackResult = result;
     };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostTokenAuthRequest(_, _)).WillOnce(Return(nullptr));
 
     request->Start();
 
@@ -169,12 +124,10 @@ HWTEST_F(HostSingleMixAuthRequestTest, Start_003, TestSize.Level0)
         *callbackResult = result;
     };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostTokenAuthRequest(_, _))
-        .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostTokenAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
-        }));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostTokenAuthRequest(_, _))
+        .WillOnce(Return(std::make_shared<MockIRequest>(RequestType::HOST_TOKEN_AUTH_REQUEST, 1, SCHEDULE_ID)));
     // Allow multiple calls during cleanup - return false for the first call, then true for any additional calls
-    EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(false)).WillRepeatedly(Return(true));
+    EXPECT_CALL(guard_->GetRequestManager(), Start(_)).WillOnce(Return(false)).WillRepeatedly(Return(true));
 
     request->Start();
 
@@ -292,11 +245,9 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_002, TestSize.Level
     auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
-        .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
-        }));
-    EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostDelegateAuthRequest(_, _))
+        .WillOnce(Return(std::make_shared<MockIRequest>(RequestType::HOST_DELEGATE_AUTH_REQUEST, 2, SCHEDULE_ID)));
+    EXPECT_CALL(guard_->GetRequestManager(), Start(_)).WillOnce(Return(true)).WillOnce(Return(true));
 
     request->Start();
     request->HandleTokenAuthResult(ResultCode::GENERAL_ERROR, EXTRA_INFO);
@@ -305,20 +256,25 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_002, TestSize.Level
     EXPECT_FALSE(*callbackCalled);
 }
 
-HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_003, TestSize.Level0)
+HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_NoRequestIdStillCallbacksSuccess, TestSize.Level0)
 {
     AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
     auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
     auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
-    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
+    };
 
-    request->tokenAuthRequest_ = nullptr;
+    request->tokenAuthRequestId_.reset();
     request->HandleTokenAuthResult(ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();
-    EXPECT_FALSE(*callbackCalled);
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::SUCCESS);
 }
 
 HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_004, TestSize.Level0)
@@ -334,7 +290,7 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_004, TestSize.Level
         *callbackResult = result;
     };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostDelegateAuthRequest(_, _)).WillOnce(Return(nullptr));
 
     request->Start();
     request->HandleTokenAuthResult(ResultCode::GENERAL_ERROR, EXTRA_INFO);
@@ -357,11 +313,9 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_005, TestSize.Level
         *callbackResult = result;
     };
 
-    EXPECT_CALL(mockRequestFactory_, CreateHostDelegateAuthRequest(_, _))
-        .WillOnce(Invoke([this](const AuthRequestParams &params, FwkResultCallback &&requestCallback) {
-            return std::make_shared<HostDelegateAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(requestCallback));
-        }));
-    EXPECT_CALL(mockRequestManager_, Start(_)).WillOnce(Return(true)).WillOnce(Return(false));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostDelegateAuthRequest(_, _))
+        .WillOnce(Return(std::make_shared<MockIRequest>(RequestType::HOST_DELEGATE_AUTH_REQUEST, 2, SCHEDULE_ID)));
+    EXPECT_CALL(guard_->GetRequestManager(), Start(_)).WillOnce(Return(true)).WillOnce(Return(false));
 
     request->Start();
     request->HandleTokenAuthResult(ResultCode::GENERAL_ERROR, EXTRA_INFO);
@@ -369,6 +323,47 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_005, TestSize.Level
     TaskRunnerManager::GetInstance().ExecuteAll();
     EXPECT_TRUE(*callbackCalled);
     EXPECT_EQ(*callbackResult, ResultCode::GENERAL_ERROR);
+}
+
+HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_006, TestSize.Level0)
+{
+    // HandleTokenAuthResult should skip when cancelled_ is true
+    AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
+
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
+
+    request->cancelled_ = true;
+    request->HandleTokenAuthResult(ResultCode::SUCCESS, EXTRA_INFO);
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    EXPECT_FALSE(*callbackCalled);
+}
+
+HWTEST_F(HostSingleMixAuthRequestTest, HandleTokenAuthResult_007, TestSize.Level0)
+{
+    // When TOKEN_AUTH not supported, fallback to DELEGATE_AUTH
+    AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
+
+    auto callbackCalled = std::make_shared<bool>(false);
+    request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
+
+    EXPECT_CALL(guard_->GetCompanionManager(), IsCapabilitySupported(_, Capability::TOKEN_AUTH))
+        .WillOnce(Return(false));
+    EXPECT_CALL(guard_->GetCompanionManager(), IsCapabilitySupported(_, Capability::DELEGATE_AUTH))
+        .WillOnce(Return(true));
+    EXPECT_CALL(guard_->GetRequestFactory(), CreateHostDelegateAuthRequest(_, _))
+        .WillOnce(Return(std::make_shared<MockIRequest>(RequestType::HOST_DELEGATE_AUTH_REQUEST, 2, SCHEDULE_ID)));
+    EXPECT_CALL(guard_->GetRequestManager(), Start(_)).WillOnce(Return(true));
+
+    request->Start();
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    EXPECT_FALSE(*callbackCalled);
 }
 
 HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_001, TestSize.Level0)
@@ -422,9 +417,31 @@ HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_003, TestSize.Le
     auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
 
     auto callbackCalled = std::make_shared<bool>(false);
+    auto callbackResult = std::make_shared<ResultCode>(ResultCode::GENERAL_ERROR);
+    request->requestCallback_ = [callbackCalled, callbackResult](ResultCode result, const std::vector<uint8_t> &) {
+        *callbackCalled = true;
+        *callbackResult = result;
+    };
+
+    request->delegateAuthRequestId_.reset();
+    request->HandleDelegateAuthResult(ResultCode::SUCCESS, EXTRA_INFO);
+
+    TaskRunnerManager::GetInstance().ExecuteAll();
+    EXPECT_TRUE(*callbackCalled);
+    EXPECT_EQ(*callbackResult, ResultCode::SUCCESS);
+}
+
+HWTEST_F(HostSingleMixAuthRequestTest, HandleDelegateAuthResult_004, TestSize.Level0)
+{
+    // HandleDelegateAuthResult should skip when cancelled_ is true
+    AuthRequestParams params = { SCHEDULE_ID, FWK_MSG, HOST_USER_ID, TEMPLATE_ID, AUTH_INTENTION };
+    auto callback = [](ResultCode, const std::vector<uint8_t> &) {};
+    auto request = std::make_shared<HostSingleMixAuthRequest>(params, COMPANION_DEVICE_KEY, std::move(callback));
+
+    auto callbackCalled = std::make_shared<bool>(false);
     request->requestCallback_ = [callbackCalled](ResultCode, const std::vector<uint8_t> &) { *callbackCalled = true; };
 
-    request->delegateAuthRequest_ = nullptr;
+    request->cancelled_ = true;
     request->HandleDelegateAuthResult(ResultCode::SUCCESS, EXTRA_INFO);
 
     TaskRunnerManager::GetInstance().ExecuteAll();

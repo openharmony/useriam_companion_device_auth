@@ -119,11 +119,6 @@ DeviceStatus DeviceStatusEntry::BuildDeviceStatus(UserId userId) const
     return status;
 }
 
-bool DeviceStatusEntry::IsSameDevice(const PhysicalDeviceKey &key, ChannelId id) const
-{
-    return physicalDeviceKey == key && channelId == id;
-}
-
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
 } // namespace OHOS

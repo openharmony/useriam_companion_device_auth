@@ -18,7 +18,6 @@
 
 #include <memory>
 
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "service_common.h"
 
@@ -50,7 +49,6 @@ private:
     UserId hostUserId_ = INVALID_USER_ID;
     DeviceKey companionDeviceKey_;
     TemplateId templateId_ = 0;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

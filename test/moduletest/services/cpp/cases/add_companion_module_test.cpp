@@ -241,7 +241,6 @@ HWTEST_F(AddCompanionModuleTest, CompanionAddCompanionFullE2E_001, TestSize.Leve
         .WillOnce(DoAll(SetArgReferee<1>(beginOutput), Return(ResultCode::SUCCESS)));
 
     CompanionEndAddHostBindingOutput endOutput;
-    endOutput.bindingId = 42;
     endOutput.atl = 2;
     endOutput.esl = 1;
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndAddHostBinding(_, _))
@@ -306,7 +305,6 @@ HWTEST_F(AddCompanionModuleTest, CompanionDuplicateAddReplacedBindingE2E_001, Te
         .WillOnce(DoAll(SetArgReferee<1>(beginOutput), Return(ResultCode::SUCCESS)));
 
     CompanionEndAddHostBindingOutput endOutput;
-    endOutput.bindingId = 43;
     endOutput.atl = 1;
     endOutput.esl = 0;
     EXPECT_CALL(guard.GetSecurityAgent(), CompanionEndAddHostBinding(_, _))

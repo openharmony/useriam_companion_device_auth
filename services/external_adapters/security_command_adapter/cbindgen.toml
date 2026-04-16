@@ -105,6 +105,8 @@ include = [
     "HostUpdateCompanionStatusOutputFfi",
     "HostUpdateCompanionEnabledBusinessIdsInputFfi",
     "HostUpdateCompanionEnabledBusinessIdsOutputFfi",
+    "HostSetCompanionInvalidInputFfi",
+    "HostSetCompanionInvalidOutputFfi",
     "HostCheckTemplateEnrolledInputFfi",
     "HostCheckTemplateEnrolledOutputFfi",
     "HostBeginDelegateAuthInputFfi",

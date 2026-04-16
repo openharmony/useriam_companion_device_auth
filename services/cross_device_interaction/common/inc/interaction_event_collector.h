@@ -36,20 +36,28 @@ public:
     }
     ~InteractionEventCollector() = default;
 
-    void UpdateHostUserId(UserId hostUserId);
-    void UpdateHostDeviceKey(const DeviceKey &hostDeviceKey);
-    void UpdateCompanionUserId(UserId companionUserId);
-    void UpdateCompanionDeviceKey(const DeviceKey &companionDeviceKey);
-    void UpdateConnectionName(const std::string &connectionName);
-    void UpdateScheduleId(ScheduleId scheduleId);
-    void UpdateTriggerReason(const std::string &triggerReason);
-    void UpdateTemplateIdList(const std::vector<TemplateId> &templateIdList);
+    void SetHostUserId(UserId hostUserId);
+    void SetHostDeviceKey(const DeviceKey &hostDeviceKey);
+    void SetCompanionUserId(UserId companionUserId);
+    void SetCompanionDeviceKey(const DeviceKey &companionDeviceKey);
+    void SetConnectionName(const std::string &connectionName);
+    void SetScheduleId(ScheduleId scheduleId);
+    void SetTriggerReason(const std::string &triggerReason);
+    void SetTemplateIdList(const std::vector<TemplateId> &templateIdList);
 
-    template <typename T>
-    void AppendExtraInfo(const std::string &key, const T &value);
-
-    template <typename T>
-    void AppendExtraInfo(const std::string &key, const std::vector<T> &value);
+    void SetAtl(Atl atl);
+    void SetBindingId(BindingId bindingId);
+    void SetContextId(uint64_t contextId);
+    void SetSuccessAuthType(int32_t authType);
+    void SetAlgorithmList(const std::vector<uint16_t> &algorithmList);
+    void SetSelectedAlgorithm(uint16_t algorithm);
+    void SetEsl(int32_t esl);
+    void SetProtocolIdList(const std::vector<uint16_t> &protocolIdList);
+    void SetCapabilityList(const std::vector<uint16_t> &capabilityList);
+    void SetSelectedProtocolIdList(const std::vector<uint16_t> &selectedProtocolIdList);
+    void SetSecureProtocolId(uint16_t secureProtocolId);
+    void AddTemplateAuthResult(TemplateId templateId, ResultCode result);
+    void SetSuccessTemplateId(TemplateId templateId);
 
     void Report(ResultCode result);
 
@@ -93,12 +101,12 @@ public:
     {
         return templateIdList_;
     }
-    const std::string &GetExtraInfo() const
-    {
-        return extraInfo_;
-    }
+    std::string GetExtraInfo() const;
 
 private:
+    void BuildExtraInfoStep1(std::ostringstream &oss) const;
+    void BuildExtraInfoStep2(std::ostringstream &oss) const;
+
     std::string requestType_;
     ResultCode result_ = ResultCode::SUCCESS;
     std::optional<UserId> hostUserId_;
@@ -109,11 +117,20 @@ private:
     std::optional<ScheduleId> scheduleId_;
     std::optional<std::string> triggerReason_;
     std::optional<std::vector<TemplateId>> templateIdList_;
-    std::string extraInfo_;
+    std::optional<Atl> atl_;
+    std::optional<BindingId> bindingId_;
+    std::optional<uint64_t> contextId_;
+    std::optional<int32_t> successAuthType_;
+    std::optional<std::vector<uint16_t>> algorithmList_;
+    std::optional<uint16_t> selectedAlgorithm_;
+    std::optional<int32_t> esl_;
+    std::optional<std::vector<uint16_t>> protocolIdList_;
+    std::optional<std::vector<uint16_t>> capabilityList_;
+    std::optional<std::vector<uint16_t>> selectedProtocolIdList_;
+    std::optional<uint16_t> secureProtocolId_;
+    std::string templateAuthResult_;
+    std::optional<TemplateId> successTemplateId_;
 };
-
-template <typename T>
-std::string ConvertVectorToString(const std::vector<T> &vec);
 
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

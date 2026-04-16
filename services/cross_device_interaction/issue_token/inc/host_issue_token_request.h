@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "companion_manager.h"
-#include "interaction_event_collector.h"
 #include "outbound_request.h"
 #include "security_agent.h"
 #include "user_id_manager.h"
@@ -36,6 +35,7 @@ public:
     ~HostIssueTokenRequest() override = default;
 
     uint32_t GetMaxConcurrency() const override;
+    bool CanStart(const std::vector<std::shared_ptr<IRequest>> &prevRequests) const override;
     bool ShouldCancelOnNewRequest(RequestType newRequestType, const std::optional<DeviceKey> &newPeerDevice,
         uint32_t subsequentSameTypeCount) const override;
 
@@ -62,7 +62,6 @@ private:
     bool needCancelIssueToken_ = false;
     SecureProtocolId secureProtocolId_ = SecureProtocolId::DEFAULT;
     std::unique_ptr<Subscription> deviceStatusSubscription_;
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam

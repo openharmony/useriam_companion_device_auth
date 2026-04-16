@@ -215,7 +215,7 @@ ResultCode HostBindingManagerImpl::EndAddHostBinding(const EndAddHostBindingInpu
             IAM_LOGI("removing failed binding %{public}s", GET_MASKED_NUM_STRING(input.bindingId).c_str());
             RemoveBindingInternal(input.bindingId);
         }
-        return ResultCode::SUCCESS;
+        return input.resultCode;
     }
     SetHostBindingTokenValid(input.bindingId, true);
 

@@ -20,6 +20,7 @@
 
 #include "error_guard.h"
 #include "interaction_desc.h"
+#include "interaction_event_collector.h"
 #include "remove_host_binding_message.h"
 #include "singleton_manager.h"
 
@@ -35,12 +36,20 @@ CompanionRemoveHostBindingHandler::CompanionRemoveHostBindingHandler()
 
 void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request, Attributes &reply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "CRmB");
+    InteractionDesc desc(HANDLER_PREFIX, "HCRmB");
     IAM_LOGI("%{public}s start", desc.GetCStr());
 
-    ErrorGuard errorGuard([&reply](ResultCode result) {
+    InteractionEventCollector eventCollector("HCRmB");
+    ErrorGuard errorGuard([&reply, &eventCollector](ResultCode result) {
         (void)reply.SetInt32Value(Attributes::ATTR_CDA_SA_RESULT, static_cast<int32_t>(result));
+        eventCollector.Report(result);
     });
+
+    std::string connectionName;
+    if (request.GetStringValue(Attributes::ATTR_CDA_SA_CONNECTION_NAME, connectionName)) {
+        desc.SetConnectionName(connectionName);
+        eventCollector.SetConnectionName(connectionName);
+    }
 
     auto requestMsgOpt = DecodeRemoveHostBindingRequest(request);
     if (!requestMsgOpt.has_value()) {
@@ -48,6 +57,13 @@ void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request,
         return;
     }
     const auto &requestMsg = *requestMsgOpt;
+
+    auto hostBindingStatus =
+        GetHostBindingManager().GetHostBindingStatus(requestMsg.companionUserId, requestMsg.hostDeviceKey);
+    if (hostBindingStatus.has_value()) {
+        desc.SetBindingId(hostBindingStatus->bindingId);
+        eventCollector.SetBindingId(hostBindingStatus->bindingId);
+    }
 
     ResultCode ret = GetHostBindingManager().RemoveHostBinding(requestMsg.companionUserId, requestMsg.hostDeviceKey);
     if (ret != ResultCode::SUCCESS) {
@@ -59,6 +75,7 @@ void CompanionRemoveHostBindingHandler::HandleRequest(const Attributes &request,
     RemoveHostBindingReply replyMsg = { .result = ResultCode::SUCCESS };
     EncodeRemoveHostBindingReply(replyMsg, reply);
     errorGuard.Cancel();
+    eventCollector.Report(ResultCode::SUCCESS);
     IAM_LOGI("%{public}s success", desc.GetCStr());
 }
 } // namespace CompanionDeviceAuth

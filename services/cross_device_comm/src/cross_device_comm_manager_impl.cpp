@@ -252,7 +252,7 @@ std::optional<SecureProtocolId> CrossDeviceCommManagerImpl::HostGetSecureProtoco
 {
     auto deviceStatusOpt = GetDeviceStatus(companionDeviceKey);
     if (!deviceStatusOpt.has_value()) {
-        IAM_LOGE("companion status not found for device: %{public}s", companionDeviceKey.GetDesc().c_str());
+        IAM_LOGE("device status not found for device: %{public}s", companionDeviceKey.GetDesc().c_str());
         return std::nullopt;
     }
 

@@ -36,7 +36,7 @@ HostPreObtainTokenHandler::HostPreObtainTokenHandler() : AsyncIncomingMessageHan
 
 void HostPreObtainTokenHandler::HandleRequest(const Attributes &request, OnMessageReply &onMessageReply)
 {
-    InteractionDesc desc(HANDLER_PREFIX, "HObT");
+    InteractionDesc desc(HANDLER_PREFIX, "HHObT");
     IAM_LOGI("%{public}s start", desc.GetCStr());
     ENSURE_OR_RETURN_DESC(desc.GetCStr(), onMessageReply != nullptr);
     ErrorGuard errorGuard([&onMessageReply](ResultCode result) {

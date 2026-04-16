@@ -129,6 +129,7 @@ companion_device_auth_service_static_sources = [
   "fwk_comm/src/companion_device_auth_executor_callback.cpp",
   "fwk_comm/src/default_executor_factory.cpp",
   "fwk_comm/src/fwk_comm_manager.cpp",
+  "fwk_comm/src/pending_issue_token_manager.cpp",
   "host_binding/src/host_binding.cpp",
   "host_binding/src/host_binding_manager_impl.cpp",
   "misc/src/misc_manager_impl.cpp",

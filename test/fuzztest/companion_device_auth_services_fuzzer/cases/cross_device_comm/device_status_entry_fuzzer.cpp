@@ -63,19 +63,6 @@ static void FuzzBuildDeviceStatus(std::shared_ptr<DeviceStatusEntry> &entry, Fuz
     }
 }
 
-static void FuzzIsSameDevice(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
-{
-    if (entry) {
-        PhysicalDeviceKey key;
-        key.idType = GenerateFuzzDeviceIdType(fuzzData);
-        key.deviceId = GenerateFuzzString(fuzzData, TEST_VAL64);
-        ChannelId channelId = GenerateFuzzChannelId(fuzzData);
-        bool isSame = entry->IsSameDevice(key, channelId);
-        (void)isSame;
-    }
-}
-
-// Test BuildDeviceKey with boundary userId values
 static void FuzzBuildDeviceKeyBoundary(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
 {
     if (entry) {
@@ -111,52 +98,6 @@ static void FuzzOnUserIdChangeRepeated(std::shared_ptr<DeviceStatusEntry> &entry
     }
 }
 
-// Test IsSameDevice with various channel IDs
-static void FuzzIsSameDeviceChannelBoundary(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
-{
-    if (entry) {
-        PhysicalDeviceKey key;
-        key.idType = GenerateFuzzDeviceIdType(fuzzData);
-        key.deviceId = GenerateFuzzString(fuzzData, TEST_VAL64);
-
-        // Test with different channel IDs
-        std::vector<ChannelId> testChannelIds = { static_cast<ChannelId>(0), static_cast<ChannelId>(-1),
-            GenerateFuzzChannelId(fuzzData) };
-
-        for (auto channelId : testChannelIds) {
-            bool isSame = entry->IsSameDevice(key, channelId);
-            (void)isSame;
-        }
-    }
-}
-
-// Test IsSameDevice with empty deviceId
-static void FuzzIsSameDeviceEmptyId(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
-{
-    if (entry) {
-        PhysicalDeviceKey key;
-        key.idType = GenerateFuzzDeviceIdType(fuzzData);
-        key.deviceId = ""; // Empty device ID
-        ChannelId channelId = GenerateFuzzChannelId(fuzzData);
-        bool isSame = entry->IsSameDevice(key, channelId);
-        (void)isSame;
-    }
-}
-
-// Test IsSameDevice with very long deviceId
-static void FuzzIsSameDeviceLongId(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
-{
-    if (entry) {
-        PhysicalDeviceKey key;
-        key.idType = GenerateFuzzDeviceIdType(fuzzData);
-        // Generate a very long device ID (TEST_VAL1024 characters)
-        key.deviceId = GenerateFuzzString(fuzzData, TEST_VAL1024);
-        ChannelId channelId = GenerateFuzzChannelId(fuzzData);
-        bool isSame = entry->IsSameDevice(key, channelId);
-        (void)isSame;
-    }
-}
-
 // Test BuildDeviceKey and BuildDeviceStatus combination
 static void FuzzBuildKeyThenStatus(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
 {
@@ -169,36 +110,14 @@ static void FuzzBuildKeyThenStatus(std::shared_ptr<DeviceStatusEntry> &entry, Fu
     }
 }
 
-// Test IsSameDevice with all deviceIdType values
-static void FuzzIsSameDeviceAllTypes(std::shared_ptr<DeviceStatusEntry> &entry, FuzzedDataProvider &fuzzData)
-{
-    if (entry) {
-        std::vector<DeviceIdType> allTypes = { GenerateFuzzDeviceIdType(fuzzData), DeviceIdType::UNIFIED_DEVICE_ID };
-
-        for (auto idType : allTypes) {
-            PhysicalDeviceKey key;
-            key.idType = idType;
-            key.deviceId = GenerateFuzzString(fuzzData, TEST_VAL64);
-            ChannelId channelId = GenerateFuzzChannelId(fuzzData);
-            bool isSame = entry->IsSameDevice(key, channelId);
-            (void)isSame;
-        }
-    }
-}
-
 static const DeviceStatusEntryFuzzFunction g_fuzzFuncs[] = {
     FuzzOnUserIdChange,
     FuzzBuildDeviceKey,
     FuzzBuildDeviceStatus,
-    FuzzIsSameDevice,
     FuzzBuildDeviceKeyBoundary,
     FuzzBuildDeviceStatusBoundary,
     FuzzOnUserIdChangeRepeated,
-    FuzzIsSameDeviceChannelBoundary,
-    FuzzIsSameDeviceEmptyId,
-    FuzzIsSameDeviceLongId,
     FuzzBuildKeyThenStatus,
-    FuzzIsSameDeviceAllTypes,
 };
 
 constexpr uint8_t NUM_FUZZ_OPERATIONS = sizeof(g_fuzzFuncs) / sizeof(DeviceStatusEntryFuzzFunction);

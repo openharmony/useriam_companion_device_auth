@@ -21,7 +21,6 @@
 
 #include "host_binding_manager.h"
 #include "inbound_request.h"
-#include "interaction_event_collector.h"
 #include "request_callback.h"
 #include "security_agent.h"
 
@@ -62,7 +61,6 @@ private:
     bool needEndDelegateAuth_ = false;
     SecureProtocolId secureProtocolId_ { SecureProtocolId::INVALID };
     BindingId bindingId_ { 0 };
-    InteractionEventCollector eventCollector_;
 };
 } // namespace CompanionDeviceAuth
 } // namespace UserIam
