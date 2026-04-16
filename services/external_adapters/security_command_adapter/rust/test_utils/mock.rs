@@ -872,9 +872,9 @@ pub struct MockCompanionDeviceDbManager {
     remove_token: Expectation0<Result<crate::traits::db_manager::CompanionDeviceToken, ErrorCode>>,
     update_token: Expectation0<Result<(), ErrorCode>>,
     read_device_db: Expectation0<Result<(), ErrorCode>>,
-    read_device_base_info: Expectation0<Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode>>,
-    write_device_base_info: Expectation0<Result<(), ErrorCode>>,
-    delete_device_base_info: Expectation0<Result<(), ErrorCode>>,
+    read_device_profile: Expectation0<Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode>>,
+    write_device_profile: Expectation0<Result<(), ErrorCode>>,
+    delete_device_profile: Expectation0<Result<(), ErrorCode>>,
     read_device_capability_info:
         Expectation0<Result<Vec<crate::traits::db_manager::CompanionDeviceCapability>, ErrorCode>>,
     write_device_capability_info: Expectation0<Result<(), ErrorCode>>,
@@ -899,9 +899,9 @@ impl MockCompanionDeviceDbManager {
             remove_token: Expectation0::new(),
             update_token: Expectation0::new(),
             read_device_db: Expectation0::new(),
-            read_device_base_info: Expectation0::new(),
-            write_device_base_info: Expectation0::new(),
-            delete_device_base_info: Expectation0::new(),
+            read_device_profile: Expectation0::new(),
+            write_device_profile: Expectation0::new(),
+            delete_device_profile: Expectation0::new(),
             read_device_capability_info: Expectation0::new(),
             write_device_capability_info: Expectation0::new(),
             delete_device_capability_info: Expectation0::new(),
@@ -952,16 +952,16 @@ impl MockCompanionDeviceDbManager {
     pub fn expect_read_device_db(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
         &mut self.read_device_db
     }
-    pub fn expect_read_device_base_info(
+    pub fn expect_read_device_profile(
         &mut self,
     ) -> &mut Expectation0<Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode>> {
-        &mut self.read_device_base_info
+        &mut self.read_device_profile
     }
-    pub fn expect_write_device_base_info(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
-        &mut self.write_device_base_info
+    pub fn expect_write_device_profile(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
+        &mut self.write_device_profile
     }
-    pub fn expect_delete_device_base_info(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
-        &mut self.delete_device_base_info
+    pub fn expect_delete_device_profile(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
+        &mut self.delete_device_profile
     }
     pub fn expect_read_device_capability_info(
         &mut self,
@@ -1042,21 +1042,21 @@ impl crate::traits::companion_device_db_manager::CompanionDeviceDbManager for Mo
     fn read_device_db(&mut self) -> Result<(), ErrorCode> {
         self.read_device_db.call()
     }
-    fn read_device_base_info(
+    fn read_device_profile(
         &self,
         _template_id: u64,
     ) -> Result<crate::traits::db_manager::CompanionDeviceProfile, ErrorCode> {
-        self.read_device_base_info.call()
+        self.read_device_profile.call()
     }
-    fn write_device_base_info(
+    fn write_device_profile(
         &self,
         _template_id: u64,
         _base_info: &crate::traits::db_manager::CompanionDeviceProfile,
     ) -> Result<(), ErrorCode> {
-        self.write_device_base_info.call()
+        self.write_device_profile.call()
     }
-    fn delete_device_base_info(&self, _template_id: u64) -> Result<(), ErrorCode> {
-        self.delete_device_base_info.call()
+    fn delete_device_profile(&self, _template_id: u64) -> Result<(), ErrorCode> {
+        self.delete_device_profile.call()
     }
     fn read_device_capability_info(
         &self,
@@ -1096,9 +1096,9 @@ impl crate::traits::companion_device_db_manager::CompanionDeviceDbManager for Mo
 #[cfg(any(test, feature = "test-utils"))]
 pub struct MockHostBindingDbManager {
     add_device: Expectation0<Result<Option<i32>, ErrorCode>>,
-    get_device_by_binding_id: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
-    get_device_by_device_key: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
-    remove_device: Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>>,
+    get_device_by_binding_id: Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>>,
+    get_device_by_device_key: Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>>,
+    remove_device: Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>>,
     update_device: Expectation0<Result<(), ErrorCode>>,
     generate_unique_binding_id: Expectation0<Result<i32, ErrorCode>>,
     read_device_db: Expectation0<Result<(), ErrorCode>>,
@@ -1109,7 +1109,7 @@ pub struct MockHostBindingDbManager {
     read_device_sk: Expectation0<Result<crate::traits::db_manager::HostBindingSk, ErrorCode>>,
     write_device_sk: Expectation0<Result<(), ErrorCode>>,
     delete_device_sk: Expectation0<Result<(), ErrorCode>>,
-    get_device_list: Expectation0<Vec<crate::traits::db_manager::HostBindingInfo>>,
+    get_device_list: Expectation0<Vec<crate::traits::db_manager::HostBinding>>,
 }
 
 #[cfg(any(test, feature = "test-utils"))]
@@ -1139,17 +1139,17 @@ impl MockHostBindingDbManager {
     }
     pub fn expect_get_device_by_binding_id(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>> {
         &mut self.get_device_by_binding_id
     }
     pub fn expect_get_device_by_device_key(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>> {
         &mut self.get_device_by_device_key
     }
     pub fn expect_remove_device(
         &mut self,
-    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBindingInfo, ErrorCode>> {
+    ) -> &mut Expectation0<Result<crate::traits::db_manager::HostBinding, ErrorCode>> {
         &mut self.remove_device
     }
     pub fn expect_update_device(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
@@ -1186,7 +1186,7 @@ impl MockHostBindingDbManager {
     pub fn expect_delete_device_sk(&mut self) -> &mut Expectation0<Result<(), ErrorCode>> {
         &mut self.delete_device_sk
     }
-    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::HostBindingInfo>> {
+    pub fn expect_get_device_list(&mut self) -> &mut Expectation0<Vec<crate::traits::db_manager::HostBinding>> {
         &mut self.get_device_list
     }
 }
@@ -1195,7 +1195,7 @@ impl MockHostBindingDbManager {
 impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBindingDbManager {
     fn add_device(
         &mut self,
-        _device_info: &crate::traits::db_manager::HostBindingInfo,
+        _device_info: &crate::traits::db_manager::HostBinding,
         _sk_info: &crate::traits::db_manager::HostBindingSk,
     ) -> Result<Option<i32>, ErrorCode> {
         self.add_device.call()
@@ -1203,20 +1203,20 @@ impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBi
     fn get_device_by_binding_id(
         &self,
         _binding_id: i32,
-    ) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::HostBinding, ErrorCode> {
         self.get_device_by_binding_id.call()
     }
     fn get_device_by_device_key(
         &self,
         _user_id: i32,
         _device_key: &crate::traits::db_manager::DeviceKey,
-    ) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
+    ) -> Result<crate::traits::db_manager::HostBinding, ErrorCode> {
         self.get_device_by_device_key.call()
     }
-    fn remove_device(&mut self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBindingInfo, ErrorCode> {
+    fn remove_device(&mut self, _binding_id: i32) -> Result<crate::traits::db_manager::HostBinding, ErrorCode> {
         self.remove_device.call()
     }
-    fn update_device(&mut self, _device_info: &crate::traits::db_manager::HostBindingInfo) -> Result<(), ErrorCode> {
+    fn update_device(&mut self, _device_info: &crate::traits::db_manager::HostBinding) -> Result<(), ErrorCode> {
         self.update_device.call()
     }
     fn generate_unique_binding_id(&self) -> Result<i32, ErrorCode> {
@@ -1254,7 +1254,7 @@ impl crate::traits::host_binding_db_manager::HostBindingDbManager for MockHostBi
     fn delete_device_sk(&self, _binding_id: i32) -> Result<(), ErrorCode> {
         self.delete_device_sk.call()
     }
-    fn get_device_list(&self, _user_id: i32) -> Vec<crate::traits::db_manager::HostBindingInfo> {
+    fn get_device_list(&self, _user_id: i32) -> Vec<crate::traits::db_manager::HostBinding> {
         self.get_device_list.call()
     }
 }

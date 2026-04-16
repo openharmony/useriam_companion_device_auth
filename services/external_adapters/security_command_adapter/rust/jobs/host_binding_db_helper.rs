@@ -15,12 +15,12 @@
 
 use crate::common::constants::ErrorCode;
 use crate::traits::crypto_engine::CryptoEngineRegistry;
-use crate::traits::db_manager::{HostBindingInfo, HostBindingSk};
+use crate::traits::db_manager::{HostBinding, HostBindingSk};
 use crate::traits::host_binding_db_manager::HostBindingDbManagerRegistry;
 use crate::traits::time_keeper::TimeKeeperRegistry;
 use crate::{log_e, p, Vec};
 
-pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
+pub fn add_host_binding(device_info: &HostBinding, sk_info: &HostBindingSk) -> Result<Option<i32>, ErrorCode> {
     let mut same_device_replaced_binding_id = None;
     if let Ok(info) = HostBindingDbManagerRegistry::get()
         .get_device_by_device_key(device_info.user_info.user_id, &device_info.device_key)
@@ -43,7 +43,7 @@ pub fn add_host_device(device_info: &HostBindingInfo, sk_info: &HostBindingSk) -
     Ok(same_device_replaced_binding_id.or(cross_device_replaced_binding_id))
 }
 
-pub fn update_host_device_last_used_time(binding_id: i32) -> Result<(), ErrorCode> {
+pub fn update_host_binding_last_used_time(binding_id: i32) -> Result<(), ErrorCode> {
     let mut device_info = HostBindingDbManagerRegistry::get_mut().get_device_by_binding_id(binding_id)?;
     device_info.last_used_time = TimeKeeperRegistry::get().get_rtc_time().map_err(|e| p!(e))?;
     HostBindingDbManagerRegistry::get_mut().update_device(&device_info)?;

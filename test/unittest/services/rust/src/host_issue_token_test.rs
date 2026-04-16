@@ -94,11 +94,11 @@ fn mock_set_companion_device_db_manager() {
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+fn create_mock_companion_device(template_id: u64) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -140,7 +140,7 @@ fn host_issue_token_request_prepare_test_property_mode_not_unfreeze() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_issue_token_request(
@@ -172,7 +172,7 @@ fn host_issue_token_request_prepare_test_auth_type_not_companion_device() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message =
@@ -200,7 +200,7 @@ fn host_issue_token_request_prepare_test_template_id_not_found() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_issue_token_request(
@@ -232,7 +232,7 @@ fn host_issue_token_request_prepare_test_atl_try_from_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
     let fwk_message = create_valid_fwk_issue_token_request(
@@ -264,7 +264,7 @@ fn host_issue_token_request_prepare_test_read_device_capability_info_fail() {
     mock_set_misc_manager();
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
