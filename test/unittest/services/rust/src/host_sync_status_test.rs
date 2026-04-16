@@ -43,7 +43,7 @@ fn create_valid_sync_reply_message(challenge: u64, protocol_list: &[u16], capabi
     reply.encode(ProcessorType::Default).unwrap()
 }
 
-fn create_mock_companion_device_info() -> CompanionDevice {
+fn create_mock_companion_device() -> CompanionDevice {
     CompanionDevice {
         template_id: 123,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -74,7 +74,7 @@ fn mock_set_companion_device_db_manager() {
     mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
@@ -190,7 +190,7 @@ fn host_sync_status_request_end_test_protocol_list_convert_fail() {
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -232,7 +232,7 @@ fn host_sync_status_request_end_test_capability_list_convert_fail() {
             track_ability_level: TrackAbilityLevel::Tal1,
         }])
     });
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -268,7 +268,7 @@ fn host_sync_status_request_end_test_read_device_capability_info_fail() {
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
     mock_companion_device_db_manager.expect_read_device_capability_info().returning(|| Err(ErrorCode::NotFound));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -316,7 +316,7 @@ fn host_sync_status_request_end_test_decode_sec_message_fail() {
     mock_companion_device_db_manager
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Ok(()));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 
@@ -357,7 +357,7 @@ fn host_sync_status_request_end_test_get_session_key_fail() {
         }])
     });
     mock_companion_device_db_manager.expect_read_device_sk().returning(|| Err(ErrorCode::NotFound));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info()));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device()));
     mock_companion_device_db_manager.expect_update_device().returning(|| Err(ErrorCode::GeneralError));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 

@@ -43,7 +43,7 @@ pub struct UserInfo {
     pub user_type: i32,
 }
 
-// Companion Db
+// Host Binding Db
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
 pub struct HostBindingSk {
@@ -52,7 +52,7 @@ pub struct HostBindingSk {
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
-pub struct HostBindingInfo {
+pub struct HostBinding {
     pub device_key: DeviceKey,
     pub binding_id: i32,
     pub user_info: UserInfo,
@@ -67,7 +67,7 @@ pub struct HostBindingToken {
     pub atl: AuthTrustLevel,
 }
 
-// Host Db
+// Companion Device Db
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "test-utils", derive(PartialEq))]
 pub struct CompanionDeviceProfile {

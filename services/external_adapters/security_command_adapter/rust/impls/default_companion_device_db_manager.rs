@@ -162,7 +162,7 @@ impl DefaultCompanionDeviceDbManager {
         Ok(())
     }
 
-    fn serialize_device_base_info(base_info: &CompanionDeviceProfile, parcel: &mut Parcel) {
+    fn serialize_device_profile(base_info: &CompanionDeviceProfile, parcel: &mut Parcel) {
         parcel.write_i32(CURRENT_VERSION);
         parcel.write_string(&base_info.device_model_info);
         parcel.write_string(&base_info.device_name);
@@ -174,7 +174,7 @@ impl DefaultCompanionDeviceDbManager {
         parcel.write_i32(base_info.device_type);
     }
 
-    fn deserialize_device_base_info(parcel: &mut Parcel) -> Result<CompanionDeviceProfile, ErrorCode> {
+    fn deserialize_device_profile(parcel: &mut Parcel) -> Result<CompanionDeviceProfile, ErrorCode> {
         let version = parcel.read_i32().map_err(|e| p!(e))?;
         if version > CURRENT_VERSION {
             log_e!("db_version is error, db_version:{}, current_version:{}", version, CURRENT_VERSION);
@@ -297,13 +297,13 @@ impl DefaultCompanionDeviceDbManager {
         capability_info: &[CompanionDeviceCapability],
         sk_info: &[CompanionDeviceSk],
     ) -> Result<(), ErrorCode> {
-        self.write_device_base_info(template_id, base_info)?;
+        self.write_device_profile(template_id, base_info)?;
         self.write_device_capability_info(template_id, capability_info)?;
         self.write_device_sk(template_id, sk_info)
     }
 
     fn remove_device_extra_file(&self, template_id: u64) {
-        let _ = self.delete_device_base_info(template_id);
+        let _ = self.delete_device_profile(template_id);
         let _ = self.delete_device_capability_info(template_id);
         let _ = self.delete_device_sk(template_id);
     }
@@ -517,8 +517,8 @@ impl CompanionDeviceDbManager for DefaultCompanionDeviceDbManager {
         Ok(())
     }
 
-    fn read_device_base_info(&self, template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode> {
-        log_i!("read_device_base_info start, template_id:{:04x}", template_id as u16);
+    fn read_device_profile(&self, template_id: u64) -> Result<CompanionDeviceProfile, ErrorCode> {
+        log_i!("read_device_profile start, template_id:{:x}", template_id as u16);
         let filename = format!("{:x}_{}", template_id, COMPANION_DEVICE_PROFILE);
         let base_info_data: Vec<u8> = StorageIoRegistry::get().read(&filename).map_err(|e| p!(e))?;
         if base_info_data.is_empty() {
@@ -527,20 +527,20 @@ impl CompanionDeviceDbManager for DefaultCompanionDeviceDbManager {
         }
 
         let mut parcel = Parcel::from(base_info_data);
-        Self::deserialize_device_base_info(&mut parcel)
+        Self::deserialize_device_profile(&mut parcel)
     }
 
-    fn write_device_base_info(&self, template_id: u64, base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode> {
-        log_i!("write_device_base_info start, template_id:{:04x}", template_id as u16);
+    fn write_device_profile(&self, template_id: u64, base_info: &CompanionDeviceProfile) -> Result<(), ErrorCode> {
+        log_i!("write_device_profile start, template_id:{:x}", template_id as u16);
         let filename = format!("{:x}_{}", template_id, COMPANION_DEVICE_PROFILE);
         let mut parcel = Parcel::new();
-        Self::serialize_device_base_info(base_info, &mut parcel);
+        Self::serialize_device_profile(base_info, &mut parcel);
         StorageIoRegistry::get().write(&filename, parcel.as_slice()).map_err(|e| p!(e))?;
         Ok(())
     }
 
-    fn delete_device_base_info(&self, template_id: u64) -> Result<(), ErrorCode> {
-        log_i!("delete_device_base_info start, template_id:{:04x}", template_id as u16);
+    fn delete_device_profile(&self, template_id: u64) -> Result<(), ErrorCode> {
+        log_i!("delete_device_profile start, template_id:{:x}", template_id as u16);
         let filename = format!("{:x}_{}", template_id, COMPANION_DEVICE_PROFILE);
         StorageIoRegistry::get().delete(&filename).map_err(|e| p!(e))?;
         Ok(())

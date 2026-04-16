@@ -15,7 +15,7 @@
 
 use crate::common::constants::*;
 use crate::log_i;
-use crate::traits::db_manager::{DeviceKey, HostBindingInfo, HostBindingSk, HostBindingToken, UserInfo};
+use crate::traits::db_manager::{DeviceKey, HostBinding, HostBindingSk, HostBindingToken, UserInfo};
 use crate::traits::host_binding_db_manager::{DummyHostBindingDbManager, HostBindingDbManager};
 use crate::ut_registry_guard;
 
@@ -25,7 +25,7 @@ fn dummy_host_binding_db_manager_test() {
     log_i!("dummy_host_binding_db_manager_test start");
 
     let mut dummy_host_binding_db_manager = DummyHostBindingDbManager;
-    let device_info = HostBindingInfo {
+    let device_info = HostBinding {
         device_key: DeviceKey::default(),
         binding_id: 0,
         user_info: UserInfo { user_id: 0, user_type: 0 },

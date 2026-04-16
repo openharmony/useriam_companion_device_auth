@@ -53,7 +53,7 @@ fn create_mock_companion_device_capability() -> CompanionDeviceCapability {
     }
 }
 
-fn create_mock_companion_device_info(template_id: u64) -> CompanionDevice {
+fn create_mock_companion_device(template_id: u64) -> CompanionDevice {
     CompanionDevice {
         template_id,
         device_key: DeviceKey { device_id: String::from("test_device"), device_id_type: 1, user_id: 100 },
@@ -84,7 +84,7 @@ fn mock_set_companion_device_db_manager() {
         .expect_read_device_sk()
         .returning(|| Ok(vec![CompanionDeviceSk { processor_type: ProcessorType::Default, sk: [0u8; SHARE_KEY_LEN] }]));
     mock_companion_device_db_manager.expect_add_token().returning(|| Ok(()));
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     CompanionDeviceDbManagerRegistry::set(Box::new(mock_companion_device_db_manager));
 }
 
@@ -179,7 +179,7 @@ fn host_obtain_token_request_begin_test_success() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));
@@ -256,7 +256,7 @@ fn host_obtain_token_request_end_test_decode_sec_message_fail() {
     CryptoEngineRegistry::set(Box::new(mock_crypto_engine));
 
     let mut mock_companion_device_db_manager = MockCompanionDeviceDbManager::new();
-    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device_info(123)));
+    mock_companion_device_db_manager.expect_get_device().returning(|| Ok(create_mock_companion_device(123)));
     mock_companion_device_db_manager
         .expect_read_device_capability_info()
         .returning(|| Ok(vec![create_mock_companion_device_capability()]));

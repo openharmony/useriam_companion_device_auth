@@ -141,7 +141,7 @@ impl Request for CompanionDelegateAuthRequest {
         self.atl = auth_token.token_data_plain.auth_trust_level;
 
         let sec_message = self.encode_sec_delegate_auth_reply()?;
-        host_binding_db_helper::update_host_device_last_used_time(self.binding_id)?;
+        host_binding_db_helper::update_host_binding_last_used_time(self.binding_id)?;
 
         ffi_output.auth_type = auth_token.token_data_plain.auth_type as i32;
         ffi_output.atl = auth_token.token_data_plain.auth_trust_level as i32;

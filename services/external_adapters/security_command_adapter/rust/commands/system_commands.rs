@@ -127,20 +127,20 @@ pub fn host_get_persisted_status(
     match companion_device_db_helper::get_companion_device_by_user_id(input.user_id) {
         Ok(device_list) => {
             for device_info in device_list {
-                let device_base_info =
-                    CompanionDeviceDbManagerRegistry::get_mut().read_device_base_info(device_info.template_id)?;
+                let device_profile =
+                    CompanionDeviceDbManagerRegistry::get_mut().read_device_profile(device_info.template_id)?;
 
                 let companion_status = PersistedCompanionStatusFfi {
                     template_id: device_info.template_id,
                     host_user_id: device_info.user_info.user_id,
                     companion_device_key: DeviceKeyFfi::try_from(device_info.device_key)?,
-                    device_type: device_base_info.device_type,
+                    device_type: device_profile.device_type,
                     is_valid: device_info.is_valid as u8,
-                    enabled_business_ids: Int32Array64Ffi::try_from(device_base_info.business_ids)?,
+                    enabled_business_ids: Int32Array64Ffi::try_from(device_profile.business_ids)?,
                     added_time: device_info.added_time,
-                    device_model_info: DataArray1024Ffi::try_from(device_base_info.device_model_info)?,
-                    device_user_name: DataArray256Ffi::try_from(device_base_info.device_user_name)?,
-                    device_name: DataArray256Ffi::try_from(device_base_info.device_name)?,
+                    device_model_info: DataArray1024Ffi::try_from(device_profile.device_model_info)?,
+                    device_user_name: DataArray256Ffi::try_from(device_profile.device_user_name)?,
+                    device_name: DataArray256Ffi::try_from(device_profile.device_name)?,
                 };
 
                 companion_status_list.push(companion_status);

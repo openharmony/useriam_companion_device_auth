@@ -428,10 +428,10 @@ impl HostDeviceEnrollRequest {
     }
 
     fn store_device_info(&mut self) -> Result<CompanionDevice, ErrorCode> {
-        let (device_info, device_base_info, capability_infos, sk_infos) = self.init_device_info()?;
+        let (device_info, device_profile, capability_infos, sk_infos) = self.init_device_info()?;
         CompanionDeviceDbManagerRegistry::get_mut().add_device(
             &device_info,
-            &device_base_info,
+            &device_profile,
             &capability_infos,
             &sk_infos,
         )?;
