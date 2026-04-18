@@ -22,7 +22,6 @@
 
 #include "adapter_manager.h"
 #include "companion_manager.h"
-#include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "security_agent.h"
 #include "singleton_manager.h"

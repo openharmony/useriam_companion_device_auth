@@ -102,8 +102,8 @@ void CompanionSyncDeviceStatusHandler::HandleRequest(const Attributes &request, 
         eventCollector.SetBindingId(hostBindingStatus->bindingId);
         bool ret = CompanionProcessCheck(*hostBindingStatus, syncRequest, syncReply.companionCheckResponse, desc);
         if (!ret) {
-            IAM_LOGE("%{public}s CompanionProcessCheck failed", desc.GetCStr());
-            return;
+            IAM_LOGE("%{public}s CompanionProcessCheck failed, clear companionCheckResponse", desc.GetCStr());
+            syncReply.companionCheckResponse.clear();
         }
     }
 

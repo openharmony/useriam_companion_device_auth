@@ -22,7 +22,6 @@
 
 #include "adapter_manager.h"
 #include "common_message.h"
-#include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "host_binding_manager.h"
 #include "issue_token_message.h"

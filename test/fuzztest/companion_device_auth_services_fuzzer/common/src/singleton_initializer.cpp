@@ -860,6 +860,10 @@ public:
         (void)subscribeMode;
     }
 
+    void RefreshDeviceStatus() override
+    {
+    }
+
     std::optional<SteadyTimeMs> GetManageSubscribeTime() const override
     {
         return std::optional<SteadyTimeMs>();

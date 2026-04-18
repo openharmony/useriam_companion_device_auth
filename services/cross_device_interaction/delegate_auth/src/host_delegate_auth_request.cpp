@@ -21,7 +21,6 @@
 #include "adapter_manager.h"
 #include "common_defines.h"
 #include "companion_manager.h"
-#include "cross_device_comm_manager_impl.h"
 #include "delegate_auth_message.h"
 #include "error_guard.h"
 #include "security_agent.h"

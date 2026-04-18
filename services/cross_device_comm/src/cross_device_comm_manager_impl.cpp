@@ -140,6 +140,12 @@ void CrossDeviceCommManagerImpl::SetSubscribeMode(SubscribeMode subscribeMode)
     deviceStatusMgr_->SetSubscribeMode(subscribeMode);
 }
 
+void CrossDeviceCommManagerImpl::RefreshDeviceStatus()
+{
+    ENSURE_OR_RETURN(deviceStatusMgr_ != nullptr);
+    deviceStatusMgr_->RefreshDeviceStatus();
+}
+
 std::optional<SteadyTimeMs> CrossDeviceCommManagerImpl::GetManageSubscribeTime() const
 {
     ENSURE_OR_RETURN_VAL(deviceStatusMgr_ != nullptr, std::nullopt);
