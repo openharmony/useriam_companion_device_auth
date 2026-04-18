@@ -1374,10 +1374,59 @@ private:
     FuzzedDataProvider &fuzzData_;
 };
 
+class MockEventBus : public IEventBus {
+public:
+    explicit MockEventBus(FuzzedDataProvider &fuzzData) : fuzzData_(fuzzData)
+    {
+    }
+
+    void Publish(EventType type, const EventData &data) override
+    {
+        (void)type;
+        (void)data;
+        // Deliver to persisted handlers with fuzzed data
+        EventData fuzzedData = fuzzData_.ConsumeBytes<uint8_t>(
+            fuzzData_.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
+        for (auto &handler : persistHandlers_) {
+            handler(fuzzedData);
+        }
+    }
+
+    std::shared_ptr<Subscription> Subscribe(EventType type, EventDataHandler &&handler) override
+    {
+        (void)type;
+        if (handler && fuzzData_.ConsumeBool()) {
+            EventData data = fuzzData_.ConsumeBytes<uint8_t>(
+                fuzzData_.ConsumeIntegralInRange<size_t>(0, FUZZ_MAX_MESSAGE_LENGTH));
+            handler(data);
+        }
+        return std::make_shared<Subscription>([] {});
+    }
+
+    void PersistSubscribe(EventType type, EventDataHandler &&handler) override
+    {
+        (void)type;
+        if (handler) {
+            persistHandlers_.push_back(std::move(handler));
+        }
+    }
+
+private:
+    FuzzedDataProvider &fuzzData_;
+    std::vector<EventDataHandler> persistHandlers_;
+};
+
 static bool InitExecutorFactory(FuzzedDataProvider &fuzzData)
 {
     auto executorFactory = std::make_shared<MockExecutorFactory>(fuzzData);
     SingletonManager::GetInstance().SetExecutorFactory(executorFactory);
+    return true;
+}
+
+static bool InitEventBus(FuzzedDataProvider &fuzzData)
+{
+    auto eventBus = std::make_shared<MockEventBus>(fuzzData);
+    SingletonManager::GetInstance().SetEventBus(eventBus);
     return true;
 }
 
@@ -1413,6 +1462,7 @@ static const bool g_singletonInitializersRegistered = []() {
     REGISTER_SINGLETON_INIT(RequestFactory);
     REGISTER_SINGLETON_INIT(IncomingMessageHandlerRegistry);
     REGISTER_SINGLETON_INIT(ExecutorFactory);
+    REGISTER_SINGLETON_INIT(EventBus);
 
     SingletonCleanupRegistry::Register(ResetSingletonManagerRegistry);
 
