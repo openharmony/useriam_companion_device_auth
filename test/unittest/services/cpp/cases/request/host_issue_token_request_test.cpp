@@ -19,6 +19,7 @@
 #include "mock_guard.h"
 
 #include "host_issue_token_request.h"
+#include "mock_request.h"
 #include "issue_token_message.h"
 
 using namespace testing;
@@ -36,6 +37,9 @@ const std::vector<uint8_t> FWK_UNLOCK_MSG = { 1, 2, 3, 4, 5 };
 const DeviceKey COMPANION_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
     .deviceId = "companion_device_id",
     .deviceUserId = 200 };
+const DeviceKey OTHER_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
+    .deviceId = "other_companion_device_id",
+    .deviceUserId = 300 };
 const DeviceKey HOST_DEVICE_KEY = { .idType = DeviceIdType::UNIFIED_DEVICE_ID,
     .deviceId = "host_device_id",
     .deviceUserId = 100 };
@@ -570,6 +574,66 @@ HWTEST_F(HostIssueTokenRequestTest, ShouldCancelOnNewRequest_003, TestSize.Level
 
     bool result = request->ShouldCancelOnNewRequest(RequestType::COMPANION_ADD_COMPANION_REQUEST, std::nullopt, 0);
     EXPECT_FALSE(result);
+}
+
+HWTEST_F(HostIssueTokenRequestTest, CanStart_001, TestSize.Level0)
+{
+    // No previous requests, CanStart should return true
+    MockGuard guard;
+
+    auto request = std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE,
+        FWK_UNLOCK_MSG, COMPANION_DEVICE_KEY);
+
+    std::vector<std::shared_ptr<IRequest>> prevRequests;
+    EXPECT_TRUE(request->CanStart(prevRequests));
+}
+
+HWTEST_F(HostIssueTokenRequestTest, CanStart_002, TestSize.Level0)
+{
+    // HostTokenAuthRequest on same device blocks HostIssueTokenRequest
+    MockGuard guard;
+
+    auto request = std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE,
+        FWK_UNLOCK_MSG, COMPANION_DEVICE_KEY);
+
+    auto prevReq = std::make_shared<MockIRequest>();
+    prevReq->SetRequestType(RequestType::HOST_TOKEN_AUTH_REQUEST);
+    prevReq->SetPeerDeviceKey(COMPANION_DEVICE_KEY);
+
+    std::vector<std::shared_ptr<IRequest>> prevRequests = { prevReq };
+    EXPECT_FALSE(request->CanStart(prevRequests));
+}
+
+HWTEST_F(HostIssueTokenRequestTest, CanStart_003, TestSize.Level0)
+{
+    // HostTokenAuthRequest on different device does NOT block HostIssueTokenRequest
+    MockGuard guard;
+
+    auto request = std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE,
+        FWK_UNLOCK_MSG, COMPANION_DEVICE_KEY);
+
+    auto prevReq = std::make_shared<MockIRequest>();
+    prevReq->SetRequestType(RequestType::HOST_TOKEN_AUTH_REQUEST);
+    prevReq->SetPeerDeviceKey(OTHER_DEVICE_KEY);
+
+    std::vector<std::shared_ptr<IRequest>> prevRequests = { prevReq };
+    EXPECT_TRUE(request->CanStart(prevRequests));
+}
+
+HWTEST_F(HostIssueTokenRequestTest, CanStart_004, TestSize.Level0)
+{
+    // HostTokenAuthRequest with nullopt peerDeviceKey does NOT block
+    MockGuard guard;
+
+    auto request = std::make_shared<HostIssueTokenRequest>(HOST_USER_ID, TEMPLATE_ID, LOCK_STATE_AUTH_TYPE_VALUE,
+        FWK_UNLOCK_MSG, COMPANION_DEVICE_KEY);
+
+    auto prevReq = std::make_shared<MockIRequest>();
+    prevReq->SetRequestType(RequestType::HOST_TOKEN_AUTH_REQUEST);
+    prevReq->SetPeerDeviceKey(std::nullopt);
+
+    std::vector<std::shared_ptr<IRequest>> prevRequests = { prevReq };
+    EXPECT_TRUE(request->CanStart(prevRequests));
 }
 
 } // namespace

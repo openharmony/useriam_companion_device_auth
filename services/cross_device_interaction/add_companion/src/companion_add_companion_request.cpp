@@ -23,7 +23,6 @@
 #include "adapter_manager.h"
 #include "add_companion_message.h"
 #include "common_message.h"
-#include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "security_agent.h"
 #include "service_common.h"
