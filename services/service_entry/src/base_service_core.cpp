@@ -29,6 +29,7 @@
 #include "service_common.h"
 #include "singleton_manager.h"
 #include "subscription_manager.h"
+#include "task_runner_manager.h"
 
 #define LOG_TAG "CDA_SA"
 
@@ -77,6 +78,8 @@ ResultCode BaseServiceCore::SubscribeAvailableDeviceStatus(int32_t localUserId,
     }
 
     subscriptionManager_->AddAvailableDeviceStatusCallback(localUserId, deviceStatusCallback);
+    TaskRunnerManager::GetInstance().PostTaskOnResident(
+        []() { GetCrossDeviceCommManager().RefreshDeviceStatus(); });
     IAM_LOGI("End");
     return ResultCode::SUCCESS;
 }
@@ -107,6 +110,8 @@ ResultCode BaseServiceCore::SubscribeTemplateStatusChange(int32_t localUserId,
     }
 
     subscriptionManager_->AddTemplateStatusCallback(localUserId, templateStatusCallback);
+    TaskRunnerManager::GetInstance().PostTaskOnResident(
+        []() { GetCrossDeviceCommManager().RefreshDeviceStatus(); });
     IAM_LOGI("End");
     return ResultCode::SUCCESS;
 }

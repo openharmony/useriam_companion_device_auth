@@ -20,7 +20,6 @@
 
 #include "adapter_manager.h"
 #include "common_message.h"
-#include "cross_device_comm_manager_impl.h"
 #include "delegate_auth_message.h"
 #include "error_guard.h"
 #include "host_binding_manager.h"

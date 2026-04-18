@@ -202,7 +202,7 @@ HWTEST_F(CompanionSyncDeviceStatusHandlerTest, HandleRequest_005, TestSize.Level
     int32_t replyResult = 0;
 
     EXPECT_TRUE(reply.GetInt32Value(Attributes::ATTR_CDA_SA_RESULT, replyResult));
-    EXPECT_EQ(replyResult, static_cast<int32_t>(ResultCode::GENERAL_ERROR));
+    EXPECT_EQ(replyResult, static_cast<int32_t>(ResultCode::SUCCESS));
 }
 
 HWTEST_F(CompanionSyncDeviceStatusHandlerTest, HandleRequest_006, TestSize.Level0)

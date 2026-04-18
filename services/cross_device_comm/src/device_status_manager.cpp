@@ -76,6 +76,7 @@ bool DeviceStatusManager::Initialize()
     ENSURE_OR_RETURN_VAL(localDeviceStatusMgr_ != nullptr, false);
 
     for (const auto &channel : channelMgr_->GetAllChannels()) {
+        ENSURE_OR_CONTINUE(channel != nullptr);
         ChannelId channelId = channel->GetChannelId();
         auto subscription = channel->SubscribePhysicalDeviceStatus(
             [weakSelf = weak_from_this(), channelId](const std::vector<PhysicalDeviceStatus> &statusList) {
@@ -182,9 +183,10 @@ void DeviceStatusManager::HandleSyncResult(const DeviceKey &deviceKey, int32_t r
 
     DeviceStatusEntry &deviceStatus = it->second;
 
-    ScopeGuard guard([&deviceStatus]() {
+    ScopeGuard guard([&deviceStatus, this]() {
         deviceStatus.isSynced = false;
         deviceStatus.isSyncInProgress = false;
+        this->NotifySubscribers();
     });
 
     if (resultCode != SUCCESS) {
@@ -227,17 +229,23 @@ void DeviceStatusManager::SetSubscribeMode(SubscribeMode mode)
         auto now = GetTimeKeeper().GetSteadyTimeMs();
         ENSURE_OR_RETURN(now.has_value());
         manageSubscribeTime_ = now.value();
-        for (const auto &channel : channelMgr_->GetAllChannels()) {
-            if (channel != nullptr) {
-                channel->RefreshPhysicalDeviceStatus();
-            }
-        }
         StartPeriodicSync();
     } else {
         manageSubscribeTime_ = std::nullopt;
         StopPeriodicSync();
         RefreshDeviceList(false);
     }
+}
+
+void DeviceStatusManager::RefreshDeviceStatus()
+{
+    IAM_LOGI("refresh physical device status");
+    for (const auto &channel : channelMgr_->GetAllChannels()) {
+        if (channel != nullptr) {
+            channel->RefreshPhysicalDeviceStatus();
+        }
+    }
+    RefreshDeviceList(true);
 }
 
 std::optional<SteadyTimeMs> DeviceStatusManager::GetManageSubscribeTime() const
