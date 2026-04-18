@@ -62,6 +62,7 @@ public:
         OnDeviceStatusChange &&callback);
 
     void SetSubscribeMode(SubscribeMode mode);
+    void RefreshDeviceStatus();
 
 private:
     static constexpr int32_t PERIODIC_SYNC_INTERVAL_MS = 60 * 1000; // 60 seconds

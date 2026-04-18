@@ -177,12 +177,6 @@ uint32_t HostSingleMixAuthRequest::GetMaxConcurrency() const
 bool HostSingleMixAuthRequest::ShouldCancelOnNewRequest(RequestType newRequestType,
     const std::optional<DeviceKey> &newPeerDevice, [[maybe_unused]] uint32_t subsequentSameTypeCount) const
 {
-    // Spec: new HostMixAuthRequest preempts HostSingleMixAuthRequest
-    if (newRequestType == RequestType::HOST_MIX_AUTH_REQUEST) {
-        IAM_LOGI("%{public}s: preempted by new HostMixAuth", GetDescription());
-        return true;
-    }
-
     // Spec: new HostSingleMixAuthRequest to same device preempts existing one
     if (newRequestType == RequestType::HOST_SINGLE_MIX_AUTH_REQUEST) {
         if (newPeerDevice.has_value() && peerDeviceKey_ == newPeerDevice.value()) {

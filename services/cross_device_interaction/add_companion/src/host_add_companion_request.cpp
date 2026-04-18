@@ -27,7 +27,6 @@
 #include "common_defines.h"
 #include "common_message.h"
 #include "companion_manager.h"
-#include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "fwk_common.h"
 #include "misc_manager.h"

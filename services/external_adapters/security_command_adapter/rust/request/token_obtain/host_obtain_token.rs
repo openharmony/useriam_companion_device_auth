@@ -106,7 +106,7 @@ impl HostDeviceObtainTokenRequest {
             ErrorCode::GeneralError
         })?;
 
-        let token_info = token_helper::generate_token(processor_type, challenge, atl)?;
+        let token_info = token_helper::generate_token(processor_type, output.challenge, atl)?;
         self.token_infos.push(token_info);
         Ok(())
     }

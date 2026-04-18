@@ -21,7 +21,6 @@
 #include "adapter_manager.h"
 #include "companion_manager.h"
 #include "companion_token_auth_handler.h"
-#include "cross_device_comm_manager_impl.h"
 #include "error_guard.h"
 #include "security_agent.h"
 #include "singleton_manager.h"
@@ -246,11 +245,16 @@ bool HostTokenAuthRequest::CanStart(const std::vector<std::shared_ptr<IRequest>>
     if (CountSameType(prevRequests) >= GetMaxConcurrency()) {
         return false;
     }
-    // Spec: HostTokenAuthRequest cannot run while HostIssueTokenRequest is active
+    // Spec: HostTokenAuthRequest cannot run while HostIssueTokenRequest is active on the same device
+    auto currentPeerDevice = GetPeerDeviceKey();
     for (const auto &req : prevRequests) {
         if (req != nullptr && req->GetRequestType() == RequestType::HOST_ISSUE_TOKEN_REQUEST) {
-            IAM_LOGI("%{public}s: blocked by HostIssueToken", GetDescription());
-            return false;
+            auto reqPeerDevice = req->GetPeerDeviceKey();
+            if (currentPeerDevice.has_value() && reqPeerDevice.has_value() &&
+                currentPeerDevice.value() == reqPeerDevice.value()) {
+                IAM_LOGI("%{public}s: blocked by HostIssueToken on same device", GetDescription());
+                return false;
+            }
         }
     }
     return true;

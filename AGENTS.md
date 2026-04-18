@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-本文件为 Claude Code (claude.ai/code) 在本仓库中工作时提供指导。
-
 ## 项目概述
 
 **伴随设备认证**（`@ohos/companion_device_auth`）是一个 OpenHarmony 用户认证执行器，通过伴随设备（手表、耳机、PC）对用户进行身份认证。它作为 `SystemAbility` 注册在 `useriam` 子系统中，并与统一用户认证框架（`user_auth_framework`）集成。
